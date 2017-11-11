@@ -8,7 +8,9 @@ If the index of any element in the array is i, the element in the index **2i+1 w
 
 
 Example:
+
 `arr = [1, 12, 9, 5, 6, 10]`
+
 Left child of 1 (index 0)
 = element in (2*0+1) index 
 = element in 1 index 
