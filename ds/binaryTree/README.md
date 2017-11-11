@@ -1,7 +1,7 @@
 
 
 
-#**Relationship between array indexes and tree elements**
+#Relationship between array indexes and tree elements
 
 Complete binary tree has an interesting property that we can use to find the children and parents of any node.
 
