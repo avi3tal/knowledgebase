@@ -33,3 +33,15 @@ Right child of 12
 = element in (2*1+2) index
 = element in 4 index
 = 6
+
+Parent of 9 (position 2) 
+= (2-1)/2 
+= ½ 
+= 0.5
+~ 0 index 
+= 1
+
+Parent of 12 (position 1) 
+= (1-1)/2 
+= 0 index 
+= 1
