@@ -1,3 +1,4 @@
+from algo import dynamic_programming
 
 
 def fib_rec(n):
@@ -14,6 +15,7 @@ def fib_rec(n):
     return fib_rec(n-1) + fib_rec(n-2)
 
 
+@dynamic_programming
 def fib_dp(n):
     """
     Dynamic programming solution

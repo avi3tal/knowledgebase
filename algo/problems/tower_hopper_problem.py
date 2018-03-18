@@ -1,6 +1,7 @@
 """
 Well describe in https://www.youtube.com/watch?v=kHWy5nEfRIQ
 """
+from algo import dynamic_programming
 
 
 class NativeSolution(object):
@@ -97,6 +98,7 @@ class DynamicProgrammingSolution(object):
     Time Complexity: O(n^2)
     """
     @staticmethod
+    @dynamic_programming
     def is_hopable(towers):
         # converting classic "min jumps to index..." algorithm into our is_happable requirements
         towers.append(0)
