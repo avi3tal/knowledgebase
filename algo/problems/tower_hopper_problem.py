@@ -65,6 +65,9 @@ class NativeSolution(object):
 
 class GraphDFSSolution(object):
     """
+    # http://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
+    # https://gist.github.com/professormahi/cff4bfeaece05966e688658127bf41f3
+
     Graph approach (https://www.youtube.com/watch?v=zaBhtODEL0w)
     DFS (Depth First Search)
     it dive deep into each root tree and ask hasPath(s, t)
@@ -79,6 +82,9 @@ class GraphDFSSolution(object):
 
 class GraphBFSSolution(object):
     """
+    # http://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
+    # https://gist.github.com/professormahi/cff4bfeaece05966e688658127bf41f3
+    
     BFS Breadth First Search
     Go wider before we go deep and that we do by asking fist child if onw of his direct children is
     the node we are looking for.
