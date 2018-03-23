@@ -6,9 +6,11 @@ from algo import dynamic_programming
 
 @dynamic_programming
 def longest_common_substring(s1, s2):
-    m = [[0] * (1 + len(s2)) for i in xrange(1 + len(s1))]
+    m = [[0] * (1 + len(s2)) for _ in xrange(1 + len(s1))]
+
     longest, x_longest = 0, 0
     substrings = set()
+
     for x in xrange(1, 1 + len(s1)):
         for y in xrange(1, 1 + len(s2)):
             if s1[x - 1] == s2[y - 1]:
@@ -16,12 +18,12 @@ def longest_common_substring(s1, s2):
                 if m[x][y] > longest:
                     longest = m[x][y]
                     x_longest = x
-                if(x == len(s1)):
+                if x == len(s1):
                     substrings.add(s1[-m[x][y]:])
-                if(y == len(s2)):
+                if y == len(s2):
                     substrings.add(s2[-m[x][y]:])
             else:
-                if(m[x-1][y-1] > 1):
+                if m[x-1][y-1] > 1:
                     substrings.add(s1[x - 1 - m[x-1][y-1]: x - 1])
                 m[x][y] = 0
 
