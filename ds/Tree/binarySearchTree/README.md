@@ -96,3 +96,5 @@ Trees Applications
 ===
 * filesystem = representing an hierarchical data
 * machine learning = decision trees and boosting 
+
+> An important tree data has placed in the next AVL Tree module

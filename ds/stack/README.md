@@ -1,4 +1,4 @@
-Stack: abstrack data type (interface)
+Stack: abstract data type (interface)
 ---
 Can be implemented with a one dimensional array or linked-list
 
