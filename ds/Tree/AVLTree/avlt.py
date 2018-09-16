@@ -39,7 +39,7 @@ class AVLTree(object):
         else:
             node.right_child = self.__insert_node(data, node.right_child)
 
-        node.height = max(self.calc_height(node.left_child), self.calc_height(node.right_child)) + 1
+        self.__update_node_height(node)
 
         # fix AVL property violation
         return self.__settle_violation(data, node)
@@ -76,8 +76,8 @@ class AVLTree(object):
         temp_node.right_child = node
         node.left_child = t
 
-        node.height = max(self.calc_height(node.left_child), self.calc_height(node.right_child)) + 1
-        temp_node.height = max(self.calc_height(temp_node.left_child), self.calc_height(temp_node.right_child)) + 1
+        self.__update_node_height(node)
+        self.__update_node_height(temp_node)
 
         return temp_node
 
@@ -92,8 +92,8 @@ class AVLTree(object):
         temp_node.left_child = node
         node.right_child = t
 
-        node.height = max(self.calc_height(node.left_child), self.calc_height(node.right_child)) + 1
-        temp_node.height = max(self.calc_height(temp_node.left_child), self.calc_height(temp_node.right_child)) + 1
+        self.__update_node_height(node)
+        self.__update_node_height(temp_node)
 
         return temp_node
 
@@ -114,6 +114,63 @@ class AVLTree(object):
 
         if node.right_child is not None:
             self.__travers_in_order(node.right_child)
+
+    def remove(self, data):
+        if self.root is not None:
+            self.__remove_node(data, self.root)
+        else:
+            print("BST is empty")
+
+    def __remove_node(self, data, node):
+        if node is None:
+            return node
+
+        if data < node.data:
+            node.left_child = self.__remove_node(data, node.left_child)
+        elif data > node.data:
+            node.right_child = self.__remove_node(data, node.right_child)
+        else:
+            if node.left_child is None and node.right_child is None:
+                print("removing a leaf node")
+                del node
+                return None
+            elif node.left_child is None:
+                print("removing a node with right child")
+                temp_node = node.right_child
+                del node
+                return temp_node
+            elif node.right_child is None:
+                print("removing a node with left child")
+                temp_node = node.left_child
+                del node
+                return temp_node
+            else:
+                print("removing a node with children")
+                temp_node = self.__max(node.left_child)
+                node.data = temp_node.data
+                node.left = self.__remove_node(node.data, node.left_child)
+
+        if node is None:
+            return node
+
+        self.__update_node_height(node)
+
+        return self.__settle_violation(data, node)
+
+    def __update_node_height(self, node):
+        node.height = max(self.calc_height(node.left_child), self.calc_height(node.right_child)) + 1
+
+    def __max(self, node):
+        if node.right is not None:
+            return self.__max(node.right)
+        else:
+            return node
+
+    def __min(self, node):
+        if node.left is not None:
+            return self.__min(node.left)
+        else:
+            return node
 
 
 if __name__ == "__main__":
@@ -154,6 +211,7 @@ if __name__ == "__main__":
     tree4.insert(50)
     tree4.insert(30)
     tree4.insert(40)
+    tree4.remove(30)
 
     tree4.travers()
 
