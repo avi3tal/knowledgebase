@@ -12,6 +12,20 @@ Find the value in given row and column
 
 First solution: brute force
 Second solution: Dynamic programming
+
+
+alternative
+
+def pascal(r, c):
+    print(f"row: {r}, col: {c}")
+    if r == 0 or r == 1 or c == 0:
+        return 1
+    return pascal(r-1, c-1) + pascal(r-1, c)
+
+
+res = pascal(4, 2)
+print(res)
+
 """
 from algo import dynamic_programming
 
