@@ -15,7 +15,7 @@ rev = 0
 tmp = rev * 10 + pop
 rev = tmp
 
-in python we do not risk with int overflow because of the arbitrary precision meachanism
+in python we do not risk with int overflow because of the arbitrary precision mechanism
 Python support short and long int
 Short is identical to the C-style with fixed precision
 But once we have a large number it automatically converted to be long which is arbitrary precision
