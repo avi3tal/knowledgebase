@@ -32,15 +32,15 @@ class FactorialWithStack(object):
 
 
 if __name__ == "__main__":
-    print FactorialWithRecursion.factorial(-1)
-    print FactorialWithStack.factorial(-1)
+    print(FactorialWithRecursion.factorial(-1))
+    print(FactorialWithStack.factorial(-1))
 
-    print FactorialWithRecursion.factorial(0)
-    print FactorialWithStack.factorial(0)
+    print(FactorialWithRecursion.factorial(0))
+    print(FactorialWithStack.factorial(0))
 
-    print FactorialWithRecursion.factorial(6)
-    print FactorialWithStack.factorial(6)
+    print(FactorialWithRecursion.factorial(6))
+    print(FactorialWithStack.factorial(6))
 
     # recursion will break trying to calculate factorial(1000)
     # print FactorialWithRecursion.factorial(1000)
-    print FactorialWithStack.factorial(1000)
+    print(FactorialWithStack.factorial(1000))

@@ -38,3 +38,4 @@ def reverse(x: int) -> int:
 
 print(reverse(123))
 print(reverse(-123))
+print(reverse(1534236469))
