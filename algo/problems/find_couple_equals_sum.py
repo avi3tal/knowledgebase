@@ -78,5 +78,5 @@ if __name__ == "__main__":
     sum = 8
     good = [1, 2, 3, 4, 4, 9]
     bad = [1, 2, 3, 4, 9]
-    print phase1(good, sum)
-    print phase2(good, sum)
+    print(phase1(good, sum))
+    print(phase2(good, sum))

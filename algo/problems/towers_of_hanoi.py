@@ -16,6 +16,6 @@ if __name__ == "__main__":
     t = []
     h = []
     hanoi(len(s), s, t, h)
-    print COUNT
+    print(COUNT)
 
     print("source: {}, helper: {}, target: {}".format(s, h, t))
