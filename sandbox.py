@@ -1,55 +1,34 @@
-G = {
-    "A": ["B", "C"],
-    "B": ["D", "E"],
-    "C": ["F", "G"],
-    "D": ["A"],
-    "E": [],
-    "F": [],
-    "G": []
-}
+
+def lps(s):
+    n = len(s)
+    table = [[0 for i in range(n)] for j in range(n)]
+
+    start = 0
+    max_len = 1
+    # define single char as palindrome
+    for i in range(n):
+        table[i][i] = 1
+
+    # find couple chars as palindrome
+    for i in range(n-1):
+        if s[i] == s[i+1]:
+            table[i][i+1] = 1
+            max_len = 2
+            start = i
+
+    # find 3+ chars as palindrome
+    for k in range(3, n):
+        for i in range(n-k+1):
+            j = i+k-1
+            if table[i+1][j-1] and s[i] == s[j]:
+                table[i][j] = 1
+                if k > max_len:
+                    max_len = k
+                    start = i
+    print(s[start:start+max_len])
+    return max_len
 
 
-# def bfs(graph, start):
-#     visited = set()
-#     q = [start]
-#
-#     visited.add(start)
-#     while q:
-#         item = q.pop(0)
-#         print(item, end=" ")
-#         for node in graph[item]:
-#             if node not in visited:
-#                 q.append(node)
-#                 visited.add(node)
-#
-#
-# bfs(G, "A")
-#
-#
-# def _helper(graph, node, visited):
-#     visited.add(node)
-#     print(node, end=" ")
-#     for n in graph[node]:
-#         if n not in visited:
-#             _helper(graph, n, visited)
-#
-#
-# def dfs(graph, start):
-#     visited = set()
-#     _helper(graph, start, visited)
-#
-# print()
-# dfs(G, "A")
-
-
-# import datetime
-# t = datetime.datetime.now()
-# print(t.microsecond % 10)
-
-
-def calclist(num_list):
-    if len(num_list) == 1:
-        return num_list[0]
-    return num_list[0] + calclist(num_list[1:])
-
-print(calclist([1, 2, 3, 4]))
+if __name__ == "__main__":
+    X = "aaaabbaa"
+    print(lps(X))

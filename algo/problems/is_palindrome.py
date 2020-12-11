@@ -34,5 +34,15 @@ def is_palindrome(x):
     return x == new or x == new / 10
 
 
+def is_str_palindrome(s):
+    if len(s) == 1:
+        return True
+    if len(s) == 2:
+        return s[0] == s[1]
+    n = len(s)
+    return s[0] == s[n-1] and is_str_palindrome(s[1:n-1])
+
+
 if __name__ == "__main__":
-    print(is_palindrome(919919))
+    # print(is_palindrome(919919))
+    print(is_str_palindrome("ABCDCBA"))
