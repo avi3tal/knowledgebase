@@ -23,7 +23,36 @@ class Solution:
         else:
             return self.plusOne(A[:-1]) + [0]
 
+    def incrementVector(self, A):
+        start = 0
+        for i in A:
+            if not i:
+                start += 1
+            else:
+                break
+        A = A[start:]
+        n = len(A)
+
+        A[n-1] += 1
+        carry = A[n-1] / 10
+        A[n - 1] = A[n-1] % 10
+
+        for i in range(n-2, -1, -1):
+            if carry == 1:
+                A[i] += 1
+                carry = A[i] / 10
+                A[i] %= 10
+
+        if carry == 1:
+            A.insert(0, 1)
+
+        return A
+
 
 
 s = Solution()
 print(s.plusOne([0]))
+
+print(s.incrementVector([9, 9, 9, 9]))
+print(s.incrementVector([0, 3, 7, 6, 4, 0, 5, 5, 5 ]))
+print(s.incrementVector([0, 0, 0, 0, 5, 5, 5 ]))
