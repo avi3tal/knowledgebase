@@ -88,6 +88,8 @@ def write_go_harness(problem: Problem, attempt_dir: Path) -> None:
 def new_attempt(problem: Problem, lang: str, pattern: str | None = None, today: dt.date | None = None) -> Path:
     if lang not in LANGS:
         raise ProblemError(f"lang must be one of {sorted(LANGS)}")
+    if pattern is not None and not SLUG_RE.match(pattern):
+        raise ProblemError(f"--pattern must be kebab-case (e.g. two-pointers), got {pattern!r}")
     errors = validate(problem)
     if errors:
         raise ProblemError("fix meta.json/cases.json first:\n  - " + "\n  - ".join(errors))

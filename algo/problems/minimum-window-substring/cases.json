@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"s": "ADOBECODEBANC", "t": "ABC"}, "expected": "BANC"},
+  {"name": "example 2", "args": {"s": "a", "t": "a"}, "expected": "a"},
+  {"name": "example 3 — impossible", "args": {"s": "a", "t": "aa"}, "expected": ""},
+  {"name": "t longer than s", "args": {"s": "ab", "t": "abc"}, "expected": ""},
+  {"name": "duplicates in t", "args": {"s": "aaflslflsldkalskaaa", "t": "aaa"}, "expected": "aaa"},
+  {"name": "window is whole s", "args": {"s": "abc", "t": "cba"}, "expected": "abc"},
+  {"name": "case sensitive", "args": {"s": "aA", "t": "A"}, "expected": "A"},
+  {"name": "best at the end", "args": {"s": "bbaac", "t": "ac"}, "expected": "ac"}
+]

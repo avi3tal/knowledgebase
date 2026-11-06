@@ -1,0 +1,11 @@
+[
+  {"name": "example 1", "args": {"nums": [1, 2, 3, 1], "k": 3}, "expected": true},
+  {"name": "example 2", "args": {"nums": [1, 0, 1, 1], "k": 1}, "expected": true},
+  {"name": "example 3", "args": {"nums": [1, 2, 3, 1, 2, 3], "k": 2}, "expected": false},
+  {"name": "single element", "args": {"nums": [1], "k": 1}, "expected": false},
+  {"name": "k is zero", "args": {"nums": [1, 1], "k": 0}, "expected": false},
+  {"name": "adjacent duplicate", "args": {"nums": [5, 5], "k": 1}, "expected": true},
+  {"name": "duplicate just outside", "args": {"nums": [1, 2, 3, 4, 1], "k": 3}, "expected": false},
+  {"name": "duplicate exactly at k", "args": {"nums": [1, 2, 3, 4, 1], "k": 4}, "expected": true},
+  {"name": "negatives", "args": {"nums": [-1, -2, -1], "k": 2}, "expected": true}
+]

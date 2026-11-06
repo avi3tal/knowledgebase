@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given an array of integers and k, find the maximum average of any k consecutive elements.",
+   "options": [
+    "sliding-window",
+    "two-pointers",
+    "top-k-elements"
+   ],
+   "answer": "sliding-window",
+   "why": "Contiguous + fixed size k → fixed sliding window with a running sum."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given a sorted array, find two numbers that add up to a target.",
+   "options": [
+    "sliding-window",
+    "two-pointers",
+    "modified-binary-search"
+   ],
+   "answer": "two-pointers",
+   "why": "Pairs in a sorted array, not a contiguous run → two pointers moving inward from both ends."
+  },
+  {
+   "id": "q3",
+   "prompt": "Find the length of the longest substring that contains no repeating characters.",
+   "options": [
+    "sliding-window",
+    "longest-common-substring",
+    "backtracking"
+   ],
+   "answer": "sliding-window",
+   "why": "Longest contiguous substring with a condition you can maintain (a set/map of chars in the window) → dynamic window."
+  },
+  {
+   "id": "q4",
+   "prompt": "Return the k largest elements of an unsorted array (in any order).",
+   "options": [
+    "sliding-window",
+    "top-k-elements",
+    "cyclic-sort"
+   ],
+   "answer": "top-k-elements",
+   "why": "Not contiguous — 'k largest anywhere' → size-k min-heap (Top 'K' Elements)."
+  },
+  {
+   "id": "q5",
+   "prompt": "Count the subarrays whose sum equals k; the array may contain negative numbers.",
+   "options": [
+    "sliding-window",
+    "arrays-hashing",
+    "two-pointers"
+   ],
+   "answer": "arrays-hashing",
+   "why": "With negatives, adding an element can decrease the sum, so 'shrink while sum ≥ k' is wrong. Use prefix sums + a hash map of seen prefix sums."
+  },
+  {
+   "id": "q6",
+   "prompt": "Find the smallest window of s that contains every character of t (with multiplicity).",
+   "options": [
+    "sliding-window",
+    "two-heaps",
+    "topological-sort"
+   ],
+   "answer": "sliding-window",
+   "why": "Shortest contiguous window satisfying a coverage condition → dynamic window; shrink while still valid and record inside the shrink loop."
+  },
+  {
+   "id": "q7",
+   "prompt": "Find the length of the longest common subsequence of two strings.",
+   "options": [
+    "sliding-window",
+    "longest-common-substring",
+    "subsets"
+   ],
+   "answer": "longest-common-substring",
+   "why": "Subsequence (not contiguous) across two strings → 2-D DP, not a window."
+  },
+  {
+   "id": "q8",
+   "prompt": "You may replace at most k characters; return the longest substring of one repeated letter you can get.",
+   "options": [
+    "sliding-window",
+    "backtracking",
+    "knapsack-0-1"
+   ],
+   "answer": "sliding-window",
+   "why": "Longest contiguous substring under a budget (window length − max count ≤ k) → dynamic window."
+  }
+ ]
+}

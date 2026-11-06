@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"s": "ABAB", "k": 2}, "expected": 4},
+  {"name": "example 2", "args": {"s": "AABABBA", "k": 1}, "expected": 4},
+  {"name": "no replacements", "args": {"s": "AABBB", "k": 0}, "expected": 3},
+  {"name": "single char", "args": {"s": "A", "k": 0}, "expected": 1},
+  {"name": "k covers everything", "args": {"s": "ABCDE", "k": 5}, "expected": 5},
+  {"name": "all same", "args": {"s": "AAAA", "k": 2}, "expected": 4},
+  {"name": "three letters", "args": {"s": "ABBCCCBB", "k": 2}, "expected": 5},
+  {"name": "must shrink", "args": {"s": "ABCABCAAA", "k": 1}, "expected": 4}
+]

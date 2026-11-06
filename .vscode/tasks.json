@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "kb: run current attempt",
+      "type": "shell",
+      "command": "./kb run '${fileDirname}'",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: run current attempt (no bench)",
+      "type": "shell",
+      "command": "./kb run '${fileDirname}' --no-bench",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: studio",
+      "type": "shell",
+      "command": "./kb studio",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: studio (UI dev mode, hot reload)",
+      "type": "shell",
+      "command": "yarn dev",
+      "options": { "cwd": "${workspaceFolder}/studio" },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: feedback",
+      "type": "shell",
+      "command": "./kb feedback",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

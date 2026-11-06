@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "subject": "algo",
+  "title": "Algorithms & Data Structures",
+  "source": {
+    "name": "DesignGurus — 20+ Coding Patterns to crack any Coding Interview",
+    "note": "Patterns 1-23 follow the PDF; 'fundamental' topics cover tags used by problems that aren't one of the 23 patterns."
+  },
+  "topics": [
+    {
+      "id": "sliding-window",
+      "name": "Sliding Window",
+      "kind": "pattern",
+      "order": 1,
+      "usage": "Handle the input data in a window of a specific size (fixed or growing/shrinking) as it slides over an array or string.",
+      "ds": [
+        "array",
+        "string",
+        "hash-table"
+      ],
+      "samples": [
+        "Longest Substring with K Distinct Characters",
+        "Fruits into Baskets"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "islands",
+      "name": "Islands (Matrix Traversal)",
+      "kind": "pattern",
+      "order": 2,
+      "usage": "Efficient ways of traversing a matrix (2D array), usually flood-fill with BFS/DFS.",
+      "ds": [
+        "matrix",
+        "queue"
+      ],
+      "samples": [
+        "Number of Islands",
+        "Flood Fill",
+        "Cycle in a Matrix"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "two-pointers",
+      "name": "Two Pointers",
+      "kind": "pattern",
+      "order": 3,
+      "usage": "Two pointers iterate the input, often from opposite ends towards each other, to avoid nested loops.",
+      "ds": [
+        "array",
+        "string",
+        "linked-list"
+      ],
+      "samples": [
+        "Squaring a Sorted Array",
+        "Dutch National Flag Problem",
+        "Minimum Window Sort"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "fast-slow-pointers",
+      "name": "Fast & Slow Pointers",
+      "kind": "pattern",
+      "order": 4,
+      "usage": "Hare & tortoise: two pointers move through the data at different speeds (cycles, middles).",
+      "ds": [
+        "array",
+        "string",
+        "linked-list"
+      ],
+      "samples": [
+        "Middle of the LinkedList",
+        "Happy Number",
+        "Cycle in a Circular Array"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "merge-intervals",
+      "name": "Merge Intervals",
+      "kind": "pattern",
+      "order": 5,
+      "usage": "Deal with overlapping intervals: sort by start, then merge or count overlaps.",
+      "ds": [
+        "array",
+        "heap"
+      ],
+      "samples": [
+        "Conflicting Appointments",
+        "Minimum Meeting Rooms"
+      ],
+      "aliases": [
+        "intervals"
+      ]
+    },
+    {
+      "id": "cyclic-sort",
+      "name": "Cyclic Sort",
+      "kind": "pattern",
+      "order": 6,
+      "usage": "Array problems where the values lie within a fixed range (1..n): place each number at its index.",
+      "ds": [
+        "array"
+      ],
+      "samples": [
+        "Find all Missing Numbers",
+        "Find all Duplicate Numbers",
+        "Find the First K Missing Positive Numbers"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "in-place-reversal-linked-list",
+      "name": "In-place Reversal of a LinkedList",
+      "kind": "pattern",
+      "order": 7,
+      "usage": "Reverse links between a set of nodes in place, without extra memory.",
+      "ds": [
+        "linked-list"
+      ],
+      "samples": [
+        "Reverse every K-element Sub-list",
+        "Rotate a LinkedList"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "bfs",
+      "name": "Breadth-First Search",
+      "kind": "pattern",
+      "order": 8,
+      "usage": "Traverse trees or graphs level by level with a queue.",
+      "ds": [
+        "tree",
+        "graph",
+        "matrix",
+        "queue"
+      ],
+      "samples": [
+        "Binary Tree Level Order Traversal",
+        "Minimum Depth of a Binary Tree",
+        "Connect Level Order Siblings"
+      ],
+      "aliases": [
+        "tree-bfs",
+        "graph-bfs"
+      ]
+    },
+    {
+      "id": "dfs",
+      "name": "Depth-First Search",
+      "kind": "pattern",
+      "order": 9,
+      "usage": "Traverse trees or graphs depth first (recursion or an explicit stack).",
+      "ds": [
+        "tree",
+        "graph",
+        "matrix"
+      ],
+      "samples": [
+        "Path With Given Sequence",
+        "Count Paths for a Sum"
+      ],
+      "aliases": [
+        "tree-dfs",
+        "graph-dfs"
+      ]
+    },
+    {
+      "id": "two-heaps",
+      "name": "Two Heaps",
+      "kind": "pattern",
+      "order": 10,
+      "usage": "Split elements into two halves: a max-heap for the smaller half and a min-heap for the larger half.",
+      "ds": [
+        "heap",
+        "array"
+      ],
+      "samples": [
+        "Find the Median of a Number Stream",
+        "Next Interval"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "subsets",
+      "name": "Subsets",
+      "kind": "pattern",
+      "order": 11,
+      "usage": "Generate permutations or combinations of a set, usually breadth-first from the empty set.",
+      "ds": [
+        "queue",
+        "array",
+        "string"
+      ],
+      "samples": [
+        "String Permutations by changing case",
+        "Unique Generalized Abbreviations"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "modified-binary-search",
+      "name": "Modified Binary Search",
+      "kind": "pattern",
+      "order": 12,
+      "usage": "Search a sorted (or partially sorted) set efficiently by halving the search space.",
+      "ds": [
+        "array"
+      ],
+      "samples": [
+        "Ceiling of a Number",
+        "Bitonic Array Maximum"
+      ],
+      "aliases": [
+        "binary-search"
+      ]
+    },
+    {
+      "id": "bitwise-xor",
+      "name": "Bitwise XOR",
+      "kind": "pattern",
+      "order": 13,
+      "usage": "Use XOR to manipulate bits (x^x=0, x^0=x).",
+      "ds": [
+        "array",
+        "bits"
+      ],
+      "samples": [
+        "Two Single Numbers",
+        "Flip and Invert an Image"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "top-k-elements",
+      "name": "Top 'K' Elements",
+      "kind": "pattern",
+      "order": 14,
+      "usage": "Find the top / smallest / most frequent K elements, usually with a size-K heap.",
+      "ds": [
+        "array",
+        "heap",
+        "queue"
+      ],
+      "samples": [
+        "'K' Closest Points to the Origin",
+        "Maximum Distinct Elements"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "k-way-merge",
+      "name": "K-way Merge",
+      "kind": "pattern",
+      "order": 15,
+      "usage": "Merge or search across K sorted lists with a min-heap of their heads.",
+      "ds": [
+        "array",
+        "queue",
+        "heap"
+      ],
+      "samples": [
+        "Kth Smallest Number in M Sorted Lists",
+        "Kth Smallest Number in a Sorted Matrix"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "knapsack-0-1",
+      "name": "0/1 Knapsack",
+      "kind": "pattern",
+      "order": 16,
+      "usage": "Optimisation: pick items for maximum profit under a capacity, each item at most once.",
+      "ds": [
+        "array",
+        "hash-table"
+      ],
+      "samples": [
+        "Equal Subset Sum Partition",
+        "Minimum Subset Sum Difference"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "unbounded-knapsack",
+      "name": "Unbounded Knapsack",
+      "kind": "pattern",
+      "order": 17,
+      "usage": "Like 0/1 knapsack, but each item can be picked any number of times.",
+      "ds": [
+        "array",
+        "hash-table"
+      ],
+      "samples": [
+        "Rod Cutting",
+        "Coin Change"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "fibonacci-numbers",
+      "name": "Fibonacci Numbers",
+      "kind": "pattern",
+      "order": 18,
+      "usage": "Each value is computed from the last few values (1-D DP).",
+      "ds": [
+        "array",
+        "hash-table"
+      ],
+      "samples": [
+        "Staircase",
+        "House Thief"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "palindromic-subsequence",
+      "name": "Palindromic Subsequence",
+      "kind": "pattern",
+      "order": 19,
+      "usage": "Optimisation problems on palindromic sequences or strings (interval DP).",
+      "ds": [
+        "array",
+        "hash-table"
+      ],
+      "samples": [
+        "Longest Palindromic Subsequence",
+        "Minimum Deletions in a String to make it a Palindrome"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "longest-common-substring",
+      "name": "Longest Common Substring",
+      "kind": "pattern",
+      "order": 20,
+      "usage": "Find the optimal part of one or more strings/sequences (2-D DP over two indices).",
+      "ds": [
+        "array",
+        "hash-table"
+      ],
+      "samples": [
+        "Maximum Sum Increasing Subsequence",
+        "Edit Distance"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "topological-sort",
+      "name": "Topological Sort",
+      "kind": "pattern",
+      "order": 21,
+      "usage": "Linear ordering of elements that depend on each other (Kahn's algorithm / DFS).",
+      "ds": [
+        "array",
+        "hash-table",
+        "queue",
+        "graph"
+      ],
+      "samples": [
+        "Tasks Scheduling",
+        "Alien Dictionary"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "backtracking",
+      "name": "Backtracking",
+      "kind": "pattern",
+      "order": 22,
+      "usage": "Build a solution incrementally and abandon (backtrack) a path as soon as it can't lead to a valid solution.",
+      "ds": [
+        "array",
+        "hash-table",
+        "linked-list"
+      ],
+      "samples": [
+        "Combination Sum",
+        "Sudoku Solver"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "multi-threaded",
+      "name": "Multi-threaded",
+      "kind": "pattern",
+      "order": 23,
+      "usage": "Use concurrency to run independent work in parallel or to prefetch / post-process.",
+      "ds": [],
+      "samples": [
+        "Same Tree",
+        "Invert Binary Tree",
+        "Binary Search Tree Iterator"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "arrays-hashing",
+      "name": "Arrays & Hashing",
+      "kind": "fundamental",
+      "usage": "Index arithmetic, hash maps/sets for O(1) lookups, counting, prefix sums.",
+      "ds": [],
+      "samples": [],
+      "aliases": [
+        "hashmap",
+        "prefix-sum"
+      ]
+    },
+    {
+      "id": "stack",
+      "name": "Stack",
+      "kind": "fundamental",
+      "usage": "LIFO processing: matching brackets, monotonic stacks, undo.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "linked-list",
+      "name": "Linked List Basics",
+      "kind": "fundamental",
+      "usage": "Pointer manipulation with dummy heads, splicing, merging.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "heaps",
+      "name": "Heaps",
+      "kind": "fundamental",
+      "usage": "Priority queues: O(1) peek, O(log n) push/pop, O(n) heapify.",
+      "ds": [],
+      "samples": [],
+      "aliases": [
+        "heap"
+      ]
+    },
+    {
+      "id": "recursion",
+      "name": "Recursion",
+      "kind": "fundamental",
+      "usage": "Base case + smaller subproblem; call stack depth and cost.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "dynamic-programming",
+      "name": "Dynamic Programming",
+      "kind": "fundamental",
+      "usage": "Overlapping subproblems + optimal substructure: memoization or tabulation.",
+      "ds": [],
+      "samples": [],
+      "aliases": [
+        "dp-1d",
+        "dp-2d"
+      ]
+    },
+    {
+      "id": "sorting",
+      "name": "Sorting",
+      "kind": "fundamental",
+      "usage": "Comparison sorts and their trade-offs (stability, in-place, worst case).",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "math",
+      "name": "Math",
+      "kind": "fundamental",
+      "usage": "Number theory, digits, bases, overflow.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "greedy",
+      "name": "Greedy",
+      "kind": "fundamental",
+      "usage": "Locally optimal choices that provably lead to a global optimum.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "design",
+      "name": "Design",
+      "kind": "fundamental",
+      "usage": "Implement a data structure with a given API and complexity per operation.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    },
+    {
+      "id": "strings",
+      "name": "Strings",
+      "kind": "fundamental",
+      "usage": "String building, matching and simulation.",
+      "ds": [],
+      "samples": [],
+      "aliases": [
+        "string-matching",
+        "simulation"
+      ]
+    },
+    {
+      "id": "bit-manipulation",
+      "name": "Bit Manipulation",
+      "kind": "fundamental",
+      "usage": "Masks, shifts and bit tricks.",
+      "ds": [],
+      "samples": [],
+      "aliases": []
+    }
+  ]
+}

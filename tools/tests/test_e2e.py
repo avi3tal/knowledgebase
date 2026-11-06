@@ -114,6 +114,14 @@ def test_generated_stubs_build_and_fail_cleanly(scratch: Path, fixture: str, lan
         assert not res.all_passed
 
 
+@pytest.mark.parametrize("pattern", ["design.", "Two Pointers", "a/b"])
+def test_attempt_rejects_bad_pattern(scratch: Path, pattern: str) -> None:
+    pdir = scratch / "two-sum"
+    shutil.copytree(FIXTURES / "two-sum", pdir, ignore=shutil.ignore_patterns("attempts"))
+    with pytest.raises(ProblemError, match="kebab-case"):
+        scaffold.new_attempt(load_problem(pdir), "go", pattern)
+
+
 def test_index(scratch: Path) -> None:
     for p in PROBLEMS:
         shutil.copytree(p, scratch / p.name)

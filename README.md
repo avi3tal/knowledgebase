@@ -10,7 +10,10 @@ The top level is organised by **type** (only `algo` for now; `system-design`, `k
 
 ```
 resources/            ROADMAP.md, links.md (practice platforms = source tags)
+progress/             runs.jsonl, quiz.jsonl — your practice history (input to kb feedback)
+studio/               React + TS learning studio (served by `kb studio`)
 algo/
+  learn/              catalog.json (patterns) + one lesson dir per topic
   notes/              learning material per topic (patterns, complexity, heaps, sorting, trees…)
   ds/                 reference implementations of data structures & classic algorithms
   problems/<slug>/    one canonical problem definition
@@ -27,6 +30,33 @@ archive/              leftovers that are not (yet) a problem type
   (different language, pattern or day).
 - Where a problem came from (leetcode, interviewbit, an interview…) is a `sources` tag in
   `meta.json`, not a folder.
+
+## Learning studio
+
+The loop is learn → see it move → recognise it → practise → get feedback.
+
+```sh
+make studio            # build the UI and serve it on http://127.0.0.1:8765
+# or: ./kb studio  +  (cd studio && yarn dev)   for UI hot reload
+```
+
+- **Lessons** (`algo/learn/<topic>/`):
+  - markdown on the pattern;
+  - **animated step-through traces** of reference code, with pointers, window, hash map and
+    variables, recorded deterministically by `./kb learn build`;
+  - a "which pattern?" quiz, graded by kb;
+  - practice problems, easy → hard.
+- **Patterns catalogue** (`algo/learn/catalog.json`): the 23 coding patterns from the
+  DesignGurus PDF plus fundamentals. Every problem tag maps to a catalogue topic.
+- **Feedback** (`./kb feedback`, the studio dashboard) is computed from `progress/runs.jsonl`
+  (every `kb run`) and `progress/quiz.jsonl` (every quiz answer):
+  - solved / failing / untried counts, complexity misses and quiz accuracy;
+  - spaced-review dates and what to practise next.
+  - No AI is involved.
+- **Debugging in VS Code:** open a `solution.py` / `solution.go` and press F5, choosing
+  "kb: debug Python/Go attempt". `Cmd+Shift+B` runs the "kb: run current attempt" task.
+- **New lessons:** `/learn algo two-pointers` in Claude Code writes the content once and kb does
+  the rest. `/learn feedback` summarises your progress.
 
 ## Usage
 

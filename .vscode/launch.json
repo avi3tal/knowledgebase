@@ -1,0 +1,39 @@
+{
+  // Open an attempt's solution file, then F5 with one of these.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "kb: debug Python attempt (current file)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "kb",
+      "args": ["debug", "${file}", "--case", "${input:caseName}"],
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}/tools", "PYTHONDONTWRITEBYTECODE": "1" },
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "kb: debug Go attempt (current file)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "args": ["-test.run", "^TestCases$/${input:goCaseName}", "-test.v"]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "caseName",
+      "type": "promptString",
+      "description": "Case name from cases.json (empty = all cases)",
+      "default": ""
+    },
+    {
+      "id": "goCaseName",
+      "type": "promptString",
+      "description": "Case name with spaces replaced by _ (empty = all cases)",
+      "default": ""
+    }
+  ]
+}
