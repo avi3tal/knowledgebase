@@ -1,0 +1,11 @@
+[
+  {"name": "example 1", "args": {"s": "anagram", "t": "nagaram"}, "expected": true},
+  {"name": "example 2", "args": {"s": "rat", "t": "car"}, "expected": false},
+  {"name": "different lengths", "args": {"s": "a", "t": "ab"}, "expected": false},
+  {"name": "both empty", "args": {"s": "", "t": ""}, "expected": true},
+  {"name": "same counts different letters", "args": {"s": "aabb", "t": "abcc"}, "expected": false},
+  {"name": "letter count mismatch", "args": {"s": "aacc", "t": "ccac"}, "expected": false},
+  {"name": "identical", "args": {"s": "abc", "t": "abc"}, "expected": true},
+  {"name": "one char", "args": {"s": "x", "t": "x"}, "expected": true},
+  {"name": "repeated letters", "args": {"s": "aaab", "t": "abaa"}, "expected": true}
+]

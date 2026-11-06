@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"a": [1, 2, 3, 3, 4, 5, 6], "b": [3, 3, 5]}, "expected": [3, 3, 5]},
+  {"name": "example 2", "args": {"a": [1, 2, 3, 3, 4, 5, 6], "b": [3, 5]}, "expected": [3, 5]},
+  {"name": "no common", "args": {"a": [1, 2], "b": [3, 4]}, "expected": []},
+  {"name": "empty", "args": {"a": [], "b": [1]}, "expected": []},
+  {"name": "identical", "args": {"a": [1, 1, 2], "b": [1, 1, 2]}, "expected": [1, 1, 2]},
+  {"name": "dup only once in b", "args": {"a": [2, 2, 2], "b": [2]}, "expected": [2]},
+  {"name": "negatives", "args": {"a": [-3, -1, 0, 2], "b": [-3, 0, 5]}, "expected": [-3, 0]},
+  {"name": "one long one short", "args": {"a": [1, 2, 3, 4, 5, 6, 7, 8, 9], "b": [9]}, "expected": [9]}
+]

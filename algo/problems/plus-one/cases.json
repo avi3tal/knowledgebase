@@ -1,0 +1,11 @@
+[
+  {"name": "example", "args": {"digits": [1, 2, 3]}, "expected": [1, 2, 4]},
+  {"name": "single zero", "args": {"digits": [0]}, "expected": [1]},
+  {"name": "single nine", "args": {"digits": [9]}, "expected": [1, 0]},
+  {"name": "all nines", "args": {"digits": [9, 9, 9, 9]}, "expected": [1, 0, 0, 0, 0]},
+  {"name": "carry in the middle", "args": {"digits": [1, 2, 9]}, "expected": [1, 3, 0]},
+  {"name": "leading zeros", "args": {"digits": [0, 0, 4, 5]}, "expected": [4, 6]},
+  {"name": "leading zero then nines", "args": {"digits": [0, 9, 9]}, "expected": [1, 0, 0]},
+  {"name": "all zeros", "args": {"digits": [0, 0, 0]}, "expected": [1]},
+  {"name": "long", "args": {"digits": [0, 3, 7, 6, 4, 0, 5, 5, 5]}, "expected": [3, 7, 6, 4, 0, 5, 5, 6]}
+]
