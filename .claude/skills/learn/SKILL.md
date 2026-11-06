@@ -54,6 +54,8 @@ structure and tone.
    - Options are catalog topic ids. Always include the near-miss patterns from the anti-signals.
    - Each `why` says which signal decides it.
    - Mix: about half the answers are this topic, the rest are look-alikes.
+   - Every item needs two real near-miss distractors, not throwaways. kb shuffles the option
+     order when serving, so the order you author doesn't matter.
 4. **Practice problems (3–6, easy → hard):**
    - Reuse existing `algo/problems` that are tagged with this pattern (`./kb list --pattern`).
      Create any missing ones with the `/new-problem` flow: README, meta, cases. Verify the expected

@@ -17,7 +17,7 @@ from typing import Any
 from kb import history, learn, scaffold
 from kb.schema import Problem
 
-REVIEW_AFTER_DAYS = [1, 3, 7, 14, 30]  # spaced repetition by number of successful sessions
+REVIEW_AFTER_DAYS = [1, 3, 7, 14, 30]  # review gap grows with the number of solved problems in the topic
 QUIZ_TARGET = 0.8
 
 

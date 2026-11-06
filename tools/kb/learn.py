@@ -9,6 +9,7 @@ Layout (subject-agnostic, so system-design can reuse it):
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 from typing import Any
 
@@ -213,7 +214,7 @@ def resolve(subject: str, topic: str, history: list[dict[str, Any]] | None = Non
             out_blocks.append({"type": "trace", "id": b["id"], "trace": json.loads(_trace_path(ldir, b).read_text())})
         elif b["type"] == "quiz":
             quiz = json.loads((ldir / b["src"]).read_text())
-            items = [{k: q[k] for k in ("id", "prompt", "options")} for q in quiz["items"]]
+            items = [{"id": q["id"], "prompt": q["prompt"], "options": _shuffled(q)} for q in quiz["items"]]
             out_blocks.append({"type": "quiz", "items": items})
         elif b["type"] == "problems":
             out_blocks.append({"type": "problems", "problems": [problem_card(subject, s, history) for s in b["slugs"]]})
@@ -247,6 +248,13 @@ def problem_card(subject: str, slug: str, history: list[dict[str, Any]] | None =
         "readme_path": _repo_rel(problem.dir / "README.md"),
         "attempts": attempts,
     }
+
+
+def _shuffled(item: dict[str, Any]) -> list[str]:
+    """Deterministic per-item shuffle so the answer's position carries no signal (grading is by id)."""
+    options = list(item["options"])
+    random.Random(f"{item['id']}:{item['prompt']}").shuffle(options)
+    return options
 
 
 def grade_quiz(subject: str, topic: str, item_id: str, choice: str) -> dict[str, Any]:

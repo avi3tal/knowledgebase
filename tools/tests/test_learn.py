@@ -115,6 +115,11 @@ def test_resolve_hides_quiz_answers_and_grades() -> None:
     lesson = learn.resolve("algo", "sliding-window")
     quiz = next(b for b in lesson["blocks"] if b["type"] == "quiz")
     assert all(set(item) == {"id", "prompt", "options"} for item in quiz["items"])
+    authored = json.loads((ROOT / "algo/learn/sliding-window/quiz.json").read_text())["items"]
+    assert [sorted(i["options"]) for i in quiz["items"]] == [sorted(i["options"]) for i in authored]
+    assert quiz == next(b for b in learn.resolve("algo", "sliding-window")["blocks"] if b["type"] == "quiz")
+    positions = {i["options"].index(a["answer"]) for i, a in zip(quiz["items"], authored, strict=True)}
+    assert len(positions) > 1  # the answer isn't always in the same slot
     assert learn.grade_quiz("algo", "sliding-window", "q2", "two-pointers")["correct"] is True
     assert learn.grade_quiz("algo", "sliding-window", "q2", "sliding-window")["correct"] is False
 
