@@ -1,0 +1,12 @@
+[
+  {"name": "example", "args": {"matrix": [[1, 0, 1, 0, 0], [1, 0, 1, 1, 1], [1, 1, 1, 1, 1], [1, 0, 0, 1, 0]]}, "expected": 4},
+  {"name": "single zero", "args": {"matrix": [[0]]}, "expected": 0},
+  {"name": "single one", "args": {"matrix": [[1]]}, "expected": 1},
+  {"name": "two by two ones", "args": {"matrix": [[1, 1], [1, 1]]}, "expected": 4},
+  {"name": "diagonal only", "args": {"matrix": [[1, 0], [0, 1]]}, "expected": 1},
+  {"name": "all zeros", "args": {"matrix": [[0, 0, 0], [0, 0, 0]]}, "expected": 0},
+  {"name": "single row", "args": {"matrix": [[1, 1, 1, 1]]}, "expected": 1},
+  {"name": "single column", "args": {"matrix": [[1], [1], [0], [1]]}, "expected": 1},
+  {"name": "three by three in corner", "args": {"matrix": [[0, 1, 1, 1], [1, 1, 1, 1], [0, 1, 1, 1], [1, 0, 0, 0]]}, "expected": 9},
+  {"name": "hole in the middle", "args": {"matrix": [[1, 1, 1], [1, 0, 1], [1, 1, 1]]}, "expected": 1}
+]
