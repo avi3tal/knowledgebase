@@ -22,7 +22,14 @@ export interface VarsViewSpec {
   vars: string[];
   label?: string;
 }
-export type ViewSpec = ArrayViewSpec | MapViewSpec | VarsViewSpec;
+export interface LinkedListViewSpec {
+  id?: string;
+  type: "linkedlist";
+  var: string;
+  label?: string;
+  pointers?: Record<string, string>;
+}
+export type ViewSpec = ArrayViewSpec | MapViewSpec | VarsViewSpec | LinkedListViewSpec;
 
 export interface ArrayState {
   values: Json[];
@@ -35,7 +42,17 @@ export interface MapState {
 export interface VarsState {
   values: Record<string, Json>;
 }
-export type ViewState = ArrayState | MapState | VarsState;
+export interface ListNodeState {
+  id: number;
+  val: Json;
+  next: number | null;
+}
+/** Node ids are stable for the whole trace, so nodes keep their place while links change. */
+export interface LinkedListState {
+  nodes: ListNodeState[];
+  pointers: Record<string, number | null>;
+}
+export type ViewState = ArrayState | MapState | VarsState | LinkedListState;
 
 export interface TraceStep {
   line: number;
@@ -91,4 +108,15 @@ export function inWindow(state: ArrayState, index: number): boolean {
 export function isTrace(value: unknown): value is Trace {
   const t = value as Partial<Trace> | null;
   return !!t && t.version === TRACE_VERSION && Array.isArray(t.code) && Array.isArray(t.steps);
+}
+
+export type LinkKind = "forward" | "skip" | "back" | "none";
+
+/** How to draw a node's next-link given the on-screen order of nodes. */
+export function linkKind(state: LinkedListState, index: number): LinkKind {
+  const node = state.nodes[index];
+  if (!node || node.next === null) return "none";
+  const target = state.nodes.findIndex((n) => n.id === node.next);
+  if (target === index + 1) return "forward";
+  return target > index ? "skip" : "back";
 }

@@ -60,6 +60,47 @@ def test_trace_lines_notes_and_states() -> None:
     assert [0, 1] in windows and [2, 3] in windows
 
 
+def list_fixture_trace() -> dict:
+    from kb.learn import _result_json, _typed_kwargs
+
+    block = {"types": {"head": "ListNode"}, "returns": "ListNode"}
+    view = [
+        {"id": "list", "type": "linkedlist", "var": "head", "pointers": {"prev": "prev", "curr": "curr", "next": "nxt"}}
+    ]
+    fn = load_function(TESTDATA / "trace_list_example.py", "reverse")
+    return capture(
+        fn,
+        _typed_kwargs(block, {"head": [1, 2, 3]}),
+        view,
+        title="list fixture",
+        display_input={"head": [1, 2, 3]},
+        result_to_json=lambda r: _result_json(block, r),
+    )
+
+
+def test_linked_list_trace_matches_shared_fixture() -> None:
+    t = list_fixture_trace()
+    assert t == json.loads((TESTDATA / "trace_list_fixture.json").read_text())
+    assert t["input"] == {"head": [1, 2, 3]} and t["result"] == [3, 2, 1]
+    flips = [s for s in t["steps"] if s["note"] == "flip the link"]
+    assert [[n["next"] for n in s["state"]["list"]["nodes"]] for s in flips] == [
+        [None, 2, None],
+        [None, 0, None],
+        [None, 0, 1],
+    ]
+
+
+def test_cycle_input_and_linked_list_view() -> None:
+    from kb.learn import _typed_kwargs
+
+    kwargs = _typed_kwargs({"types": {"head": "ListNode"}, "cycle": {"head": 1}}, {"head": [3, 2, 0, -4]})
+    view = [{"type": "linkedlist", "var": "head", "pointers": {"slow": "head"}}]
+    from kb.trace import NodeRegistry, snapshot
+
+    state = snapshot(view, kwargs, NodeRegistry())["head"]
+    assert [(n["val"], n["next"]) for n in state["nodes"]] == [(3, 1), (2, 2), (0, 3), (-4, 1)]
+
+
 def test_trace_sanitises_infinity() -> None:
     fn = load_function(ROOT / "algo/learn/sliding-window/examples/max_sum_size_k.py", "max_sum_size_k")
     t = capture(fn, {"nums": [1, 2], "k": 1}, [{"type": "vars", "vars": ["max_sum"]}])

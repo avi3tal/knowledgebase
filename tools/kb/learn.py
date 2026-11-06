@@ -16,7 +16,8 @@ from typing import Any
 from kb import scaffold
 from kb.naming import SLUG_RE
 from kb.paths import ROOT
-from kb.schema import ProblemError, load_problem
+from kb.convert import to_json, to_py
+from kb.schema import ProblemError, is_type, load_problem
 from kb.trace import TraceError, capture, load_function, validate_view
 
 LESSON_VERSION = 1
@@ -77,13 +78,39 @@ def _trace_path(ldir: Path, block: dict[str, Any]) -> Path:
     return ldir / "traces" / f"{block['id']}.json"
 
 
+def _typed_kwargs(block: dict[str, Any], raw: dict[str, Any]) -> dict[str, Any]:
+    """JSON kwargs -> Python values using the block's optional `types` (kb meta types, e.g. ListNode)
+    and `cycle` ({param: pos}: link the list's tail back to node `pos`, for cycle problems)."""
+    types = block.get("types") or {}
+    kwargs = {k: to_py(types[k], v) if k in types else v for k, v in raw.items()}
+    for param, pos in (block.get("cycle") or {}).items():
+        head, nodes = kwargs.get(param), []
+        while head is not None:
+            nodes.append(head)
+            head = head.next
+        if nodes and 0 <= pos < len(nodes):
+            nodes[-1].next = nodes[pos]
+    return kwargs
+
+
+def _result_json(block: dict[str, Any], value: Any) -> Any:
+    return to_json(block["returns"], value) if block.get("returns") else value
+
+
 def build_trace(ldir: Path, block: dict[str, Any]) -> dict[str, Any]:
     fn = load_function(ldir / block["source"], block["function"])
     for i, check in enumerate(block.get("checks", [])):
-        got = fn(**check["input"])
+        got = _result_json(block, fn(**_typed_kwargs({**block, "cycle": check.get("cycle")}, check["input"])))
         if got != check["expected"]:
             raise TraceError(f"trace {block['id']}: check {i} expected {check['expected']!r}, got {got!r}")
-    return capture(fn, block["input"], block["view"], title=block.get("title", ""))
+    return capture(
+        fn,
+        _typed_kwargs(block, block["input"]),
+        block["view"],
+        title=block.get("title", ""),
+        display_input=block["input"],
+        result_to_json=lambda r: _result_json(block, r),
+    )
 
 
 def _dump(data: Any) -> str:
@@ -184,6 +211,11 @@ def _validate_trace_block(ldir: Path, b: dict[str, Any], where: str, trace_ids: 
         return [f"{where}: needs an existing 'source' file and a 'function'"]
     if not isinstance(b.get("input"), dict):
         errors.append(f"{where}: 'input' must be an object of keyword arguments")
+    for name, t in (b.get("types") or {}).items():
+        if not is_type(t):
+            errors.append(f"{where}: types.{name}: unknown type {t!r}")
+    if b.get("returns") is not None and not is_type(b["returns"], allow_void=True):
+        errors.append(f"{where}: unknown returns type {b['returns']!r}")
     errors += [f"{where}: {e}" for e in validate_view(b.get("view"))]
     if not b.get("checks"):
         errors.append(f"{where}: add 'checks' so the animated reference is verified correct")

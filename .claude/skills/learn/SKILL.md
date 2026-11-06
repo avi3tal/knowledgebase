@@ -45,8 +45,13 @@ structure and tone.
      30–60 steps), `view` and **`checks`** (2–4 input/expected pairs, so the animated code is
      verified correct).
    - View types: `array` (`var`, `pointers: {label: var}`, `window: [lo_var, hi_var]`), `map`
-     (`var`: a dict or set) and `vars` (a list of scalar names). Strings work as arrays.
-   - If the topic needs a visual that doesn't exist yet (linked list, tree, grid, heap,
+     (`var`: a dict or set), `vars` (a list of scalar names) and `linkedlist` (`var`: head,
+     `pointers: {label: var}`; nodes keep stable positions while links and pointers animate).
+     Strings work as arrays.
+   - Typed inputs: `"types": {"head": "ListNode"}` converts JSON input (and `checks` inputs)
+     using kb meta types; `"returns": "ListNode"` converts the result back. For cycle demos, use
+     `"cycle": {"head": pos}` on the block (or on a check) to link the tail to node `pos`.
+   - If the topic needs a visual that doesn't exist yet (tree, grid, heap,
      intervals), say so and propose adding a view type: Python `kb/trace.py` snapshot, plus the
      TS type in `studio/src/trace.ts`, plus a renderer in `studio/src/components/TraceViews.tsx`,
      plus fixture tests. Don't fake it.

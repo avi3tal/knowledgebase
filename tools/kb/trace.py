@@ -10,6 +10,7 @@ Trace JSON (version 1) is the contract with the studio (studio/src/trace.ts):
   array state: {values, pointers: {name: index|null}, window: [lo, hi] | null}
   map state:   {entries: [[key, value], ...]}        (sets: value is null)
   vars state:  {values: {name: value}}
+  linkedlist:  {nodes: [{id, val, next: id|null}], pointers: {name: id|null}}  (ids stable per trace)
 """
 
 from __future__ import annotations
@@ -26,7 +27,8 @@ from typing import Any
 
 TRACE_VERSION = 1
 MAX_STEPS = 400
-VIEW_TYPES = {"array", "map", "vars"}
+VIEW_TYPES = {"array", "map", "vars", "linkedlist"}
+MAX_LIST_NODES = 64
 _NOTE_RE = re.compile(r"\s*#\s*note:\s*(.+?)\s*$")
 
 
@@ -62,7 +64,7 @@ def validate_view(view: Any) -> list[str]:
         if not isinstance(item, dict) or item.get("type") not in VIEW_TYPES:
             errors.append(f"view[{i}].type must be one of {sorted(VIEW_TYPES)}")
             continue
-        if item["type"] in {"array", "map"} and not isinstance(item.get("var"), str):
+        if item["type"] in {"array", "map", "linkedlist"} and not isinstance(item.get("var"), str):
             errors.append(f"view[{i}] ({item['type']}) needs 'var'")
         if item["type"] == "vars" and not isinstance(item.get("vars"), list):
             errors.append(f"view[{i}] (vars) needs a 'vars' list")
@@ -76,8 +78,11 @@ def validate_view(view: Any) -> list[str]:
     return errors
 
 
-def snapshot(view: list[dict[str, Any]], local_vars: dict[str, Any]) -> dict[str, Any]:
+def snapshot(
+    view: list[dict[str, Any]], local_vars: dict[str, Any], registry: NodeRegistry | None = None
+) -> dict[str, Any]:
     """Extract the watched state from a frame's locals."""
+    registry = registry or NodeRegistry()
     state: dict[str, Any] = {}
     for item in view:
         kind, vid = item["type"], _view_id(item)
@@ -99,9 +104,67 @@ def snapshot(view: list[dict[str, Any]], local_vars: dict[str, Any]) -> dict[str
             else:
                 entries = []
             state[vid] = {"entries": entries}
+        elif kind == "linkedlist":
+            state[vid] = _linked_list_state(item, local_vars, registry)
         else:  # vars
             state[vid] = {"values": {name: local_vars.get(name) for name in item["vars"]}}
     return _jsonable(state)
+
+
+def _is_node(value: Any) -> bool:
+    return value is not None and hasattr(value, "val") and hasattr(value, "next")
+
+
+class NodeRegistry:
+    """Stable ids for nodes across the whole trace (first-seen order), so the studio can keep each
+    node in place and animate only links and pointers. Holds references so ids are never reused."""
+
+    def __init__(self) -> None:
+        self._ids: dict[int, int] = {}
+        self._alive: list[Any] = []
+
+    def id_of(self, node: Any) -> int:
+        key = id(node)
+        if key not in self._ids:
+            self._ids[key] = len(self._alive)
+            self._alive.append(node)
+        return self._ids[key]
+
+
+def _linked_list_state(item: dict[str, Any], local_vars: dict[str, Any], registry: NodeRegistry) -> dict[str, Any]:
+    """Nodes reachable from `var` and from every pointer variable.
+
+    nodes: [{id, val, next: id | null}] sorted by stable id; pointers: {label: id | null}.
+    A `next` pointing to a lower id is a reversed link or a cycle.
+    """
+    seen: dict[int, Any] = {}
+
+    def walk(node: Any) -> None:
+        while _is_node(node) and id(node) not in seen and len(seen) < MAX_LIST_NODES:
+            seen[id(node)] = node
+            registry.id_of(node)
+            node = node.next
+
+    walk(local_vars.get(item["var"]))
+    pointer_vars = item.get("pointers") or {}
+    for var in pointer_vars.values():
+        walk(local_vars.get(var))
+    nodes = sorted(
+        (
+            {
+                "id": registry.id_of(n),
+                "val": n.val,
+                "next": registry.id_of(n.next) if _is_node(n.next) and id(n.next) in seen else None,
+            }
+            for n in seen.values()
+        ),
+        key=lambda d: d["id"],
+    )
+    pointers = {}
+    for label, var in pointer_vars.items():
+        value = local_vars.get(var)
+        pointers[label] = registry.id_of(value) if _is_node(value) and id(value) in seen else None
+    return {"nodes": nodes, "pointers": pointers}
 
 
 def _source(fn: Callable[..., Any]) -> tuple[list[str], int, dict[int, str]]:
@@ -124,7 +187,14 @@ def capture(
     view: list[dict[str, Any]],
     title: str = "",
     max_steps: int = MAX_STEPS,
+    display_input: dict[str, Any] | None = None,
+    result_to_json: Callable[[Any], Any] | None = None,
 ) -> dict[str, Any]:
+    """Run ``fn(**inputs)`` under the tracer.
+
+    ``display_input`` is the JSON shown as the input (when ``inputs`` holds converted objects such
+    as ListNode); ``result_to_json`` converts the return value (e.g. a ListNode back to a list).
+    """
     errors = validate_view(view)
     if errors:
         raise TraceError("; ".join(errors))
@@ -134,10 +204,11 @@ def capture(
     root: list[FrameType] = []
     prev_line: list[int | None] = [None]
     last_state: list[Any] = [None]
+    registry = NodeRegistry()
 
     def emit(abs_line: int, frame: FrameType, final: bool = False) -> None:
         rel = abs_line - start + 1
-        state = snapshot(view, dict(frame.f_locals))
+        state = snapshot(view, dict(frame.f_locals), registry)
         note = notes.get(rel)
         if state == last_state[0] and note is None and not final and steps:
             return
@@ -171,9 +242,9 @@ def capture(
         "title": title,
         "code": code,
         "view": view,
-        "input": _jsonable(inputs),
+        "input": _jsonable(display_input if display_input is not None else inputs),
         "steps": steps,
-        "result": _jsonable(result),
+        "result": _jsonable(result_to_json(result) if result_to_json else result),
     }
 
 

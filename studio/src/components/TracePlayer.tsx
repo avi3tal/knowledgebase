@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { ArrayState, MapState, Trace, VarsState } from "../trace";
+import type { ArrayState, LinkedListState, MapState, Trace, VarsState } from "../trace";
 import { clampStep, viewId } from "../trace";
-import { ArrayView, MapView, VarsView } from "./TraceViews";
+import { ArrayView, LinkedListView, MapView, VarsView } from "./TraceViews";
 
 const SPEEDS = [1500, 900, 450];
 
@@ -67,6 +67,8 @@ export function TracePlayer({ trace }: { trace: Trace }) {
             if (!state) return null;
             if (spec.type === "array")
               return <ArrayView key={id} spec={spec} state={state as ArrayState} />;
+            if (spec.type === "linkedlist")
+              return <LinkedListView key={id} spec={spec} state={state as LinkedListState} />;
             if (spec.type === "map")
               return (
                 <MapView

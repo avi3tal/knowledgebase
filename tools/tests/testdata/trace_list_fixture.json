@@ -1,0 +1,491 @@
+{
+ "version": 1,
+ "title": "list fixture",
+ "code": [
+  "def reverse(head):",
+  "    prev = None",
+  "    curr = head",
+  "    while curr is not None:",
+  "        nxt = curr.next",
+  "        curr.next = prev",
+  "        prev = curr",
+  "        curr = nxt",
+  "    return prev"
+ ],
+ "view": [
+  {
+   "id": "list",
+   "type": "linkedlist",
+   "var": "head",
+   "pointers": {
+    "prev": "prev",
+    "curr": "curr",
+    "next": "nxt"
+   }
+  }
+ ],
+ "input": {
+  "head": [
+   1,
+   2,
+   3
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": null,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": 0,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": 0,
+      "next": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "flip the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": 0,
+      "next": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 0,
+      "next": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 1,
+      "next": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "flip the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 2,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 2,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "flip the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 2,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": 2,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": null,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 0
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": null,
+      "next": null
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  3,
+  2,
+  1
+ ]
+}
