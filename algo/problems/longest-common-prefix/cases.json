@@ -1,0 +1,12 @@
+[
+  {"name": "example flower", "args": {"strs": ["flower", "flow", "flight"]}, "expected": "fl"},
+  {"name": "no common prefix", "args": {"strs": ["dog", "racecar", "car"]}, "expected": ""},
+  {"name": "single string", "args": {"strs": ["alone"]}, "expected": "alone"},
+  {"name": "contains empty", "args": {"strs": ["abc", ""]}, "expected": ""},
+  {"name": "one is prefix of all", "args": {"strs": ["ab", "abc", "abcd"]}, "expected": "ab"},
+  {"name": "shorter later", "args": {"strs": ["abcd", "abc", "ab"]}, "expected": "ab"},
+  {"name": "identical", "args": {"strs": ["same", "same", "same"]}, "expected": "same"},
+  {"name": "lexicographic min is longer", "args": {"strs": ["b", "ab"]}, "expected": ""},
+  {"name": "differs at first char only", "args": {"strs": ["abc", "xbc"]}, "expected": ""},
+  {"name": "interviewbit example", "args": {"strs": ["abcdefgh", "aefghijk", "abcefgh"]}, "expected": "a"}
+]

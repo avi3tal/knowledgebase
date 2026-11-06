@@ -1,0 +1,13 @@
+[
+  {"name": "example panama", "args": {"s": "A man, a plan, a canal: Panama"}, "expected": true},
+  {"name": "example race a car", "args": {"s": "race a car"}, "expected": false},
+  {"name": "single space", "args": {"s": " "}, "expected": true},
+  {"name": "only punctuation", "args": {"s": ".,"}, "expected": true},
+  {"name": "empty", "args": {"s": ""}, "expected": true},
+  {"name": "single char", "args": {"s": "a"}, "expected": true},
+  {"name": "digits and letters", "args": {"s": "0P"}, "expected": false},
+  {"name": "mixed case", "args": {"s": "Aa"}, "expected": true},
+  {"name": "digits palindrome", "args": {"s": "1a2,2A1"}, "expected": true},
+  {"name": "punctuation at ends", "args": {"s": ",,ab-ba!!"}, "expected": true},
+  {"name": "underscore is skipped", "args": {"s": "ab_a"}, "expected": true}
+]

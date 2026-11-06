@@ -1,0 +1,13 @@
+[
+  {"name": "example hello", "args": {"haystack": "hello", "needle": "ll"}, "expected": 2},
+  {"name": "not found", "args": {"haystack": "aaaaa", "needle": "bba"}, "expected": -1},
+  {"name": "empty needle", "args": {"haystack": "a", "needle": ""}, "expected": 0},
+  {"name": "both empty", "args": {"haystack": "", "needle": ""}, "expected": 0},
+  {"name": "empty haystack", "args": {"haystack": "", "needle": "a"}, "expected": -1},
+  {"name": "needle longer", "args": {"haystack": "ab", "needle": "abc"}, "expected": -1},
+  {"name": "equal strings", "args": {"haystack": "abc", "needle": "abc"}, "expected": 0},
+  {"name": "match at end", "args": {"haystack": "abcd", "needle": "cd"}, "expected": 2},
+  {"name": "first of overlapping", "args": {"haystack": "aaaa", "needle": "aa"}, "expected": 0},
+  {"name": "partial match then full", "args": {"haystack": "mississippi", "needle": "issip"}, "expected": 4},
+  {"name": "match at start", "args": {"haystack": "sadbutsad", "needle": "sad"}, "expected": 0}
+]

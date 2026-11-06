@@ -1,0 +1,12 @@
+[
+  {"name": "example ()", "args": {"s": "()"}, "expected": true},
+  {"name": "example all kinds", "args": {"s": "()[]{}"}, "expected": true},
+  {"name": "example mismatch", "args": {"s": "(]"}, "expected": false},
+  {"name": "nested", "args": {"s": "[(())]{}"}, "expected": true},
+  {"name": "unclosed", "args": {"s": "[(())]{}{"}, "expected": false},
+  {"name": "crossed", "args": {"s": "([)]"}, "expected": false},
+  {"name": "leading closer", "args": {"s": ")"}, "expected": false},
+  {"name": "closer after balanced", "args": {"s": "()]"}, "expected": false},
+  {"name": "only openers", "args": {"s": "((("}, "expected": false},
+  {"name": "deep nesting", "args": {"s": "{[()()]}"}, "expected": true}
+]
