@@ -14,5 +14,12 @@
 - No `__init__.py` packages: solutions are self-contained and loaded by file path.
 - Learning material goes in `algo/notes/`, reusable DS implementations in `algo/ds/`.
 
+## Tooling
+- `./kb` CLI (`tools/kb/`, Python stdlib) + `tools/gokb/` (Go harness helpers). Templates in `templates/algo/`.
+- New problems / attempts: the `/new-problem` skill (`.claude/skills/new-problem/SKILL.md`).
+- Generated files (`solution_test.go`, `kb_types.go`) are rewritten by `kb run`; edit `meta.json` instead.
+- Test fixtures for the tooling live in `tools/tests/testdata/problems/` (Go ignores `testdata` in `./...`).
+- Checks: `make test`, `make lint`. Python dev tools run via `uvx` (pytest, ruff, black).
+
 ## Style
 - Python: type hints, black/ruff. Go: gofmt, wrap errors with `%w`, table-driven tests.

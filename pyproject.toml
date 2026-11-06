@@ -1,0 +1,15 @@
+# Tooling config only — tools/kb is stdlib-only and run via ./kb (no install needed).
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+include = ["tools/**/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tools/tests"]

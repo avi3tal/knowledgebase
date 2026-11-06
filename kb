@@ -1,0 +1,4 @@
+#!/bin/sh
+# kb — practice-problem CLI (see tools/kb/cli.py). Usage: ./kb --help
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+PYTHONPATH="$ROOT/tools${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m kb "$@"
