@@ -1,0 +1,39 @@
+{
+  "title": "Merge k Sorted Lists",
+  "slug": "merge-k-sorted-lists",
+  "type": "algo",
+  "difficulty": "hard",
+  "patterns": [
+    "linked-list",
+    "heap"
+  ],
+  "sources": [
+    {
+      "name": "leetcode",
+      "url": "https://leetcode.com/problems/merge-k-sorted-lists/"
+    },
+    {
+      "name": "interviewbit",
+      "url": "https://www.interviewbit.com/problems/merge-k-sorted-lists/"
+    }
+  ],
+  "kind": "function",
+  "function": "mergeKLists",
+  "params": [
+    {
+      "name": "lists",
+      "type": "ListNode[]"
+    }
+  ],
+  "returns": "ListNode",
+  "comparator": "exact",
+  "expected_complexity": {
+    "time": "O(n log k)",
+    "space": "O(k)"
+  },
+  "bench": {
+    "args": {
+      "lists": "[sorted_int_array(n // 16)] * 16"
+    }
+  }
+}

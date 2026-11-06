@@ -1,0 +1,10 @@
+[
+  {"name": "example", "args": {"root": [1, null, 2, 3]}, "expected": [3, 2, 1]},
+  {"name": "empty", "args": {"root": []}, "expected": []},
+  {"name": "single", "args": {"root": [1]}, "expected": [1]},
+  {"name": "complete", "args": {"root": [15, 10, 20, 8, 12, 16, 25]}, "expected": [8, 12, 10, 16, 25, 20, 15]},
+  {"name": "left skewed", "args": {"root": [1, 2, null, 3, null, 4]}, "expected": [4, 3, 2, 1]},
+  {"name": "right skewed", "args": {"root": [1, null, 2, null, 3, null, 4]}, "expected": [4, 3, 2, 1]},
+  {"name": "with gaps", "args": {"root": [3, 9, 20, null, null, 15, 7]}, "expected": [9, 15, 7, 20, 3]},
+  {"name": "negatives and duplicates", "args": {"root": [0, -1, -1, null, 5, 5, null]}, "expected": [5, -1, 5, -1, 0]}
+]

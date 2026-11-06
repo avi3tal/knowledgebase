@@ -1,0 +1,11 @@
+[
+  {"name": "example identical", "args": {"p": [1, 2, 3], "q": [1, 2, 3]}, "expected": true},
+  {"name": "different structure", "args": {"p": [1, 2], "q": [1, null, 2]}, "expected": false},
+  {"name": "different values", "args": {"p": [1, 2, 1], "q": [1, 1, 2]}, "expected": false},
+  {"name": "both empty", "args": {"p": [], "q": []}, "expected": true},
+  {"name": "one empty", "args": {"p": [], "q": [0]}, "expected": false},
+  {"name": "other empty", "args": {"p": [5], "q": []}, "expected": false},
+  {"name": "bigger identical", "args": {"p": [15, 10, 20, 8, 12, 16, 25], "q": [15, 10, 20, 8, 12, 16, 25]}, "expected": true},
+  {"name": "differ deep in a leaf", "args": {"p": [15, 10, 20, 8, 12, 16, 25], "q": [15, 10, 20, 8, 12, 16, 26]}, "expected": false},
+  {"name": "extra deep node", "args": {"p": [1, 2, 3, 4], "q": [1, 2, 3]}, "expected": false}
+]
