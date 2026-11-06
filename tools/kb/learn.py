@@ -14,9 +14,9 @@ from pathlib import Path
 from typing import Any
 
 from kb import scaffold
+from kb.convert import to_json, to_py
 from kb.naming import SLUG_RE
 from kb.paths import ROOT
-from kb.convert import to_json, to_py
 from kb.schema import ProblemError, is_type, load_problem
 from kb.trace import TraceError, capture, load_function, validate_view
 

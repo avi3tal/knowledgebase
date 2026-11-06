@@ -1,0 +1,673 @@
+{
+ "version": 1,
+ "title": "Cycle in an implicit sequence — is 172 a happy number?",
+ "code": [
+  "def is_happy(n: int) -> bool:",
+  "    def next_of(x: int) -> int:",
+  "        total = 0",
+  "        while x > 0:",
+  "            x, digit = divmod(x, 10)",
+  "            total += digit * digit",
+  "        return total",
+  "",
+  "    slow, fast = n, next_of(n)",
+  "    while fast != 1 and slow != fast:",
+  "        slow = next_of(slow)",
+  "        fast = next_of(next_of(fast))",
+  "    return fast == 1"
+ ],
+ "view": [
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "n",
+    "slow",
+    "fast"
+   ]
+  }
+ ],
+ "input": {
+  "n": 172
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": null,
+      "fast": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the \"list\" is implicit: next_of(x) plays the role of x.next",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 172,
+      "fast": 54
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 172,
+      "fast": 54
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 54,
+      "fast": 54
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 54,
+      "fast": 17
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 54,
+      "fast": 17
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 41,
+      "fast": 17
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 41,
+      "fast": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 41,
+      "fast": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 17,
+      "fast": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 17,
+      "fast": 85
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 17,
+      "fast": 85
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 50,
+      "fast": 85
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 50,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 50,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 25,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 25,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 25,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 29,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 29,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 29,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 85,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 85,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 85,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 89,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 89,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 89,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 145,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 145,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 145,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 42,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 42,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 42,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 20,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 20,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 20,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 4,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 4,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 4,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 16,
+      "fast": 145
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 16,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 16,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 37,
+      "fast": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 37,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 37,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "tortoise: one hop along the sequence",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 58,
+      "fast": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hare: two hops",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 58,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "stop when the hare reaches 1 or catches the tortoise",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 58,
+      "fast": 58
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "reached 1 → happy; met somewhere else → stuck in a loop that never hits 1",
+   "state": {
+    "vars": {
+     "values": {
+      "n": 172,
+      "slow": 58,
+      "fast": 58
+     }
+    }
+   }
+  }
+ ],
+ "result": false
+}

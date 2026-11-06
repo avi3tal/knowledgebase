@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a sorted array and a target, find the pair whose sum is closest to the target.",
+   "options": [
+    "two-pointers",
+    "arrays-hashing",
+    "modified-binary-search"
+   ],
+   "answer": "two-pointers",
+   "why": "Sorted + pair + 'closest' (not an exact lookup) → opposite ends. If the sum is too small, the left element can't do better with anything, so move left. A hash map can only find exact matches."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given an unsorted array and a target, return the indices of the two numbers that add up to the target.",
+   "options": [
+    "arrays-hashing",
+    "two-pointers",
+    "sliding-window"
+   ],
+   "answer": "arrays-hashing",
+   "why": "Unsorted + original indices → hash map of value → index, O(n). Sorting for two pointers would lose the indices and cost O(n log n)."
+  },
+  {
+   "id": "q3",
+   "prompt": "Move all zeroes of an array to the end in place, keeping the relative order of the non-zero elements.",
+   "options": [
+    "two-pointers",
+    "sliding-window",
+    "cyclic-sort"
+   ],
+   "answer": "two-pointers",
+   "why": "In place + filter while keeping order → same-direction read/write pointers. There's no window constraint, and values aren't 1..n, so it isn't cyclic sort."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given a binary array and k, return the length of the longest run of consecutive 1s if you may flip at most k zeros.",
+   "options": [
+    "sliding-window",
+    "two-pointers",
+    "dynamic-programming"
+   ],
+   "answer": "sliding-window",
+   "why": "Longest contiguous run under a running budget (zeros in the window ≤ k) → dynamic sliding window. You track the window's contents, not just the two end elements."
+  },
+  {
+   "id": "q5",
+   "prompt": "Return the middle node of a singly linked list in a single pass.",
+   "options": [
+    "fast-slow-pointers",
+    "two-pointers",
+    "in-place-reversal-linked-list"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "Linked list + middle → fast & slow pointers: fast moves 2, slow moves 1. You can't start a pointer at the tail of a singly linked list and walk it back."
+  },
+  {
+   "id": "q6",
+   "prompt": "Return true if a string can become a palindrome after deleting at most one character.",
+   "options": [
+    "two-pointers",
+    "fast-slow-pointers",
+    "palindromic-subsequence"
+   ],
+   "answer": "two-pointers",
+   "why": "Palindrome check → compare the ends and move inward. On the first mismatch, try skipping either side once. It's O(n), not a subsequence DP."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given two lists of closed intervals, each sorted and pairwise disjoint, return their intersection.",
+   "options": [
+    "merge-intervals",
+    "two-pointers",
+    "k-way-merge"
+   ],
+   "answer": "merge-intervals",
+   "why": "The items are intervals and the question is about overlap → merge intervals. You walk both lists with an index each, but the deciding signal is the overlap logic (max of starts, min of ends)."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given an array and a target, count the triplets i < j < k with nums[i] + nums[j] + nums[k] < target.",
+   "options": [
+    "two-pointers",
+    "sliding-window",
+    "arrays-hashing"
+   ],
+   "answer": "two-pointers",
+   "why": "Triplets + a sum comparison; the order of values doesn't matter, so sort first. Fix one element, then run opposite ends: when the sum is small enough, every right index between them also works, so count right − left at once. O(n²)."
+  }
+ ]
+}

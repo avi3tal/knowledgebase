@@ -1,0 +1,1172 @@
+{
+ "version": 1,
+ "title": "Same direction — remove duplicates from a sorted array in place",
+ "code": [
+  "def remove_duplicates(nums: list[int]) -> int:",
+  "    if not nums:",
+  "        return 0",
+  "    write = 1",
+  "    for read in range(1, len(nums)):",
+  "        if nums[read] != nums[write - 1]:",
+  "            nums[write] = nums[read]",
+  "            write += 1",
+  "    return write"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "write": "write",
+    "read": "read"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "write"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   2,
+   3,
+   3,
+   3,
+   4,
+   5
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": null,
+      "read": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "nums[0] is always kept — write marks the end of the kept prefix",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 1,
+      "read": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 1,
+      "read": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 1,
+      "read": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 1,
+      "read": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 1,
+      "read": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "new value — copy it to the write slot and grow the kept prefix",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 1,
+      "read": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "new value — copy it to the write slot and grow the kept prefix",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 2,
+      "read": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 3,
+      "read": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 3,
+      "read": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 3,
+      "read": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 3,
+      "read": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 3,
+      "read": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "new value — copy it to the write slot and grow the kept prefix",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 3,
+      "read": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "new value — copy it to the write slot and grow the kept prefix",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 4,
+      "read": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 5,
+      "read": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 5,
+      "read": 11
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "compare with the last kept value, not the previous read",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      2,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 5,
+      "read": 11
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "new value — copy it to the write slot and grow the kept prefix",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 5,
+      "read": 11
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 6,
+      "read": 11
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the first `write` elements are the unique values",
+   "state": {
+    "nums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      2,
+      3,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "write": 6,
+      "read": 11
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "write": 6
+     }
+    }
+   }
+  }
+ ],
+ "result": 6
+}

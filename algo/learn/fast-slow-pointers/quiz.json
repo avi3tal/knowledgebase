@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given the head of a singly linked list, return true if some node can be reached again by following next pointers. Use O(1) extra memory.",
+   "options": [
+    "fast-slow-pointers",
+    "arrays-hashing",
+    "in-place-reversal-linked-list"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "Cycle detection on a linked list with O(1) space → Floyd: a 2-step hare must meet a 1-step tortoise inside any loop. A visited set works but costs O(n)."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given a sorted array and a target, return the indices of two numbers that add up to the target, in O(n) time and O(1) extra space.",
+   "options": [
+    "two-pointers",
+    "fast-slow-pointers",
+    "arrays-hashing"
+   ],
+   "answer": "two-pointers",
+   "why": "Sorted array + a pair condition → two pointers moving inward from both ends. Both pointers move by one at different ends; nothing is chasing anything."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given the head of a linked list, reverse the nodes between positions left and right and return the new head.",
+   "options": [
+    "in-place-reversal-linked-list",
+    "fast-slow-pointers",
+    "two-pointers"
+   ],
+   "answer": "in-place-reversal-linked-list",
+   "why": "The task is to rewire next pointers backwards → in-place reversal. Fast/slow only finds positions; it doesn't flip links."
+  },
+  {
+   "id": "q4",
+   "prompt": "An array of n + 1 integers holds values in 1..n, so at least one value repeats. Find it without modifying the array and with O(1) extra space.",
+   "options": [
+    "fast-slow-pointers",
+    "cyclic-sort",
+    "arrays-hashing"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "Read-only + O(1) space rules out cyclic sort (it swaps) and a hash set (O(n)). Treat i → nums[i] as a next-pointer: the duplicate is the entry of a cycle, found with Floyd."
+  },
+  {
+   "id": "q5",
+   "prompt": "An array of n integers holds values in 1..n; some appear twice. Return every value that appears twice. You may modify the array.",
+   "options": [
+    "cyclic-sort",
+    "fast-slow-pointers",
+    "arrays-hashing"
+   ],
+   "answer": "cyclic-sort",
+   "why": "Values in 1..n, all duplicates wanted, mutation allowed → cyclic sort: put each value at its index, then the misplaced ones are the duplicates. Floyd finds only one duplicate."
+  },
+  {
+   "id": "q6",
+   "prompt": "Starting from n, repeatedly replace the number with the sum of the squares of its digits. Return whether the process reaches 1, using O(1) extra memory.",
+   "options": [
+    "fast-slow-pointers",
+    "arrays-hashing",
+    "math"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "An implicit next-function that must either hit 1 or loop forever → cycle detection on the sequence. The digit maths is only the next-function. A seen-set would work but costs O(n) memory, so O(1) means Floyd."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given an array of integers and k, return true if two equal values sit at most k indices apart.",
+   "options": [
+    "sliding-window",
+    "fast-slow-pointers",
+    "two-pointers"
+   ],
+   "answer": "sliding-window",
+   "why": "'At most k apart' is a contiguous window of size k + 1 → keep a set of the last k values (sliding window). There's no cycle or middle to find."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given the head of a linked list, remove the k-th node from the end in a single pass and return the head.",
+   "options": [
+    "fast-slow-pointers",
+    "linked-list",
+    "in-place-reversal-linked-list"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "k-th from the end of a singly linked list in one pass, without knowing the length → two pointers on the same list, one with a k-node head start. Dummy-head splicing (linked-list basics) only handles the removal. The one-pass position comes from the pointer pair."
+  }
+ ]
+}
