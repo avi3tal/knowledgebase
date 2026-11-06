@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import signal
 import statistics
 import sys
@@ -23,18 +24,29 @@ from kb.compare import compare_case, normalise
 from kb.convert import to_json, to_py
 from kb.naming import snake
 
-CASE_TIMEOUT_S = 10
+CASE_TIMEOUT_S = 10.0
 BENCH_TARGET_S = 0.2
 BENCH_MAX_REPS = 50
 BENCH_STOP_CALL_S = 0.5
+# Budgets keep slow (e.g. exponential) solutions from stalling a run; overridable for tests.
+CALL_BUDGET_S = float(os.environ.get("KB_CALL_BUDGET_S", "5"))
+BENCH_BUDGET_S = float(os.environ.get("KB_BENCH_BUDGET_S", "45"))
 
 
-class CaseTimeout(Exception):
+class Timeout(Exception):
     pass
 
 
 def _on_alarm(signum: int, frame: Any) -> None:
-    raise CaseTimeout(f"timed out after {CASE_TIMEOUT_S}s")
+    raise Timeout("time budget exceeded")
+
+
+def _arm(seconds: float) -> None:
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+
+
+def _disarm() -> None:
+    signal.setitimer(signal.ITIMER_REAL, 0)
 
 
 def load_module(path: Path) -> ModuleType:
@@ -108,7 +120,7 @@ def run_cases(module: ModuleType, meta: dict[str, Any], cases: list[dict[str, An
     results = []
     for case in cases:
         res: dict[str, Any] = {"name": case["name"], "expected": case["expected"], "ok": False}
-        signal.alarm(CASE_TIMEOUT_S)
+        _arm(CASE_TIMEOUT_S)
         try:
             start = time.perf_counter_ns()
             if design:
@@ -120,49 +132,68 @@ def run_cases(module: ModuleType, meta: dict[str, Any], cases: list[dict[str, An
             res["ns"] = time.perf_counter_ns() - start
             res["got"] = normalise(got)
             res["ok"] = compare_case(res["got"], case["expected"], meta["comparator"], design)
-        except CaseTimeout as e:
-            res["error"] = str(e)
+        except Timeout:
+            res["error"] = f"timed out after {CASE_TIMEOUT_S:g}s"
         except Exception as e:  # noqa: BLE001 - report any solution failure
             res["error"] = _short_tb(e)
         finally:
-            signal.alarm(0)
+            _disarm()
         results.append(res)
     return results
 
 
-def run_bench(module: ModuleType, meta: dict[str, Any], inputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def run_bench(
+    module: ModuleType, meta: dict[str, Any], inputs: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Median ns per call for growing n. Stops early (keeping the points so far) on a slow call,
+    an exception (e.g. RecursionError) or the overall budget; the note says why."""
     fn = resolve_function(module, meta)
-    points = []
+    points: list[dict[str, Any]] = []
+    deadline = time.monotonic() + BENCH_BUDGET_S
     for item in inputs:
         samples: list[int] = []
         total = 0
-        while total < BENCH_TARGET_S * 1e9 and len(samples) < BENCH_MAX_REPS:
-            thunk, _ = prepare_function(fn, meta, item["args"])
-            start = time.perf_counter_ns()
-            thunk()
-            elapsed = time.perf_counter_ns() - start
-            samples.append(elapsed)
-            total += elapsed
+        try:
+            while total < BENCH_TARGET_S * 1e9 and len(samples) < BENCH_MAX_REPS:
+                thunk, _ = prepare_function(fn, meta, item["args"])
+                _arm(CALL_BUDGET_S)
+                start = time.perf_counter_ns()
+                try:
+                    thunk()
+                finally:
+                    _disarm()
+                elapsed = time.perf_counter_ns() - start
+                samples.append(elapsed)
+                total += elapsed
+        except Timeout:
+            return points, f"stopped at n={item['n']}: a call took over {CALL_BUDGET_S:g}s"
+        except RecursionError:
+            return points, f"stopped at n={item['n']}: RecursionError (recursion depth ~n)"
+        except Exception as e:  # noqa: BLE001 - the solution passed the cases; report and keep data
+            return points, f"stopped at n={item['n']}: {type(e).__name__}: {e}"
         median = statistics.median(samples)
         points.append({"n": item["n"], "ns": median})
         if median > BENCH_STOP_CALL_S * 1e9:
-            break
-    return points
+            return points, f"stopped after n={item['n']}: calls now take over {BENCH_STOP_CALL_S:g}s"
+        if time.monotonic() > deadline:
+            return points, f"stopped after n={item['n']}: bench budget {BENCH_BUDGET_S:g}s used"
+    return points, None
 
 
 def main(argv: list[str]) -> int:
     spec_path, out_path = Path(argv[0]), Path(argv[1])
     spec = json.loads(spec_path.read_text())
-    out: dict[str, Any] = {"cases": [], "bench": [], "error": None}
+    out: dict[str, Any] = {"cases": [], "bench": [], "bench_note": None, "error": None}
     signal.signal(signal.SIGALRM, _on_alarm)
     try:
         module = load_module(Path(spec["solution"]))
         out["cases"] = run_cases(module, spec["meta"], spec["cases"])
-        if spec.get("bench") and all(c["ok"] for c in out["cases"]):
-            out["bench"] = run_bench(module, spec["meta"], spec["bench"])
     except Exception as e:  # noqa: BLE001 - load/import errors are reported to the user
         out["error"] = _short_tb(e)
-    out_path.write_text(json.dumps(out))
+    out_path.write_text(json.dumps(out))  # case results survive even if the bench is killed
+    if out["error"] is None and spec.get("bench") and all(c["ok"] for c in out["cases"]):
+        out["bench"], out["bench_note"] = run_bench(module, spec["meta"], spec["bench"])
+        out_path.write_text(json.dumps(out))
     return 0
 
 

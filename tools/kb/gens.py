@@ -83,8 +83,9 @@ def namespace(n: int, seed: int = 0) -> dict[str, Callable[..., Any] | int]:
     }
 
 
-def evaluate(expr: str, n: int, seed: int = 0) -> Any:
-    return eval(expr, {"__builtins__": {}}, namespace(n, seed))  # noqa: S307 - trusted local meta
+def evaluate(expr: str, n: int, seed: int = 0, ns: dict[str, Any] | None = None) -> Any:
+    """Evaluate a generator expression. Pass a shared ``ns`` so several args draw from one RNG."""
+    return eval(expr, {"__builtins__": {}}, ns if ns is not None else namespace(n, seed))  # noqa: S307 - local meta
 
 
 def sizes(bench: dict[str, Any]) -> list[int]:
@@ -99,4 +100,8 @@ def sizes(bench: dict[str, Any]) -> list[int]:
 
 def bench_inputs(bench: dict[str, Any]) -> list[dict[str, Any]]:
     """[{"n": n, "args": {param: value}}] for every benchmark size."""
-    return [{"n": n, "args": {name: evaluate(expr, n) for name, expr in bench["args"].items()}} for n in sizes(bench)]
+    out = []
+    for n in sizes(bench):
+        ns = namespace(n)  # one RNG per size: two int_array(n) args get different arrays
+        out.append({"n": n, "args": {name: evaluate(expr, n, ns=ns) for name, expr in bench["args"].items()}})
+    return out

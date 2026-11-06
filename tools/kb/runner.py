@@ -17,7 +17,7 @@ from kb.paths import ROOT, TOOLS
 from kb.scaffold import attempt_lang, write_go_harness
 from kb.schema import Problem
 
-RUN_TIMEOUT_S = 600
+RUN_TIMEOUT_S = 300  # whole executor; per-case and bench budgets are much smaller
 
 
 @dataclass
@@ -62,10 +62,9 @@ def run(problem: Problem, attempt_dir: Path, bench: bool = True) -> RunResult:
             res = _run_go(problem, attempt_dir, inputs, Path(tmp))
     if not res.all_passed:
         res.bench = []  # timings of a wrong solution are meaningless
-    if res.bench_note is None:
+        res.bench_note = "skipped (cases failing)" if inputs else note
+    elif res.bench_note is None:
         res.bench_note = note
-    if inputs and not res.bench and res.bench_note is None:
-        res.bench_note = "skipped (cases failing)"
     return res
 
 
@@ -88,6 +87,7 @@ def _run_python(problem: Problem, attempt_dir: Path, inputs: list[dict[str, Any]
             }
         )
     )
+    timed_out = False
     try:
         proc = subprocess.run(
             [sys.executable, "-m", "kb.pyexec", str(spec), str(out)],
@@ -96,12 +96,15 @@ def _run_python(problem: Problem, attempt_dir: Path, inputs: list[dict[str, Any]
             text=True,
             timeout=RUN_TIMEOUT_S,
         )
+        stderr = (proc.stderr or proc.stdout).strip()
     except subprocess.TimeoutExpired:
-        return RunResult("python", error=f"timed out after {RUN_TIMEOUT_S}s")
+        timed_out, stderr = True, ""
     if not out.exists():
-        return RunResult("python", error=(proc.stderr or proc.stdout).strip() or "executor produced no output")
-    data = json.loads(out.read_text())
-    return RunResult("python", cases=data["cases"], bench=data["bench"], error=data["error"])
+        msg = f"timed out after {RUN_TIMEOUT_S}s" if timed_out else stderr or "executor produced no output"
+        return RunResult("python", error=msg)
+    data = json.loads(out.read_text())  # written after cases, rewritten after the bench
+    note = data.get("bench_note") or ("bench killed: executor timed out" if timed_out else None)
+    return RunResult("python", cases=data["cases"], bench=data["bench"], error=data["error"], bench_note=note)
 
 
 def _run_go(problem: Problem, attempt_dir: Path, inputs: list[dict[str, Any]] | None, tmp: Path) -> RunResult:
@@ -123,15 +126,23 @@ def _run_go(problem: Problem, attempt_dir: Path, inputs: list[dict[str, Any]] | 
             env=env,
             capture_output=True,
             text=True,
-            timeout=RUN_TIMEOUT_S + 30,
+            timeout=RUN_TIMEOUT_S + 60,
         )
+        output = (proc.stdout + proc.stderr).strip()
     except subprocess.TimeoutExpired:
-        return RunResult("go", error=f"timed out after {RUN_TIMEOUT_S}s")
+        output = f"go test timed out after {RUN_TIMEOUT_S}s"
     except FileNotFoundError:
         return RunResult("go", error="`go` not found on PATH")
     if not out.exists():
-        return RunResult("go", error=(proc.stdout + proc.stderr).strip() or "go test produced no output")
+        return RunResult("go", error=output or "go test produced no output")
     res = RunResult("go", cases=json.loads(out.read_text()))
-    if bench_out.exists():
-        res.bench = json.loads(bench_out.read_text())
+    if inputs:
+        if bench_out.exists():  # rewritten after every size, so partial data survives a crash
+            data = json.loads(bench_out.read_text())
+            res.bench, res.bench_note = data.get("points") or [], data.get("note") or None
+        markers = ("panic:", "fatal error:", "timed out")
+        if res.bench_note is None and any(m in output for m in markers):
+            res.bench_note = "bench aborted: " + next(
+                (ln.strip() for ln in output.splitlines() if any(m in ln for m in markers)), "go test failed"
+            )
     return res

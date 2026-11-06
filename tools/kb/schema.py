@@ -141,6 +141,15 @@ def validate(problem: Problem) -> list[str]:
     ec = m.get("expected_complexity")
     if not isinstance(ec, dict) or not ec.get("time") or not ec.get("space"):
         errors.append("meta.expected_complexity needs 'time' and 'space'")
+    elif "?" in str(ec.get("time")) + str(ec.get("space")):
+        errors.append("meta.expected_complexity still has the '?' placeholder")
+    if isinstance(pats, list) and "todo" in pats:
+        errors.append("meta.patterns still has the 'todo' placeholder")
+    readme = problem.dir / "README.md"
+    if not readme.exists():
+        errors.append("README.md is missing")
+    elif "<!--" in readme.read_text():
+        errors.append("README.md still has template <!-- ... --> placeholders (fill or delete them)")
 
     if m.get("kind") == "design":
         errors += _validate_design(problem)

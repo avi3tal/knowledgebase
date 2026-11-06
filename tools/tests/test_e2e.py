@@ -46,6 +46,31 @@ def test_complexity_verdict(attempt: str, consistent: bool) -> None:
     assert matches(fit, problem.meta["expected_complexity"]["time"], [p["n"] for p in res.bench]) is consistent
 
 
+@pytest.mark.parametrize("attempt", ["2026-11-06_python_naive", "2026-11-06_go_naive"])
+def test_exponential_bench_stops_within_budget(attempt: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("KB_CALL_BUDGET_S", "1")
+    problem = load_problem(FIXTURES / "fibonacci")
+    res = runner.run(problem, problem.attempts_dir / attempt, bench=True)
+    assert res.all_passed and res.error is None
+    # Either the per-call budget or the "calls got slow" rule stops it; both must say so.
+    assert res.bench_note and "stopped" in res.bench_note
+    assert [p["n"] for p in res.bench][:2] == [20, 24]  # points before the budget hit are kept
+
+
+def test_recursion_error_in_bench_keeps_cases_green() -> None:
+    problem = load_problem(FIXTURES / "reverse-linked-list")
+    res = runner.run(problem, problem.attempts_dir / "2026-11-06_python_recursive", bench=True)
+    assert res.all_passed and res.error is None
+    assert res.bench_note and "RecursionError" in res.bench_note
+    assert res.bench  # sizes below the recursion limit were measured
+
+
+def test_skeleton_fails_validation(scratch: Path) -> None:
+    errors = validate(load_problem(scaffold.new_problem(scratch, "skeleton")))
+    joined = "\n".join(errors)
+    assert "'?' placeholder" in joined and "'todo' placeholder" in joined and "README.md still has" in joined
+
+
 @pytest.fixture
 def scratch() -> Iterator[Path]:
     """Problems dir inside the Go module (Go attempts must live under go.mod)."""
@@ -64,7 +89,8 @@ def test_new_refuses_overwrite_and_bad_slug(scratch: Path) -> None:
 
 
 def test_attempt_requires_valid_meta(scratch: Path) -> None:
-    pdir = scaffold.new_problem(scratch, "broken")
+    pdir = scratch / "broken"
+    shutil.copytree(FIXTURES / "two-sum", pdir, ignore=shutil.ignore_patterns("attempts"))
     (pdir / "cases.json").write_text("[]")
     with pytest.raises(ProblemError, match="cases.json is empty"):
         scaffold.new_attempt(load_problem(pdir), "python")

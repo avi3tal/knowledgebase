@@ -6,6 +6,8 @@ import (
 	"os"
 	"runtime/debug"
 	"sort"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -37,7 +39,7 @@ type CaseResult struct {
 	NS       int64           `json:"ns"`
 }
 
-// BenchPoint is written to $KB_BENCH_OUT.
+// BenchPoint is one measured input size.
 type BenchPoint struct {
 	N  int     `json:"n"`
 	NS float64 `json:"ns"`
@@ -109,8 +111,15 @@ func RunCases(t *testing.T, casesPath, comparator string, design bool, prepare P
 	writeJSON(t, os.Getenv("KB_OUT"), results)
 }
 
+// BenchResult is written to $KB_BENCH_OUT after every size, so partial data survives a crash.
+type BenchResult struct {
+	Points []BenchPoint `json:"points"`
+	Note   string       `json:"note,omitempty"`
+}
+
 // RunBench times the solution over $KB_BENCH inputs ([{"n", "case"}]).
-// Skipped unless invoked by kb.
+// It stops early, keeping the points so far, when a call panics, exceeds the
+// per-call budget, or the total budget is used. Skipped unless invoked by kb.
 func RunBench(t *testing.T, prepare Prepare) {
 	t.Helper()
 	in := os.Getenv("KB_BENCH")
@@ -128,7 +137,10 @@ func RunBench(t *testing.T, prepare Prepare) {
 	if err := json.Unmarshal(data, &items); err != nil {
 		t.Fatalf("parse bench inputs: %v", err)
 	}
-	var points []BenchPoint
+	callBudget := envDuration("KB_CALL_BUDGET_S", 5*time.Second)
+	deadline := time.Now().Add(envDuration("KB_BENCH_BUDGET_S", 45*time.Second))
+	outPath := os.Getenv("KB_BENCH_OUT")
+	res := BenchResult{Points: []BenchPoint{}}
 	for _, it := range items {
 		var samples []time.Duration
 		var total time.Duration
@@ -137,19 +149,59 @@ func RunBench(t *testing.T, prepare Prepare) {
 			if err != nil {
 				t.Fatalf("n=%d: %v", it.N, err)
 			}
-			start := time.Now()
-			th()
-			d := time.Since(start)
+			d, err := timeCall(th, callBudget)
+			if err != nil {
+				firstLine, _, _ := strings.Cut(err.Error(), "\n")
+				res.Note = fmt.Sprintf("stopped at n=%d: %s", it.N, firstLine)
+				writeJSON(t, outPath, res)
+				return
+			}
 			samples = append(samples, d)
 			total += d
 		}
 		med := median(samples)
-		points = append(points, BenchPoint{N: it.N, NS: float64(med.Nanoseconds())})
+		res.Points = append(res.Points, BenchPoint{N: it.N, NS: float64(med.Nanoseconds())})
+		writeJSON(t, outPath, res)
 		if med > benchStopCall {
-			break
+			res.Note = fmt.Sprintf("stopped after n=%d: calls now take over %v", it.N, benchStopCall)
+			writeJSON(t, outPath, res)
+			return
+		}
+		if time.Now().After(deadline) {
+			res.Note = fmt.Sprintf("stopped after n=%d: bench budget used", it.N)
+			writeJSON(t, outPath, res)
+			return
 		}
 	}
-	writeJSON(t, os.Getenv("KB_BENCH_OUT"), points)
+}
+
+// timeCall runs th in a goroutine so a runaway call can be abandoned after budget.
+// (The goroutine keeps running, but the test binary exits once the test returns.)
+func timeCall(th Thunk, budget time.Duration) (time.Duration, error) {
+	type result struct {
+		d   time.Duration
+		err error
+	}
+	done := make(chan result, 1)
+	go func() {
+		start := time.Now()
+		_, err := safeRun(th)
+		done <- result{time.Since(start), err}
+	}()
+	select {
+	case r := <-done:
+		return r.d, r.err
+	case <-time.After(budget):
+		return 0, fmt.Errorf("a call took over %v", budget)
+	}
+}
+
+func envDuration(name string, def time.Duration) time.Duration {
+	v, err := strconv.ParseFloat(os.Getenv(name), 64)
+	if err != nil || v <= 0 {
+		return def
+	}
+	return time.Duration(v * float64(time.Second))
 }
 
 func median(ds []time.Duration) time.Duration {

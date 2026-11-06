@@ -121,6 +121,8 @@ def report(problem: Problem, attempt: Path, res: runner.RunResult) -> None:
             f"   expected {ec.get('time', '?')}{tag}"
         )
         print(dim("  " + "  ".join(f"n={p['n']}:{_fmt_ns(p['ns'])}" for p in res.bench)))
+        if res.bench_note:
+            print(dim(f"  ({res.bench_note})"))
     else:
         note = res.bench_note or ("too few points" if res.bench else "no data")
         print(dim(f"  complexity: {note} · expected time {ec.get('time', '?')}, space {ec.get('space', '?')}"))

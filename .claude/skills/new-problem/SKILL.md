@@ -32,7 +32,8 @@ Source names come from `resources/links.md` (`leetcode`, `neetcode`, `interviewb
 
 ## 3. Write the content (you author these three files)
 
-**`README.md`** — fill every template section. Never include solution code.
+**`README.md`** — fill every template section and delete the `<!-- ... -->` placeholder comments
+(`kb validate` rejects leftovers). Never include solution code.
 - Problem, Examples (with explanation), Constraints (they hint at the target complexity).
 - *Pattern & how to recognise it*: the concrete signals in the statement → pattern, and why the naive
   approach is too slow. Link the matching note in `algo/notes/` if one exists.
@@ -51,7 +52,8 @@ Source names come from `resources/links.md` (`leetcode`, `neetcode`, `interviewb
   Python sees `snake_case` names; Go sees the camelCase function, or `New<Class>` + exported methods.
 - `comparator`: `exact` | `unordered` (any order of a list answer) | `unordered_deep` (e.g. group
   anagrams, subsets) | `float` | `any_of` (`expected` lists every acceptable answer).
-- `expected_complexity`: optimal `{time, space}` as `O(...)` in terms of `n`.
+- `expected_complexity`: optimal `{time, space}` as `O(...)` in terms of `n` (replace the `O(?)` placeholders).
+- `patterns`: replace the `todo` placeholder if you scaffolded without `--pattern`.
 - `bench` (function problems only): `{"args": {param: generator-expr}}` producing a worst-ish input of
   size `n`. Available: `n`, `int_array(size, lo, hi)`, `sorted_int_array`, `distinct_int_array`,
   `int_matrix(rows, cols, lo, hi)`, `string(size, alphabet)`, `string_array(count, length)`,

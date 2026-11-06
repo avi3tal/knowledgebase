@@ -156,3 +156,8 @@ def test_generators_deterministic_and_sized() -> None:
 def test_sizes() -> None:
     assert gens.sizes({"sizes": [1, 2]}) == [1, 2]
     assert gens.sizes({"min_n": 100, "max_n": 800}) == [100, 200, 400, 800]
+
+
+def test_bench_args_are_independent() -> None:
+    args = gens.bench_inputs({"args": {"a": "int_array(n)", "b": "int_array(n)"}, "sizes": [16]})[0]["args"]
+    assert args["a"] != args["b"]
