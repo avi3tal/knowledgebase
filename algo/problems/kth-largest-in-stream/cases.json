@@ -1,0 +1,8 @@
+[
+  {"name": "example", "ctor": [3, [4, 5, 8, 2]], "ops": ["add", "add", "add", "add", "add"], "op_args": [[3], [5], [10], [9], [4]], "expected": [4, 5, 5, 8, 8]},
+  {"name": "start empty, k=1", "ctor": [1, []], "ops": ["add", "add", "add", "add", "add"], "op_args": [[-3], [-2], [-4], [0], [4]], "expected": [-3, -2, -2, 0, 4]},
+  {"name": "fewer than k initially", "ctor": [2, [0]], "ops": ["add", "add", "add", "add", "add"], "op_args": [[-1], [1], [-2], [-4], [3]], "expected": [-1, 0, 0, 0, 1]},
+  {"name": "duplicates", "ctor": [2, [5, 5, 5]], "ops": ["add", "add", "add"], "op_args": [[5], [6], [7]], "expected": [5, 5, 6]},
+  {"name": "k=1 tracks max", "ctor": [1, [1, 2, 3]], "ops": ["add", "add", "add"], "op_args": [[0], [10], [4]], "expected": [3, 10, 10]},
+  {"name": "negatives", "ctor": [3, [-10, -20, -30, -40]], "ops": ["add", "add", "add"], "op_args": [[-5], [-50], [-15]], "expected": [-20, -20, -15]}
+]

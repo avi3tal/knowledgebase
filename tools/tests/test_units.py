@@ -161,3 +161,8 @@ def test_sizes() -> None:
 def test_bench_args_are_independent() -> None:
     args = gens.bench_inputs({"args": {"a": "int_array(n)", "b": "int_array(n)"}, "sizes": [16]})[0]["args"]
     assert args["a"] != args["b"]
+
+
+def test_estimate_factorial() -> None:
+    fit = estimate([(n, float(math.factorial(n))) for n in range(4, 10)])
+    assert fit is not None and fit.best == "O(n!)"

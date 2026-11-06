@@ -23,7 +23,10 @@ MODELS: list[tuple[str, Callable[[float], float]]] = [
     ("O(n^2)", lambda n: n * n),
     ("O(n^3)", lambda n: n**3),
     ("O(2^n)", lambda n: 2.0**n),
+    ("O(n!)", lambda n: math.gamma(n + 1)),
 ]
+# Exponential models only make sense (and only stay finite) for tiny n.
+MAX_N_FOR = {"O(2^n)": 64, "O(n!)": 20}
 TIE_RATIO = 1.25
 TIE_SLACK = 0.02
 
@@ -79,7 +82,7 @@ def estimate(points: list[tuple[int, float]]) -> Fit | None:
     ns, ts = [n for n, _ in pts], [t for _, t in pts]
     errors: dict[str, float] = {}
     for name, f in MODELS:
-        if name == "O(2^n)" and max(ns) > 64:
+        if name in MAX_N_FOR and max(ns) > MAX_N_FOR[name]:
             continue
         errors[name] = _fit_model(ns, ts, f)
     best_err = min(errors.values())
