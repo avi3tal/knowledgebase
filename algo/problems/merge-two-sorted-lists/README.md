@@ -51,6 +51,7 @@ Time O(n + m), space O(1).
 </details>
 
 ## Follow-ups
-- Merge **k** sorted lists (LeetCode 23): a min-heap of heads, O(N log k).
+- [Merge **k** Sorted Lists](../merge-k-sorted-lists/README.md) (LeetCode 23): a min-heap of heads, O(N log k).
 - Merge sorted arrays in place (LeetCode 88): fill from the back.
 - Sort a linked list (LeetCode 148): merge sort using this merge.
+- Arrays version, merging into the first array → [Merge Two Sorted Arrays](../merge-two-sorted-arrays/README.md).

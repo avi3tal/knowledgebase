@@ -29,7 +29,7 @@ def max_heap(arr):
     n = len(arr)
 
     # to figure out what would be the first parent node in array we run "n/2 - 1"
-    i = n / 2 - 1
+    i = n // 2 - 1
     while i >= 0:
         heapify(arr, n, i)
         i -= 1

@@ -55,3 +55,4 @@ Time O(n), space O(n).
 - The input is sorted → two pointers, O(1) space (LeetCode 167).
 - Return all unique pairs, or three numbers (3Sum, LeetCode 15).
 - Only report whether a pair exists, for a stream of numbers or data too big for memory.
+- Yes/no variant → [Pair With Target Sum](../pair-with-target-sum/README.md).

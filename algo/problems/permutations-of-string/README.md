@@ -56,3 +56,4 @@ Time O(n · n!), space O(n) recursion (plus the output).
 - The k-th permutation without generating all of them (LeetCode 60), using the factorial
   number system.
 - The next lexicographic permutation in place (LeetCode 31).
+- Integer-list version (LeetCode 46): [Permutations](../permutations/README.md).

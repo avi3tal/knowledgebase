@@ -57,6 +57,11 @@ Unsolved Go stubs fail their tests by design (red → green).
 
 Development: `make test` (pytest via uvx + go vet/test), `make lint`, `make fmt`.
 
-> Refactor in progress: legacy folders (`leetcode/`, `interviewbit/`, `geeksforgeeks/`,
-> `educative/`, `courses/`, `Interviews/`, `ds/`, `recursion/`, `2026/`, `algo/problems/*.py`)
-> are being migrated into `algo/problems/`.
+## History
+
+Solutions from 2017–2025 that used to live in source folders (`leetcode/`, `interviewbit/`,
+`geeksforgeeks/`, `educative/`, `courses/`, `Interviews/`, `ds/`, `recursion/`, `2026/`) were
+migrated into `algo/problems/*/attempts/*_legacy*`. The code was kept as written. Bugs found
+during the migration are listed in each attempt's `notes.md` and left failing, as practice
+material. `git log --follow` on a `solution.py` shows its original history. See
+[algo/problems/INDEX.md](algo/problems/INDEX.md).
