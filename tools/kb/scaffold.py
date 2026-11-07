@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import shutil
 import subprocess
 from collections import defaultdict
@@ -13,7 +14,7 @@ from typing import Any
 
 from kb import codegen
 from kb.naming import SLUG_RE, camel, title_from_slug
-from kb.paths import TEMPLATES
+from kb.paths import TEMPLATES, ensure_workspace
 from kb.schema import LANGS, Problem, ProblemError, load_problem, validate
 
 SOLUTION_FILE = {"python": "solution.py", "go": "solution.go"}
@@ -57,7 +58,7 @@ def new_problem(
         "time": "O(?)",
         "space": "O(?)",
     }
-    (pdir / "attempts").mkdir(parents=True)
+    pdir.mkdir(parents=True)
     (pdir / "README.md").write_text(_render("README.md.tmpl", **values))
     (pdir / "meta.json").write_text(_render("meta.json.tmpl", **values))
     (pdir / "cases.json").write_text(_render("cases.json.tmpl", **values))
@@ -72,7 +73,8 @@ def _gofmt(path: Path) -> None:
 def write_go_harness(problem: Problem, attempt_dir: Path) -> None:
     """(Re)generate solution_test.go and kb_types.go from meta.json."""
     test = attempt_dir / "solution_test.go"
-    content = codegen.go_test(problem.meta)
+    cases = os.path.relpath(problem.dir / "cases.json", attempt_dir)
+    content = codegen.go_test(problem.meta, Path(cases).as_posix())
     if not test.exists() or test.read_text() != content:
         test.write_text(content)
         _gofmt(test)
@@ -98,6 +100,7 @@ def new_attempt(problem: Problem, lang: str, pattern: str | None = None, today: 
     name, i = base, 2
     while (problem.attempts_dir / name).exists():
         name, i = f"{base}-{i}", i + 1
+    ensure_workspace()
     adir = problem.attempts_dir / name
     adir.mkdir(parents=True)
 
@@ -196,14 +199,13 @@ def build_index(problems: Path) -> str:
 
     def row(p: Problem) -> str:
         m: dict[str, Any] = p.meta
-        langs = sorted({attempt_lang(a) for a in p.attempts() if any((a / f).exists() for f in SOLUTION_FILE.values())})
         srcs = ", ".join(f"[{s['name']}]({s['url']})" if s.get("url") else s["name"] for s in m.get("sources", []))
         return (
             f"| [{m.get('title', p.slug)}]({p.slug}/README.md) | {m.get('difficulty', '?')} | "
-            f"{', '.join(m.get('patterns', []))} | {srcs} | {len(p.attempts())} ({', '.join(langs) or '—'}) |"
+            f"{', '.join(m.get('patterns', []))} | {srcs} |"
         )
 
-    header = "| Problem | Difficulty | Patterns | Sources | Attempts |\n|---|---|---|---|---|"
+    header = "| Problem | Difficulty | Patterns | Sources |\n|---|---|---|---|"
     lines = [
         "# Problems index",
         "",

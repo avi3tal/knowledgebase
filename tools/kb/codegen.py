@@ -210,7 +210,7 @@ def _prepare_design(meta: dict[str, Any]) -> list[str]:
     return lines
 
 
-def go_test(meta: dict[str, Any]) -> str:
+def go_test(meta: dict[str, Any], cases_path: str = "../../cases.json") -> str:
     design = meta["kind"] == "design"
     body = _prepare_design(meta) if design else _prepare_function(meta)
     bench = "" if design else "\nfunc TestKBBench(t *testing.T) {\n\tgokb.RunBench(t, prepare)\n}\n"
@@ -228,6 +228,7 @@ def go_test(meta: dict[str, Any]) -> str:
         f"const comparator = {json.dumps(meta['comparator'])}\n\n"
         "func prepare(c gokb.Case) (gokb.Thunk, error) {\n" + "\n".join(body) + "\n}\n\n"
         "func TestCases(t *testing.T) {\n"
-        f'\tgokb.RunCases(t, "../../cases.json", comparator, {str(design).lower()}, prepare)\n'
+        f"\tgokb.RunCases(t, {json.dumps(cases_path)}, comparator"
+        f", {str(design).lower()}, prepare)\n"
         "}\n" + bench
     )

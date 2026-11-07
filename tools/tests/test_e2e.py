@@ -14,8 +14,20 @@ from kb.complexity import matches
 from kb.schema import ProblemError, load_problem, validate
 
 FIXTURES = Path(__file__).parent / "testdata" / "problems"
+FIXTURE_WS = Path(__file__).parent / "testdata" / "workspace"  # the fixtures' attempts (inside go.mod)
 PROBLEMS = sorted(p for p in FIXTURES.iterdir() if p.is_dir())
-ATTEMPTS = [(p.name, a.name) for p in PROBLEMS for a in sorted((p / "attempts").iterdir()) if a.is_dir()]
+ATTEMPTS = [
+    (p.name, a.name)
+    for p in PROBLEMS
+    for a in sorted((FIXTURE_WS / "attempts" / "algo" / p.name).iterdir())
+    if a.is_dir() and not a.name.startswith("__")
+]
+
+
+@pytest.fixture
+def fixture_ws(monkeypatch: pytest.MonkeyPatch) -> Path:
+    monkeypatch.setenv("KB_WORKSPACE", str(FIXTURE_WS))
+    return FIXTURE_WS
 
 
 @pytest.mark.parametrize("problem_dir", PROBLEMS, ids=lambda p: p.name)
@@ -24,7 +36,7 @@ def test_fixtures_valid(problem_dir: Path) -> None:
 
 
 @pytest.mark.parametrize("slug, attempt", ATTEMPTS, ids=[f"{s}/{a}" for s, a in ATTEMPTS])
-def test_fixture_attempts_pass(slug: str, attempt: str) -> None:
+def test_fixture_attempts_pass(slug: str, attempt: str, fixture_ws: Path) -> None:
     problem = load_problem(FIXTURES / slug)
     res = runner.run(problem, problem.attempts_dir / attempt, bench=False)
     assert res.error is None
@@ -35,7 +47,7 @@ def test_fixture_attempts_pass(slug: str, attempt: str) -> None:
     "attempt, consistent",
     [("2026-11-06_go_hashmap", True), ("2026-11-06_python_hashmap", True), ("2026-11-06_python_brute-force", False)],
 )
-def test_complexity_verdict(attempt: str, consistent: bool) -> None:
+def test_complexity_verdict(attempt: str, consistent: bool, fixture_ws: Path) -> None:
     problem = load_problem(FIXTURES / "two-sum")
     if not consistent:  # keep the O(n^2) run short
         problem.meta["bench"] = {**problem.meta["bench"], "max_n": 4096}
@@ -47,7 +59,7 @@ def test_complexity_verdict(attempt: str, consistent: bool) -> None:
 
 
 @pytest.mark.parametrize("attempt", ["2026-11-06_python_naive", "2026-11-06_go_naive"])
-def test_exponential_bench_stops_within_budget(attempt: str, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_exponential_bench_stops_within_budget(attempt: str, monkeypatch: pytest.MonkeyPatch, fixture_ws: Path) -> None:
     monkeypatch.setenv("KB_CALL_BUDGET_S", "1")
     problem = load_problem(FIXTURES / "fibonacci")
     res = runner.run(problem, problem.attempts_dir / attempt, bench=True)
@@ -57,7 +69,7 @@ def test_exponential_bench_stops_within_budget(attempt: str, monkeypatch: pytest
     assert [p["n"] for p in res.bench][:2] == [20, 24]  # points before the budget hit are kept
 
 
-def test_recursion_error_in_bench_keeps_cases_green() -> None:
+def test_recursion_error_in_bench_keeps_cases_green(fixture_ws: Path) -> None:
     problem = load_problem(FIXTURES / "reverse-linked-list")
     res = runner.run(problem, problem.attempts_dir / "2026-11-06_python_recursive", bench=True)
     assert res.all_passed and res.error is None
@@ -72,10 +84,11 @@ def test_skeleton_fails_validation(scratch: Path) -> None:
 
 
 @pytest.fixture
-def scratch() -> Iterator[Path]:
-    """Problems dir inside the Go module (Go attempts must live under go.mod)."""
+def scratch(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+    """Problems dir + workspace inside the Go module (Go attempts must live under go.mod)."""
     path = Path(__file__).parent / "testdata" / f"scratch-{uuid.uuid4().hex[:8]}"
     path.mkdir()
+    monkeypatch.setenv("KB_WORKSPACE", str(path / "_ws"))
     yield path
     shutil.rmtree(path)
 
@@ -150,17 +163,20 @@ def test_index(scratch: Path) -> None:
         shutil.copytree(p, scratch / p.name)
     index = scaffold.build_index(scratch)
     assert "### heap" in index and "[Two Sum](two-sum/README.md)" in index
-    assert "3 (go, python)" in index
+    assert "| Attempts" not in index  # committed content never depends on private attempts
 
 
 def test_cli_run_logs_to_notes(scratch: Path, monkeypatch: pytest.MonkeyPatch, capsys) -> None:
     from kb.cli import main
 
     shutil.copytree(FIXTURES / "two-sum", scratch / "two-sum")
+    shutil.copytree(FIXTURE_WS / "attempts/algo/two-sum", scratch / "_ws/attempts/algo/two-sum")
     monkeypatch.setenv("KB_PROBLEMS_DIR", str(scratch))
     assert main(["run", "two-sum", "go_hashmap", "--no-bench"]) == 0
     assert "4/4 passed" in capsys.readouterr().out
-    notes = (scratch / "two-sum/attempts/2026-11-06_go_hashmap/notes.md").read_text()
+    attempt = scratch / "_ws/attempts/algo/two-sum/2026-11-06_go_hashmap"
+    assert main(["run", str(attempt / "solution.go"), "--no-bench"]) == 0  # path form (VS Code tasks)
+    notes = (attempt / "notes.md").read_text()
     assert "4/4 passed" in notes.splitlines()[-1]
     assert main(["validate", "two-sum"]) == 0
     meta = json.loads((scratch / "two-sum/meta.json").read_text())

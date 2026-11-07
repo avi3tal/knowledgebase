@@ -118,6 +118,12 @@ def _run_go(problem: Problem, attempt_dir: Path, inputs: list[dict[str, Any]] | 
         )
         env |= {"KB_BENCH": str(bench_in), "KB_BENCH_OUT": str(bench_out)}
         run_pattern = "^(TestCases|TestKBBench)$"
+    if not attempt_dir.resolve().is_relative_to(ROOT):
+        return RunResult(
+            "go",
+            error=f"Go attempts must live inside the repo (its go.mod); {attempt_dir} is outside {ROOT}. "
+            "Point KB_WORKSPACE at a folder inside the repo (default: _workspace/).",
+        )
     pkg = "./" + attempt_dir.resolve().relative_to(ROOT).as_posix()
     try:
         proc = subprocess.run(

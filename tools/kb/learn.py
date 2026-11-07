@@ -357,7 +357,7 @@ def problem_card(subject: str, slug: str, history: list[dict[str, Any]] | None =
             lang = scaffold.attempt_lang(a)
         except ProblemError:
             lang = "?"
-        attempts.append({"name": a.name, "lang": lang, "last_run": last})
+        attempts.append({"name": a.name, "lang": lang, "last_run": last, "path": str(a.resolve())})
     m = problem.meta
     return {
         "slug": slug,

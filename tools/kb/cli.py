@@ -19,7 +19,7 @@ from typing import Any
 
 from kb import debug, feedback, history, learn, runner, scaffold, server
 from kb.complexity import matches
-from kb.paths import ROOT, problems_dir
+from kb.paths import ROOT, problems_dir, workspace_dir
 from kb.schema import DIFFICULTIES, LANGS, Problem, ProblemError, load_problem, validate
 
 _TTY = sys.stdout.isatty()
@@ -169,8 +169,10 @@ def _resolve_target(target: str) -> tuple[Problem, Path | None]:
     path = path.resolve()
     if path.is_file():
         path = path.parent
-    if path.parent.name == "attempts":
-        return load_problem(path.parent.parent), path
+    attempts = workspace_dir() / "attempts"
+    if path.is_relative_to(attempts) and len(path.relative_to(attempts).parts) == 3:
+        subject, slug, _ = path.relative_to(attempts).parts
+        return load_problem(problems_dir(subject) / slug), path
     return load_problem(path), None
 
 

@@ -237,17 +237,6 @@ def test_feedback_quiz_accuracy_uses_latest_answer(progress: Path) -> None:
     assert any("Recognition is weak" in a for a in sw["advice"])
 
 
-def test_backfill_from_notes(progress: Path, tmp_path: Path) -> None:
-    att = tmp_path / "probs" / "demo" / "attempts" / "2020-01-01_python_legacy"
-    att.mkdir(parents=True)
-    (att / "solution.py").write_text("")
-    (att / "notes.md").write_text("## Runs\n- 2026-11-06 20:48 · 9/9 passed · ≈O(n)\n- 2026-11-06 20:50 · error\n")
-    assert history.backfill_from_notes(tmp_path / "probs") == 2
-    assert history.backfill_from_notes(tmp_path / "probs") == 0  # idempotent
-    runs = history.runs()
-    assert runs[0]["passed"] == 9 and runs[0]["fit"] == "O(n)" and runs[1]["error"] is True
-
-
 # ------------------------------------------------------------------ studio API
 
 

@@ -84,3 +84,8 @@ Then tell the user briefly: title, difficulty, patterns, the README path, the st
 Run `./kb run <slug> <attempt>`, then review correctness, measured vs `expected_complexity`, and
 idiomatic style; offer improvements as hints first. Write takeaways to the attempt's `notes.md` only if
 the user asks.
+
+## Private workspace
+Attempts, run history and sessions live in the learner's git-ignored `_workspace/`
+(`attempts/<subject>/<slug>/<attempt>/`). Never write them into the repo or commit them, and never
+put solution attempts into `<subject>/problems/`.

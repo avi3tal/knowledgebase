@@ -84,3 +84,8 @@ structure and tone.
 Lesson block types: `markdown {src}` · `trace {id, title, source, function, input, view, checks}` ·
 `quiz {src}` · `problems {slugs}`. New subjects (system design) reuse this format with new block or
 view types. Extend kb and the studio when that happens.
+
+## Private workspace
+Attempts, run history and sessions live in the learner's git-ignored `_workspace/`
+(`attempts/<subject>/<slug>/<attempt>/`). Never write them into the repo or commit them, and never
+put solution attempts into `<subject>/problems/`.

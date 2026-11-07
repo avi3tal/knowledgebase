@@ -54,7 +54,7 @@ export function ProblemCard({
             <a
               key={a.name}
               className={`attempt ${!r ? "" : ok ? "ok" : "fail"}`}
-              href={`vscode://file${dir}/attempts/${a.name}`}
+              href={`vscode://file${a.path}`}
               title={`open in VS Code${r ? ` · last run ${r.ts}${r.fit ? " · ≈" + r.fit : ""}` : " · not run"}`}
             >
               {a.name} {r ? `${r.passed}/${r.total}` : ""}

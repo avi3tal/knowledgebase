@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from kb.naming import IDENT_RE, SLUG_RE
+from kb.paths import attempts_root, subject_of
 
 BASE_TYPES = {"int", "float", "string", "bool", "ListNode", "TreeNode"}
 COMPARATORS = {"exact", "unordered", "unordered_deep", "float", "any_of"}
@@ -68,8 +69,13 @@ class Problem:
         return self.dir.name
 
     @property
+    def subject(self) -> str:
+        return subject_of(self.dir)
+
+    @property
     def attempts_dir(self) -> Path:
-        return self.dir / "attempts"
+        """Attempts live in the learner's private workspace, not next to the problem."""
+        return attempts_root(self.subject, self.slug)
 
     def attempts(self) -> list[Path]:
         if not self.attempts_dir.is_dir():

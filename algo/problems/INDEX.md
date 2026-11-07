@@ -8,635 +8,635 @@
 
 ### arrays-hashing
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Contains Duplicate](contains-duplicate/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate/), [neetcode](https://neetcode.io/problems/duplicate-integer) | 1 (go) |
-| [Contains Duplicate II](contains-duplicate-ii/README.md) | easy | sliding-window, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate-ii/) | 0 (—) |
-| [Longest Common Prefix](longest-common-prefix/README.md) | easy | arrays-hashing | [leetcode](https://leetcode.com/problems/longest-common-prefix/), [interviewbit](https://www.interviewbit.com/problems/longest-common-prefix/) | 2 (python) |
-| [Maximum Absolute Difference](maximum-absolute-difference/README.md) | medium | math, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/maximum-absolute-difference/) | 1 (python) |
-| [Pascal's Triangle](pascal-triangle/README.md) | easy | dp-1d, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/pascal-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle/) | 2 (python) |
-| [Add One To Number](plus-one/README.md) | easy | arrays-hashing, math | [interviewbit](https://www.interviewbit.com/problems/add-one-to-number/), [leetcode](https://leetcode.com/problems/plus-one/) | 1 (python) |
-| [Product of Array Except Self](product-of-array-except-self/README.md) | medium | arrays-hashing, prefix-sum | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/product-of-array-except-self/) | 1 (python) |
-| [Rotate Array (right by k)](rotate-array/README.md) | medium | arrays-hashing, two-pointers | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/rotate-array/) | 1 (python) |
-| [Second Largest Element](second-largest-element/README.md) | easy | arrays-hashing | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Valid Anagram](valid-anagram/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/valid-anagram/), [neetcode](https://neetcode.io/problems/is-anagram) | 1 (go) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Contains Duplicate](contains-duplicate/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate/), [neetcode](https://neetcode.io/problems/duplicate-integer) |
+| [Contains Duplicate II](contains-duplicate-ii/README.md) | easy | sliding-window, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate-ii/) |
+| [Longest Common Prefix](longest-common-prefix/README.md) | easy | arrays-hashing | [leetcode](https://leetcode.com/problems/longest-common-prefix/), [interviewbit](https://www.interviewbit.com/problems/longest-common-prefix/) |
+| [Maximum Absolute Difference](maximum-absolute-difference/README.md) | medium | math, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/maximum-absolute-difference/) |
+| [Pascal's Triangle](pascal-triangle/README.md) | easy | dp-1d, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/pascal-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle/) |
+| [Add One To Number](plus-one/README.md) | easy | arrays-hashing, math | [interviewbit](https://www.interviewbit.com/problems/add-one-to-number/), [leetcode](https://leetcode.com/problems/plus-one/) |
+| [Product of Array Except Self](product-of-array-except-self/README.md) | medium | arrays-hashing, prefix-sum | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/product-of-array-except-self/) |
+| [Rotate Array (right by k)](rotate-array/README.md) | medium | arrays-hashing, two-pointers | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/rotate-array/) |
+| [Second Largest Element](second-largest-element/README.md) | easy | arrays-hashing | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Valid Anagram](valid-anagram/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/valid-anagram/), [neetcode](https://neetcode.io/problems/is-anagram) |
 
 ### backtracking
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Combination Sum](combination-sum/README.md) | medium | backtracking | [leetcode](https://leetcode.com/problems/combination-sum/) | 0 (—) |
-| [Generate Parentheses](generate-parentheses/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generate-parentheses/) | 0 (—) |
-| [Letter Case Permutation](letter-case-permutation/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/letter-case-permutation/) | 0 (—) |
-| [Permutations](permutations/README.md) | medium | backtracking, recursion | [leetcode](https://leetcode.com/problems/permutations/), [interviewbit](https://www.interviewbit.com/problems/permutations/) | 1 (python) |
-| [Permutations of a String](permutations-of-string/README.md) | medium | backtracking, recursion | [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic | 1 (python) |
-| [Subsets](subsets/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets/) | 0 (—) |
-| [Subsets Ii](subsets-ii/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets-ii/) | 0 (—) |
-| [Sudoku Solver](sudoku-solver/README.md) | hard | backtracking | [leetcode](https://leetcode.com/problems/sudoku-solver/) | 0 (—) |
-| [Unique Generalized Abbreviations](unique-generalized-abbreviations/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generalized-abbreviation/) | 0 (—) |
-| [Word Search](word-search/README.md) | medium | backtracking, dfs | [leetcode](https://leetcode.com/problems/word-search/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Combination Sum](combination-sum/README.md) | medium | backtracking | [leetcode](https://leetcode.com/problems/combination-sum/) |
+| [Generate Parentheses](generate-parentheses/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generate-parentheses/) |
+| [Letter Case Permutation](letter-case-permutation/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/letter-case-permutation/) |
+| [Permutations](permutations/README.md) | medium | backtracking, recursion | [leetcode](https://leetcode.com/problems/permutations/), [interviewbit](https://www.interviewbit.com/problems/permutations/) |
+| [Permutations of a String](permutations-of-string/README.md) | medium | backtracking, recursion | [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic |
+| [Subsets](subsets/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets/) |
+| [Subsets Ii](subsets-ii/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets-ii/) |
+| [Sudoku Solver](sudoku-solver/README.md) | hard | backtracking | [leetcode](https://leetcode.com/problems/sudoku-solver/) |
+| [Unique Generalized Abbreviations](unique-generalized-abbreviations/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generalized-abbreviation/) |
+| [Word Search](word-search/README.md) | medium | backtracking, dfs | [leetcode](https://leetcode.com/problems/word-search/) |
 
 ### bfs
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Binary Tree Right Side View](binary-tree-right-side-view/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-right-side-view/) | 0 (—) |
-| [Binary Tree Zigzag Level Order Traversal](binary-tree-zigzag-level-order-traversal/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/) | 0 (—) |
-| [Minimum Depth of Binary Tree](minimum-depth-of-binary-tree/README.md) | easy | bfs | [leetcode](https://leetcode.com/problems/minimum-depth-of-binary-tree/) | 0 (—) |
-| [Rotting Oranges](rotting-oranges/README.md) | medium | islands, bfs | [leetcode](https://leetcode.com/problems/rotting-oranges/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Binary Tree Right Side View](binary-tree-right-side-view/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-right-side-view/) |
+| [Binary Tree Zigzag Level Order Traversal](binary-tree-zigzag-level-order-traversal/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/) |
+| [Minimum Depth of Binary Tree](minimum-depth-of-binary-tree/README.md) | easy | bfs | [leetcode](https://leetcode.com/problems/minimum-depth-of-binary-tree/) |
+| [Rotting Oranges](rotting-oranges/README.md) | medium | islands, bfs | [leetcode](https://leetcode.com/problems/rotting-oranges/) |
 
 ### binary-search
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Binary Search](binary-search/README.md) | easy | binary-search | [leetcode](https://leetcode.com/problems/binary-search/), interviewbit | 1 (python) |
-| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) | 1 (python) |
-| [Kth Smallest Element in a Sorted Matrix](kth-smallest-element-in-a-sorted-matrix/README.md) | medium | k-way-merge, binary-search | [leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Median of Two Sorted Arrays](median-of-two-sorted-arrays/README.md) | hard | binary-search | [leetcode](https://leetcode.com/problems/median-of-two-sorted-arrays/), [interviewbit](https://www.interviewbit.com/problems/median-of-array/) | 1 (python) |
-| [Search in Bitonic Array](search-in-bitonic-array/README.md) | medium | binary-search | [interviewbit](https://www.interviewbit.com/problems/search-in-bitonic-array/) | 1 (python) |
-| [Sqrt(x)](sqrt-x/README.md) | easy | binary-search, math | [leetcode](https://leetcode.com/problems/sqrtx/), [interviewbit](https://www.interviewbit.com/problems/square-root-of-integer/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Binary Search](binary-search/README.md) | easy | binary-search | [leetcode](https://leetcode.com/problems/binary-search/), interviewbit |
+| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) |
+| [Kth Smallest Element in a Sorted Matrix](kth-smallest-element-in-a-sorted-matrix/README.md) | medium | k-way-merge, binary-search | [leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Median of Two Sorted Arrays](median-of-two-sorted-arrays/README.md) | hard | binary-search | [leetcode](https://leetcode.com/problems/median-of-two-sorted-arrays/), [interviewbit](https://www.interviewbit.com/problems/median-of-array/) |
+| [Search in Bitonic Array](search-in-bitonic-array/README.md) | medium | binary-search | [interviewbit](https://www.interviewbit.com/problems/search-in-bitonic-array/) |
+| [Sqrt(x)](sqrt-x/README.md) | easy | binary-search, math | [leetcode](https://leetcode.com/problems/sqrtx/), [interviewbit](https://www.interviewbit.com/problems/square-root-of-integer/) |
 
 ### bit-manipulation
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) | 1 (python) |
-| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) |
+| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  |
 
 ### bitwise-xor
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Complement of Base 10 Integer](complement-of-base-10/README.md) | easy | bitwise-xor | [leetcode](https://leetcode.com/problems/complement-of-base-10-integer/) | 0 (—) |
-| [Flip and Invert an Image](flip-and-invert-image/README.md) | easy | bitwise-xor, two-pointers | [leetcode](https://leetcode.com/problems/flipping-an-image/) | 0 (—) |
-| [Missing Number](missing-number/README.md) | easy | cyclic-sort, bitwise-xor | [leetcode](https://leetcode.com/problems/missing-number/) | 0 (—) |
-| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  | 1 (python) |
-| [Two Single Numbers](two-single-numbers/README.md) | medium | bitwise-xor | [leetcode](https://leetcode.com/problems/single-number-iii/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Complement of Base 10 Integer](complement-of-base-10/README.md) | easy | bitwise-xor | [leetcode](https://leetcode.com/problems/complement-of-base-10-integer/) |
+| [Flip and Invert an Image](flip-and-invert-image/README.md) | easy | bitwise-xor, two-pointers | [leetcode](https://leetcode.com/problems/flipping-an-image/) |
+| [Missing Number](missing-number/README.md) | easy | cyclic-sort, bitwise-xor | [leetcode](https://leetcode.com/problems/missing-number/) |
+| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  |
+| [Two Single Numbers](two-single-numbers/README.md) | medium | bitwise-xor | [leetcode](https://leetcode.com/problems/single-number-iii/) |
 
 ### cyclic-sort
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Find All Duplicates in an Array](find-all-duplicates/README.md) | medium | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-duplicates-in-an-array/) | 0 (—) |
-| [Find All Missing Numbers](find-all-missing-numbers/README.md) | easy | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/) | 0 (—) |
-| [First Missing Positive](first-missing-positive/README.md) | hard | cyclic-sort | [leetcode](https://leetcode.com/problems/first-missing-positive/) | 0 (—) |
-| [Missing Number](missing-number/README.md) | easy | cyclic-sort, bitwise-xor | [leetcode](https://leetcode.com/problems/missing-number/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Find All Duplicates in an Array](find-all-duplicates/README.md) | medium | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-duplicates-in-an-array/) |
+| [Find All Missing Numbers](find-all-missing-numbers/README.md) | easy | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/) |
+| [First Missing Positive](first-missing-positive/README.md) | hard | cyclic-sort | [leetcode](https://leetcode.com/problems/first-missing-positive/) |
+| [Missing Number](missing-number/README.md) | easy | cyclic-sort, bitwise-xor | [leetcode](https://leetcode.com/problems/missing-number/) |
 
 ### design
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) | 0 (—) |
-| [Design Bounded Blocking Queue](bounded-blocking-queue/README.md) | medium | multi-threaded, design | [leetcode](https://leetcode.com/problems/design-bounded-blocking-queue/) | 0 (—) |
-| [Find Median from Data Stream](find-median-from-data-stream/README.md) | hard | two-heaps, design | [leetcode](https://leetcode.com/problems/find-median-from-data-stream/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Implement a Max-Heap](implement-max-heap/README.md) | easy | heap, design | [interviewbit](https://www.interviewbit.com/courses/programming/heaps-and-maps/) | 1 (python) |
-| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | 1 (python) |
-| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) |
+| [Design Bounded Blocking Queue](bounded-blocking-queue/README.md) | medium | multi-threaded, design | [leetcode](https://leetcode.com/problems/design-bounded-blocking-queue/) |
+| [Find Median from Data Stream](find-median-from-data-stream/README.md) | hard | two-heaps, design | [leetcode](https://leetcode.com/problems/find-median-from-data-stream/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Implement a Max-Heap](implement-max-heap/README.md) | easy | heap, design | [interviewbit](https://www.interviewbit.com/courses/programming/heaps-and-maps/) |
+| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) |
+| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic |
 
 ### dfs
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Diameter of Binary Tree](diameter-of-binary-tree/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/diameter-of-binary-tree/) | 0 (—) |
-| [Flood Fill](flood-fill/README.md) | easy | islands, dfs | [leetcode](https://leetcode.com/problems/flood-fill/) | 0 (—) |
-| [Max Area of Island](max-area-of-island/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/max-area-of-island/) | 0 (—) |
-| [Path Sum](path-sum/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/path-sum/) | 0 (—) |
-| [Path Sum III (Count Paths for a Sum)](path-sum-iii/README.md) | medium | dfs | [leetcode](https://leetcode.com/problems/path-sum-iii/) | 0 (—) |
-| [Surrounded Regions](surrounded-regions/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/surrounded-regions/) | 0 (—) |
-| [Word Search](word-search/README.md) | medium | backtracking, dfs | [leetcode](https://leetcode.com/problems/word-search/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Diameter of Binary Tree](diameter-of-binary-tree/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/diameter-of-binary-tree/) |
+| [Flood Fill](flood-fill/README.md) | easy | islands, dfs | [leetcode](https://leetcode.com/problems/flood-fill/) |
+| [Max Area of Island](max-area-of-island/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/max-area-of-island/) |
+| [Path Sum](path-sum/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/path-sum/) |
+| [Path Sum III (Count Paths for a Sum)](path-sum-iii/README.md) | medium | dfs | [leetcode](https://leetcode.com/problems/path-sum-iii/) |
+| [Surrounded Regions](surrounded-regions/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/surrounded-regions/) |
+| [Word Search](word-search/README.md) | medium | backtracking, dfs | [leetcode](https://leetcode.com/problems/word-search/) |
 
 ### dp-1d
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Coin Change (Fewest Coins)](coin-change/README.md) | medium | dp-1d, unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html) | 1 (python) |
-| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) | 1 (python) |
-| [Longest Increasing Subsequence](longest-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [leetcode](https://leetcode.com/problems/longest-increasing-subsequence/) | 0 (—) |
-| [Maximum Subarray (Max Sum Contiguous Subarray)](maximum-subarray/README.md) | medium | dp-1d, greedy | [interviewbit](https://www.interviewbit.com/problems/max-sum-contiguous-subarray/), [leetcode](https://leetcode.com/problems/maximum-subarray/) | 1 (python) |
-| [Maximum Sum Increasing Subsequence](maximum-sum-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [geeksforgeeks](https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-dp-14/) | 0 (—) |
-| [Pascal's Triangle](pascal-triangle/README.md) | easy | dp-1d, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/pascal-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle/) | 2 (python) |
-| [Pascal's Triangle Row (k-th row)](pascal-triangle-row/README.md) | easy | dp-1d, math | [interviewbit](https://www.interviewbit.com/problems/kth-row-of-pascals-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle-ii/) | 1 (python) |
-| [Tower Hopper](tower-hopper/README.md) | medium | greedy, dp-1d | [youtube](https://www.youtube.com/watch?v=kHWy5nEfRIQ), [geeksforgeeks](https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Coin Change (Fewest Coins)](coin-change/README.md) | medium | dp-1d, unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html) |
+| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) |
+| [Longest Increasing Subsequence](longest-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [leetcode](https://leetcode.com/problems/longest-increasing-subsequence/) |
+| [Maximum Subarray (Max Sum Contiguous Subarray)](maximum-subarray/README.md) | medium | dp-1d, greedy | [interviewbit](https://www.interviewbit.com/problems/max-sum-contiguous-subarray/), [leetcode](https://leetcode.com/problems/maximum-subarray/) |
+| [Maximum Sum Increasing Subsequence](maximum-sum-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [geeksforgeeks](https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-dp-14/) |
+| [Pascal's Triangle](pascal-triangle/README.md) | easy | dp-1d, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/pascal-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle/) |
+| [Pascal's Triangle Row (k-th row)](pascal-triangle-row/README.md) | easy | dp-1d, math | [interviewbit](https://www.interviewbit.com/problems/kth-row-of-pascals-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle-ii/) |
+| [Tower Hopper](tower-hopper/README.md) | medium | greedy, dp-1d | [youtube](https://www.youtube.com/watch?v=kHWy5nEfRIQ), [geeksforgeeks](https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/) |
 
 ### dp-2d
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Edit Distance](edit-distance/README.md) | medium | longest-common-substring, dp-2d | [leetcode](https://leetcode.com/problems/edit-distance/) | 0 (—) |
-| [Longest Common Substring](longest-common-substring/README.md) | medium | dp-2d, longest-common-substring | [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit | 2 (python) |
-| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) | 1 (python) |
-| [Maximal Square](maximal-square/README.md) | medium | dp-2d | [leetcode](https://leetcode.com/problems/maximal-square/), [youtube](https://www.youtube.com/watch?v=FO7VXDfS8Gk) | 0 (—) |
-| [Minimum Insertions to Make a String Palindrome](minimum-insertions-to-make-palindrome/README.md) | hard | dp-2d, palindromic-subsequence | [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit | 1 (python) |
-| [Palindrome Partitioning II (Minimum Cuts)](palindrome-partitioning-min-cuts/README.md) | hard | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindrome-partitioning-ii/) | 0 (—) |
-| [Palindromic Substrings](palindromic-substrings-count/README.md) | medium | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindromic-substrings/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Edit Distance](edit-distance/README.md) | medium | longest-common-substring, dp-2d | [leetcode](https://leetcode.com/problems/edit-distance/) |
+| [Longest Common Substring](longest-common-substring/README.md) | medium | dp-2d, longest-common-substring | [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit |
+| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) |
+| [Maximal Square](maximal-square/README.md) | medium | dp-2d | [leetcode](https://leetcode.com/problems/maximal-square/), [youtube](https://www.youtube.com/watch?v=FO7VXDfS8Gk) |
+| [Minimum Insertions to Make a String Palindrome](minimum-insertions-to-make-palindrome/README.md) | hard | dp-2d, palindromic-subsequence | [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit |
+| [Palindrome Partitioning II (Minimum Cuts)](palindrome-partitioning-min-cuts/README.md) | hard | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindrome-partitioning-ii/) |
+| [Palindromic Substrings](palindromic-substrings-count/README.md) | medium | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindromic-substrings/) |
 
 ### dynamic-programming
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Trapping Rain Water](trapping-rain-water/README.md) | hard | two-pointers, dynamic-programming | [leetcode](https://leetcode.com/problems/trapping-rain-water/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Trapping Rain Water](trapping-rain-water/README.md) | hard | two-pointers, dynamic-programming | [leetcode](https://leetcode.com/problems/trapping-rain-water/) |
 
 ### fast-slow-pointers
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Find the Duplicate Number](find-the-duplicate-number/README.md) | medium | fast-slow-pointers | [leetcode](https://leetcode.com/problems/find-the-duplicate-number/) | 0 (—) |
-| [Remove the K-th Node From the End](kth-node-from-end/README.md) | medium | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) | 0 (—) |
-| [Middle of the Linked List](middle-of-linked-list/README.md) | easy | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/middle-of-the-linked-list/) | 1 (python) |
-| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) | 0 (—) |
-| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Find the Duplicate Number](find-the-duplicate-number/README.md) | medium | fast-slow-pointers | [leetcode](https://leetcode.com/problems/find-the-duplicate-number/) |
+| [Remove the K-th Node From the End](kth-node-from-end/README.md) | medium | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) |
+| [Middle of the Linked List](middle-of-linked-list/README.md) | easy | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/middle-of-the-linked-list/) |
+| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) |
+| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) |
 
 ### fibonacci-numbers
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) | 1 (python) |
-| [House Robber](house-robber/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber/) | 0 (—) |
-| [House Robber II](house-robber-ii/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber-ii/) | 0 (—) |
-| [Min Cost Climbing Stairs](min-cost-climbing-stairs/README.md) | easy | fibonacci-numbers | [leetcode](https://leetcode.com/problems/min-cost-climbing-stairs/) | 0 (—) |
-| [Number Factors](number-factors/README.md) | medium | fibonacci-numbers | [geeksforgeeks](https://www.geeksforgeeks.org/count-ofdifferent-ways-express-n-sum-1-3-4/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) |
+| [House Robber](house-robber/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber/) |
+| [House Robber II](house-robber-ii/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber-ii/) |
+| [Min Cost Climbing Stairs](min-cost-climbing-stairs/README.md) | easy | fibonacci-numbers | [leetcode](https://leetcode.com/problems/min-cost-climbing-stairs/) |
+| [Number Factors](number-factors/README.md) | medium | fibonacci-numbers | [geeksforgeeks](https://www.geeksforgeeks.org/count-ofdifferent-ways-express-n-sum-1-3-4/) |
 
 ### graph-bfs
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [BFS of a Graph](bfs-of-graph/README.md) | easy | graph-bfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [BFS of a Graph](bfs-of-graph/README.md) | easy | graph-bfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
 
 ### graph-dfs
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [DFS of a Graph](dfs-of-graph/README.md) | easy | graph-dfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [DFS of a Graph](dfs-of-graph/README.md) | easy | graph-dfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
 
 ### greedy
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Container With Most Water](container-with-most-water/README.md) | medium | two-pointers, greedy | [leetcode](https://leetcode.com/problems/container-with-most-water/) | 0 (—) |
-| [IPO (Maximize Capital)](ipo/README.md) | hard | two-heaps, greedy | [leetcode](https://leetcode.com/problems/ipo/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Largest Number](largest-number/README.md) | medium | sorting, greedy | [interviewbit](https://www.interviewbit.com/problems/largest-number/), [leetcode](https://leetcode.com/problems/largest-number/) | 1 (python) |
-| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Maximum Subarray (Max Sum Contiguous Subarray)](maximum-subarray/README.md) | medium | dp-1d, greedy | [interviewbit](https://www.interviewbit.com/problems/max-sum-contiguous-subarray/), [leetcode](https://leetcode.com/problems/maximum-subarray/) | 1 (python) |
-| [Tower Hopper](tower-hopper/README.md) | medium | greedy, dp-1d | [youtube](https://www.youtube.com/watch?v=kHWy5nEfRIQ), [geeksforgeeks](https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Container With Most Water](container-with-most-water/README.md) | medium | two-pointers, greedy | [leetcode](https://leetcode.com/problems/container-with-most-water/) |
+| [IPO (Maximize Capital)](ipo/README.md) | hard | two-heaps, greedy | [leetcode](https://leetcode.com/problems/ipo/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Largest Number](largest-number/README.md) | medium | sorting, greedy | [interviewbit](https://www.interviewbit.com/problems/largest-number/), [leetcode](https://leetcode.com/problems/largest-number/) |
+| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Maximum Subarray (Max Sum Contiguous Subarray)](maximum-subarray/README.md) | medium | dp-1d, greedy | [interviewbit](https://www.interviewbit.com/problems/max-sum-contiguous-subarray/), [leetcode](https://leetcode.com/problems/maximum-subarray/) |
+| [Tower Hopper](tower-hopper/README.md) | medium | greedy, dp-1d | [youtube](https://www.youtube.com/watch?v=kHWy5nEfRIQ), [geeksforgeeks](https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/) |
 
 ### hashmap
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Contains Duplicate](contains-duplicate/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate/), [neetcode](https://neetcode.io/problems/duplicate-integer) | 1 (go) |
-| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic | 1 (python) |
-| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Pair With Target Sum (exists?)](pair-with-target-sum/README.md) | easy | hashmap, two-pointers |  | 1 (python) |
-| [Roman to Integer](roman-to-integer/README.md) | easy | math, hashmap | [leetcode](https://leetcode.com/problems/roman-to-integer/) | 1 (python) |
-| [Top K Frequent Elements](top-k-frequent-elements/README.md) | medium | top-k-elements, hashmap | [leetcode](https://leetcode.com/problems/top-k-frequent-elements/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Two Sum](two-sum/README.md) | easy | hashmap, two-pointers | [leetcode](https://leetcode.com/problems/two-sum/) | 2 (go, python) |
-| [Valid Anagram](valid-anagram/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/valid-anagram/), [neetcode](https://neetcode.io/problems/is-anagram) | 1 (go) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Contains Duplicate](contains-duplicate/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate/), [neetcode](https://neetcode.io/problems/duplicate-integer) |
+| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic |
+| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Pair With Target Sum (exists?)](pair-with-target-sum/README.md) | easy | hashmap, two-pointers |  |
+| [Roman to Integer](roman-to-integer/README.md) | easy | math, hashmap | [leetcode](https://leetcode.com/problems/roman-to-integer/) |
+| [Top K Frequent Elements](top-k-frequent-elements/README.md) | medium | top-k-elements, hashmap | [leetcode](https://leetcode.com/problems/top-k-frequent-elements/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Two Sum](two-sum/README.md) | easy | hashmap, two-pointers | [leetcode](https://leetcode.com/problems/two-sum/) |
+| [Valid Anagram](valid-anagram/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/valid-anagram/), [neetcode](https://neetcode.io/problems/is-anagram) |
 
 ### heap
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Implement a Max-Heap](implement-max-heap/README.md) | easy | heap, design | [interviewbit](https://www.interviewbit.com/courses/programming/heaps-and-maps/) | 1 (python) |
-| [K Closest Points to Origin](k-closest-points-to-origin/README.md) | medium | top-k-elements, heap | [leetcode](https://leetcode.com/problems/k-closest-points-to-origin/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [K Largest Elements](k-largest-elements/README.md) | easy | heap, top-k-elements | [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/) | 1 (python) |
-| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | 1 (python) |
-| [Kth Smallest Number in M Sorted Lists](kth-smallest-in-m-sorted-lists/README.md) | medium | k-way-merge, heap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) | 1 (python) |
-| [Minimum Meeting Rooms](minimum-meeting-rooms/README.md) | medium | merge-intervals, heap | [leetcode](https://leetcode.com/problems/meeting-rooms-ii/) | 0 (—) |
-| [Smallest Range Covering Elements from K Lists](smallest-range-covering-elements-from-k-lists/README.md) | hard | k-way-merge, heap | [leetcode](https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) | 3 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Implement a Max-Heap](implement-max-heap/README.md) | easy | heap, design | [interviewbit](https://www.interviewbit.com/courses/programming/heaps-and-maps/) |
+| [K Closest Points to Origin](k-closest-points-to-origin/README.md) | medium | top-k-elements, heap | [leetcode](https://leetcode.com/problems/k-closest-points-to-origin/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [K Largest Elements](k-largest-elements/README.md) | easy | heap, top-k-elements | [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/) |
+| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) |
+| [Kth Smallest Number in M Sorted Lists](kth-smallest-in-m-sorted-lists/README.md) | medium | k-way-merge, heap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) |
+| [Minimum Meeting Rooms](minimum-meeting-rooms/README.md) | medium | merge-intervals, heap | [leetcode](https://leetcode.com/problems/meeting-rooms-ii/) |
+| [Smallest Range Covering Elements from K Lists](smallest-range-covering-elements-from-k-lists/README.md) | hard | k-way-merge, heap | [leetcode](https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) |
 
 ### in-place-reversal-linked-list
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) | 0 (—) |
-| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) | 0 (—) |
-| [Reverse Nodes in k-Group](reverse-every-k-group/README.md) | hard | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-nodes-in-k-group/) | 0 (—) |
-| [Reverse Linked List](reverse-linked-list/README.md) | easy | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-linked-list/) | 0 (—) |
-| [Rotate List](rotate-list/README.md) | medium | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/rotate-list/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) |
+| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) |
+| [Reverse Nodes in k-Group](reverse-every-k-group/README.md) | hard | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-nodes-in-k-group/) |
+| [Reverse Linked List](reverse-linked-list/README.md) | easy | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-linked-list/) |
+| [Rotate List](rotate-list/README.md) | medium | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/rotate-list/) |
 
 ### intervals
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Find Right Interval](find-right-interval/README.md) | medium | two-heaps, intervals | [leetcode](https://leetcode.com/problems/find-right-interval/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Find Right Interval](find-right-interval/README.md) | medium | two-heaps, intervals | [leetcode](https://leetcode.com/problems/find-right-interval/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
 
 ### islands
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Flood Fill](flood-fill/README.md) | easy | islands, dfs | [leetcode](https://leetcode.com/problems/flood-fill/) | 0 (—) |
-| [Max Area of Island](max-area-of-island/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/max-area-of-island/) | 0 (—) |
-| [Rotting Oranges](rotting-oranges/README.md) | medium | islands, bfs | [leetcode](https://leetcode.com/problems/rotting-oranges/) | 0 (—) |
-| [Surrounded Regions](surrounded-regions/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/surrounded-regions/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Flood Fill](flood-fill/README.md) | easy | islands, dfs | [leetcode](https://leetcode.com/problems/flood-fill/) |
+| [Max Area of Island](max-area-of-island/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/max-area-of-island/) |
+| [Rotting Oranges](rotting-oranges/README.md) | medium | islands, bfs | [leetcode](https://leetcode.com/problems/rotting-oranges/) |
+| [Surrounded Regions](surrounded-regions/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/surrounded-regions/) |
 
 ### k-way-merge
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Kth Smallest Element in a Sorted Matrix](kth-smallest-element-in-a-sorted-matrix/README.md) | medium | k-way-merge, binary-search | [leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Kth Smallest Number in M Sorted Lists](kth-smallest-in-m-sorted-lists/README.md) | medium | k-way-merge, heap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) | 1 (python) |
-| [Smallest Range Covering Elements from K Lists](smallest-range-covering-elements-from-k-lists/README.md) | hard | k-way-merge, heap | [leetcode](https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Kth Smallest Element in a Sorted Matrix](kth-smallest-element-in-a-sorted-matrix/README.md) | medium | k-way-merge, binary-search | [leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Kth Smallest Number in M Sorted Lists](kth-smallest-in-m-sorted-lists/README.md) | medium | k-way-merge, heap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) |
+| [Smallest Range Covering Elements from K Lists](smallest-range-covering-elements-from-k-lists/README.md) | hard | k-way-merge, heap | [leetcode](https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
 
 ### knapsack-0-1
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Count of Subset Sum](count-of-subset-sum/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/perfect-sum-problem5633/1) | 0 (—) |
-| [Equal Subset Sum Partition](equal-subset-sum-partition/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/partition-equal-subset-sum/) | 0 (—) |
-| [Minimum Subset Sum Difference](minimum-subset-sum-difference/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/minimum-sum-partition3317/1) | 0 (—) |
-| [Subset Sum](subset-sum/README.md) | easy | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subset-sum-problem-1611555638/1) | 0 (—) |
-| [Target Sum](target-sum/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/target-sum/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Count of Subset Sum](count-of-subset-sum/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/perfect-sum-problem5633/1) |
+| [Equal Subset Sum Partition](equal-subset-sum-partition/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/partition-equal-subset-sum/) |
+| [Minimum Subset Sum Difference](minimum-subset-sum-difference/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/minimum-sum-partition3317/1) |
+| [Subset Sum](subset-sum/README.md) | easy | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subset-sum-problem-1611555638/1) |
+| [Target Sum](target-sum/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/target-sum/) |
 
 ### linked-list
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Add Two Numbers](add-two-numbers/README.md) | medium | linked-list, math | [leetcode](https://leetcode.com/problems/add-two-numbers/) | 2 (go, python) |
-| [Remove the K-th Node From the End](kth-node-from-end/README.md) | medium | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) | 0 (—) |
-| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic | 1 (python) |
-| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) | 1 (python) |
-| [Merge Two Sorted Lists](merge-two-sorted-lists/README.md) | easy | linked-list, two-pointers | [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 2 (python) |
-| [Middle of the Linked List](middle-of-linked-list/README.md) | easy | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/middle-of-the-linked-list/) | 1 (python) |
-| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) | 0 (—) |
-| [Remove Duplicates from Sorted List](remove-duplicates-from-sorted-list/README.md) | easy | linked-list | [leetcode](https://leetcode.com/problems/remove-duplicates-from-sorted-list/), [interviewbit](https://www.interviewbit.com/problems/remove-duplicates-from-sorted-list/) | 1 (python) |
-| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) | 0 (—) |
-| [Reverse Nodes in k-Group](reverse-every-k-group/README.md) | hard | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-nodes-in-k-group/) | 0 (—) |
-| [Reverse Linked List](reverse-linked-list/README.md) | easy | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-linked-list/) | 0 (—) |
-| [Rotate List](rotate-list/README.md) | medium | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/rotate-list/) | 0 (—) |
-| [Sort Binary Linked List](sort-binary-linked-list/README.md) | easy | linked-list, two-pointers | [interviewbit](https://www.interviewbit.com/problems/sort-binary-linked-list/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Add Two Numbers](add-two-numbers/README.md) | medium | linked-list, math | [leetcode](https://leetcode.com/problems/add-two-numbers/) |
+| [Remove the K-th Node From the End](kth-node-from-end/README.md) | medium | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) |
+| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic |
+| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) |
+| [Merge Two Sorted Lists](merge-two-sorted-lists/README.md) | easy | linked-list, two-pointers | [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Middle of the Linked List](middle-of-linked-list/README.md) | easy | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/middle-of-the-linked-list/) |
+| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) |
+| [Remove Duplicates from Sorted List](remove-duplicates-from-sorted-list/README.md) | easy | linked-list | [leetcode](https://leetcode.com/problems/remove-duplicates-from-sorted-list/), [interviewbit](https://www.interviewbit.com/problems/remove-duplicates-from-sorted-list/) |
+| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) |
+| [Reverse Nodes in k-Group](reverse-every-k-group/README.md) | hard | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-nodes-in-k-group/) |
+| [Reverse Linked List](reverse-linked-list/README.md) | easy | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-linked-list/) |
+| [Rotate List](rotate-list/README.md) | medium | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/rotate-list/) |
+| [Sort Binary Linked List](sort-binary-linked-list/README.md) | easy | linked-list, two-pointers | [interviewbit](https://www.interviewbit.com/problems/sort-binary-linked-list/) |
 
 ### longest-common-substring
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Edit Distance](edit-distance/README.md) | medium | longest-common-substring, dp-2d | [leetcode](https://leetcode.com/problems/edit-distance/) | 0 (—) |
-| [Longest Common Substring](longest-common-substring/README.md) | medium | dp-2d, longest-common-substring | [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit | 2 (python) |
-| [Longest Increasing Subsequence](longest-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [leetcode](https://leetcode.com/problems/longest-increasing-subsequence/) | 0 (—) |
-| [Maximum Sum Increasing Subsequence](maximum-sum-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [geeksforgeeks](https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-dp-14/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Edit Distance](edit-distance/README.md) | medium | longest-common-substring, dp-2d | [leetcode](https://leetcode.com/problems/edit-distance/) |
+| [Longest Common Substring](longest-common-substring/README.md) | medium | dp-2d, longest-common-substring | [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit |
+| [Longest Increasing Subsequence](longest-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [leetcode](https://leetcode.com/problems/longest-increasing-subsequence/) |
+| [Maximum Sum Increasing Subsequence](maximum-sum-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [geeksforgeeks](https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-dp-14/) |
 
 ### math
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Add Two Numbers](add-two-numbers/README.md) | medium | linked-list, math | [leetcode](https://leetcode.com/problems/add-two-numbers/) | 2 (go, python) |
-| [Amazing Subarrays](amazing-subarrays/README.md) | easy | math | [interviewbit](https://www.interviewbit.com/problems/amazing-subarrays/) | 1 (python) |
-| [Decimal to Binary](decimal-to-binary/README.md) | easy | math, stack | [interactivepython](https://runestone.academy/ns/books/published/pythonds/BasicDS/ConvertingDecimalNumberstoBinaryNumbers.html) | 1 (python) |
-| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 2 (python) |
-| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) | 1 (python) |
-| [Convert an Integer to a String in Any Base](int-to-string-base/README.md) | easy | recursion, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/pythondsConvertinganIntegertoaStringinAnyBase.html) | 1 (python) |
-| [Maximum Absolute Difference](maximum-absolute-difference/README.md) | medium | math, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/maximum-absolute-difference/) | 1 (python) |
-| [Palindrome Number](palindrome-number/README.md) | easy | math | [leetcode](https://leetcode.com/problems/palindrome-number/) | 1 (python) |
-| [Pascal's Triangle Row (k-th row)](pascal-triangle-row/README.md) | easy | dp-1d, math | [interviewbit](https://www.interviewbit.com/problems/kth-row-of-pascals-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle-ii/) | 1 (python) |
-| [Add One To Number](plus-one/README.md) | easy | arrays-hashing, math | [interviewbit](https://www.interviewbit.com/problems/add-one-to-number/), [leetcode](https://leetcode.com/problems/plus-one/) | 1 (python) |
-| [Prime Sum (Goldbach pair)](prime-sum/README.md) | medium | math | [interviewbit](https://www.interviewbit.com/problems/prime-sum/) | 1 (python) |
-| [Rearrange Sorted Array in Max/Min Form](rearrange-max-min/README.md) | medium | two-pointers, math | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Reverse Integer](reverse-integer/README.md) | medium | math | [leetcode](https://leetcode.com/problems/reverse-integer/) | 1 (python) |
-| [Roman to Integer](roman-to-integer/README.md) | easy | math, hashmap | [leetcode](https://leetcode.com/problems/roman-to-integer/) | 1 (python) |
-| [Sqrt(x)](sqrt-x/README.md) | easy | binary-search, math | [leetcode](https://leetcode.com/problems/sqrtx/), [interviewbit](https://www.interviewbit.com/problems/square-root-of-integer/) | 1 (python) |
-| [Square of a Number via Recursion](square-via-recursion/README.md) | easy | recursion, math | [educative](https://www.educative.io/courses/recursion-for-coding-interviews-in-python) | 0 (—) |
-| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Add Two Numbers](add-two-numbers/README.md) | medium | linked-list, math | [leetcode](https://leetcode.com/problems/add-two-numbers/) |
+| [Amazing Subarrays](amazing-subarrays/README.md) | easy | math | [interviewbit](https://www.interviewbit.com/problems/amazing-subarrays/) |
+| [Decimal to Binary](decimal-to-binary/README.md) | easy | math, stack | [interactivepython](https://runestone.academy/ns/books/published/pythonds/BasicDS/ConvertingDecimalNumberstoBinaryNumbers.html) |
+| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) |
+| [Convert an Integer to a String in Any Base](int-to-string-base/README.md) | easy | recursion, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/pythondsConvertinganIntegertoaStringinAnyBase.html) |
+| [Maximum Absolute Difference](maximum-absolute-difference/README.md) | medium | math, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/maximum-absolute-difference/) |
+| [Palindrome Number](palindrome-number/README.md) | easy | math | [leetcode](https://leetcode.com/problems/palindrome-number/) |
+| [Pascal's Triangle Row (k-th row)](pascal-triangle-row/README.md) | easy | dp-1d, math | [interviewbit](https://www.interviewbit.com/problems/kth-row-of-pascals-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle-ii/) |
+| [Add One To Number](plus-one/README.md) | easy | arrays-hashing, math | [interviewbit](https://www.interviewbit.com/problems/add-one-to-number/), [leetcode](https://leetcode.com/problems/plus-one/) |
+| [Prime Sum (Goldbach pair)](prime-sum/README.md) | medium | math | [interviewbit](https://www.interviewbit.com/problems/prime-sum/) |
+| [Rearrange Sorted Array in Max/Min Form](rearrange-max-min/README.md) | medium | two-pointers, math | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Reverse Integer](reverse-integer/README.md) | medium | math | [leetcode](https://leetcode.com/problems/reverse-integer/) |
+| [Roman to Integer](roman-to-integer/README.md) | easy | math, hashmap | [leetcode](https://leetcode.com/problems/roman-to-integer/) |
+| [Sqrt(x)](sqrt-x/README.md) | easy | binary-search, math | [leetcode](https://leetcode.com/problems/sqrtx/), [interviewbit](https://www.interviewbit.com/problems/square-root-of-integer/) |
+| [Square of a Number via Recursion](square-via-recursion/README.md) | easy | recursion, math | [educative](https://www.educative.io/courses/recursion-for-coding-interviews-in-python) |
+| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  |
 
 ### merge-intervals
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Interval List Intersections](interval-list-intersections/README.md) | medium | merge-intervals, two-pointers | [leetcode](https://leetcode.com/problems/interval-list-intersections/) | 0 (—) |
-| [Meeting Rooms](meeting-rooms/README.md) | easy | merge-intervals | [leetcode](https://leetcode.com/problems/meeting-rooms/) | 0 (—) |
-| [Merge Intervals](merge-intervals/README.md) | medium | merge-intervals | [leetcode](https://leetcode.com/problems/merge-intervals/) | 0 (—) |
-| [Minimum Meeting Rooms](minimum-meeting-rooms/README.md) | medium | merge-intervals, heap | [leetcode](https://leetcode.com/problems/meeting-rooms-ii/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Interval List Intersections](interval-list-intersections/README.md) | medium | merge-intervals, two-pointers | [leetcode](https://leetcode.com/problems/interval-list-intersections/) |
+| [Meeting Rooms](meeting-rooms/README.md) | easy | merge-intervals | [leetcode](https://leetcode.com/problems/meeting-rooms/) |
+| [Merge Intervals](merge-intervals/README.md) | medium | merge-intervals | [leetcode](https://leetcode.com/problems/merge-intervals/) |
+| [Minimum Meeting Rooms](minimum-meeting-rooms/README.md) | medium | merge-intervals, heap | [leetcode](https://leetcode.com/problems/meeting-rooms-ii/) |
 
 ### modified-binary-search
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Find Minimum In Rotated Sorted Array](find-minimum-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) | 0 (—) |
-| [Search In Rotated Sorted Array](search-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/search-in-rotated-sorted-array/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Find Minimum In Rotated Sorted Array](find-minimum-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) |
+| [Search In Rotated Sorted Array](search-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/search-in-rotated-sorted-array/) |
 
 ### multi-threaded
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) | 0 (—) |
-| [Design Bounded Blocking Queue](bounded-blocking-queue/README.md) | medium | multi-threaded, design | [leetcode](https://leetcode.com/problems/design-bounded-blocking-queue/) | 0 (—) |
-| [Invert Binary Tree](invert-binary-tree/README.md) | easy | multi-threaded, tree-dfs | [leetcode](https://leetcode.com/problems/invert-binary-tree/) | 0 (—) |
-| [Same Tree](same-tree/README.md) | easy | tree-dfs, multi-threaded | [leetcode](https://leetcode.com/problems/same-tree/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) |
+| [Design Bounded Blocking Queue](bounded-blocking-queue/README.md) | medium | multi-threaded, design | [leetcode](https://leetcode.com/problems/design-bounded-blocking-queue/) |
+| [Invert Binary Tree](invert-binary-tree/README.md) | easy | multi-threaded, tree-dfs | [leetcode](https://leetcode.com/problems/invert-binary-tree/) |
+| [Same Tree](same-tree/README.md) | easy | tree-dfs, multi-threaded | [leetcode](https://leetcode.com/problems/same-tree/) |
 
 ### palindromic-subsequence
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) | 1 (python) |
-| [Minimum Insertions to Make a String Palindrome](minimum-insertions-to-make-palindrome/README.md) | hard | dp-2d, palindromic-subsequence | [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit | 1 (python) |
-| [Palindrome Partitioning II (Minimum Cuts)](palindrome-partitioning-min-cuts/README.md) | hard | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindrome-partitioning-ii/) | 0 (—) |
-| [Palindromic Substrings](palindromic-substrings-count/README.md) | medium | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindromic-substrings/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) |
+| [Minimum Insertions to Make a String Palindrome](minimum-insertions-to-make-palindrome/README.md) | hard | dp-2d, palindromic-subsequence | [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit |
+| [Palindrome Partitioning II (Minimum Cuts)](palindrome-partitioning-min-cuts/README.md) | hard | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindrome-partitioning-ii/) |
+| [Palindromic Substrings](palindromic-substrings-count/README.md) | medium | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindromic-substrings/) |
 
 ### prefix-sum
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Product of Array Except Self](product-of-array-except-self/README.md) | medium | arrays-hashing, prefix-sum | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/product-of-array-except-self/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Product of Array Except Self](product-of-array-except-self/README.md) | medium | arrays-hashing, prefix-sum | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/product-of-array-except-self/) |
 
 ### recursion
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 2 (python) |
-| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) | 1 (python) |
-| [Convert an Integer to a String in Any Base](int-to-string-base/README.md) | easy | recursion, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/pythondsConvertinganIntegertoaStringinAnyBase.html) | 1 (python) |
-| [Permutations](permutations/README.md) | medium | backtracking, recursion | [leetcode](https://leetcode.com/problems/permutations/), [interviewbit](https://www.interviewbit.com/problems/permutations/) | 1 (python) |
-| [Permutations of a String](permutations-of-string/README.md) | medium | backtracking, recursion | [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic | 1 (python) |
-| [Sum of a List (Recursive)](recursive-list-sum/README.md) | easy | recursion | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/CalculatingtheSumofaListofNumbers.html), [w3resource](https://www.w3resource.com/python-exercises/data-structures-and-algorithms/python-recursion.php) | 2 (python) |
-| [Reverse an Array Recursively](reverse-array-recursive/README.md) | easy | recursion, two-pointers | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 1 (python) |
-| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) | 3 (python) |
-| [Square of a Number via Recursion](square-via-recursion/README.md) | easy | recursion, math | [educative](https://www.educative.io/courses/recursion-for-coding-interviews-in-python) | 0 (—) |
-| [Towers of Hanoi](towers-of-hanoi/README.md) | easy | recursion | [wikipedia](https://en.wikipedia.org/wiki/Tower_of_Hanoi) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) |
+| [Convert an Integer to a String in Any Base](int-to-string-base/README.md) | easy | recursion, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/pythondsConvertinganIntegertoaStringinAnyBase.html) |
+| [Permutations](permutations/README.md) | medium | backtracking, recursion | [leetcode](https://leetcode.com/problems/permutations/), [interviewbit](https://www.interviewbit.com/problems/permutations/) |
+| [Permutations of a String](permutations-of-string/README.md) | medium | backtracking, recursion | [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic |
+| [Sum of a List (Recursive)](recursive-list-sum/README.md) | easy | recursion | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/CalculatingtheSumofaListofNumbers.html), [w3resource](https://www.w3resource.com/python-exercises/data-structures-and-algorithms/python-recursion.php) |
+| [Reverse an Array Recursively](reverse-array-recursive/README.md) | easy | recursion, two-pointers | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) |
+| [Square of a Number via Recursion](square-via-recursion/README.md) | easy | recursion, math | [educative](https://www.educative.io/courses/recursion-for-coding-interviews-in-python) |
+| [Towers of Hanoi](towers-of-hanoi/README.md) | easy | recursion | [wikipedia](https://en.wikipedia.org/wiki/Tower_of_Hanoi) |
 
 ### simulation
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Count and Say](count-and-say/README.md) | medium | simulation | [leetcode](https://leetcode.com/problems/count-and-say/), [interviewbit](https://www.interviewbit.com/problems/count-and-say/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Count and Say](count-and-say/README.md) | medium | simulation | [leetcode](https://leetcode.com/problems/count-and-say/), [interviewbit](https://www.interviewbit.com/problems/count-and-say/) |
 
 ### sliding-window
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Contains Duplicate II](contains-duplicate-ii/README.md) | easy | sliding-window, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate-ii/) | 0 (—) |
-| [Longest Repeating Character Replacement](longest-repeating-character-replacement/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-repeating-character-replacement/) | 0 (—) |
-| [Longest Substring Without Repeating Characters](longest-substring-without-repeating-characters/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-substring-without-repeating-characters/) | 0 (—) |
-| [Minimum Size Subarray Sum](minimum-size-subarray-sum/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/minimum-size-subarray-sum/) | 0 (—) |
-| [Minimum Window Substring](minimum-window-substring/README.md) | hard | sliding-window | [leetcode](https://leetcode.com/problems/minimum-window-substring/) | 0 (—) |
-| [Sliding Window Median](sliding-window-median/README.md) | hard | two-heaps, sliding-window | [leetcode](https://leetcode.com/problems/sliding-window-median/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Subarray With Given Sum](subarray-with-given-sum/README.md) | medium | sliding-window, two-pointers | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Contains Duplicate II](contains-duplicate-ii/README.md) | easy | sliding-window, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate-ii/) |
+| [Longest Repeating Character Replacement](longest-repeating-character-replacement/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-repeating-character-replacement/) |
+| [Longest Substring Without Repeating Characters](longest-substring-without-repeating-characters/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-substring-without-repeating-characters/) |
+| [Minimum Size Subarray Sum](minimum-size-subarray-sum/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/minimum-size-subarray-sum/) |
+| [Minimum Window Substring](minimum-window-substring/README.md) | hard | sliding-window | [leetcode](https://leetcode.com/problems/minimum-window-substring/) |
+| [Sliding Window Median](sliding-window-median/README.md) | hard | two-heaps, sliding-window | [leetcode](https://leetcode.com/problems/sliding-window-median/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Subarray With Given Sum](subarray-with-given-sum/README.md) | medium | sliding-window, two-pointers | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1) |
 
 ### sorting
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Largest Number](largest-number/README.md) | medium | sorting, greedy | [interviewbit](https://www.interviewbit.com/problems/largest-number/), [leetcode](https://leetcode.com/problems/largest-number/) | 1 (python) |
-| [Merge Two Sorted Arrays (in place)](merge-two-sorted-arrays/README.md) | easy | two-pointers, sorting | [interviewbit](https://www.interviewbit.com/problems/merge-two-sorted-lists-ii/), [leetcode](https://leetcode.com/problems/merge-sorted-array/) | 1 (python) |
-| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) | 3 (python) |
-| [Sort Colors](sort-colors/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/sort-colors/) | 0 (—) |
-| [3Sum](three-sum/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/3sum/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Largest Number](largest-number/README.md) | medium | sorting, greedy | [interviewbit](https://www.interviewbit.com/problems/largest-number/), [leetcode](https://leetcode.com/problems/largest-number/) |
+| [Merge Two Sorted Arrays (in place)](merge-two-sorted-arrays/README.md) | easy | two-pointers, sorting | [interviewbit](https://www.interviewbit.com/problems/merge-two-sorted-lists-ii/), [leetcode](https://leetcode.com/problems/merge-sorted-array/) |
+| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) |
+| [Sort Colors](sort-colors/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/sort-colors/) |
+| [3Sum](three-sum/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/3sum/) |
 
 ### stack
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) | 0 (—) |
-| [Decimal to Binary](decimal-to-binary/README.md) | easy | math, stack | [interactivepython](https://runestone.academy/ns/books/published/pythonds/BasicDS/ConvertingDecimalNumberstoBinaryNumbers.html) | 1 (python) |
-| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 2 (python) |
-| [Valid Parentheses](valid-parentheses/README.md) | easy | stack | [leetcode](https://leetcode.com/problems/valid-parentheses/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) |
+| [Decimal to Binary](decimal-to-binary/README.md) | easy | math, stack | [interactivepython](https://runestone.academy/ns/books/published/pythonds/BasicDS/ConvertingDecimalNumberstoBinaryNumbers.html) |
+| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Valid Parentheses](valid-parentheses/README.md) | easy | stack | [leetcode](https://leetcode.com/problems/valid-parentheses/) |
 
 ### string-matching
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Implement strStr()](implement-strstr/README.md) | easy | two-pointers, string-matching | [leetcode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/), [interviewbit](https://www.interviewbit.com/problems/implement-strstr/) | 2 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Implement strStr()](implement-strstr/README.md) | easy | two-pointers, string-matching | [leetcode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/), [interviewbit](https://www.interviewbit.com/problems/implement-strstr/) |
 
 ### subsets
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Generate Parentheses](generate-parentheses/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generate-parentheses/) | 0 (—) |
-| [Letter Case Permutation](letter-case-permutation/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/letter-case-permutation/) | 0 (—) |
-| [Subsets](subsets/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets/) | 0 (—) |
-| [Subsets Ii](subsets-ii/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets-ii/) | 0 (—) |
-| [Unique Generalized Abbreviations](unique-generalized-abbreviations/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generalized-abbreviation/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Generate Parentheses](generate-parentheses/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generate-parentheses/) |
+| [Letter Case Permutation](letter-case-permutation/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/letter-case-permutation/) |
+| [Subsets](subsets/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets/) |
+| [Subsets Ii](subsets-ii/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets-ii/) |
+| [Unique Generalized Abbreviations](unique-generalized-abbreviations/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generalized-abbreviation/) |
 
 ### top-k-elements
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [K Closest Points to Origin](k-closest-points-to-origin/README.md) | medium | top-k-elements, heap | [leetcode](https://leetcode.com/problems/k-closest-points-to-origin/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [K Largest Elements](k-largest-elements/README.md) | easy | heap, top-k-elements | [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/) | 1 (python) |
-| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | 1 (python) |
-| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Top K Frequent Elements](top-k-frequent-elements/README.md) | medium | top-k-elements, hashmap | [leetcode](https://leetcode.com/problems/top-k-frequent-elements/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [K Closest Points to Origin](k-closest-points-to-origin/README.md) | medium | top-k-elements, heap | [leetcode](https://leetcode.com/problems/k-closest-points-to-origin/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [K Largest Elements](k-largest-elements/README.md) | easy | heap, top-k-elements | [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/) |
+| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) |
+| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Top K Frequent Elements](top-k-frequent-elements/README.md) | medium | top-k-elements, hashmap | [leetcode](https://leetcode.com/problems/top-k-frequent-elements/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
 
 ### topological-sort
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Alien Dictionary](alien-dictionary/README.md) | hard | topological-sort | [leetcode](https://leetcode.com/problems/alien-dictionary/) | 0 (—) |
-| [Course Schedule](course-schedule/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule/) | 0 (—) |
-| [Course Schedule II](course-schedule-ii/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule-ii/) | 0 (—) |
-| [Minimum Height Trees](minimum-height-trees/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/minimum-height-trees/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Alien Dictionary](alien-dictionary/README.md) | hard | topological-sort | [leetcode](https://leetcode.com/problems/alien-dictionary/) |
+| [Course Schedule](course-schedule/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule/) |
+| [Course Schedule II](course-schedule-ii/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule-ii/) |
+| [Minimum Height Trees](minimum-height-trees/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/minimum-height-trees/) |
 
 ### tree-bfs
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Level Order Traversal (flat)](level-order-traversal/README.md) | easy | tree-bfs | [geeksforgeeks](https://www.geeksforgeeks.org/level-order-tree-traversal/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Level Order Traversal (flat)](level-order-traversal/README.md) | easy | tree-bfs | [geeksforgeeks](https://www.geeksforgeeks.org/level-order-tree-traversal/) |
 
 ### tree-dfs
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Binary Tree Inorder Traversal](binary-tree-inorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-inorder-traversal/) | 1 (python) |
-| [Binary Tree Postorder Traversal](binary-tree-postorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-postorder-traversal/) | 1 (python) |
-| [Binary Tree Preorder Traversal](binary-tree-preorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-preorder-traversal/) | 1 (python) |
-| [Count Univalue Subtrees](count-univalue-subtrees/README.md) | medium | tree-dfs | [leetcode](https://leetcode.com/problems/count-univalue-subtrees/), [interviewbit](https://www.youtube.com/watch?v=7HgsS8bRvjo) | 1 (python) |
-| [Invert Binary Tree](invert-binary-tree/README.md) | easy | multi-threaded, tree-dfs | [leetcode](https://leetcode.com/problems/invert-binary-tree/) | 0 (—) |
-| [Maximum Depth of Binary Tree](maximum-depth-of-binary-tree/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/maximum-depth-of-binary-tree/) | 1 (python) |
-| [Same Tree](same-tree/README.md) | easy | tree-dfs, multi-threaded | [leetcode](https://leetcode.com/problems/same-tree/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Binary Tree Inorder Traversal](binary-tree-inorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-inorder-traversal/) |
+| [Binary Tree Postorder Traversal](binary-tree-postorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-postorder-traversal/) |
+| [Binary Tree Preorder Traversal](binary-tree-preorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-preorder-traversal/) |
+| [Count Univalue Subtrees](count-univalue-subtrees/README.md) | medium | tree-dfs | [leetcode](https://leetcode.com/problems/count-univalue-subtrees/), [interviewbit](https://www.youtube.com/watch?v=7HgsS8bRvjo) |
+| [Invert Binary Tree](invert-binary-tree/README.md) | easy | multi-threaded, tree-dfs | [leetcode](https://leetcode.com/problems/invert-binary-tree/) |
+| [Maximum Depth of Binary Tree](maximum-depth-of-binary-tree/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/maximum-depth-of-binary-tree/) |
+| [Same Tree](same-tree/README.md) | easy | tree-dfs, multi-threaded | [leetcode](https://leetcode.com/problems/same-tree/) |
 
 ### two-heaps
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Find Median from Data Stream](find-median-from-data-stream/README.md) | hard | two-heaps, design | [leetcode](https://leetcode.com/problems/find-median-from-data-stream/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Find Right Interval](find-right-interval/README.md) | medium | two-heaps, intervals | [leetcode](https://leetcode.com/problems/find-right-interval/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [IPO (Maximize Capital)](ipo/README.md) | hard | two-heaps, greedy | [leetcode](https://leetcode.com/problems/ipo/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Sliding Window Median](sliding-window-median/README.md) | hard | two-heaps, sliding-window | [leetcode](https://leetcode.com/problems/sliding-window-median/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Find Median from Data Stream](find-median-from-data-stream/README.md) | hard | two-heaps, design | [leetcode](https://leetcode.com/problems/find-median-from-data-stream/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Find Right Interval](find-right-interval/README.md) | medium | two-heaps, intervals | [leetcode](https://leetcode.com/problems/find-right-interval/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [IPO (Maximize Capital)](ipo/README.md) | hard | two-heaps, greedy | [leetcode](https://leetcode.com/problems/ipo/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Sliding Window Median](sliding-window-median/README.md) | hard | two-heaps, sliding-window | [leetcode](https://leetcode.com/problems/sliding-window-median/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
 
 ### two-pointers
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Container With Most Water](container-with-most-water/README.md) | medium | two-pointers, greedy | [leetcode](https://leetcode.com/problems/container-with-most-water/) | 0 (—) |
-| [Flip and Invert an Image](flip-and-invert-image/README.md) | easy | bitwise-xor, two-pointers | [leetcode](https://leetcode.com/problems/flipping-an-image/) | 0 (—) |
-| [Implement strStr()](implement-strstr/README.md) | easy | two-pointers, string-matching | [leetcode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/), [interviewbit](https://www.interviewbit.com/problems/implement-strstr/) | 2 (python) |
-| [Intersection of Two Sorted Arrays](intersection-of-sorted-arrays/README.md) | easy | two-pointers | [interviewbit](https://www.interviewbit.com/problems/intersection-of-sorted-arrays/) | 1 (python) |
-| [Interval List Intersections](interval-list-intersections/README.md) | medium | merge-intervals, two-pointers | [leetcode](https://leetcode.com/problems/interval-list-intersections/) | 0 (—) |
-| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) | 1 (python) |
-| [Merge Two Sorted Arrays (in place)](merge-two-sorted-arrays/README.md) | easy | two-pointers, sorting | [interviewbit](https://www.interviewbit.com/problems/merge-two-sorted-lists-ii/), [leetcode](https://leetcode.com/problems/merge-sorted-array/) | 1 (python) |
-| [Merge Two Sorted Lists](merge-two-sorted-lists/README.md) | easy | linked-list, two-pointers | [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 2 (python) |
-| [Pair With Target Sum (exists?)](pair-with-target-sum/README.md) | easy | hashmap, two-pointers |  | 1 (python) |
-| [Rearrange Sorted Array in Max/Min Form](rearrange-max-min/README.md) | medium | two-pointers, math | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Reverse an Array Recursively](reverse-array-recursive/README.md) | easy | recursion, two-pointers | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 1 (python) |
-| [Rotate Array (right by k)](rotate-array/README.md) | medium | arrays-hashing, two-pointers | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/rotate-array/) | 1 (python) |
-| [Sort Binary Linked List](sort-binary-linked-list/README.md) | easy | linked-list, two-pointers | [interviewbit](https://www.interviewbit.com/problems/sort-binary-linked-list/) | 1 (python) |
-| [Sort Colors](sort-colors/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/sort-colors/) | 0 (—) |
-| [Subarray With Given Sum](subarray-with-given-sum/README.md) | medium | sliding-window, two-pointers | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1) | 1 (python) |
-| [3Sum](three-sum/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/3sum/) | 0 (—) |
-| [Trapping Rain Water](trapping-rain-water/README.md) | hard | two-pointers, dynamic-programming | [leetcode](https://leetcode.com/problems/trapping-rain-water/) | 0 (—) |
-| [Two Sum](two-sum/README.md) | easy | hashmap, two-pointers | [leetcode](https://leetcode.com/problems/two-sum/) | 2 (go, python) |
-| [Valid Palindrome](valid-palindrome/README.md) | easy | two-pointers | [leetcode](https://leetcode.com/problems/valid-palindrome/), [interviewbit](https://www.interviewbit.com/problems/palindrome-string/) | 1 (python) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Container With Most Water](container-with-most-water/README.md) | medium | two-pointers, greedy | [leetcode](https://leetcode.com/problems/container-with-most-water/) |
+| [Flip and Invert an Image](flip-and-invert-image/README.md) | easy | bitwise-xor, two-pointers | [leetcode](https://leetcode.com/problems/flipping-an-image/) |
+| [Implement strStr()](implement-strstr/README.md) | easy | two-pointers, string-matching | [leetcode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/), [interviewbit](https://www.interviewbit.com/problems/implement-strstr/) |
+| [Intersection of Two Sorted Arrays](intersection-of-sorted-arrays/README.md) | easy | two-pointers | [interviewbit](https://www.interviewbit.com/problems/intersection-of-sorted-arrays/) |
+| [Interval List Intersections](interval-list-intersections/README.md) | medium | merge-intervals, two-pointers | [leetcode](https://leetcode.com/problems/interval-list-intersections/) |
+| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) |
+| [Merge Two Sorted Arrays (in place)](merge-two-sorted-arrays/README.md) | easy | two-pointers, sorting | [interviewbit](https://www.interviewbit.com/problems/merge-two-sorted-lists-ii/), [leetcode](https://leetcode.com/problems/merge-sorted-array/) |
+| [Merge Two Sorted Lists](merge-two-sorted-lists/README.md) | easy | linked-list, two-pointers | [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Pair With Target Sum (exists?)](pair-with-target-sum/README.md) | easy | hashmap, two-pointers |  |
+| [Rearrange Sorted Array in Max/Min Form](rearrange-max-min/README.md) | medium | two-pointers, math | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Reverse an Array Recursively](reverse-array-recursive/README.md) | easy | recursion, two-pointers | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Rotate Array (right by k)](rotate-array/README.md) | medium | arrays-hashing, two-pointers | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/rotate-array/) |
+| [Sort Binary Linked List](sort-binary-linked-list/README.md) | easy | linked-list, two-pointers | [interviewbit](https://www.interviewbit.com/problems/sort-binary-linked-list/) |
+| [Sort Colors](sort-colors/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/sort-colors/) |
+| [Subarray With Given Sum](subarray-with-given-sum/README.md) | medium | sliding-window, two-pointers | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1) |
+| [3Sum](three-sum/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/3sum/) |
+| [Trapping Rain Water](trapping-rain-water/README.md) | hard | two-pointers, dynamic-programming | [leetcode](https://leetcode.com/problems/trapping-rain-water/) |
+| [Two Sum](two-sum/README.md) | easy | hashmap, two-pointers | [leetcode](https://leetcode.com/problems/two-sum/) |
+| [Valid Palindrome](valid-palindrome/README.md) | easy | two-pointers | [leetcode](https://leetcode.com/problems/valid-palindrome/), [interviewbit](https://www.interviewbit.com/problems/palindrome-string/) |
 
 ### unbounded-knapsack
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Coin Change (Fewest Coins)](coin-change/README.md) | medium | dp-1d, unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html) | 1 (python) |
-| [Coin Change II (Number of Ways)](coin-change-ii/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change-ii/) | 0 (—) |
-| [Maximum Ribbon Cut](maximum-ribbon-cut/README.md) | medium | unbounded-knapsack | [geeksforgeeks](https://www.geeksforgeeks.org/problems/cutted-segments1642/1) | 0 (—) |
-| [Perfect Squares](perfect-squares/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/perfect-squares/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Coin Change (Fewest Coins)](coin-change/README.md) | medium | dp-1d, unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html) |
+| [Coin Change II (Number of Ways)](coin-change-ii/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change-ii/) |
+| [Maximum Ribbon Cut](maximum-ribbon-cut/README.md) | medium | unbounded-knapsack | [geeksforgeeks](https://www.geeksforgeeks.org/problems/cutted-segments1642/1) |
+| [Perfect Squares](perfect-squares/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/perfect-squares/) |
 
 ## All problems
 
-| Problem | Difficulty | Patterns | Sources | Attempts |
-|---|---|---|---|---|
-| [Add Two Numbers](add-two-numbers/README.md) | medium | linked-list, math | [leetcode](https://leetcode.com/problems/add-two-numbers/) | 2 (go, python) |
-| [Alien Dictionary](alien-dictionary/README.md) | hard | topological-sort | [leetcode](https://leetcode.com/problems/alien-dictionary/) | 0 (—) |
-| [Amazing Subarrays](amazing-subarrays/README.md) | easy | math | [interviewbit](https://www.interviewbit.com/problems/amazing-subarrays/) | 1 (python) |
-| [BFS of a Graph](bfs-of-graph/README.md) | easy | graph-bfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Binary Search](binary-search/README.md) | easy | binary-search | [leetcode](https://leetcode.com/problems/binary-search/), interviewbit | 1 (python) |
-| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) | 0 (—) |
-| [Binary Tree Inorder Traversal](binary-tree-inorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-inorder-traversal/) | 1 (python) |
-| [Binary Tree Postorder Traversal](binary-tree-postorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-postorder-traversal/) | 1 (python) |
-| [Binary Tree Preorder Traversal](binary-tree-preorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-preorder-traversal/) | 1 (python) |
-| [Binary Tree Right Side View](binary-tree-right-side-view/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-right-side-view/) | 0 (—) |
-| [Binary Tree Zigzag Level Order Traversal](binary-tree-zigzag-level-order-traversal/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/) | 0 (—) |
-| [Design Bounded Blocking Queue](bounded-blocking-queue/README.md) | medium | multi-threaded, design | [leetcode](https://leetcode.com/problems/design-bounded-blocking-queue/) | 0 (—) |
-| [Coin Change (Fewest Coins)](coin-change/README.md) | medium | dp-1d, unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html) | 1 (python) |
-| [Coin Change II (Number of Ways)](coin-change-ii/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change-ii/) | 0 (—) |
-| [Combination Sum](combination-sum/README.md) | medium | backtracking | [leetcode](https://leetcode.com/problems/combination-sum/) | 0 (—) |
-| [Complement of Base 10 Integer](complement-of-base-10/README.md) | easy | bitwise-xor | [leetcode](https://leetcode.com/problems/complement-of-base-10-integer/) | 0 (—) |
-| [Container With Most Water](container-with-most-water/README.md) | medium | two-pointers, greedy | [leetcode](https://leetcode.com/problems/container-with-most-water/) | 0 (—) |
-| [Contains Duplicate](contains-duplicate/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate/), [neetcode](https://neetcode.io/problems/duplicate-integer) | 1 (go) |
-| [Contains Duplicate II](contains-duplicate-ii/README.md) | easy | sliding-window, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate-ii/) | 0 (—) |
-| [Count and Say](count-and-say/README.md) | medium | simulation | [leetcode](https://leetcode.com/problems/count-and-say/), [interviewbit](https://www.interviewbit.com/problems/count-and-say/) | 1 (python) |
-| [Count of Subset Sum](count-of-subset-sum/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/perfect-sum-problem5633/1) | 0 (—) |
-| [Count Univalue Subtrees](count-univalue-subtrees/README.md) | medium | tree-dfs | [leetcode](https://leetcode.com/problems/count-univalue-subtrees/), [interviewbit](https://www.youtube.com/watch?v=7HgsS8bRvjo) | 1 (python) |
-| [Course Schedule](course-schedule/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule/) | 0 (—) |
-| [Course Schedule II](course-schedule-ii/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule-ii/) | 0 (—) |
-| [Decimal to Binary](decimal-to-binary/README.md) | easy | math, stack | [interactivepython](https://runestone.academy/ns/books/published/pythonds/BasicDS/ConvertingDecimalNumberstoBinaryNumbers.html) | 1 (python) |
-| [DFS of a Graph](dfs-of-graph/README.md) | easy | graph-dfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Diameter of Binary Tree](diameter-of-binary-tree/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/diameter-of-binary-tree/) | 0 (—) |
-| [Edit Distance](edit-distance/README.md) | medium | longest-common-substring, dp-2d | [leetcode](https://leetcode.com/problems/edit-distance/) | 0 (—) |
-| [Equal Subset Sum Partition](equal-subset-sum-partition/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/partition-equal-subset-sum/) | 0 (—) |
-| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 2 (python) |
-| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) | 1 (python) |
-| [Find All Duplicates in an Array](find-all-duplicates/README.md) | medium | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-duplicates-in-an-array/) | 0 (—) |
-| [Find All Missing Numbers](find-all-missing-numbers/README.md) | easy | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/) | 0 (—) |
-| [Find Median from Data Stream](find-median-from-data-stream/README.md) | hard | two-heaps, design | [leetcode](https://leetcode.com/problems/find-median-from-data-stream/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Find Minimum In Rotated Sorted Array](find-minimum-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) | 0 (—) |
-| [Find Right Interval](find-right-interval/README.md) | medium | two-heaps, intervals | [leetcode](https://leetcode.com/problems/find-right-interval/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Find the Duplicate Number](find-the-duplicate-number/README.md) | medium | fast-slow-pointers | [leetcode](https://leetcode.com/problems/find-the-duplicate-number/) | 0 (—) |
-| [First Missing Positive](first-missing-positive/README.md) | hard | cyclic-sort | [leetcode](https://leetcode.com/problems/first-missing-positive/) | 0 (—) |
-| [Flip and Invert an Image](flip-and-invert-image/README.md) | easy | bitwise-xor, two-pointers | [leetcode](https://leetcode.com/problems/flipping-an-image/) | 0 (—) |
-| [Flood Fill](flood-fill/README.md) | easy | islands, dfs | [leetcode](https://leetcode.com/problems/flood-fill/) | 0 (—) |
-| [Generate Parentheses](generate-parentheses/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generate-parentheses/) | 0 (—) |
-| [House Robber](house-robber/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber/) | 0 (—) |
-| [House Robber II](house-robber-ii/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber-ii/) | 0 (—) |
-| [Implement a Max-Heap](implement-max-heap/README.md) | easy | heap, design | [interviewbit](https://www.interviewbit.com/courses/programming/heaps-and-maps/) | 1 (python) |
-| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) | 1 (python) |
-| [Implement strStr()](implement-strstr/README.md) | easy | two-pointers, string-matching | [leetcode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/), [interviewbit](https://www.interviewbit.com/problems/implement-strstr/) | 2 (python) |
-| [Convert an Integer to a String in Any Base](int-to-string-base/README.md) | easy | recursion, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/pythondsConvertinganIntegertoaStringinAnyBase.html) | 1 (python) |
-| [Intersection of Two Sorted Arrays](intersection-of-sorted-arrays/README.md) | easy | two-pointers | [interviewbit](https://www.interviewbit.com/problems/intersection-of-sorted-arrays/) | 1 (python) |
-| [Interval List Intersections](interval-list-intersections/README.md) | medium | merge-intervals, two-pointers | [leetcode](https://leetcode.com/problems/interval-list-intersections/) | 0 (—) |
-| [Invert Binary Tree](invert-binary-tree/README.md) | easy | multi-threaded, tree-dfs | [leetcode](https://leetcode.com/problems/invert-binary-tree/) | 0 (—) |
-| [IPO (Maximize Capital)](ipo/README.md) | hard | two-heaps, greedy | [leetcode](https://leetcode.com/problems/ipo/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [K Closest Points to Origin](k-closest-points-to-origin/README.md) | medium | top-k-elements, heap | [leetcode](https://leetcode.com/problems/k-closest-points-to-origin/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [K Largest Elements](k-largest-elements/README.md) | easy | heap, top-k-elements | [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/) | 1 (python) |
-| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | 1 (python) |
-| [Remove the K-th Node From the End](kth-node-from-end/README.md) | medium | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) | 0 (—) |
-| [Kth Smallest Element in a Sorted Matrix](kth-smallest-element-in-a-sorted-matrix/README.md) | medium | k-way-merge, binary-search | [leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Kth Smallest Number in M Sorted Lists](kth-smallest-in-m-sorted-lists/README.md) | medium | k-way-merge, heap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Largest Number](largest-number/README.md) | medium | sorting, greedy | [interviewbit](https://www.interviewbit.com/problems/largest-number/), [leetcode](https://leetcode.com/problems/largest-number/) | 1 (python) |
-| [Letter Case Permutation](letter-case-permutation/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/letter-case-permutation/) | 0 (—) |
-| [Level Order Traversal (flat)](level-order-traversal/README.md) | easy | tree-bfs | [geeksforgeeks](https://www.geeksforgeeks.org/level-order-tree-traversal/) | 1 (python) |
-| [Longest Common Prefix](longest-common-prefix/README.md) | easy | arrays-hashing | [leetcode](https://leetcode.com/problems/longest-common-prefix/), [interviewbit](https://www.interviewbit.com/problems/longest-common-prefix/) | 2 (python) |
-| [Longest Common Substring](longest-common-substring/README.md) | medium | dp-2d, longest-common-substring | [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit | 2 (python) |
-| [Longest Increasing Subsequence](longest-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [leetcode](https://leetcode.com/problems/longest-increasing-subsequence/) | 0 (—) |
-| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) | 1 (python) |
-| [Longest Repeating Character Replacement](longest-repeating-character-replacement/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-repeating-character-replacement/) | 0 (—) |
-| [Longest Substring Without Repeating Characters](longest-substring-without-repeating-characters/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-substring-without-repeating-characters/) | 0 (—) |
-| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic | 1 (python) |
-| [Max Area of Island](max-area-of-island/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/max-area-of-island/) | 0 (—) |
-| [Maximal Square](maximal-square/README.md) | medium | dp-2d | [leetcode](https://leetcode.com/problems/maximal-square/), [youtube](https://www.youtube.com/watch?v=FO7VXDfS8Gk) | 0 (—) |
-| [Maximum Absolute Difference](maximum-absolute-difference/README.md) | medium | math, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/maximum-absolute-difference/) | 1 (python) |
-| [Maximum Depth of Binary Tree](maximum-depth-of-binary-tree/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/maximum-depth-of-binary-tree/) | 1 (python) |
-| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Maximum Ribbon Cut](maximum-ribbon-cut/README.md) | medium | unbounded-knapsack | [geeksforgeeks](https://www.geeksforgeeks.org/problems/cutted-segments1642/1) | 0 (—) |
-| [Maximum Subarray (Max Sum Contiguous Subarray)](maximum-subarray/README.md) | medium | dp-1d, greedy | [interviewbit](https://www.interviewbit.com/problems/max-sum-contiguous-subarray/), [leetcode](https://leetcode.com/problems/maximum-subarray/) | 1 (python) |
-| [Maximum Sum Increasing Subsequence](maximum-sum-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [geeksforgeeks](https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-dp-14/) | 0 (—) |
-| [Median of Two Sorted Arrays](median-of-two-sorted-arrays/README.md) | hard | binary-search | [leetcode](https://leetcode.com/problems/median-of-two-sorted-arrays/), [interviewbit](https://www.interviewbit.com/problems/median-of-array/) | 1 (python) |
-| [Meeting Rooms](meeting-rooms/README.md) | easy | merge-intervals | [leetcode](https://leetcode.com/problems/meeting-rooms/) | 0 (—) |
-| [Merge Intervals](merge-intervals/README.md) | medium | merge-intervals | [leetcode](https://leetcode.com/problems/merge-intervals/) | 0 (—) |
-| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) | 1 (python) |
-| [Merge Two Sorted Arrays (in place)](merge-two-sorted-arrays/README.md) | easy | two-pointers, sorting | [interviewbit](https://www.interviewbit.com/problems/merge-two-sorted-lists-ii/), [leetcode](https://leetcode.com/problems/merge-sorted-array/) | 1 (python) |
-| [Merge Two Sorted Lists](merge-two-sorted-lists/README.md) | easy | linked-list, two-pointers | [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 2 (python) |
-| [Middle of the Linked List](middle-of-linked-list/README.md) | easy | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/middle-of-the-linked-list/) | 1 (python) |
-| [Min Cost Climbing Stairs](min-cost-climbing-stairs/README.md) | easy | fibonacci-numbers | [leetcode](https://leetcode.com/problems/min-cost-climbing-stairs/) | 0 (—) |
-| [Minimum Depth of Binary Tree](minimum-depth-of-binary-tree/README.md) | easy | bfs | [leetcode](https://leetcode.com/problems/minimum-depth-of-binary-tree/) | 0 (—) |
-| [Minimum Height Trees](minimum-height-trees/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/minimum-height-trees/) | 0 (—) |
-| [Minimum Insertions to Make a String Palindrome](minimum-insertions-to-make-palindrome/README.md) | hard | dp-2d, palindromic-subsequence | [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit | 1 (python) |
-| [Minimum Meeting Rooms](minimum-meeting-rooms/README.md) | medium | merge-intervals, heap | [leetcode](https://leetcode.com/problems/meeting-rooms-ii/) | 0 (—) |
-| [Minimum Size Subarray Sum](minimum-size-subarray-sum/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/minimum-size-subarray-sum/) | 0 (—) |
-| [Minimum Subset Sum Difference](minimum-subset-sum-difference/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/minimum-sum-partition3317/1) | 0 (—) |
-| [Minimum Window Substring](minimum-window-substring/README.md) | hard | sliding-window | [leetcode](https://leetcode.com/problems/minimum-window-substring/) | 0 (—) |
-| [Missing Number](missing-number/README.md) | easy | cyclic-sort, bitwise-xor | [leetcode](https://leetcode.com/problems/missing-number/) | 0 (—) |
-| [Number Factors](number-factors/README.md) | medium | fibonacci-numbers | [geeksforgeeks](https://www.geeksforgeeks.org/count-ofdifferent-ways-express-n-sum-1-3-4/) | 0 (—) |
-| [Pair With Target Sum (exists?)](pair-with-target-sum/README.md) | easy | hashmap, two-pointers |  | 1 (python) |
-| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) | 0 (—) |
-| [Palindrome Number](palindrome-number/README.md) | easy | math | [leetcode](https://leetcode.com/problems/palindrome-number/) | 1 (python) |
-| [Palindrome Partitioning II (Minimum Cuts)](palindrome-partitioning-min-cuts/README.md) | hard | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindrome-partitioning-ii/) | 0 (—) |
-| [Palindromic Substrings](palindromic-substrings-count/README.md) | medium | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindromic-substrings/) | 0 (—) |
-| [Pascal's Triangle](pascal-triangle/README.md) | easy | dp-1d, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/pascal-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle/) | 2 (python) |
-| [Pascal's Triangle Row (k-th row)](pascal-triangle-row/README.md) | easy | dp-1d, math | [interviewbit](https://www.interviewbit.com/problems/kth-row-of-pascals-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle-ii/) | 1 (python) |
-| [Path Sum](path-sum/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/path-sum/) | 0 (—) |
-| [Path Sum III (Count Paths for a Sum)](path-sum-iii/README.md) | medium | dfs | [leetcode](https://leetcode.com/problems/path-sum-iii/) | 0 (—) |
-| [Perfect Squares](perfect-squares/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/perfect-squares/) | 0 (—) |
-| [Permutations](permutations/README.md) | medium | backtracking, recursion | [leetcode](https://leetcode.com/problems/permutations/), [interviewbit](https://www.interviewbit.com/problems/permutations/) | 1 (python) |
-| [Permutations of a String](permutations-of-string/README.md) | medium | backtracking, recursion | [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic | 1 (python) |
-| [Add One To Number](plus-one/README.md) | easy | arrays-hashing, math | [interviewbit](https://www.interviewbit.com/problems/add-one-to-number/), [leetcode](https://leetcode.com/problems/plus-one/) | 1 (python) |
-| [Prime Sum (Goldbach pair)](prime-sum/README.md) | medium | math | [interviewbit](https://www.interviewbit.com/problems/prime-sum/) | 1 (python) |
-| [Product of Array Except Self](product-of-array-except-self/README.md) | medium | arrays-hashing, prefix-sum | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/product-of-array-except-self/) | 1 (python) |
-| [Rearrange Sorted Array in Max/Min Form](rearrange-max-min/README.md) | medium | two-pointers, math | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Sum of a List (Recursive)](recursive-list-sum/README.md) | easy | recursion | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/CalculatingtheSumofaListofNumbers.html), [w3resource](https://www.w3resource.com/python-exercises/data-structures-and-algorithms/python-recursion.php) | 2 (python) |
-| [Remove Duplicates from Sorted List](remove-duplicates-from-sorted-list/README.md) | easy | linked-list | [leetcode](https://leetcode.com/problems/remove-duplicates-from-sorted-list/), [interviewbit](https://www.interviewbit.com/problems/remove-duplicates-from-sorted-list/) | 1 (python) |
-| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) | 0 (—) |
-| [Reverse an Array Recursively](reverse-array-recursive/README.md) | easy | recursion, two-pointers | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) | 1 (python) |
-| [Reverse Nodes in k-Group](reverse-every-k-group/README.md) | hard | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-nodes-in-k-group/) | 0 (—) |
-| [Reverse Integer](reverse-integer/README.md) | medium | math | [leetcode](https://leetcode.com/problems/reverse-integer/) | 1 (python) |
-| [Reverse Linked List](reverse-linked-list/README.md) | easy | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-linked-list/) | 0 (—) |
-| [Roman to Integer](roman-to-integer/README.md) | easy | math, hashmap | [leetcode](https://leetcode.com/problems/roman-to-integer/) | 1 (python) |
-| [Rotate Array (right by k)](rotate-array/README.md) | medium | arrays-hashing, two-pointers | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/rotate-array/) | 1 (python) |
-| [Rotate List](rotate-list/README.md) | medium | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/rotate-list/) | 0 (—) |
-| [Rotting Oranges](rotting-oranges/README.md) | medium | islands, bfs | [leetcode](https://leetcode.com/problems/rotting-oranges/) | 0 (—) |
-| [Same Tree](same-tree/README.md) | easy | tree-dfs, multi-threaded | [leetcode](https://leetcode.com/problems/same-tree/) | 1 (python) |
-| [Search in Bitonic Array](search-in-bitonic-array/README.md) | medium | binary-search | [interviewbit](https://www.interviewbit.com/problems/search-in-bitonic-array/) | 1 (python) |
-| [Search In Rotated Sorted Array](search-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/search-in-rotated-sorted-array/) | 0 (—) |
-| [Second Largest Element](second-largest-element/README.md) | easy | arrays-hashing | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) | 1 (python) |
-| [Sliding Window Median](sliding-window-median/README.md) | hard | two-heaps, sliding-window | [leetcode](https://leetcode.com/problems/sliding-window-median/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Smallest Range Covering Elements from K Lists](smallest-range-covering-elements-from-k-lists/README.md) | hard | k-way-merge, heap | [leetcode](https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) | 3 (python) |
-| [Sort Binary Linked List](sort-binary-linked-list/README.md) | easy | linked-list, two-pointers | [interviewbit](https://www.interviewbit.com/problems/sort-binary-linked-list/) | 1 (python) |
-| [Sort Colors](sort-colors/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/sort-colors/) | 0 (—) |
-| [Sqrt(x)](sqrt-x/README.md) | easy | binary-search, math | [leetcode](https://leetcode.com/problems/sqrtx/), [interviewbit](https://www.interviewbit.com/problems/square-root-of-integer/) | 1 (python) |
-| [Square of a Number via Recursion](square-via-recursion/README.md) | easy | recursion, math | [educative](https://www.educative.io/courses/recursion-for-coding-interviews-in-python) | 0 (—) |
-| [Subarray With Given Sum](subarray-with-given-sum/README.md) | medium | sliding-window, two-pointers | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1) | 1 (python) |
-| [Subset Sum](subset-sum/README.md) | easy | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subset-sum-problem-1611555638/1) | 0 (—) |
-| [Subsets](subsets/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets/) | 0 (—) |
-| [Subsets Ii](subsets-ii/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets-ii/) | 0 (—) |
-| [Sudoku Solver](sudoku-solver/README.md) | hard | backtracking | [leetcode](https://leetcode.com/problems/sudoku-solver/) | 0 (—) |
-| [Surrounded Regions](surrounded-regions/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/surrounded-regions/) | 0 (—) |
-| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  | 1 (python) |
-| [Target Sum](target-sum/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/target-sum/) | 0 (—) |
-| [3Sum](three-sum/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/3sum/) | 0 (—) |
-| [Top K Frequent Elements](top-k-frequent-elements/README.md) | medium | top-k-elements, hashmap | [leetcode](https://leetcode.com/problems/top-k-frequent-elements/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) | 0 (—) |
-| [Tower Hopper](tower-hopper/README.md) | medium | greedy, dp-1d | [youtube](https://www.youtube.com/watch?v=kHWy5nEfRIQ), [geeksforgeeks](https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/) | 1 (python) |
-| [Towers of Hanoi](towers-of-hanoi/README.md) | easy | recursion | [wikipedia](https://en.wikipedia.org/wiki/Tower_of_Hanoi) | 1 (python) |
-| [Trapping Rain Water](trapping-rain-water/README.md) | hard | two-pointers, dynamic-programming | [leetcode](https://leetcode.com/problems/trapping-rain-water/) | 0 (—) |
-| [Two Single Numbers](two-single-numbers/README.md) | medium | bitwise-xor | [leetcode](https://leetcode.com/problems/single-number-iii/) | 0 (—) |
-| [Two Sum](two-sum/README.md) | easy | hashmap, two-pointers | [leetcode](https://leetcode.com/problems/two-sum/) | 2 (go, python) |
-| [Unique Generalized Abbreviations](unique-generalized-abbreviations/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generalized-abbreviation/) | 0 (—) |
-| [Valid Anagram](valid-anagram/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/valid-anagram/), [neetcode](https://neetcode.io/problems/is-anagram) | 1 (go) |
-| [Valid Palindrome](valid-palindrome/README.md) | easy | two-pointers | [leetcode](https://leetcode.com/problems/valid-palindrome/), [interviewbit](https://www.interviewbit.com/problems/palindrome-string/) | 1 (python) |
-| [Valid Parentheses](valid-parentheses/README.md) | easy | stack | [leetcode](https://leetcode.com/problems/valid-parentheses/) | 1 (python) |
-| [Word Search](word-search/README.md) | medium | backtracking, dfs | [leetcode](https://leetcode.com/problems/word-search/) | 0 (—) |
+| Problem | Difficulty | Patterns | Sources |
+|---|---|---|---|
+| [Add Two Numbers](add-two-numbers/README.md) | medium | linked-list, math | [leetcode](https://leetcode.com/problems/add-two-numbers/) |
+| [Alien Dictionary](alien-dictionary/README.md) | hard | topological-sort | [leetcode](https://leetcode.com/problems/alien-dictionary/) |
+| [Amazing Subarrays](amazing-subarrays/README.md) | easy | math | [interviewbit](https://www.interviewbit.com/problems/amazing-subarrays/) |
+| [BFS of a Graph](bfs-of-graph/README.md) | easy | graph-bfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Binary Search](binary-search/README.md) | easy | binary-search | [leetcode](https://leetcode.com/problems/binary-search/), interviewbit |
+| [Binary Search Tree Iterator](binary-search-tree-iterator/README.md) | medium | multi-threaded, design, stack | [leetcode](https://leetcode.com/problems/binary-search-tree-iterator/) |
+| [Binary Tree Inorder Traversal](binary-tree-inorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-inorder-traversal/) |
+| [Binary Tree Postorder Traversal](binary-tree-postorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-postorder-traversal/) |
+| [Binary Tree Preorder Traversal](binary-tree-preorder-traversal/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/binary-tree-preorder-traversal/) |
+| [Binary Tree Right Side View](binary-tree-right-side-view/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-right-side-view/) |
+| [Binary Tree Zigzag Level Order Traversal](binary-tree-zigzag-level-order-traversal/README.md) | medium | bfs | [leetcode](https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/) |
+| [Design Bounded Blocking Queue](bounded-blocking-queue/README.md) | medium | multi-threaded, design | [leetcode](https://leetcode.com/problems/design-bounded-blocking-queue/) |
+| [Coin Change (Fewest Coins)](coin-change/README.md) | medium | dp-1d, unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html) |
+| [Coin Change II (Number of Ways)](coin-change-ii/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/coin-change-ii/) |
+| [Combination Sum](combination-sum/README.md) | medium | backtracking | [leetcode](https://leetcode.com/problems/combination-sum/) |
+| [Complement of Base 10 Integer](complement-of-base-10/README.md) | easy | bitwise-xor | [leetcode](https://leetcode.com/problems/complement-of-base-10-integer/) |
+| [Container With Most Water](container-with-most-water/README.md) | medium | two-pointers, greedy | [leetcode](https://leetcode.com/problems/container-with-most-water/) |
+| [Contains Duplicate](contains-duplicate/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate/), [neetcode](https://neetcode.io/problems/duplicate-integer) |
+| [Contains Duplicate II](contains-duplicate-ii/README.md) | easy | sliding-window, arrays-hashing | [leetcode](https://leetcode.com/problems/contains-duplicate-ii/) |
+| [Count and Say](count-and-say/README.md) | medium | simulation | [leetcode](https://leetcode.com/problems/count-and-say/), [interviewbit](https://www.interviewbit.com/problems/count-and-say/) |
+| [Count of Subset Sum](count-of-subset-sum/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/perfect-sum-problem5633/1) |
+| [Count Univalue Subtrees](count-univalue-subtrees/README.md) | medium | tree-dfs | [leetcode](https://leetcode.com/problems/count-univalue-subtrees/), [interviewbit](https://www.youtube.com/watch?v=7HgsS8bRvjo) |
+| [Course Schedule](course-schedule/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule/) |
+| [Course Schedule II](course-schedule-ii/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/course-schedule-ii/) |
+| [Decimal to Binary](decimal-to-binary/README.md) | easy | math, stack | [interactivepython](https://runestone.academy/ns/books/published/pythonds/BasicDS/ConvertingDecimalNumberstoBinaryNumbers.html) |
+| [DFS of a Graph](dfs-of-graph/README.md) | easy | graph-dfs | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Diameter of Binary Tree](diameter-of-binary-tree/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/diameter-of-binary-tree/) |
+| [Edit Distance](edit-distance/README.md) | medium | longest-common-substring, dp-2d | [leetcode](https://leetcode.com/problems/edit-distance/) |
+| [Equal Subset Sum Partition](equal-subset-sum-partition/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/partition-equal-subset-sum/) |
+| [Factorial of a Number](factorial/README.md) | easy | recursion, stack, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Fibonacci Number](fibonacci-number/README.md) | easy | dp-1d, recursion, fibonacci-numbers | [leetcode](https://leetcode.com/problems/fibonacci-number/) |
+| [Find All Duplicates in an Array](find-all-duplicates/README.md) | medium | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-duplicates-in-an-array/) |
+| [Find All Missing Numbers](find-all-missing-numbers/README.md) | easy | cyclic-sort | [leetcode](https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/) |
+| [Find Median from Data Stream](find-median-from-data-stream/README.md) | hard | two-heaps, design | [leetcode](https://leetcode.com/problems/find-median-from-data-stream/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Find Minimum In Rotated Sorted Array](find-minimum-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) |
+| [Find Right Interval](find-right-interval/README.md) | medium | two-heaps, intervals | [leetcode](https://leetcode.com/problems/find-right-interval/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Find the Duplicate Number](find-the-duplicate-number/README.md) | medium | fast-slow-pointers | [leetcode](https://leetcode.com/problems/find-the-duplicate-number/) |
+| [First Missing Positive](first-missing-positive/README.md) | hard | cyclic-sort | [leetcode](https://leetcode.com/problems/first-missing-positive/) |
+| [Flip and Invert an Image](flip-and-invert-image/README.md) | easy | bitwise-xor, two-pointers | [leetcode](https://leetcode.com/problems/flipping-an-image/) |
+| [Flood Fill](flood-fill/README.md) | easy | islands, dfs | [leetcode](https://leetcode.com/problems/flood-fill/) |
+| [Generate Parentheses](generate-parentheses/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generate-parentheses/) |
+| [House Robber](house-robber/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber/) |
+| [House Robber II](house-robber-ii/README.md) | medium | fibonacci-numbers | [leetcode](https://leetcode.com/problems/house-robber-ii/) |
+| [Implement a Max-Heap](implement-max-heap/README.md) | easy | heap, design | [interviewbit](https://www.interviewbit.com/courses/programming/heaps-and-maps/) |
+| [Implement Power Function](implement-power-function/README.md) | medium | math, bit-manipulation, binary-search | [interviewbit](https://www.interviewbit.com/problems/implement-power-function/), [leetcode](https://leetcode.com/problems/powx-n/) |
+| [Implement strStr()](implement-strstr/README.md) | easy | two-pointers, string-matching | [leetcode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/), [interviewbit](https://www.interviewbit.com/problems/implement-strstr/) |
+| [Convert an Integer to a String in Any Base](int-to-string-base/README.md) | easy | recursion, math | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/pythondsConvertinganIntegertoaStringinAnyBase.html) |
+| [Intersection of Two Sorted Arrays](intersection-of-sorted-arrays/README.md) | easy | two-pointers | [interviewbit](https://www.interviewbit.com/problems/intersection-of-sorted-arrays/) |
+| [Interval List Intersections](interval-list-intersections/README.md) | medium | merge-intervals, two-pointers | [leetcode](https://leetcode.com/problems/interval-list-intersections/) |
+| [Invert Binary Tree](invert-binary-tree/README.md) | easy | multi-threaded, tree-dfs | [leetcode](https://leetcode.com/problems/invert-binary-tree/) |
+| [IPO (Maximize Capital)](ipo/README.md) | hard | two-heaps, greedy | [leetcode](https://leetcode.com/problems/ipo/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [K Closest Points to Origin](k-closest-points-to-origin/README.md) | medium | top-k-elements, heap | [leetcode](https://leetcode.com/problems/k-closest-points-to-origin/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [K Largest Elements](k-largest-elements/README.md) | easy | heap, top-k-elements | [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/) |
+| [Kth Largest Element in a Stream](kth-largest-in-stream/README.md) | easy | heap, design, top-k-elements | [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) |
+| [Remove the K-th Node From the End](kth-node-from-end/README.md) | medium | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) |
+| [Kth Smallest Element in a Sorted Matrix](kth-smallest-element-in-a-sorted-matrix/README.md) | medium | k-way-merge, binary-search | [leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Kth Smallest Number in M Sorted Lists](kth-smallest-in-m-sorted-lists/README.md) | medium | k-way-merge, heap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Largest Number](largest-number/README.md) | medium | sorting, greedy | [interviewbit](https://www.interviewbit.com/problems/largest-number/), [leetcode](https://leetcode.com/problems/largest-number/) |
+| [Letter Case Permutation](letter-case-permutation/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/letter-case-permutation/) |
+| [Level Order Traversal (flat)](level-order-traversal/README.md) | easy | tree-bfs | [geeksforgeeks](https://www.geeksforgeeks.org/level-order-tree-traversal/) |
+| [Longest Common Prefix](longest-common-prefix/README.md) | easy | arrays-hashing | [leetcode](https://leetcode.com/problems/longest-common-prefix/), [interviewbit](https://www.interviewbit.com/problems/longest-common-prefix/) |
+| [Longest Common Substring](longest-common-substring/README.md) | medium | dp-2d, longest-common-substring | [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit |
+| [Longest Increasing Subsequence](longest-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [leetcode](https://leetcode.com/problems/longest-increasing-subsequence/) |
+| [Longest Palindromic Substring](longest-palindromic-substring/README.md) | medium | dp-2d, two-pointers, palindromic-subsequence | [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA) |
+| [Longest Repeating Character Replacement](longest-repeating-character-replacement/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-repeating-character-replacement/) |
+| [Longest Substring Without Repeating Characters](longest-substring-without-repeating-characters/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/longest-substring-without-repeating-characters/) |
+| [LRU Cache](lru-cache/README.md) | medium | design, hashmap, linked-list | [leetcode](https://leetcode.com/problems/lru-cache/), interview:classic |
+| [Max Area of Island](max-area-of-island/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/max-area-of-island/) |
+| [Maximal Square](maximal-square/README.md) | medium | dp-2d | [leetcode](https://leetcode.com/problems/maximal-square/), [youtube](https://www.youtube.com/watch?v=FO7VXDfS8Gk) |
+| [Maximum Absolute Difference](maximum-absolute-difference/README.md) | medium | math, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/maximum-absolute-difference/) |
+| [Maximum Depth of Binary Tree](maximum-depth-of-binary-tree/README.md) | easy | tree-dfs | [leetcode](https://leetcode.com/problems/maximum-depth-of-binary-tree/) |
+| [Maximum Distinct Elements](maximum-distinct-elements/README.md) | medium | top-k-elements, greedy, hashmap | [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Maximum Ribbon Cut](maximum-ribbon-cut/README.md) | medium | unbounded-knapsack | [geeksforgeeks](https://www.geeksforgeeks.org/problems/cutted-segments1642/1) |
+| [Maximum Subarray (Max Sum Contiguous Subarray)](maximum-subarray/README.md) | medium | dp-1d, greedy | [interviewbit](https://www.interviewbit.com/problems/max-sum-contiguous-subarray/), [leetcode](https://leetcode.com/problems/maximum-subarray/) |
+| [Maximum Sum Increasing Subsequence](maximum-sum-increasing-subsequence/README.md) | medium | longest-common-substring, dp-1d | [geeksforgeeks](https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-dp-14/) |
+| [Median of Two Sorted Arrays](median-of-two-sorted-arrays/README.md) | hard | binary-search | [leetcode](https://leetcode.com/problems/median-of-two-sorted-arrays/), [interviewbit](https://www.interviewbit.com/problems/median-of-array/) |
+| [Meeting Rooms](meeting-rooms/README.md) | easy | merge-intervals | [leetcode](https://leetcode.com/problems/meeting-rooms/) |
+| [Merge Intervals](merge-intervals/README.md) | medium | merge-intervals | [leetcode](https://leetcode.com/problems/merge-intervals/) |
+| [Merge k Sorted Lists](merge-k-sorted-lists/README.md) | hard | linked-list, heap, k-way-merge | [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/) |
+| [Merge Two Sorted Arrays (in place)](merge-two-sorted-arrays/README.md) | easy | two-pointers, sorting | [interviewbit](https://www.interviewbit.com/problems/merge-two-sorted-lists-ii/), [leetcode](https://leetcode.com/problems/merge-sorted-array/) |
+| [Merge Two Sorted Lists](merge-two-sorted-lists/README.md) | easy | linked-list, two-pointers | [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Middle of the Linked List](middle-of-linked-list/README.md) | easy | linked-list, fast-slow-pointers | [leetcode](https://leetcode.com/problems/middle-of-the-linked-list/) |
+| [Min Cost Climbing Stairs](min-cost-climbing-stairs/README.md) | easy | fibonacci-numbers | [leetcode](https://leetcode.com/problems/min-cost-climbing-stairs/) |
+| [Minimum Depth of Binary Tree](minimum-depth-of-binary-tree/README.md) | easy | bfs | [leetcode](https://leetcode.com/problems/minimum-depth-of-binary-tree/) |
+| [Minimum Height Trees](minimum-height-trees/README.md) | medium | topological-sort | [leetcode](https://leetcode.com/problems/minimum-height-trees/) |
+| [Minimum Insertions to Make a String Palindrome](minimum-insertions-to-make-palindrome/README.md) | hard | dp-2d, palindromic-subsequence | [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit |
+| [Minimum Meeting Rooms](minimum-meeting-rooms/README.md) | medium | merge-intervals, heap | [leetcode](https://leetcode.com/problems/meeting-rooms-ii/) |
+| [Minimum Size Subarray Sum](minimum-size-subarray-sum/README.md) | medium | sliding-window | [leetcode](https://leetcode.com/problems/minimum-size-subarray-sum/) |
+| [Minimum Subset Sum Difference](minimum-subset-sum-difference/README.md) | medium | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/minimum-sum-partition3317/1) |
+| [Minimum Window Substring](minimum-window-substring/README.md) | hard | sliding-window | [leetcode](https://leetcode.com/problems/minimum-window-substring/) |
+| [Missing Number](missing-number/README.md) | easy | cyclic-sort, bitwise-xor | [leetcode](https://leetcode.com/problems/missing-number/) |
+| [Number Factors](number-factors/README.md) | medium | fibonacci-numbers | [geeksforgeeks](https://www.geeksforgeeks.org/count-ofdifferent-ways-express-n-sum-1-3-4/) |
+| [Pair With Target Sum (exists?)](pair-with-target-sum/README.md) | easy | hashmap, two-pointers |  |
+| [Palindrome Linked List](palindrome-linked-list/README.md) | easy | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/palindrome-linked-list/) |
+| [Palindrome Number](palindrome-number/README.md) | easy | math | [leetcode](https://leetcode.com/problems/palindrome-number/) |
+| [Palindrome Partitioning II (Minimum Cuts)](palindrome-partitioning-min-cuts/README.md) | hard | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindrome-partitioning-ii/) |
+| [Palindromic Substrings](palindromic-substrings-count/README.md) | medium | palindromic-subsequence, dp-2d | [leetcode](https://leetcode.com/problems/palindromic-substrings/) |
+| [Pascal's Triangle](pascal-triangle/README.md) | easy | dp-1d, arrays-hashing | [interviewbit](https://www.interviewbit.com/problems/pascal-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle/) |
+| [Pascal's Triangle Row (k-th row)](pascal-triangle-row/README.md) | easy | dp-1d, math | [interviewbit](https://www.interviewbit.com/problems/kth-row-of-pascals-triangle/), [leetcode](https://leetcode.com/problems/pascals-triangle-ii/) |
+| [Path Sum](path-sum/README.md) | easy | dfs | [leetcode](https://leetcode.com/problems/path-sum/) |
+| [Path Sum III (Count Paths for a Sum)](path-sum-iii/README.md) | medium | dfs | [leetcode](https://leetcode.com/problems/path-sum-iii/) |
+| [Perfect Squares](perfect-squares/README.md) | medium | unbounded-knapsack | [leetcode](https://leetcode.com/problems/perfect-squares/) |
+| [Permutations](permutations/README.md) | medium | backtracking, recursion | [leetcode](https://leetcode.com/problems/permutations/), [interviewbit](https://www.interviewbit.com/problems/permutations/) |
+| [Permutations of a String](permutations-of-string/README.md) | medium | backtracking, recursion | [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic |
+| [Add One To Number](plus-one/README.md) | easy | arrays-hashing, math | [interviewbit](https://www.interviewbit.com/problems/add-one-to-number/), [leetcode](https://leetcode.com/problems/plus-one/) |
+| [Prime Sum (Goldbach pair)](prime-sum/README.md) | medium | math | [interviewbit](https://www.interviewbit.com/problems/prime-sum/) |
+| [Product of Array Except Self](product-of-array-except-self/README.md) | medium | arrays-hashing, prefix-sum | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/product-of-array-except-self/) |
+| [Rearrange Sorted Array in Max/Min Form](rearrange-max-min/README.md) | medium | two-pointers, math | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Sum of a List (Recursive)](recursive-list-sum/README.md) | easy | recursion | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/CalculatingtheSumofaListofNumbers.html), [w3resource](https://www.w3resource.com/python-exercises/data-structures-and-algorithms/python-recursion.php) |
+| [Remove Duplicates from Sorted List](remove-duplicates-from-sorted-list/README.md) | easy | linked-list | [leetcode](https://leetcode.com/problems/remove-duplicates-from-sorted-list/), [interviewbit](https://www.interviewbit.com/problems/remove-duplicates-from-sorted-list/) |
+| [Reorder List](reorder-list/README.md) | medium | linked-list, fast-slow-pointers, in-place-reversal-linked-list | [leetcode](https://leetcode.com/problems/reorder-list/) |
+| [Reverse an Array Recursively](reverse-array-recursive/README.md) | easy | recursion, two-pointers | [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/toctree.html) |
+| [Reverse Nodes in k-Group](reverse-every-k-group/README.md) | hard | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-nodes-in-k-group/) |
+| [Reverse Integer](reverse-integer/README.md) | medium | math | [leetcode](https://leetcode.com/problems/reverse-integer/) |
+| [Reverse Linked List](reverse-linked-list/README.md) | easy | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/reverse-linked-list/) |
+| [Roman to Integer](roman-to-integer/README.md) | easy | math, hashmap | [leetcode](https://leetcode.com/problems/roman-to-integer/) |
+| [Rotate Array (right by k)](rotate-array/README.md) | medium | arrays-hashing, two-pointers | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python), [leetcode](https://leetcode.com/problems/rotate-array/) |
+| [Rotate List](rotate-list/README.md) | medium | in-place-reversal-linked-list, linked-list | [leetcode](https://leetcode.com/problems/rotate-list/) |
+| [Rotting Oranges](rotting-oranges/README.md) | medium | islands, bfs | [leetcode](https://leetcode.com/problems/rotting-oranges/) |
+| [Same Tree](same-tree/README.md) | easy | tree-dfs, multi-threaded | [leetcode](https://leetcode.com/problems/same-tree/) |
+| [Search in Bitonic Array](search-in-bitonic-array/README.md) | medium | binary-search | [interviewbit](https://www.interviewbit.com/problems/search-in-bitonic-array/) |
+| [Search In Rotated Sorted Array](search-in-rotated-sorted-array/README.md) | medium | modified-binary-search | [leetcode](https://leetcode.com/problems/search-in-rotated-sorted-array/) |
+| [Second Largest Element](second-largest-element/README.md) | easy | arrays-hashing | [educative](https://www.educative.io/courses/data-structures-coding-interviews-python) |
+| [Sliding Window Median](sliding-window-median/README.md) | hard | two-heaps, sliding-window | [leetcode](https://leetcode.com/problems/sliding-window-median/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Smallest Range Covering Elements from K Lists](smallest-range-covering-elements-from-k-lists/README.md) | hard | k-way-merge, heap | [leetcode](https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Sort an Array](sort-an-array/README.md) | medium | sorting, heap, recursion | [leetcode](https://leetcode.com/problems/sort-an-array/), [programiz](https://www.programiz.com/dsa/heap-sort), [geeksforgeeks](https://www.geeksforgeeks.org/merge-sort/) |
+| [Sort Binary Linked List](sort-binary-linked-list/README.md) | easy | linked-list, two-pointers | [interviewbit](https://www.interviewbit.com/problems/sort-binary-linked-list/) |
+| [Sort Colors](sort-colors/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/sort-colors/) |
+| [Sqrt(x)](sqrt-x/README.md) | easy | binary-search, math | [leetcode](https://leetcode.com/problems/sqrtx/), [interviewbit](https://www.interviewbit.com/problems/square-root-of-integer/) |
+| [Square of a Number via Recursion](square-via-recursion/README.md) | easy | recursion, math | [educative](https://www.educative.io/courses/recursion-for-coding-interviews-in-python) |
+| [Subarray With Given Sum](subarray-with-given-sum/README.md) | medium | sliding-window, two-pointers | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1) |
+| [Subset Sum](subset-sum/README.md) | easy | knapsack-0-1 | [geeksforgeeks](https://www.geeksforgeeks.org/problems/subset-sum-problem-1611555638/1) |
+| [Subsets](subsets/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets/) |
+| [Subsets Ii](subsets-ii/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/subsets-ii/) |
+| [Sudoku Solver](sudoku-solver/README.md) | hard | backtracking | [leetcode](https://leetcode.com/problems/sudoku-solver/) |
+| [Surrounded Regions](surrounded-regions/README.md) | medium | islands, dfs | [leetcode](https://leetcode.com/problems/surrounded-regions/) |
+| [Swap Two Elements Without a Temp Variable](swap-without-temp/README.md) | easy | math, bit-manipulation, bitwise-xor |  |
+| [Target Sum](target-sum/README.md) | medium | knapsack-0-1 | [leetcode](https://leetcode.com/problems/target-sum/) |
+| [3Sum](three-sum/README.md) | medium | two-pointers, sorting | [leetcode](https://leetcode.com/problems/3sum/) |
+| [Top K Frequent Elements](top-k-frequent-elements/README.md) | medium | top-k-elements, hashmap | [leetcode](https://leetcode.com/problems/top-k-frequent-elements/), [designgurus](https://www.designgurus.io/course/grokking-the-coding-interview) |
+| [Tower Hopper](tower-hopper/README.md) | medium | greedy, dp-1d | [youtube](https://www.youtube.com/watch?v=kHWy5nEfRIQ), [geeksforgeeks](https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/) |
+| [Towers of Hanoi](towers-of-hanoi/README.md) | easy | recursion | [wikipedia](https://en.wikipedia.org/wiki/Tower_of_Hanoi) |
+| [Trapping Rain Water](trapping-rain-water/README.md) | hard | two-pointers, dynamic-programming | [leetcode](https://leetcode.com/problems/trapping-rain-water/) |
+| [Two Single Numbers](two-single-numbers/README.md) | medium | bitwise-xor | [leetcode](https://leetcode.com/problems/single-number-iii/) |
+| [Two Sum](two-sum/README.md) | easy | hashmap, two-pointers | [leetcode](https://leetcode.com/problems/two-sum/) |
+| [Unique Generalized Abbreviations](unique-generalized-abbreviations/README.md) | medium | subsets, backtracking | [leetcode](https://leetcode.com/problems/generalized-abbreviation/) |
+| [Valid Anagram](valid-anagram/README.md) | easy | hashmap, arrays-hashing | [leetcode](https://leetcode.com/problems/valid-anagram/), [neetcode](https://neetcode.io/problems/is-anagram) |
+| [Valid Palindrome](valid-palindrome/README.md) | easy | two-pointers | [leetcode](https://leetcode.com/problems/valid-palindrome/), [interviewbit](https://www.interviewbit.com/problems/palindrome-string/) |
+| [Valid Parentheses](valid-parentheses/README.md) | easy | stack | [leetcode](https://leetcode.com/problems/valid-parentheses/) |
+| [Word Search](word-search/README.md) | medium | backtracking, dfs | [leetcode](https://leetcode.com/problems/word-search/) |

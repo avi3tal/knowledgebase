@@ -88,7 +88,7 @@ export interface ProblemCardData {
   expected_complexity: { time: string; space: string };
   readme: string;
   readme_path: string;
-  attempts: { name: string; lang: string; last_run: RunRecord | null }[];
+  attempts: { name: string; lang: string; last_run: RunRecord | null; path: string }[];
   refs?: Resource[];
 }
 export interface QuizItem {

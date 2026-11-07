@@ -1,8 +1,13 @@
 # knowledgebase
 
-A personal practice gym for sharpening engineering skills: a local LeetCode/NeetCode-style
-console where problems are generated from templates, solved in Python or Go, and run against
-predefined cases with a runtime/complexity estimate.
+A local, clone-and-run interview-prep platform: animated lessons, a knowledge graph of curated
+resources, LeetCode/NeetCode-style problems solved in **your own editor** (Python or Go) and run
+against predefined cases with a runtime/complexity estimate, plus deterministic feedback.
+
+**Your work stays yours.** The repo ships content and tools only. Your attempts, run history,
+quiz answers and study sessions live in `_workspace/` (git-ignored, created on first use), so you
+can pull platform updates without conflicts and keep your progress private. Use your own tools
+and, if you want AI help, your own Claude Code and API keys.
 
 ## Layout
 
@@ -10,7 +15,7 @@ The top level is organised by **type** (only `algo` for now; `system-design`, `k
 
 ```
 resources/            sources.json (registry + verdicts), refs/ (curated references), README.md, ROADMAP.md
-progress/             runs.jsonl, quiz.jsonl — your practice history (input to kb feedback)
+_workspace/           YOUR private data (git-ignored): attempts/, progress/*.jsonl, sessions/
 studio/               React + TS learning studio (served by `kb studio`)
 algo/
   learn/              catalog.json (patterns) + one lesson dir per topic
@@ -20,14 +25,14 @@ algo/
     README.md         statement, learning material, tips, pattern rationale
     meta.json         difficulty, patterns[], sources[], signature, expected complexity
     cases.json        language-neutral test cases
-    attempts/<date>_<lang>_<pattern>/   one solution session (solution + notes.md)
 templates/            problem/attempt templates per type & language
 tools/                `kb` CLI: generate problems/attempts, run & evaluate
 archive/              leftovers that are not (yet) a problem type
 ```
 
 - A **problem** is defined once; you can practise it many times as new **attempts**
-  (different language, pattern or day).
+  (different language, pattern or day), stored in
+  `_workspace/attempts/<subject>/<slug>/<date>_<lang>_<pattern>/`.
 - Where a problem came from (leetcode, interviewbit, an interview…) is a `sources` tag in
   `meta.json`, not a folder.
 
@@ -48,8 +53,8 @@ make studio            # build the UI and serve it on http://127.0.0.1:8765
   - practice problems, easy → hard.
 - **Patterns catalogue** (`algo/learn/catalog.json`): the 23 coding patterns from the
   DesignGurus PDF plus fundamentals. Every problem tag maps to a catalogue topic.
-- **Feedback** (`./kb feedback`, the studio dashboard) is computed from `progress/runs.jsonl`
-  (every `kb run`) and `progress/quiz.jsonl` (every quiz answer):
+- **Feedback** (`./kb feedback`, the studio dashboard) is computed from `_workspace/progress/runs.jsonl`
+  (every `kb run`) and `_workspace/progress/quiz.jsonl` (every quiz answer):
   - solved / failing / untried counts, complexity misses and quiz accuracy;
   - spaced-review dates and what to practise next.
   - No AI is involved.
@@ -82,7 +87,7 @@ estimate: it separates O(n) from O(n²) reliably, but not O(n) from O(n log n). 
 appended to the attempt's `notes.md`.
 
 Go attempts are packages under the root `go.mod`. kb generates a table-driven `solution_test.go`
-from `meta.json`, so `go test ./algo/problems/<slug>/attempts/<attempt>` also works on its own.
+from `meta.json`, so `go test ./_workspace/attempts/algo/<slug>/<attempt>` also works on its own.
 Unsolved Go stubs fail their tests by design (red → green).
 
 Development: `make test` (pytest via uvx + go vet/test), `make lint`, `make fmt`.
@@ -91,7 +96,7 @@ Development: `make test` (pytest via uvx + go vet/test), `make lint`, `make fmt`
 
 Solutions from 2017–2025 that used to live in source folders (`leetcode/`, `interviewbit/`,
 `geeksforgeeks/`, `educative/`, `courses/`, `Interviews/`, `ds/`, `recursion/`, `2026/`) were
-migrated into `algo/problems/*/attempts/*_legacy*`. The code was kept as written. Bugs found
-during the migration are listed in each attempt's `notes.md` and left failing, as practice
-material. `git log --follow` on a `solution.py` shows its original history. See
+migrated into the problem format; the owner's attempts (`*_legacy*`) then moved to their private
+workspace on 2026-11-07, when the repo became a clone-and-run platform. Older commits still hold
+them. Every problem keeps its statement, cases and learning material. See
 [algo/problems/INDEX.md](algo/problems/INDEX.md).
