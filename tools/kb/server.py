@@ -3,6 +3,7 @@
 GET  /api/subjects                       catalogs + lesson availability
 GET  /api/lesson/<subject>/<topic>       resolved lesson (quiz answers withheld)
 GET  /api/problem/<subject>/<slug>       problem card (README, attempts, last runs)
+GET  /api/problems/<subject>             all problems with topics + status (problem browser)
 GET  /api/feedback/<subject>             deterministic progress feedback
 POST /api/quiz  {subject, topic, item, choice}  -> graded, appended to progress/quiz.jsonl
 Everything else is served from studio/dist (SPA fallback to index.html).
@@ -18,7 +19,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from kb import feedback, history, learn
+from kb import feedback, history, learn, scaffold
 from kb.paths import ROOT, problems_dir
 from kb.schema import ProblemError
 
@@ -33,6 +34,31 @@ def subjects_payload() -> dict[str, Any]:
         topics = [{**t, "has_lesson": learn.has_lesson(s, t["id"])} for t in cat["topics"]]
         out.append({"id": s, "title": cat.get("title", s), "source": cat.get("source"), "topics": topics})
     return {"root": str(ROOT), "subjects": out}
+
+
+def problems_payload(subject: str) -> list[dict[str, Any]]:
+    """Every problem of a subject with its catalog topics and practice status (for the browser)."""
+    aliases = learn.alias_map(learn.catalog(subject))
+    runs = history.runs()
+    out = []
+    for p in scaffold.all_problems(problems_for(subject)):
+        st = feedback.problem_status(p, runs)
+        tags = p.meta.get("patterns", [])
+        out.append(
+            {
+                "slug": p.slug,
+                "title": p.meta.get("title", p.slug),
+                "difficulty": p.meta.get("difficulty"),
+                "patterns": tags,
+                "topics": sorted({aliases[t] for t in tags if t in aliases}),
+                "sources": [s.get("name") for s in p.meta.get("sources", [])],
+                "attempts": len(p.attempts()),
+                "status": st["status"],
+                "legacy_failing": st["legacy_failing"],
+                "complexity_miss": st["complexity_miss"],
+            }
+        )
+    return out
 
 
 def problems_for(subject: str) -> Path:
@@ -66,6 +92,8 @@ class Handler(BaseHTTPRequestHandler):
             if parts[:2] == ["api", "problem"] and len(parts) == 4:
                 learn.catalog(parts[2])  # validates the subject id
                 return self._json(learn.problem_card(parts[2], parts[3], history.runs()))
+            if parts[:2] == ["api", "problems"] and len(parts) == 3:
+                return self._json(problems_payload(parts[2]))
             if parts[:2] == ["api", "feedback"] and len(parts) == 3:
                 learn.catalog(parts[2])  # validates the subject id
                 return self._json(feedback.compute(parts[2], problems_for(parts[2])))

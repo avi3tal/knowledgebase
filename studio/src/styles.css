@@ -662,3 +662,57 @@ table.dp-grid td.cursor {
   border-color: var(--accent);
   color: var(--text);
 }
+
+/* problems browser */
+.filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.filters input {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font: inherit;
+}
+table.problems-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.problems-table th,
+table.problems-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+table.problems-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.85em;
+}
+.topic-link {
+  margin-right: 8px;
+}
+.tag {
+  font-size: 0.7em;
+  border-radius: 4px;
+  padding: 0 5px;
+  margin-left: 6px;
+}
+.tag.warn {
+  border: 1px solid var(--warn);
+  color: var(--warn);
+}
+.status.solved {
+  color: var(--ok);
+}
+.status.failing {
+  color: var(--bad);
+}
+.status.untried {
+  color: var(--muted);
+}

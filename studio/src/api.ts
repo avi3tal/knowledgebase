@@ -91,6 +91,19 @@ export interface Feedback {
   unmapped_tags: string[];
 }
 
+export interface ProblemRow {
+  slug: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  patterns: string[];
+  topics: string[];
+  sources: string[];
+  attempts: number;
+  status: "solved" | "failing" | "untried";
+  legacy_failing: boolean;
+  complexity_miss: boolean;
+}
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(path);
   if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
@@ -103,6 +116,7 @@ export const api = {
   problem: (subject: string, slug: string) =>
     get<ProblemCardData>(`/api/problem/${subject}/${slug}`),
   feedback: (subject: string) => get<Feedback>(`/api/feedback/${subject}`),
+  problems: (subject: string) => get<ProblemRow[]>(`/api/problems/${subject}`),
   async answer(subject: string, topic: string, item: string, choice: string): Promise<QuizResult> {
     const res = await fetch("/api/quiz", {
       method: "POST",

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Feedback, Lesson, ProblemCardData, SubjectsResponse } from "./api";
+import type { Feedback, Lesson, ProblemCardData, ProblemRow, SubjectsResponse } from "./api";
 import { api } from "./api";
 import { Dashboard } from "./components/Dashboard";
 import { LessonView } from "./components/LessonView";
 import { ProblemCard } from "./components/ProblemCard";
+import { ProblemsPage } from "./components/ProblemsPage";
 import { RootContext } from "./context";
 import type { Route } from "./route";
 import { parseRoute } from "./route";
@@ -11,6 +12,7 @@ import { parseRoute } from "./route";
 type Page =
   | { kind: "lesson"; data: Lesson }
   | { kind: "problem"; data: ProblemCardData }
+  | { kind: "problems"; data: ProblemRow[] }
   | { kind: "dashboard"; data: Feedback };
 
 function useRoute(): Route {
@@ -41,7 +43,9 @@ export function App() {
         ? api.lesson(route.subject, route.topic).then((data): Page => ({ kind: "lesson", data }))
         : route.page === "problem"
           ? api.problem(route.subject, route.slug).then((data): Page => ({ kind: "problem", data }))
-          : api.feedback(route.subject).then((data): Page => ({ kind: "dashboard", data }));
+          : route.page === "problems"
+            ? api.problems(route.subject).then((data): Page => ({ kind: "problems", data }))
+            : api.feedback(route.subject).then((data): Page => ({ kind: "dashboard", data }));
     load.then(setPage, (e: unknown) => setError(String(e)));
     window.scrollTo(0, 0);
   }, [route]);
@@ -56,6 +60,16 @@ export function App() {
           {subjects?.subjects.map((s) => (
             <div key={s.id}>
               <div className="subject">{s.title}</div>
+              <a href="#/" className={`topic ${route.page === "dashboard" ? "active" : ""}`}>
+                📊 Progress
+              </a>
+              <a
+                href={`#/problems/${s.id}`}
+                className={`topic ${route.page === "problems" ? "active" : ""}`}
+              >
+                📚 All problems
+              </a>
+              <div className="subject">Patterns & topics</div>
               {[...s.topics]
                 .sort((a, b) =>
                   a.kind === b.kind
@@ -88,6 +102,18 @@ export function App() {
           {page?.kind === "dashboard" && <Dashboard data={page.data} />}
           {page?.kind === "lesson" && <LessonView lesson={page.data} />}
           {page?.kind === "problem" && <ProblemCard p={page.data} open />}
+          {page?.kind === "problems" && (
+            <ProblemsPage
+              subject={route.subject}
+              rows={page.data}
+              names={Object.fromEntries(
+                (subjects?.subjects.find((s) => s.id === route.subject)?.topics ?? []).map((t) => [
+                  t.id,
+                  t.name,
+                ]),
+              )}
+            />
+          )}
         </main>
       </div>
     </RootContext.Provider>

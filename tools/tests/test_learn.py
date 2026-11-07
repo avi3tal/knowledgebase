@@ -281,6 +281,11 @@ def test_studio_api(studio: str, progress: Path) -> None:
     assert _get(f"{studio}/api/lesson/algo/..%2Fsecrets")[0] == 404
     assert _get(f"{studio}/api/problem/algo/two-sum")[1]["slug"] == "two-sum"
     assert _get(f"{studio}/api/feedback/algo")[1]["subject"] == "algo"
+    status, problems = _get(f"{studio}/api/problems/algo")
+    assert status == 200 and len(problems) == len(list(problems_dir().glob("*/meta.json")))
+    two_sum = next(p for p in problems if p["slug"] == "two-sum")
+    assert "two-pointers" in two_sum["topics"] and two_sum["status"] == "untried"
+    assert _get(f"{studio}/api/problems/nope")[0] == 404
 
     body = json.dumps({"subject": "algo", "topic": "sliding-window", "item": "q1", "choice": "sliding-window"})
     req = urllib.request.Request(f"{studio}/api/quiz", body.encode(), {"Content-Type": "application/json"})
