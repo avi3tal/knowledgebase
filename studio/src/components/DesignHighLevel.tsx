@@ -123,7 +123,9 @@ export function HighLevelEditor({
           value={diagram.why}
           placeholder={
             isFirst
-              ? "e.g. Naive start: one service and one database"
+              ? palette.includes("class")
+                ? "e.g. Core objects first: the main classes and how they relate"
+                : "e.g. Naive start: one service and one database"
               : "Which flaw, requirement or bottleneck does this version fix? (cite N1, F2…)"
           }
           onChange={(e) => onDiagram({ ...diagram, why: e.target.value })}
