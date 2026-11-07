@@ -448,7 +448,7 @@ export function DesignConsole({
         <span className="tab-icon" aria-hidden>
           {STAGE_INFO[t].icon}
         </span>
-        {STAGE_INFO[t].label}
+        {stageLabel(t, problem.stages)}
         <span className="wb-tab-badge">
           {s && s.total > 0 ? (done ? "✓" : `${s.passed}/${s.total}`) : "–"}
         </span>
@@ -525,7 +525,7 @@ export function DesignConsole({
   const idx = tabs.indexOf(tab);
   const prevTab = idx > 0 ? tabs[idx - 1] : undefined;
   const nextTab = idx >= 0 && idx < tabs.length - 1 ? tabs[idx + 1] : undefined;
-  const tabName = (t: Tab) => (t === "reference" ? "Reference" : STAGE_INFO[t].label);
+  const tabName = (t: Tab) => (t === "reference" ? "Reference" : stageLabel(t, problem.stages));
   const pct = check.total ? (100 * check.passed) / check.total : 0;
   const footer = (
     <>
@@ -627,7 +627,7 @@ export function DesignConsole({
             <h2 className="stage-title">
               {tab === "reference"
                 ? "📖 Reference"
-                : `${STAGE_INFO[tab].icon} ${STAGE_INFO[tab].label}`}
+                : `${STAGE_INFO[tab].icon} ${stageLabel(tab, problem.stages)}`}
             </h2>
             {tab === "scope" && (
               <ScopeEditor

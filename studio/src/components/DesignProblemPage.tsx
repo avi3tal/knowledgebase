@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DesignProblemData, DesignReference, ProblemRow } from "../api";
 import { api } from "../api";
 import { SUBJECT_SHORT } from "../catalog";
-import { STAGE_INFO } from "../design";
+import { STAGE_INFO, stageLabel } from "../design";
 import {
   LABEL_RE,
   fencedVersions,
@@ -310,7 +310,7 @@ export function DesignProblemPage({
                 style={{ ["--i" as string]: i }}
               >
                 <span className="rd-step-icon">{STAGE_INFO[s.stage].icon}</span>
-                <span className="rd-step-label">{STAGE_INFO[s.stage].label}</span>
+                <span className="rd-step-label">{stageLabel(s.stage, p.stages)}</span>
                 <span className="rd-step-n">
                   {s.checks ? `${s.checks} check${s.checks === 1 ? "" : "s"}` : "—"}
                 </span>

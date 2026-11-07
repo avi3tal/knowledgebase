@@ -60,6 +60,7 @@ import {
   partToDiagram,
   placeComposed,
   stagesFirst,
+  stageLabel,
 } from "./design";
 import refDesignJson from "../../system-design/problems/url-shortener/reference/design.json";
 
@@ -576,5 +577,13 @@ describe("geometry", () => {
     expect(zoomAt(v, { x: 0, y: 0 }, 99).k).toBe(2.5);
     expect(snap(14)).toBe(10);
     expect(snap(16)).toBe(20);
+  });
+});
+
+describe("stageLabel", () => {
+  it("says Reduce only when the problem decomposes into parts", () => {
+    expect(stageLabel("high-level", ["scope", "parts", "high-level"])).toMatch(/^Reduce/);
+    expect(stageLabel("high-level", ["scope", "high-level", "signatures"])).toBe("High-level");
+    expect(stageLabel("parts", ["parts"])).toBe("Decompose");
   });
 });

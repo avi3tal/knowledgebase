@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DesignCheck, DesignStage, TipLevel } from "../api";
 import { api } from "../api";
-import { STAGE_INFO, newlyPassed, nextTipLevel, stagesFirst } from "../design";
+import { STAGE_INFO, newlyPassed, nextTipLevel, stagesFirst, stageLabel } from "../design";
 import { ConfirmBar } from "./ConfirmDialog";
 import { Ring } from "./Ring";
 
@@ -96,7 +96,7 @@ export function DesignChecklist({
         return (
           <section key={st} className={`cl-group ${st === current ? "current" : ""}`}>
             <button className="cl-stage" onClick={() => onJump(st)}>
-              {STAGE_INFO[st].icon} {STAGE_INFO[st].label}
+              {STAGE_INFO[st].icon} {stageLabel(st, stages)}
               <span className={`cl-count ${s && s.passed === s.total ? "ok" : ""}`}>
                 {s?.passed ?? 0}/{s?.total ?? items.length}
               </span>

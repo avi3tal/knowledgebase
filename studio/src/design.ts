@@ -26,6 +26,12 @@ export const STAGE_INFO: Record<DesignStage, { label: string; icon: string }> = 
   signatures: { label: "Signatures", icon: "✍️" },
 };
 
+/** Stage label for a problem: "Reduce: …" only makes sense when there is a Decompose stage before it. */
+export function stageLabel(stage: DesignStage, stages: readonly DesignStage[]): string {
+  if (stage === "high-level" && !stages.includes("parts")) return "High-level";
+  return STAGE_INFO[stage].label;
+}
+
 // ---------------------------------------------------------------- palette shapes
 
 export interface KindStyle {
