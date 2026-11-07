@@ -1,0 +1,11 @@
+[
+  {"name": "example 1", "args": {"root": [10, 5, -3, 3, 2, null, 11, 3, -2, null, 1], "targetSum": 8}, "expected": 3},
+  {"name": "example 2", "args": {"root": [5, 4, 8, 11, null, 13, 4, 7, 2, null, null, 5, 1], "targetSum": 22}, "expected": 3},
+  {"name": "empty", "args": {"root": [], "targetSum": 0}, "expected": 0},
+  {"name": "single hit", "args": {"root": [1], "targetSum": 1}, "expected": 1},
+  {"name": "single miss", "args": {"root": [1], "targetSum": 2}, "expected": 0},
+  {"name": "all zeros", "args": {"root": [0, 0, 0, 0, null, null, 0], "targetSum": 0}, "expected": 11},
+  {"name": "chain of ones", "args": {"root": [1, null, 1, null, 1, null, 1], "targetSum": 2}, "expected": 3},
+  {"name": "negatives cancel", "args": {"root": [1, -1, 2, 1, null, -2], "targetSum": 0}, "expected": 3},
+  {"name": "not downward does not count", "args": {"root": [1, 2, 3], "targetSum": 6}, "expected": 0}
+]

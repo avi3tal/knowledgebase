@@ -1,0 +1,195 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "islands",
+ "title": "Islands (Matrix Traversal)",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "count-islands-dfs",
+   "title": "DFS flood fill — count the islands",
+   "source": "examples/count_islands_dfs.py",
+   "function": "count_islands",
+   "input": {
+    "grid": [
+     "11000",
+     "11010",
+     "00100",
+     "00011"
+    ]
+   },
+   "view": [
+    {
+     "id": "grid",
+     "type": "grid",
+     "var": "grid",
+     "cells": {
+      "cur": [
+       "r",
+       "c"
+      ]
+     },
+     "marked": "seen"
+    },
+    {
+     "id": "stack",
+     "type": "callstack"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "count"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "grid": [
+       "11000",
+       "11010",
+       "00100",
+       "00011"
+      ]
+     },
+     "expected": 4
+    },
+    {
+     "input": {
+      "grid": [
+       "0"
+      ]
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "grid": [
+       "111",
+       "101",
+       "111"
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "grid": [
+       "101",
+       "010",
+       "101"
+      ]
+     },
+     "expected": 5
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "count-islands-bfs",
+   "title": "BFS flood fill — the same count, spreading with a queue",
+   "source": "examples/count_islands_bfs.py",
+   "function": "count_islands_bfs",
+   "input": {
+    "grid": [
+     "11100",
+     "10001",
+     "11011"
+    ]
+   },
+   "view": [
+    {
+     "id": "grid",
+     "type": "grid",
+     "var": "grid",
+     "cells": {
+      "cell": [
+       "cr",
+       "cc"
+      ]
+     },
+     "marked": "seen"
+    },
+    {
+     "id": "queue",
+     "type": "array",
+     "var": "queue"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "count"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "grid": [
+       "11100",
+       "10001",
+       "11011"
+      ]
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "grid": [
+       "11000",
+       "11010",
+       "00100",
+       "00011"
+      ]
+     },
+     "expected": 4
+    },
+    {
+     "input": {
+      "grid": [
+       "1"
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "grid": [
+       "101",
+       "010",
+       "101"
+      ]
+     },
+     "expected": 5
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "flood-fill",
+    "max-area-of-island",
+    "rotting-oranges",
+    "surrounded-regions"
+   ]
+  }
+ ]
+}

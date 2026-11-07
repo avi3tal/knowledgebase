@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a binary tree and a target, return every root-to-leaf path whose values add up to the target.",
+   "options": [
+    "dfs",
+    "bfs",
+    "backtracking"
+   ],
+   "answer": "dfs",
+   "why": "Root-to-leaf paths in a given tree → DFS with a path list (append on the way down, pop on the way up). The tree is given, not a space of choices you build, so it's tree DFS rather than generic backtracking."
+  },
+  {
+   "id": "q2",
+   "prompt": "Return true if a binary tree is height-balanced: for every node, the heights of the two subtrees differ by at most one.",
+   "options": [
+    "dfs",
+    "bfs",
+    "dynamic-programming"
+   ],
+   "answer": "dfs",
+   "why": "Every node needs both subtree heights first → post-order DFS returning the height (or -1 for unbalanced). BFS visits parents before children have answers."
+  },
+  {
+   "id": "q3",
+   "prompt": "Place n queens on an n × n chessboard so that no two attack each other. Return all such boards.",
+   "options": [
+    "backtracking",
+    "dfs",
+    "dynamic-programming"
+   ],
+   "answer": "backtracking",
+   "why": "Generate every valid placement under constraints, pruning bad choices → backtracking. It searches depth-first, but over a decision tree you build, not a tree or graph you're given."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given a binary tree, return its level order traversal, alternating left-to-right and right-to-left between levels.",
+   "options": [
+    "bfs",
+    "dfs",
+    "recursion"
+   ],
+   "answer": "bfs",
+   "why": "'Level order' + alternate direction → BFS by level, reversing every other level. Levels are the deciding signal."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given a binary tree (not a search tree) and two of its nodes, return their lowest common ancestor.",
+   "options": [
+    "dfs",
+    "bfs",
+    "modified-binary-search"
+   ],
+   "answer": "dfs",
+   "why": "Each node needs to know whether p or q is in its left and right subtrees → post-order DFS. Binary-search-style steering only works in a BST."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given coin denominations and an amount, return the number of different combinations of coins that make up the amount.",
+   "options": [
+    "dynamic-programming",
+    "dfs",
+    "backtracking"
+   ],
+   "answer": "dynamic-programming",
+   "why": "The same (coin index, remaining amount) state is reached many times → DP (a memoised DFS is top-down DP). Plain DFS or backtracking recomputes it exponentially."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given a binary tree and a target, count the paths whose values add up to the target. Values may be negative. A path may start and end at any node but must go downwards (parent to child).",
+   "options": [
+    "dfs",
+    "sliding-window",
+    "bfs"
+   ],
+   "answer": "dfs",
+   "why": "Downward paths in a tree → DFS carrying a prefix-sum map along the current root-to-node path, removing entries on the way back. 'Sum of a contiguous run' suggests a window, but negative values and branching rule it out."
+  },
+  {
+   "id": "q8",
+   "prompt": "There are n courses and pairs [a, b] meaning b must be taken before a. Return true if all courses can be finished.",
+   "options": [
+    "topological-sort",
+    "dfs",
+    "bfs"
+   ],
+   "answer": "topological-sort",
+   "why": "Prerequisites = a dependency graph; 'can all be finished' = is there a cycle / a valid order → topological sort. DFS colouring can detect the cycle, but the pattern that names the problem is the ordering."
+  }
+ ]
+}

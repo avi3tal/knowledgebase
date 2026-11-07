@@ -1,0 +1,220 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "bfs",
+ "title": "Breadth-First Search",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "level-averages",
+   "title": "Level by level — the average of each level",
+   "source": "examples/level_averages.py",
+   "function": "level_averages",
+   "input": {
+    "root": [
+     4,
+     9,
+     2,
+     3,
+     null,
+     5,
+     7
+    ]
+   },
+   "types": {
+    "root": "TreeNode"
+   },
+   "view": [
+    {
+     "id": "tree",
+     "type": "tree",
+     "var": "root",
+     "pointers": {
+      "node": "node"
+     },
+     "groups": {
+      "queue": "queue"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "level",
+      "size",
+      "total",
+      "averages"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "root": [
+       4,
+       9,
+       2,
+       3,
+       null,
+       5,
+       7
+      ]
+     },
+     "expected": [
+      4.0,
+      5.5,
+      5.0
+     ]
+    },
+    {
+     "input": {
+      "root": [
+       3,
+       9,
+       20,
+       null,
+       null,
+       15,
+       7
+      ]
+     },
+     "expected": [
+      3.0,
+      14.5,
+      11.0
+     ]
+    },
+    {
+     "input": {
+      "root": [
+       5,
+       2,
+       -3
+      ]
+     },
+     "expected": [
+      5.0,
+      -0.5
+     ]
+    },
+    {
+     "input": {
+      "root": [
+       1
+      ]
+     },
+     "expected": [
+      1.0
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "shortest-path-grid",
+   "title": "Shortest path in a maze — BFS rings on a grid",
+   "source": "examples/shortest_path_grid.py",
+   "function": "shortest_path",
+   "input": {
+    "grid": [
+     ".#...",
+     ".#.#.",
+     "...#."
+    ]
+   },
+   "view": [
+    {
+     "id": "grid",
+     "type": "grid",
+     "var": "grid",
+     "cells": {
+      "cur": [
+       "r",
+       "c"
+      ]
+     },
+     "marked": "seen"
+    },
+    {
+     "id": "queue",
+     "type": "array",
+     "var": "queue"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "dist"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "grid": [
+       ".#...",
+       ".#.#.",
+       "...#."
+      ]
+     },
+     "expected": 10
+    },
+    {
+     "input": {
+      "grid": [
+       "..",
+       ".."
+      ]
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "grid": [
+       ".#",
+       "#."
+      ]
+     },
+     "expected": -1
+    },
+    {
+     "input": {
+      "grid": [
+       "...",
+       "##.",
+       "..."
+      ]
+     },
+     "expected": 4
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "level-order-traversal",
+    "bfs-of-graph",
+    "minimum-depth-of-binary-tree",
+    "binary-tree-right-side-view",
+    "binary-tree-zigzag-level-order-traversal",
+    "rotting-oranges"
+   ]
+  }
+ ]
+}

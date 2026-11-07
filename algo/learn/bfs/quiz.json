@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given the root of a binary tree, return its node values grouped by level: [[level 0], [level 1], …], left to right.",
+   "options": [
+    "bfs",
+    "dfs",
+    "topological-sort"
+   ],
+   "answer": "bfs",
+   "why": "'Grouped by level' → a queue, with the level size frozen at the start of each round. DFS can do it by passing the depth, but the level order is BFS's natural output."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given a binary tree, return the number of nodes on the shortest path from the root down to the nearest leaf.",
+   "options": [
+    "bfs",
+    "dfs",
+    "recursion"
+   ],
+   "answer": "bfs",
+   "why": "The nearest leaf → BFS, which can stop at the first leaf it pops. DFS has to explore the whole tree to be sure no shallower leaf exists."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given a binary tree and a target, return true if some root-to-leaf path adds up to the target.",
+   "options": [
+    "dfs",
+    "bfs",
+    "dynamic-programming"
+   ],
+   "answer": "dfs",
+   "why": "Root-to-leaf paths → DFS, passing the remaining sum down the recursion. Levels don't help, and there are no overlapping subproblems for DP."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given a begin word, an end word and a dictionary, return the fewest one-letter changes needed to turn the begin word into the end word, where every intermediate word is in the dictionary.",
+   "options": [
+    "bfs",
+    "backtracking",
+    "dfs"
+   ],
+   "answer": "bfs",
+   "why": "Fewest steps where every step costs 1 → BFS on an implicit graph (words are nodes, one-letter changes are edges). Backtracking or DFS would explore every sequence."
+  },
+  {
+   "id": "q5",
+   "prompt": "There are n courses and a list of pairs [a, b] meaning b must be taken before a. Return an order in which all courses can be taken, or [] if that is impossible.",
+   "options": [
+    "topological-sort",
+    "bfs",
+    "dfs"
+   ],
+   "answer": "topological-sort",
+   "why": "Prerequisites and an order that respects them → topological sort (Kahn's in-degree queue, or DFS post-order). The deciding signal is the dependency order, not distance."
+  },
+  {
+   "id": "q6",
+   "prompt": "A network has n nodes and directed edges with travel times. A signal starts at node k. Return how long it takes for every node to receive it.",
+   "options": [
+    "heaps",
+    "bfs",
+    "dynamic-programming"
+   ],
+   "answer": "heaps",
+   "why": "Edges have different travel times → Dijkstra with a min-heap. Plain BFS counts edges, not time, so it's only right when every edge costs the same."
+  },
+  {
+   "id": "q7",
+   "prompt": "Return the length of the longest path between any two nodes of a binary tree (the path may not pass through the root).",
+   "options": [
+    "dfs",
+    "bfs",
+    "dynamic-programming"
+   ],
+   "answer": "dfs",
+   "why": "Each node needs the heights of both subtrees first → post-order DFS that returns a height and records the best left + right. BFS can't combine children's answers."
+  },
+  {
+   "id": "q8",
+   "prompt": "In an n × n grid of 0s and 1s, return the length of the shortest path of 0-cells from the top-left to the bottom-right, moving in 8 directions, or -1.",
+   "options": [
+    "bfs",
+    "islands",
+    "dynamic-programming"
+   ],
+   "answer": "bfs",
+   "why": "Shortest path, unit-cost moves → BFS from the start, counting rings. It's on a grid, but the question is a distance, not regions (islands). Moves go in all directions, so there's no DP order."
+  }
+ ]
+}

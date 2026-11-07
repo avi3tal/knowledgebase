@@ -1,0 +1,11 @@
+[
+  {"name": "example 1", "args": {"grid": [[2, 1, 1], [1, 1, 0], [0, 1, 1]]}, "expected": 4},
+  {"name": "example 2 \u2014 unreachable", "args": {"grid": [[2, 1, 1], [0, 1, 1], [1, 0, 1]]}, "expected": -1},
+  {"name": "example 3 \u2014 nothing fresh", "args": {"grid": [[0, 2]]}, "expected": 0},
+  {"name": "empty cells only", "args": {"grid": [[0]]}, "expected": 0},
+  {"name": "fresh but no rotten", "args": {"grid": [[1]]}, "expected": -1},
+  {"name": "two sources meet", "args": {"grid": [[2, 1, 1, 1, 1, 2]]}, "expected": 2},
+  {"name": "long snake", "args": {"grid": [[2, 1, 1], [0, 0, 1], [1, 1, 1], [1, 0, 0], [1, 1, 1]]}, "expected": 10},
+  {"name": "already all rotten", "args": {"grid": [[2, 2], [2, 2]]}, "expected": 0},
+  {"name": "several sources", "args": {"grid": [[2, 1, 1, 0, 1], [1, 1, 0, 1, 1], [0, 1, 1, 1, 2]]}, "expected": 3}
+]

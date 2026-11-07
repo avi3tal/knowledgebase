@@ -1,0 +1,2210 @@
+{
+ "version": 1,
+ "title": "Level by level — the average of each level",
+ "code": [
+  "def level_averages(root) -> list[float]:",
+  "    averages = []",
+  "    queue = deque([root]) if root else deque()",
+  "    level = 0",
+  "    while queue:",
+  "        size = len(queue)",
+  "        total = 0",
+  "        for _ in range(size):",
+  "            node = queue.popleft()",
+  "            total += node.val",
+  "            if node.left:",
+  "                queue.append(node.left)",
+  "            if node.right:",
+  "                queue.append(node.right)",
+  "        averages.append(total / size)",
+  "        level += 1",
+  "    return averages"
+ ],
+ "view": [
+  {
+   "id": "tree",
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "node": "node"
+   },
+   "groups": {
+    "queue": "queue"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "level",
+    "size",
+    "total",
+    "averages"
+   ]
+  }
+ ],
+ "input": {
+  "root": [
+   4,
+   9,
+   2,
+   3,
+   null,
+   5,
+   7
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": null,
+      "size": null,
+      "total": null,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "the queue holds the frontier: discovered, not yet visited",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "queue": [
+       0
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": null,
+      "size": null,
+      "total": null,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "queue": [
+       0
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": null,
+      "total": null,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "freeze the level size: exactly these nodes form the current level",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "queue": [
+       0
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": null,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "queue": [
+       0
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": 0,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "FIFO: the oldest node leaves first",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": 0,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": 4,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "children join the BACK of the queue: they belong to the next level",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": 4,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": [
+       1,
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": 4,
+      "averages": []
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the level is finished; only next-level nodes remain in the queue",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": [
+       1,
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 0,
+      "size": 1,
+      "total": 4,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": [
+       1,
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 1,
+      "total": 4,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "freeze the level size: exactly these nodes form the current level",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": [
+       1,
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 4,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "queue": [
+       1,
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 0,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "FIFO: the oldest node leaves first",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "queue": [
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 0,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "queue": [
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 9,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "children join the BACK of the queue: they belong to the next level",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "queue": [
+       2,
+       3
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 9,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "FIFO: the oldest node leaves first",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 9,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 11,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "children join the BACK of the queue: they belong to the next level",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3,
+       4
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 11,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3,
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 11,
+      "averages": [
+       4.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the level is finished; only next-level nodes remain in the queue",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3,
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 1,
+      "size": 2,
+      "total": 11,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3,
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 2,
+      "total": 11,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "freeze the level size: exactly these nodes form the current level",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3,
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 11,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "queue": [
+       3,
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 0,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "FIFO: the oldest node leaves first",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {
+      "queue": [
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 0,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {
+      "queue": [
+       4,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 3,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "FIFO: the oldest node leaves first",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "queue": [
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 3,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "queue": [
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 8,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "FIFO: the oldest node leaves first",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 8,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 15,
+      "averages": [
+       4.0,
+       5.5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the level is finished; only next-level nodes remain in the queue",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 2,
+      "size": 3,
+      "total": 15,
+      "averages": [
+       4.0,
+       5.5,
+       5.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 3,
+      "size": 3,
+      "total": 15,
+      "averages": [
+       4.0,
+       5.5,
+       5.0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "left": 4,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "queue": []
+     }
+    },
+    "vars": {
+     "values": {
+      "level": 3,
+      "size": 3,
+      "total": 15,
+      "averages": [
+       4.0,
+       5.5,
+       5.0
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  4.0,
+  5.5,
+  5.0
+ ]
+}

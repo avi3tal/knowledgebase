@@ -1,0 +1,1456 @@
+{
+ "version": 1,
+ "title": "Iterative DFS with an explicit stack — sum of root-to-leaf numbers",
+ "code": [
+  "def sum_numbers(root) -> int:",
+  "    if root is None:",
+  "        return 0",
+  "    total = 0",
+  "    stack = [(root, root.val)]",
+  "    while stack:",
+  "        node, number = stack.pop()",
+  "        if node.left is None and node.right is None:",
+  "            total += number",
+  "            continue",
+  "        if node.right:",
+  "            stack.append((node.right, number * 10 + node.right.val))",
+  "        if node.left:",
+  "            stack.append((node.left, number * 10 + node.left.val))",
+  "    return total"
+ ],
+ "view": [
+  {
+   "id": "tree",
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "node": "node"
+   },
+   "groups": {
+    "stack": "stack"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "number",
+    "total"
+   ]
+  }
+ ],
+ "input": {
+  "root": [
+   4,
+   9,
+   0,
+   5,
+   1,
+   6,
+   2
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "total": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "each entry carries its own state: (node, number spelled so far)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "stack": [
+       0
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": [
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "push left LAST so it pops FIRST",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": [
+       2,
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "stack": [
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 49,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "stack": [
+       2,
+       4
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 49,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "push left LAST so it pops FIRST",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "stack": [
+       2,
+       4,
+       3
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 49,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {
+      "stack": [
+       2,
+       4
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 495,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a leaf: the path is a complete number",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {
+      "stack": [
+       2,
+       4
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 495,
+      "total": 495
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "stack": [
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 491,
+      "total": 495
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a leaf: the path is a complete number",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "stack": [
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 491,
+      "total": 986
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 40,
+      "total": 986
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "stack": [
+       6
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 40,
+      "total": 986
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "push left LAST so it pops FIRST",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "stack": [
+       6,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 40,
+      "total": 986
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "stack": [
+       6
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 406,
+      "total": 986
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a leaf: the path is a complete number",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "stack": [
+       6
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 406,
+      "total": 1392
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "LIFO: the newest node goes first, so we dive deep before going wide",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 6
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 402,
+      "total": 1392
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a leaf: the path is a complete number",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 6
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 402,
+      "total": 1794
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 9,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 0,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 2,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 6
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "number": 402,
+      "total": 1794
+     }
+    }
+   }
+  }
+ ],
+ "result": 1794
+}

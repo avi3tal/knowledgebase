@@ -1,0 +1,52 @@
+{
+  "title": "Flood Fill",
+  "slug": "flood-fill",
+  "type": "algo",
+  "difficulty": "easy",
+  "patterns": [
+    "islands",
+    "dfs"
+  ],
+  "sources": [
+    {
+      "name": "leetcode",
+      "url": "https://leetcode.com/problems/flood-fill/"
+    }
+  ],
+  "kind": "function",
+  "function": "floodFill",
+  "params": [
+    {
+      "name": "image",
+      "type": "int[][]"
+    },
+    {
+      "name": "sr",
+      "type": "int"
+    },
+    {
+      "name": "sc",
+      "type": "int"
+    },
+    {
+      "name": "color",
+      "type": "int"
+    }
+  ],
+  "returns": "int[][]",
+  "comparator": "exact",
+  "expected_complexity": {
+    "time": "O(n)",
+    "space": "O(n)"
+  },
+  "bench": {
+    "args": {
+      "image": "int_matrix(isqrt(n), isqrt(n), 0, 0)",
+      "sr": "0",
+      "sc": "0",
+      "color": "1"
+    },
+    "min_n": 64,
+    "max_n": 625
+  }
+}

@@ -1,0 +1,11 @@
+[
+  {"name": "example 1", "args": {"board": ["XXXX", "XOOX", "XXOX", "XOXX"]}, "expected": ["XXXX", "XXXX", "XXXX", "XOXX"]},
+  {"name": "example 2 \u2014 single X", "args": {"board": ["X"]}, "expected": ["X"]},
+  {"name": "single O on the border", "args": {"board": ["O"]}, "expected": ["O"]},
+  {"name": "all O", "args": {"board": ["OOO", "OOO", "OOO"]}, "expected": ["OOO", "OOO", "OOO"]},
+  {"name": "one enclosed O", "args": {"board": ["XXX", "XOX", "XXX"]}, "expected": ["XXX", "XXX", "XXX"]},
+  {"name": "escapes through a corridor", "args": {"board": ["XXXXX", "XOOOX", "XOXOX", "XOXOO", "XXXXX"]}, "expected": ["XXXXX", "XOOOX", "XOXOX", "XOXOO", "XXXXX"]},
+  {"name": "two regions, one escapes", "args": {"board": ["XXXXXX", "XOXXOX", "XOXXOX", "XXXXOX"]}, "expected": ["XXXXXX", "XXXXOX", "XXXXOX", "XXXXOX"]},
+  {"name": "diagonal touch does not save", "args": {"board": ["XXXX", "XXOX", "XOXX", "OXXX"]}, "expected": ["XXXX", "XXXX", "XXXX", "OXXX"]},
+  {"name": "non-square", "args": {"board": ["XOX", "OXO", "XOX", "XXX"]}, "expected": ["XOX", "OXO", "XXX", "XXX"]}
+]

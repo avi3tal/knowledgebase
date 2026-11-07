@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given an m × n grid of '1' (land) and '0' (water), return how many islands there are. Land cells connect horizontally and vertically.",
+   "options": [
+    "islands",
+    "backtracking",
+    "dynamic-programming"
+   ],
+   "answer": "islands",
+   "why": "Connected regions of equal cells in a grid → scan every cell and flood each new region once (islands). Nothing is un-marked (not backtracking), and moves aren't one-directional (not DP)."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given a grid of letters and a word, return true if the word can be spelled by moving between horizontally or vertically adjacent cells, using each cell at most once in the word.",
+   "options": [
+    "backtracking",
+    "islands",
+    "dynamic-programming"
+   ],
+   "answer": "backtracking",
+   "why": "'Each cell at most once per path' means you must un-mark a cell when you back out, because another path may need it → backtracking. A flood fill marks cells for good."
+  },
+  {
+   "id": "q3",
+   "prompt": "A robot starts in the top-left of a grid with some blocked cells and may only move right or down. Count the different routes to the bottom-right.",
+   "options": [
+    "dynamic-programming",
+    "islands",
+    "backtracking"
+   ],
+   "answer": "dynamic-programming",
+   "why": "Moves only go right/down, so there are no cycles, and each cell's count is top + left → DP on the grid. Enumerating routes by backtracking is exponential, and a flood fill can't count paths."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given an image as a 2-D array of colours, a starting pixel and a new colour, repaint the starting pixel and every pixel connected to it (4-directionally) that has the same original colour.",
+   "options": [
+    "islands",
+    "backtracking",
+    "recursion"
+   ],
+   "answer": "islands",
+   "why": "Paint-bucket on a grid → flood fill of one connected region (islands). Recursion is only the tool, and nothing has to be undone."
+  },
+  {
+   "id": "q5",
+   "prompt": "Each row of a matrix is sorted left to right and each column is sorted top to bottom. Decide whether a target value is in the matrix.",
+   "options": [
+    "modified-binary-search",
+    "islands",
+    "two-pointers"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Sorted rows and columns → discard a row or column per step (staircase from a corner) or binary search. A grid alone isn't the islands pattern: there are no regions, and you never touch most cells."
+  },
+  {
+   "id": "q6",
+   "prompt": "A board holds 'X' and 'O'. Flip every 'O' to 'X' unless it is connected (4-directionally) to an 'O' on the border of the board.",
+   "options": [
+    "islands",
+    "backtracking",
+    "dynamic-programming"
+   ],
+   "answer": "islands",
+   "why": "Regions that do or don't reach the border → flood from the border cells first and mark what escapes (islands, border variant). Nothing is enumerated or un-done."
+  },
+  {
+   "id": "q7",
+   "prompt": "Each cell of a grid holds the cost of stepping onto it. You may move in any of the four directions. Find the cheapest total cost from the top-left to the bottom-right.",
+   "options": [
+    "heaps",
+    "islands",
+    "dynamic-programming"
+   ],
+   "answer": "heaps",
+   "why": "Different costs per step → Dijkstra with a min-heap. Plain grid BFS/flood only works when every move costs the same, and four-way moves create cycles, so a right/down DP table doesn't apply."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given a grid of letters, return true if there is a cycle of length at least 4 made of adjacent cells (up/down/left/right) that all hold the same letter.",
+   "options": [
+    "islands",
+    "backtracking",
+    "topological-sort"
+   ],
+   "answer": "islands",
+   "why": "Connected same-value regions in a matrix → DFS over the grid, remembering the parent cell. Reaching a seen cell that isn't your parent closes a loop. No path enumeration (backtracking) and no dependency order (topological sort)."
+  }
+ ]
+}

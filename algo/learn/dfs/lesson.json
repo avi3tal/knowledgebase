@@ -1,0 +1,243 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "dfs",
+ "title": "Depth-First Search",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "path-with-sequence",
+   "title": "Recursive DFS with a path — does a root-to-leaf path spell the sequence?",
+   "source": "examples/path_with_sequence.py",
+   "function": "has_sequence",
+   "input": {
+    "root": [
+     1,
+     1,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "sequence": [
+     1,
+     1,
+     5
+    ]
+   },
+   "types": {
+    "root": "TreeNode"
+   },
+   "view": [
+    {
+     "id": "tree",
+     "type": "tree",
+     "var": "root",
+     "pointers": {
+      "node": "node"
+     },
+     "groups": {
+      "path": "path"
+     }
+    },
+    {
+     "id": "stack",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "root": [
+       1,
+       1,
+       1,
+       2,
+       3,
+       4,
+       5
+      ],
+      "sequence": [
+       1,
+       1,
+       5
+      ]
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "root": [
+       1,
+       7,
+       9,
+       null,
+       null,
+       2,
+       9
+      ],
+      "sequence": [
+       1,
+       9,
+       9
+      ]
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "root": [
+       1,
+       0,
+       1,
+       1,
+       null,
+       6,
+       5
+      ],
+      "sequence": [
+       1,
+       0,
+       7
+      ]
+     },
+     "expected": false
+    },
+    {
+     "input": {
+      "root": [
+       1,
+       1,
+       1,
+       2,
+       3,
+       4,
+       5
+      ],
+      "sequence": [
+       1,
+       1
+      ]
+     },
+     "expected": false
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "sum-root-to-leaf",
+   "title": "Iterative DFS with an explicit stack — sum of root-to-leaf numbers",
+   "source": "examples/sum_root_to_leaf.py",
+   "function": "sum_numbers",
+   "input": {
+    "root": [
+     4,
+     9,
+     0,
+     5,
+     1,
+     6,
+     2
+    ]
+   },
+   "types": {
+    "root": "TreeNode"
+   },
+   "view": [
+    {
+     "id": "tree",
+     "type": "tree",
+     "var": "root",
+     "pointers": {
+      "node": "node"
+     },
+     "groups": {
+      "stack": "stack"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "number",
+      "total"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "root": [
+       4,
+       9,
+       0,
+       5,
+       1,
+       6,
+       2
+      ]
+     },
+     "expected": 1794
+    },
+    {
+     "input": {
+      "root": [
+       4,
+       9,
+       0,
+       5,
+       1
+      ]
+     },
+     "expected": 1026
+    },
+    {
+     "input": {
+      "root": [
+       1,
+       2,
+       3
+      ]
+     },
+     "expected": 25
+    },
+    {
+     "input": {
+      "root": [
+       7
+      ]
+     },
+     "expected": 7
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "maximum-depth-of-binary-tree",
+    "path-sum",
+    "dfs-of-graph",
+    "diameter-of-binary-tree",
+    "count-univalue-subtrees",
+    "path-sum-iii"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,2063 @@
+{
+ "version": 1,
+ "title": "Recursive DFS with a path — does a root-to-leaf path spell the sequence?",
+ "code": [
+  "def has_sequence(root, sequence: list[int]) -> bool:",
+  "    path = []",
+  "",
+  "    def dfs(node, i: int) -> bool:",
+  "        if node is None or i >= len(sequence) or node.val != sequence[i]:",
+  "            return False",
+  "        path.append(node)",
+  "        if node.left is None and node.right is None:",
+  "            if i == len(sequence) - 1:",
+  "                return True",
+  "        elif dfs(node.left, i + 1) or dfs(node.right, i + 1):",
+  "            return True",
+  "        path.pop()",
+  "        return False",
+  "",
+  "    return dfs(root, 0)"
+ ],
+ "view": [
+  {
+   "id": "tree",
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "node": "node"
+   },
+   "groups": {
+    "path": "path"
+   }
+  },
+  {
+   "id": "stack",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "root": [
+   1,
+   1,
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "sequence": [
+   1,
+   1,
+   5
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "the nodes on the current root-to-node path (the recursion's breadcrumbs)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "path": []
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "path": []
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "choose: extend the path with this node",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "path": [
+       0
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "path": [
+       0
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "choose: extend the path with this node",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "path": [
+       0,
+       1
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {
+      "path": [
+       0,
+       1
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(2)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "dead end: no node, sequence too short, or the value doesn't match",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {
+      "path": [
+       0,
+       1
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(2)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "path": [
+       0,
+       1
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(3)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "dead end: no node, sequence too short, or the value doesn't match",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "path": [
+       0,
+       1
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(3)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "path": [
+       0,
+       1
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "un-choose: this subtree failed, step back to the parent",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "path": [
+       0
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "path": [
+       0
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "choose: extend the path with this node",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "path": [
+       0,
+       2
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "path": [
+       0,
+       2
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(4)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "dead end: no node, sequence too short, or the value doesn't match",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "path": [
+       0,
+       2
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(4)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 6
+     },
+     "groups": {
+      "path": [
+       0,
+       2
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(5)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "choose: extend the path with this node",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 6
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(5)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "a leaf AND the last value of the sequence — the path is complete",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 6
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(5)",
+        "i": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a child found a full match; pass the answer up the stack",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 1
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a child found a full match; pass the answer up the stack",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      },
+      {
+       "fn": "dfs",
+       "args": {
+        "node": "node(1)",
+        "i": 0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 1,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 2,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 6,
+       "val": 5,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "path": [
+       0,
+       2,
+       6
+      ]
+     }
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "has_sequence",
+       "args": {
+        "root": "node(1)",
+        "sequence": "[1, 1, 5]"
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": true
+}

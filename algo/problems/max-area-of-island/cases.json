@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"grid": [[0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0], [0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0], [0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0]]}, "expected": 6},
+  {"name": "example 2 \u2014 no land", "args": {"grid": [[0, 0, 0, 0, 0, 0, 0, 0]]}, "expected": 0},
+  {"name": "single land cell", "args": {"grid": [[1]]}, "expected": 1},
+  {"name": "all land", "args": {"grid": [[1, 1, 1], [1, 1, 1]]}, "expected": 6},
+  {"name": "diagonals are separate", "args": {"grid": [[1, 0, 1], [0, 1, 0], [1, 0, 1]]}, "expected": 1},
+  {"name": "ring around a lake", "args": {"grid": [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 1, 1]]}, "expected": 10},
+  {"name": "bigger island later", "args": {"grid": [[1, 0, 0, 0], [0, 0, 1, 1], [0, 1, 1, 0], [0, 0, 1, 0]]}, "expected": 5},
+  {"name": "single column", "args": {"grid": [[1], [1], [0], [1]]}, "expected": 2}
+]

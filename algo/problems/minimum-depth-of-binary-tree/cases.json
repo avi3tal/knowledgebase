@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"root": [3, 9, 20, null, null, 15, 7]}, "expected": 2},
+  {"name": "example 2 \u2014 right chain", "args": {"root": [2, null, 3, null, 4, null, 5, null, 6]}, "expected": 5},
+  {"name": "empty", "args": {"root": []}, "expected": 0},
+  {"name": "single node", "args": {"root": [1]}, "expected": 1},
+  {"name": "root with one child is not a leaf", "args": {"root": [1, 2]}, "expected": 2},
+  {"name": "left chain", "args": {"root": [1, 2, null, 3, null, 4]}, "expected": 4},
+  {"name": "complete tree", "args": {"root": [1, 2, 3, 4, 5, 6, 7]}, "expected": 3},
+  {"name": "shallow leaf on the right", "args": {"root": [1, 2, 3, 4, 5, null, null, 6, 7, 8, 9]}, "expected": 2}
+]

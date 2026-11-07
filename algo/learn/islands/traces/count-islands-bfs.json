@@ -1,0 +1,2391 @@
+{
+ "version": 1,
+ "title": "BFS flood fill — the same count, spreading with a queue",
+ "code": [
+  "def count_islands_bfs(grid: list[str]) -> int:",
+  "    rows, cols = len(grid), len(grid[0])",
+  "    seen = set()",
+  "    count = 0",
+  "    for r in range(rows):",
+  "        for c in range(cols):",
+  "            if grid[r][c] != \"1\" or (r, c) in seen:",
+  "                continue",
+  "            count += 1",
+  "            seen.add((r, c))",
+  "            queue = deque([(r, c)])",
+  "            while queue:",
+  "                cr, cc = queue.popleft()",
+  "                for nr, nc in ((cr + 1, cc), (cr - 1, cc), (cr, cc + 1), (cr, cc - 1)):",
+  "                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == \"1\" and (nr, nc) not in seen:",
+  "                        seen.add((nr, nc))",
+  "                        queue.append((nr, nc))",
+  "    return count"
+ ],
+ "view": [
+  {
+   "id": "grid",
+   "type": "grid",
+   "var": "grid",
+   "cells": {
+    "cell": [
+     "cr",
+     "cc"
+    ]
+   },
+   "marked": "seen"
+  },
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "count"
+   ]
+  }
+ ],
+ "input": {
+  "grid": [
+   "11100",
+   "10001",
+   "11011"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a new island: start a BFS from this cell",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": null
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": null
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a new island: start a BFS from this cell",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "mark when ENQUEUING, so a cell can't be queued twice",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       3
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       3
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "take the oldest discovered cell: the flood spreads in rings",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       3
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       "1",
+       "1",
+       "1",
+       "0",
+       "0"
+      ],
+      [
+       "1",
+       "0",
+       "0",
+       "0",
+       "1"
+      ],
+      [
+       "1",
+       "1",
+       "0",
+       "1",
+       "1"
+      ]
+     ],
+     "cells": {
+      "cell": [
+       2,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       3
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2
+     }
+    }
+   }
+  }
+ ],
+ "result": 2
+}

@@ -1,0 +1,5300 @@
+{
+ "version": 1,
+ "title": "Shortest path in a maze — BFS rings on a grid",
+ "code": [
+  "def shortest_path(grid: list[str]) -> int:",
+  "    rows, cols = len(grid), len(grid[0])",
+  "    if grid[0][0] == \"#\" or grid[rows - 1][cols - 1] == \"#\":",
+  "        return -1",
+  "    seen = {(0, 0)}",
+  "    queue = deque([(0, 0)])",
+  "    dist = 0",
+  "    while queue:",
+  "        for _ in range(len(queue)):",
+  "            r, c = queue.popleft()",
+  "            if (r, c) == (rows - 1, cols - 1):",
+  "                return dist",
+  "            for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):",
+  "                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == \".\" and (nr, nc) not in seen:",
+  "                    seen.add((nr, nc))",
+  "                    queue.append((nr, nc))",
+  "        dist += 1",
+  "    return -1"
+ ],
+ "view": [
+  {
+   "id": "grid",
+   "type": "grid",
+   "var": "grid",
+   "cells": {
+    "cur": [
+     "r",
+     "c"
+    ]
+   },
+   "marked": "seen"
+  },
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "dist"
+   ]
+  }
+ ],
+ "input": {
+  "grid": [
+   ".#...",
+   ".#.#.",
+   "...#."
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       3
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "mark on enqueue: the first discovery is the shortest one",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "the whole ring is done; everything left in the queue is one step further",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one ring = every cell at distance `dist`",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "first time we pop the target is the shortest distance — no later ring can beat it",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       ".",
+       "#",
+       ".",
+       ".",
+       "."
+      ],
+      [
+       ".",
+       "#",
+       ".",
+       "#",
+       "."
+      ],
+      [
+       ".",
+       ".",
+       ".",
+       "#",
+       "."
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       4
+      ]
+     },
+     "marked": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "dist": 10
+     }
+    }
+   }
+  }
+ ],
+ "result": 10
+}
