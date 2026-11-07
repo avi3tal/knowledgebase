@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "why": "Naive start: one service and one database. It works for a demo, but every redirect hits the single database.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Browser", "x": 60, "y": 160 },
+    { "id": "svc", "kind": "service", "label": "Shortener service", "x": 300, "y": 160 },
+    { "id": "db", "kind": "sql", "label": "links DB", "x": 560, "y": 160 }
+  ],
+  "edges": [
+    { "from": "client", "to": "svc", "label": "POST /urls, GET /{code}" },
+    { "from": "svc", "to": "db", "label": "read/write" }
+  ],
+  "flows": []
+}

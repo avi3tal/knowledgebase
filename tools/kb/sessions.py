@@ -21,7 +21,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from kb import feedback, history, learn, scaffold
+from kb import design, feedback, history, learn, scaffold
 from kb.naming import SLUG_RE
 from kb.paths import ensure_workspace, problems_dir, workspace_dir
 from kb.schema import DIFFICULTIES, ProblemError, load_problem
@@ -36,8 +36,9 @@ TRANSITIONS = {
 }
 FOCUS = ("weak", "new", "review", "mixed")
 GENERATORS = ("kb", "claude")
-# Item kinds by subject. Design problems (system-design / ood) join once their console exists.
-ITEM_KINDS = {"algo-problem": "algo"}
+# Item kind -> subject. Design problems are solved in the studio's design console.
+ITEM_KINDS = {"algo-problem": "algo", "sd-problem": "system-design", "ood-problem": "ood"}
+KIND_OF = {v: k for k, v in ITEM_KINDS.items()}
 MAX_ITEMS = 30
 MAX_TEXT = 300
 DIFF_RANK = {"easy": 0, "medium": 1, "hard": 2}
@@ -238,8 +239,11 @@ def start_attempt(session_id: str, item_id: str, lang: str, pattern: str | None 
     item = next((i for i in s["items"] if i["id"] == item_id), None)
     if item is None:
         raise ProblemError(f"session {session_id} has no item {item_id!r}")
-    problem = load_problem(problems_dir(item["subject"]) / item["slug"])
-    adir = scaffold.new_attempt(problem, lang, pattern or item.get("topic"))
+    if design.is_design_subject(item["subject"]):
+        adir = design.new_attempt(design.load(item["subject"], item["slug"]), pattern or None)
+    else:
+        problem = load_problem(problems_dir(item["subject"]) / item["slug"])
+        adir = scaffold.new_attempt(problem, lang, pattern or item.get("topic"))
     item.setdefault("attempts", []).append(adir.name)
     if s["status"] == "planned":
         s["status"] = "active"
@@ -269,8 +273,8 @@ def generate(
 ) -> dict[str, Any]:
     """Pick `count` problems for a scope and focus from your history. Pure given (inputs, runs, catalog)."""
     today = today or dt.date.today()
-    if subject not in {v for v in ITEM_KINDS.values()}:
-        raise ProblemError(f"sessions for {subject!r} come once its console exists; have: algo")
+    if subject not in KIND_OF:
+        raise ProblemError(f"no session support for {subject!r}; have: {', '.join(sorted(KIND_OF))}")
     if focus not in FOCUS:
         raise ProblemError(f"focus must be one of {FOCUS}")
     if not 1 <= count <= MAX_ITEMS:
@@ -292,7 +296,7 @@ def generate(
     seed = seed or today.isoformat()
 
     candidates = []
-    for p in scaffold.all_problems(problems_dir(subject)):
+    for p in learn.subject_problems(subject, problems_dir(subject)):
         ptopics = sorted({aliases[t] for t in p.meta.get("patterns", []) if t in aliases})
         if topics and not set(ptopics) & set(topics):
             continue
@@ -397,7 +401,7 @@ def generate(
         "items": [
             {
                 "id": f"p{i + 1}",
-                "kind": "algo-problem",
+                "kind": KIND_OF[subject],
                 "subject": subject,
                 "slug": c["problem"].slug,
                 "title": c["problem"].meta.get("title", c["problem"].slug),
@@ -419,8 +423,8 @@ def from_plan(plan: dict[str, Any], today: dt.date | None = None) -> dict[str, A
     for i, it in enumerate(plan.get("items", [])):
         it = dict(it)
         it.setdefault("id", f"p{i + 1}")
-        it.setdefault("kind", "algo-problem")
         it.setdefault("subject", "algo")
+        it.setdefault("kind", KIND_OF.get(it["subject"], "algo-problem"))
         it["attempts"] = []
         pdir = problems_dir(it["subject"]) / str(it.get("slug", ""))
         if pdir.is_dir():

@@ -284,7 +284,7 @@ def graph(subject: str) -> dict[str, Any]:
                 edges.append({"from": f"topic:{t['id']}", "to": f"topic:{r}", "type": "related"})
 
     pdir = ROOT / subject / "problems"
-    for p in scaffold.all_problems(pdir) if pdir.is_dir() else []:
+    for p in learn.subject_problems(subject, pdir):
         node(
             f"problem:{p.slug}", type="problem", label=p.meta.get("title", p.slug), difficulty=p.meta.get("difficulty")
         )

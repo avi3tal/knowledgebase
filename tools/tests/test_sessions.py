@@ -80,7 +80,7 @@ def test_weak_focus_puts_failing_work_first() -> None:
 @pytest.mark.parametrize(
     "kw, msg",
     [
-        ({"subject": "system-design"}, "console exists"),
+        ({"subject": "biology"}, "no session support"),
         ({"topics": ["nope"]}, "unknown topics"),
         ({"focus": "random"}, "focus"),
         ({"count": 0}, "count"),
@@ -109,7 +109,8 @@ def _plan(**over: Any) -> dict:
     [
         ([{"slug": "no-such-problem"}], "unknown problem"),
         ([{"slug": "two-sum"}, {"slug": "two-sum"}], "listed twice"),
-        ([{"kind": "sd-problem", "subject": "system-design", "slug": "url-shortener"}], "not supported yet"),
+        ([{"kind": "sd-problem", "subject": "algo", "slug": "two-sum"}], "subject must be"),
+        ([{"kind": "quiz-thing", "slug": "two-sum"}], "not supported"),
         ([{"slug": "two-sum", "id": "Bad Id"}], "kebab-case"),
         ([], "items must be"),
     ],

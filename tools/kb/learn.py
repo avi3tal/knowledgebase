@@ -104,6 +104,17 @@ def alias_map(cat: dict[str, Any]) -> dict[str, str]:
     return out
 
 
+def subject_problems(subject: str, pdir: Path | None = None) -> list[Any]:
+    """Problems of a subject: algo `Problem`s, or `DesignProblem`s for design subjects. Both expose
+    `.slug`, `.meta` (with `patterns` = catalog tags/topics) and `.attempts()`."""
+    from kb import design
+
+    if design.is_design_subject(subject):
+        return list(design.all_problems(subject))
+    pdir = pdir or learn_root() / subject / "problems"
+    return list(scaffold.all_problems(pdir)) if pdir.is_dir() else []
+
+
 def lesson_dir(subject: str, topic: str) -> Path:
     return learn_root() / _check_id(subject, "subject") / "learn" / _check_id(topic, "topic")
 
@@ -293,6 +304,8 @@ def resolve(subject: str, topic: str, history: list[dict[str, Any]] | None = Non
             quiz = json.loads((ldir / b["src"]).read_text())
             items = [{"id": q["id"], "prompt": q["prompt"], "options": _shuffled(q)} for q in quiz["items"]]
             out_blocks.append({"type": "quiz", "items": items})
+        elif b["type"] == "problems" and _is_design(subject):
+            out_blocks.append({"type": "design-problems", "problems": [_design_card(subject, s) for s in b["slugs"]]})
         elif b["type"] == "problems":
             out_blocks.append({"type": "problems", "problems": [problem_card(subject, s, history) for s in b["slugs"]]})
     from kb import refs  # local import: refs imports learn
@@ -323,12 +336,10 @@ def topic_page(subject: str, topic: str, history: list[dict[str, Any]] | None = 
     if entry is None:
         raise ProblemError(f"unknown topic {subject}/{topic}")
     aliases = alias_map(cat)
-    pdir = learn_root() / subject / "problems"
     problems = []
-    if pdir.is_dir():
-        for p in scaffold.all_problems(pdir):
-            if topic in {aliases.get(t) for t in p.meta.get("patterns", [])}:
-                problems.append({"slug": p.slug, "title": p.meta["title"], "difficulty": p.meta["difficulty"]})
+    for p in subject_problems(subject):
+        if topic in {aliases.get(t) for t in p.meta.get("patterns", [])}:
+            problems.append({"slug": p.slug, "title": p.meta["title"], "difficulty": p.meta["difficulty"]})
     order = {"easy": 0, "medium": 1, "hard": 2}
     problems.sort(key=lambda p: (order.get(p["difficulty"], 3), p["title"]))
     return {
@@ -378,6 +389,26 @@ def problem_card(subject: str, slug: str, history: list[dict[str, Any]] | None =
         "readme_path": _repo_rel(problem.dir / "README.md"),
         "attempts": attempts,
         "refs": _problem_refs(slug),
+    }
+
+
+def _is_design(subject: str) -> bool:
+    from kb import design
+
+    return design.is_design_subject(subject)
+
+
+def _design_card(subject: str, slug: str) -> dict[str, Any]:
+    from kb import design
+
+    p = design.load(subject, slug)
+    return {
+        "slug": slug,
+        "title": p.meta["title"],
+        "difficulty": p.meta["difficulty"],
+        "topics": p.meta.get("topics", []),
+        "minutes": p.meta.get("minutes"),
+        "attempts": [a.name for a in p.attempts()],
     }
 
 

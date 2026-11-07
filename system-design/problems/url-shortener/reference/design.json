@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Shorten: given a long URL (optionally a custom alias), create a unique short URL." },
+      { "id": "F2", "text": "Redirect: visiting a short URL redirects to the original long URL." },
+      { "id": "F3", "text": "Links expire after 5 years by default; owners can delete them." },
+      { "id": "F4", "text": "Count clicks per link (analytics), best effort." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Low latency redirects: p99 < 50 ms; read-heavy, ~100 reads per write." },
+      { "id": "N2", "text": "High availability for redirects (99.99%); brief write unavailability is tolerable." },
+      { "id": "N3", "text": "Short codes are not guessable in sequence." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "100M new links per month; ~500 bytes per stored record." },
+      { "id": "A2", "text": "Analytics may lag by minutes." }
+    ],
+    "out_of_scope": [{ "id": "O1", "text": "User accounts and billing." }]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/urls",
+      "request": "long_url, alias?, expires_at?",
+      "response": "201 {code, short_url}",
+      "notes": "Idempotent per (owner, long_url) with an Idempotency-Key header."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/{code}",
+      "request": "",
+      "response": "302 Location: long_url, or 404",
+      "notes": "The hot path: served from cache."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "links",
+      "fields": "code (PK), long_url, owner_id, created_at, expires_at",
+      "store": "nosql",
+      "why": "Pure key → value lookups by code; scales horizontally by hashing the code."
+    },
+    {
+      "id": "D2",
+      "name": "click_counts",
+      "fields": "code, day, count",
+      "store": "nosql",
+      "why": "Written by the analytics worker in batches."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Short code generation",
+      "options": [
+        { "name": "hash(long_url) truncated", "pros": "stateless", "cons": "collisions must be detected and retried" },
+        { "name": "random 7 chars", "pros": "unguessable", "cons": "existence check on every write" },
+        { "name": "range-leased counter + base62", "pros": "no collisions, cheap", "cons": "needs a range allocator; sequential unless shuffled" }
+      ],
+      "choice": "range-leased counter + base62",
+      "why": "Each service instance leases a block of 1M ids from a coordinator, encodes them in base62 (7 chars ≈ 3.5e12 codes) and applies a reversible bit shuffle so codes are not sequential.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Redirect status",
+      "options": [
+        { "name": "301 permanent", "pros": "browsers and CDN cache it", "cons": "clicks become invisible" },
+        { "name": "302 temporary", "pros": "every click is counted", "cons": "more load on the service" }
+      ],
+      "choice": "302 temporary",
+      "why": "Click analytics is a requirement; the cache in front of the store absorbs the extra load.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The id range allocator (mitigated: ranges are leased in large blocks and cached), hot codes concentrating on one cache shard (replicate hot keys), the primary of each store shard (replicas + multi-AZ).",
+    "failures": "If the cache is down, reads fall back to the store with rate limiting; if the stream is down, click events are dropped (best effort) but redirects continue.",
+    "monitoring": "p50/p99 redirect latency, cache hit ratio, 404 and 5xx rates, stream consumer lag; alerts on SLO burn rate.",
+    "scale": "10× growth: add redirect instances behind the load balancer, more cache shards, and more store partitions keyed by code hash.",
+    "future": "Custom domains, link previews and abuse detection (malware URLs)."
+  }
+}

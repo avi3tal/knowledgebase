@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "why": "N1/N2: ~10k peak read QPS would melt one DB and one server. Add a load balancer over stateless instances, a cache for hot codes, a key-value store, and a range allocator for collision-free codes.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Browser", "x": 60, "y": 160 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 160 },
+    { "id": "svc", "kind": "service", "label": "Shortener / redirect service ×N", "x": 400, "y": 160 },
+    { "id": "ids", "kind": "coordinator", "label": "ID range allocator", "x": 400, "y": 40 },
+    { "id": "cache", "kind": "cache", "label": "Redis: code → long_url", "x": 600, "y": 80 },
+    { "id": "kv", "kind": "nosql", "label": "links (KV, sharded by code)", "x": 600, "y": 240 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb" },
+    { "from": "lb", "to": "svc" },
+    { "from": "svc", "to": "ids", "label": "lease id block" },
+    { "from": "svc", "to": "cache", "label": "read-through" },
+    { "from": "svc", "to": "kv", "label": "write / cache miss" }
+  ],
+  "flows": [{ "name": "redirect (hit)", "path": ["client", "lb", "svc", "cache"] }]
+}

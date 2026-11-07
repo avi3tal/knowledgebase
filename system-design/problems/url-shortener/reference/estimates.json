@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "links_per_month", "formula": "100 * million", "unit": "" },
+    { "name": "write_qps", "formula": "links_per_month / month", "unit": "/s" },
+    { "name": "read_qps", "formula": "write_qps * 100", "unit": "/s" },
+    { "name": "peak_read_qps", "formula": "read_qps * 3", "unit": "/s" },
+    { "name": "links_5y", "formula": "links_per_month * 12 * 5", "unit": "" },
+    { "name": "storage_5y", "formula": "links_5y * 500 / 10**12", "unit": "TB" },
+    { "name": "cache_memory", "formula": "read_qps * day * 0.2 * 500 / 10**9", "unit": "GB" }
+  ]
+}

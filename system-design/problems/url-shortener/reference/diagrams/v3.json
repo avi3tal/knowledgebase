@@ -1,0 +1,29 @@
+{
+  "version": 3,
+  "why": "F4 without hurting N1: the redirect service emits click events to a stream; a worker aggregates them into click counts asynchronously.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Browser", "x": 60, "y": 160 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 160 },
+    { "id": "svc", "kind": "service", "label": "Shortener / redirect service ×N", "x": 400, "y": 160 },
+    { "id": "ids", "kind": "coordinator", "label": "ID range allocator", "x": 400, "y": 40 },
+    { "id": "cache", "kind": "cache", "label": "Redis: code → long_url", "x": 600, "y": 80 },
+    { "id": "kv", "kind": "nosql", "label": "links (KV, sharded by code)", "x": 600, "y": 240 },
+    { "id": "clicks", "kind": "stream", "label": "click events", "x": 400, "y": 320 },
+    { "id": "agg", "kind": "worker", "label": "Analytics aggregator", "x": 600, "y": 380 },
+    { "id": "stats", "kind": "nosql", "label": "click_counts", "x": 800, "y": 380 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb" },
+    { "from": "lb", "to": "svc" },
+    { "from": "svc", "to": "ids", "label": "lease id block" },
+    { "from": "svc", "to": "cache", "label": "read-through" },
+    { "from": "svc", "to": "kv", "label": "write / cache miss" },
+    { "from": "svc", "to": "clicks", "label": "emit click (async)" },
+    { "from": "clicks", "to": "agg" },
+    { "from": "agg", "to": "stats", "label": "batched counts" }
+  ],
+  "flows": [
+    { "name": "redirect (hit)", "path": ["client", "lb", "svc", "cache"] },
+    { "name": "click analytics", "path": ["svc", "clicks", "agg", "stats"] }
+  ]
+}

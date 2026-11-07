@@ -14,7 +14,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from kb import history, learn, scaffold
+from kb import history, learn
 from kb.schema import Problem
 
 REVIEW_AFTER_DAYS = [1, 3, 7, 14, 30]  # review gap grows with the number of solved problems in the topic
@@ -73,7 +73,7 @@ def compute(subject: str, problems_dir: Path, today: dt.date | None = None) -> d
 
     by_topic: dict[str, list[dict[str, Any]]] = defaultdict(list)
     unmapped: set[str] = set()
-    for p in scaffold.all_problems(problems_dir):
+    for p in learn.subject_problems(subject, problems_dir):
         st = problem_status(p, runs)
         for tag in p.meta.get("patterns", []):
             if tag in aliases:

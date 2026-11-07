@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from kb import debug, feedback, history, learn, runner, scaffold, server, sessions
+from kb import debug, design, feedback, history, learn, runner, scaffold, server, sessions
 from kb.complexity import matches
 from kb.paths import ROOT, problems_dir, workspace_dir
 from kb.schema import DIFFICULTIES, LANGS, Problem, ProblemError, load_problem, validate
@@ -176,7 +176,58 @@ def _resolve_target(target: str) -> tuple[Problem, Path | None]:
     return load_problem(path), None
 
 
+def _design_target(target: str) -> tuple[design.DesignProblem, Path] | None:
+    """A path inside <workspace>/attempts/<design-subject>/<slug>/<attempt> (VS Code tasks, kb run)."""
+    path = Path(target)
+    if not path.exists():
+        return None
+    path = path.resolve()
+    if path.is_file():
+        path = path.parent
+    if path.name == "diagrams":
+        path = path.parent
+    attempts = workspace_dir() / "attempts"
+    if not path.is_relative_to(attempts) or len(path.relative_to(attempts).parts) != 3:
+        return None
+    subject, slug, _ = path.relative_to(attempts).parts
+    if not design.is_design_subject(subject):
+        return None
+    return design.load(subject, slug), path
+
+
+def _print_check(r: dict) -> None:
+    for stage in design.STAGES:
+        st = r["stages"][stage]
+        if not st["total"]:
+            continue
+        print(f"  {stage:11} {st['passed']}/{st['total']}")
+        for c in (c for c in r["checks"] if c["stage"] == stage):
+            mark = green("✓") if c["passed"] else red("✗")
+            print(f"    {mark} {c['label']}" + (f"  ({c['detail']})" if c["detail"] else ""))
+    for v in r["versions"]:
+        d = v["diff"]
+        change = f"+{len(d['added_nodes'])} nodes +{len(d['added_edges'])} edges" if v["version"] != 1 else "start"
+        smells = f"  smells: {', '.join(v['smells'])}" if v["smells"] else ""
+        print(f"  v{v['version']}: {change}{smells}")
+    for s in r["final_smells"]:
+        print(red(f"  smell: {s['message']} ({', '.join(s['nodes'])})"))
+    for e in r["errors"]:
+        print(red(f"  error: {e}"))
+    print(
+        f"  {r['passed']}/{r['total']} checks passed"
+        + ("" if not r["final_smells"] else f", {len(r['final_smells'])} smell(s)")
+    )
+
+
 def cmd_run(a: argparse.Namespace) -> int:
+    target = _design_target(a.slug)
+    if target is not None:
+        problem, adir = target
+        r = design.run_checks(problem, adir)
+        _print_check(r)
+        if not a.no_log:
+            design.record(r)
+        return 0 if r["passed"] == r["total"] and not r["final_smells"] else 1
     problem, attempt_path = _resolve_target(a.slug)
     errors = validate(problem)
     if errors:
@@ -406,6 +457,57 @@ def cmd_session(a: argparse.Namespace) -> int:
     raise ProblemError(f"unknown action {a.action}")
 
 
+def cmd_sd(a: argparse.Namespace) -> int:
+    subject = a.subject
+    if a.action == "validate":
+        probs = [design.load(subject, s) for s in a.args] if a.args else design.all_problems(subject)
+        bad = 0
+        for p in probs:
+            errors = design.validate_problem(p)
+            bad += bool(errors)
+            print((red("✗ ") if errors else green("✓ ")) + f"{subject}/{p.slug}")
+            for e in errors:
+                print(f"    - {e}")
+        if not probs:
+            print(f"no design problems in {subject}/problems")
+        return 1 if bad else 0
+    if a.action == "list":
+        for p in design.all_problems(subject):
+            print(f"{p.slug:32} {p.meta.get('difficulty', '?'):7} {len(p.attempts())} attempts  {p.meta.get('title')}")
+        return 0
+    if not a.args:
+        raise ProblemError(f"kb sd {a.action} needs a problem slug or attempt path")
+    target = _design_target(a.args[0])
+    if target is None:
+        problem = design.load(subject, a.args[0])
+        if a.action == "attempt":
+            adir = design.new_attempt(problem, a.label)
+            print(f"created {_rel(adir)}  — open it in the studio console, or edit the JSON and ./kb run it")
+            return 0
+        if a.action == "tip":
+            if len(a.args) < 2:
+                raise ProblemError("usage: kb sd tip <slug> <check-id> [--level nudge|hint|show]")
+            print(design.tip(problem, a.args[1], a.level))
+            return 0
+        names = a.args[1:2]
+        adir = design.attempt_dir(subject, problem.slug, names[0]) if names else max(problem.attempts(), default=None)
+        if adir is None:
+            raise ProblemError(f"{problem.slug} has no attempts — kb sd attempt {problem.slug}")
+    else:
+        problem, adir = target
+    if a.action == "check":
+        r = design.run_checks(problem, adir)
+        _print_check(r)
+        if a.record:
+            design.record(r)
+        return 0
+    if a.action == "submit":
+        _print_check(design.submit(problem, adir))
+        print(f"submitted — reference unlocked: {_rel(problem.dir / 'reference.md')}")
+        return 0
+    raise ProblemError(f"unknown action {a.action}")
+
+
 def cmd_studio(a: argparse.Namespace) -> int:
     server.serve(a.port)
     return 0
@@ -472,6 +574,15 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--pattern")
     s.add_argument("--json", action="store_true")
     s.set_defaults(fn=cmd_session)
+
+    s = sub.add_parser("sd", help="design problems: validate | list | attempt | check | tip | submit")
+    s.add_argument("action", choices=["validate", "list", "attempt", "check", "tip", "submit"])
+    s.add_argument("args", nargs="*", help="slug [attempt|check-id] or an attempt path")
+    s.add_argument("--subject", default="system-design", choices=list(design.DESIGN_SUBJECTS))
+    s.add_argument("--label", help="attempt label (kebab-case)")
+    s.add_argument("--level", default="nudge", choices=list(design.TIP_LEVELS))
+    s.add_argument("--record", action="store_true", help="record the check in progress")
+    s.set_defaults(fn=cmd_sd)
 
     s = sub.add_parser("studio", help="serve the learning studio + API on 127.0.0.1")
     s.add_argument("--port", type=int, default=8765)

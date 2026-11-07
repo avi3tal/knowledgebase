@@ -107,7 +107,8 @@ export type Block =
   | { type: "trace"; id: string; trace: Trace }
   | { type: "quiz"; items: QuizItem[] }
   | { type: "problems"; problems: ProblemCardData[] }
-  | { type: "resources"; resources: Resource[] };
+  | { type: "resources"; resources: Resource[] }
+  | { type: "design-problems"; problems: DesignProblemCard[] };
 
 export interface Lesson {
   subject: string;
@@ -165,6 +166,160 @@ export interface ProblemRow {
   legacy_failing: boolean;
   complexity_miss: boolean;
 }
+
+// ---------------------------------------------------------------- design console (system-design/FORMAT.md)
+
+export type DesignStage =
+  "scope" | "estimates" | "api" | "high-level" | "deep-dives" | "wrap-up" | "signatures";
+export type TipLevel = "nudge" | "hint" | "show";
+export interface DesignProblemCard {
+  slug: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  topics: string[];
+  minutes: number | null;
+  attempts: string[];
+}
+export interface DesignCheckItem {
+  id: string;
+  type: string;
+  stage: DesignStage;
+  label: string;
+}
+export interface DesignProblemData {
+  subject: string;
+  slug: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  topics: string[];
+  minutes: number | null;
+  readme: string;
+  readme_path: string;
+  palette: string[];
+  stages: DesignStage[];
+  wrapup_keys: string[];
+  units: string[];
+  constants: Record<string, number>;
+  checks: DesignCheckItem[];
+  attempts: { name: string; path: string; submitted: boolean }[];
+  status: { status: "solved" | "failing" | "untried" };
+}
+export interface ScopeItem {
+  id: string;
+  text: string;
+}
+export interface DesignDoc {
+  version: 1;
+  scope: {
+    functional: ScopeItem[];
+    non_functional: ScopeItem[];
+    assumptions: ScopeItem[];
+    out_of_scope: ScopeItem[];
+  };
+  api: {
+    id: string;
+    method: string;
+    path: string;
+    request: string;
+    response: string;
+    notes: string;
+  }[];
+  data: { id: string; name: string; fields: string; store: string; why: string }[];
+  deep_dives: {
+    id: string;
+    title: string;
+    options: { name: string; pros: string; cons: string }[];
+    choice: string;
+    why: string;
+    version?: number;
+  }[];
+  wrapup: Record<string, string>;
+}
+export interface EstimateRow {
+  name: string;
+  formula: string;
+  unit: string;
+}
+export interface EstimateResult extends EstimateRow {
+  value: number | null;
+  error: string | null;
+}
+export interface DiagramNode {
+  id: string;
+  kind: string;
+  label?: string;
+  x?: number;
+  y?: number;
+}
+export interface DiagramEdge {
+  from: string;
+  to: string;
+  label?: string;
+}
+export interface Diagram {
+  version: number;
+  why: string;
+  nodes: DiagramNode[];
+  edges: DiagramEdge[];
+  flows?: { name: string; path: string[] }[];
+}
+export interface Smell {
+  rule: string;
+  message: string;
+  nodes: string[];
+  version: number;
+}
+export interface DesignCheck {
+  version: 1;
+  subject: string;
+  slug: string;
+  attempt: string;
+  checks: (DesignCheckItem & { passed: boolean; detail: string })[];
+  stages: Record<DesignStage, { passed: number; total: number }>;
+  passed: number;
+  total: number;
+  smells: Smell[];
+  final_smells: Smell[];
+  versions: {
+    version: number;
+    why: string;
+    nodes: number;
+    edges: number;
+    diff: {
+      added_nodes: string[];
+      removed_nodes: string[];
+      added_edges: string[];
+      removed_edges: string[];
+    };
+    smells: string[];
+  }[];
+  versions_missing_why: number[];
+  estimates: EstimateResult[];
+  errors: string[];
+  submitted: boolean;
+}
+export interface DesignAttempt {
+  name: string;
+  path: string;
+  design: DesignDoc;
+  estimates: { version: 1; rows: EstimateRow[] };
+  diagrams: Diagram[];
+  signatures: string;
+  check: DesignCheck;
+}
+export interface DesignReference {
+  walkthrough: string;
+  pattern: string;
+  diagrams: Diagram[];
+  design: DesignDoc;
+  estimates: EstimateResult[];
+  tips: Record<string, string>;
+}
+export type DesignSaveFile =
+  | { file: "design"; content: DesignDoc }
+  | { file: "estimates"; content: { version: 1; rows: EstimateRow[] } }
+  | { file: "diagram"; content: Diagram; version: number }
+  | { file: "signatures"; content: string };
 
 export type SessionStatus = "planned" | "active" | "done" | "abandoned";
 export type Focus = "weak" | "new" | "review" | "mixed";
@@ -242,12 +397,34 @@ export const api = {
   problems: (subject: string) => get<ProblemRow[]>(`/api/problems/${subject}`),
   topic: (subject: string, topic: string) => get<TopicPageData>(`/api/topic/${subject}/${topic}`),
   graph: (subject: string) => get<Graph>(`/api/graph/${subject}`),
+  design: (subject: string, slug: string) =>
+    get<DesignProblemData>(`/api/design/${subject}/${slug}`),
+  designAttempt: (subject: string, slug: string, attempt: string) =>
+    get<DesignAttempt>(`/api/design/${subject}/${slug}/${attempt}`),
+  designReference: (subject: string, slug: string, attempt: string) =>
+    get<DesignReference>(`/api/design/${subject}/${slug}/${attempt}/reference`),
+  newDesignAttempt: (subject: string, slug: string, label?: string) =>
+    post<DesignAttempt>(`/api/design/${subject}/${slug}/attempt`, label ? { label } : {}),
+  designTip: (subject: string, slug: string, check: string, level: TipLevel, attempt?: string) =>
+    post<{ check: string; level: TipLevel; text: string }>(`/api/design/${subject}/${slug}/tip`, {
+      check,
+      level,
+      attempt,
+    }),
+  saveDesign: (subject: string, slug: string, attempt: string, body: DesignSaveFile) =>
+    post<DesignCheck>(`/api/design/${subject}/${slug}/${attempt}/save`, body),
+  deleteDiagram: (subject: string, slug: string, attempt: string, version: number) =>
+    post<DesignCheck>(`/api/design/${subject}/${slug}/${attempt}/delete-diagram`, { version }),
+  checkDesign: (subject: string, slug: string, attempt: string) =>
+    post<DesignCheck>(`/api/design/${subject}/${slug}/${attempt}/check`, {}),
+  submitDesign: (subject: string, slug: string, attempt: string) =>
+    post<DesignCheck>(`/api/design/${subject}/${slug}/${attempt}/submit`, {}),
   sessions: () => get<Session[]>("/api/sessions"),
   session: (id: string) => get<Session>(`/api/session/${id}`),
   newSession: (spec: SessionSpec) => post<Session>("/api/sessions", spec),
   setStatus: (id: string, status: SessionStatus) =>
     post<Session>(`/api/session/${id}/status`, { status }),
-  startAttempt: (id: string, item: string, lang: "python" | "go") =>
+  startAttempt: (id: string, item: string, lang: "python" | "go" | "design") =>
     post<Session>(`/api/session/${id}/attempt`, { item, lang }),
   async answer(subject: string, topic: string, item: string, choice: string): Promise<QuizResult> {
     const res = await fetch("/api/quiz", {

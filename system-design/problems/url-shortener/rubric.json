@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "flags": { "read_heavy": true, "needs_lb": true },
+  "pattern": "Read-heavy key → value lookup: generate compact unique keys once on write, then serve the hot read path from cache/edge, and push side effects (analytics) onto an async queue.",
+  "checks": [
+    {
+      "id": "req-shorten",
+      "type": "requirement",
+      "label": "Core write use case captured",
+      "keywords": ["shorten", "short url", "short link", "create a short", "generate a short", "create short"],
+      "tips": {
+        "nudge": "What is the one thing a user does before anyone can be redirected?",
+        "hint": "Write a functional requirement for turning a long URL into a short one.",
+        "show": "F1: Given a long URL, the service returns a unique short URL (optionally a custom alias)."
+      }
+    },
+    {
+      "id": "req-redirect",
+      "type": "requirement",
+      "label": "Core read use case captured",
+      "keywords": ["redirect", "resolve", "visit", "open the short", "lookup"],
+      "tips": {
+        "nudge": "What happens when someone clicks the short link?",
+        "hint": "Add a functional requirement for resolving a short code back to the long URL.",
+        "show": "F2: Visiting a short URL redirects (HTTP 301/302) to the original long URL."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Performance expectation stated",
+      "keywords": ["latency", "fast", "ms", "milliseconds", "instant", "low-latency"],
+      "tips": {
+        "nudge": "Which non-functional property would users notice first?",
+        "hint": "State a latency target for redirects.",
+        "show": "N1: Redirect latency p99 < 50 ms; read-heavy (≈100 reads per write)."
+      }
+    },
+    {
+      "id": "req-availability",
+      "type": "requirement",
+      "label": "Reliability expectation stated",
+      "keywords": ["availab", "uptime", "99.9", "fault toler", "reliab"],
+      "tips": {
+        "nudge": "Broken links are worse than slow ones. Which property protects against that?",
+        "hint": "Add a non-functional requirement about availability.",
+        "show": "N2: Highly available (99.99%) redirects; brief write unavailability is acceptable."
+      }
+    },
+    {
+      "id": "est-write-qps",
+      "type": "estimate",
+      "label": "Write throughput estimated",
+      "keywords": ["write", "create", "shorten", "new"],
+      "unit": "/s",
+      "min": 10,
+      "max": 1000,
+      "tips": {
+        "nudge": "Start from the monthly number of new links.",
+        "hint": "Write QPS = new links per month / seconds in a month (month ≈ 2.6 million s).",
+        "show": "write_qps = 100 * million / month ≈ 40 /s (peak ×2–3 ≈ 100 /s)."
+      }
+    },
+    {
+      "id": "est-read-qps",
+      "type": "estimate",
+      "label": "Read throughput estimated",
+      "keywords": ["read", "redirect", "resolve"],
+      "unit": "/s",
+      "min": 1000,
+      "max": 100000,
+      "tips": {
+        "nudge": "How does the read traffic relate to the write traffic?",
+        "hint": "Multiply write QPS by the read:write ratio.",
+        "show": "read_qps = write_qps * 100 ≈ 4,000 /s (peak ≈ 10,000 /s)."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Storage for the retention period estimated",
+      "keywords": ["storage", "disk", "total", "bytes", "size"],
+      "unit": "TB",
+      "min": 1,
+      "max": 100,
+      "tips": {
+        "nudge": "How many links will exist after the retention period, and how big is each?",
+        "hint": "links = monthly links × 12 × 5; storage = links × bytes per record (≈ 500 B).",
+        "show": "storage = 100 * million * 12 * 5 * 500 B ≈ 3 TB."
+      }
+    },
+    {
+      "id": "api-create",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "method": "POST",
+      "keywords": ["url", "link", "shorten"],
+      "tips": {
+        "nudge": "Which HTTP method creates a new resource?",
+        "hint": "Define a POST endpoint that takes the long URL (and an optional alias).",
+        "show": "POST /urls {long_url, alias?, expires_at?} → 201 {code, short_url}"
+      }
+    },
+    {
+      "id": "api-redirect",
+      "type": "endpoint",
+      "label": "Read endpoint defined",
+      "method": "GET",
+      "keywords": ["code", "redirect", "{", ":", "short"],
+      "tips": {
+        "nudge": "What does the browser request when someone opens the short link?",
+        "hint": "A GET on the short code path that answers with a redirect status.",
+        "show": "GET /{code} → 301/302 Location: <long_url> (404 if unknown or expired)"
+      }
+    },
+    {
+      "id": "data-mapping",
+      "type": "entity",
+      "label": "Core data model defined",
+      "keywords": ["long_url", "long url", "code", "mapping", "destination"],
+      "tips": {
+        "nudge": "What is the minimum you must store to redirect?",
+        "hint": "One entity keyed by the short code that holds the long URL plus metadata.",
+        "show": "links(code PK, long_url, owner_id, created_at, expires_at) in a key-value/NoSQL store."
+      }
+    },
+    {
+      "id": "comp-cache",
+      "type": "component",
+      "label": "Read path can absorb the read load",
+      "kinds": ["cache", "cdn"],
+      "tips": {
+        "nudge": "Most redirects hit a small set of popular links. How do you exploit that?",
+        "hint": "Put something in front of the database for hot codes.",
+        "show": "Add a cache (e.g. Redis, LRU, TTL) for code → long_url; optionally cache 301s at a CDN/edge."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": ["load-balancer", "api-gateway"],
+      "tips": {
+        "nudge": "One server can't take 10k QPS forever. What spreads the traffic?",
+        "hint": "Stateless services behind something that distributes requests.",
+        "show": "Clients → load balancer → N stateless shortener/redirect service instances."
+      }
+    },
+    {
+      "id": "comp-store",
+      "type": "component",
+      "label": "Durable storage for links",
+      "kinds": ["nosql", "sql"],
+      "tips": {
+        "nudge": "Where do links live for five years?",
+        "hint": "Pick a durable store suited to key → value lookups.",
+        "show": "A replicated key-value / NoSQL store (or sharded SQL) keyed by code."
+      }
+    },
+    {
+      "id": "comp-async-analytics",
+      "type": "edge",
+      "label": "Side effects kept off the hot path",
+      "from_kinds": ["service"],
+      "to_kinds": ["queue", "stream"],
+      "tips": {
+        "nudge": "Counting clicks must never slow a redirect. How do you decouple it?",
+        "hint": "Emit an event from the redirect service to something asynchronous.",
+        "show": "Redirect service → click-events stream (Kafka) → analytics worker → analytics store."
+      }
+    },
+    {
+      "id": "dd-id-generation",
+      "type": "decision",
+      "label": "Key generation decided",
+      "keywords": ["base62", "base 62", "hash", "counter", "snowflake", "key generation", "id generation", "short code"],
+      "tips": {
+        "nudge": "7 characters of [a-zA-Z0-9] give how many codes? How do you hand them out without collisions?",
+        "hint": "Compare hashing the URL, a global counter + base62, and pre-generated key ranges.",
+        "show": "Counter/range-based IDs (each server leases a block) encoded in base62: no collisions, 62^7 ≈ 3.5e12 codes; hashing needs collision handling; random IDs need existence checks."
+      }
+    },
+    {
+      "id": "dd-redirect-status",
+      "type": "decision",
+      "label": "Redirect semantics decided",
+      "keywords": ["301", "302", "permanent", "temporary"],
+      "tips": {
+        "nudge": "Which redirect status lets browsers cache the answer, and what does that cost you?",
+        "hint": "Compare 301 (cacheable) with 302 (every click reaches you).",
+        "show": "301 cuts load (browsers/CDN cache it) but hides clicks; 302 keeps analytics accurate. Choose per product need."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks and single points of failure named",
+      "tips": {
+        "nudge": "Which component, if it fails or saturates, breaks redirects?",
+        "hint": "Walk the read path and name each single point of failure.",
+        "show": "ID allocator (mitigate with leased ranges), hot keys in cache (replicate), DB primary (replicas, multi-AZ)."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How would you know redirects are slow before users tell you?",
+        "hint": "List the metrics and alerts you'd watch.",
+        "show": "p50/p99 redirect latency, cache hit ratio, 404 rate, error rate, queue lag; alert on SLO burn."
+      }
+    }
+  ]
+}
