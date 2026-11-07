@@ -731,6 +731,23 @@
       ]
     },
     {
+      "id": "ad-click-aggregator",
+      "name": "Design an ad click aggregator",
+      "kind": "case-study",
+      "group": "case-studies",
+      "usage": "Ingest a firehose of click events, dedupe, aggregate per ad per minute, query recent and historical counts.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "stream-processing"
+      ],
+      "related": [
+        "pre-aggregation",
+        "flink"
+      ]
+    },
+    {
       "id": "genai-foundations",
       "name": "GenAI system design: foundations",
       "kind": "concept",
@@ -1003,7 +1020,8 @@
       ],
       "related": [
         "kafka",
-        "pre-aggregation"
+        "pre-aggregation",
+        "ad-click-aggregator"
       ]
     },
     {
@@ -1324,7 +1342,8 @@
       "related": [
         "time-series-db",
         "flink",
-        "metrics-monitoring"
+        "metrics-monitoring",
+        "ad-click-aggregator"
       ]
     },
     {
