@@ -6,7 +6,9 @@
   each attempt dir is its own package and is tested with `go test` (table-driven, reads `cases.json`).
 - Subjects: **algo** (coding problems, Python/Go), **system-design** and **ood** (design problems in the
   studio's design console; format and API contract in `system-design/FORMAT.md`, checker `tools/kb/design.py`,
-  `kb sd validate` is the content gate). k8s later.
+  `kb sd validate` is the content gate). System design is practised as **decompose → reduce** (parts merged
+  into the high-level design by node id) and every `reference.md` follows FORMAT.md's fixed solution layout.
+  Studio pages for design problems use the shared `Workbench` layout (header / tabs / left | center | right / footer). k8s later.
 - Learning studio (approved 2026-11-06): **React + TypeScript (strict) + Vite** app in `studio/`,
   package manager **yarn** (v4, `nodeLinker: node-modules`). The Python `kb` CLI is its local
   backend (`kb studio`, stdlib HTTP server on 127.0.0.1) and the only thing that touches files.

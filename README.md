@@ -66,12 +66,23 @@ make studio            # build the UI and serve it on http://127.0.0.1:8765
 
 ## System design and OOD console
 
-Design problems (`system-design/problems/`, `ood/problems/`) open in the studio's console: scope →
-estimates (live calculator) → API & data → a **Visio-like canvas** with versions v1 → vN (each with a
-"why", diffs highlighted) → deep dives with trade-offs → wrap-up → signatures. A rubric checklist
-updates as you work; structural **smells** (client talking to a DB, a queue nobody reads, one DB under
-a read-heavy load, an interface nothing implements…) are flagged; tips come on demand (nudge → hint
-→ show). **Check** records a run; **Submit** unlocks the reference walkthrough and diagrams. No AI.
+Design problems (`system-design/problems/`, `ood/problems/`) have two modes, both laid out as a
+workbench: header, tabs, then problems | content | table of contents, then footer.
+
+- **Read:** the Problem / Solution / Attempts tabs. Every solution follows the same layout:
+  distinctive property → requirements & assumptions → scale numbers → API & data → **decompose** into
+  parts (options, pros and cons, choice, and a diagram for each part) → **reduce** into the
+  high-level design v1 → vN → deep dives → technologies → patterns → evaluation and the 30-second
+  answer → tips → learn more. Revealing a solution before practising removes the first-try bonus.
+- **Practice (console):** a Visio-like stencil of shapes on the left, the canvas or the current stage
+  in the centre, and an inspector, a rubric checklist and tiered tips (nudge → hint → show) on the
+  right.
+  - Stages: scope → estimates (live calculator) → API & data → **decompose** (solve each part on its
+    own small canvas) → **reduce** ("Compose" merges the parts into a new version by node id) → deep
+    dives → wrap-up. OOD adds signatures.
+  - Structural **smells** are flagged, for example a client talking to a DB, a queue nobody reads, or
+    a part never composed into the design.
+  - **Check** records a run; **Submit** unlocks the reference inside the console. No AI.
 
 ```sh
 ./kb sd list [--subject ood]               # case studies
