@@ -24,7 +24,7 @@ import { SessionsPage } from "./components/SessionsPage";
 import { SubjectHome } from "./components/SubjectHome";
 import { SubjectMap } from "./components/SubjectMap";
 import { TopicPage } from "./components/TopicPage";
-import { RootContext } from "./context";
+import { RootContext, SubjectContext } from "./context";
 import type { Route, Tab } from "./route";
 import { TAB_HREF, designHref, parseRoute, tabOf } from "./route";
 import { DesignConsole } from "./components/DesignConsole";
@@ -155,94 +155,99 @@ export function App() {
 
   return (
     <RootContext.Provider value={subjects?.root ?? ""}>
-      <header className="topbar">
-        <a className="brand" href="#/">
-          <span className="brand-mark">kb</span> studio
-        </a>
-        <nav className="subject-tabs">
-          {subjects?.subjects.map((s) => (
+      <SubjectContext.Provider
+        value={{ subject: current ?? null, subjects: subjects?.subjects ?? [] }}
+      >
+        <header className="topbar">
+          <a className="brand" href="#/">
+            <span className="brand-mark">kb</span> studio
+          </a>
+          <nav className="subject-tabs">
+            {subjects?.subjects.map((s) => (
+              <a
+                key={s.id}
+                href={TAB_HREF.learn(s.id)}
+                className={`subject-tab ${s.id === route.subject && tab !== "sessions" ? "on" : ""} ${s.status === "locked" ? "locked" : ""}`}
+                title={s.status === "locked" ? "Lessons coming — map and resources ready" : s.title}
+              >
+                <span>{SUBJECT_ICON[s.id] ?? "📘"}</span> {SUBJECT_SHORT[s.id] ?? s.title}
+                {s.status === "locked" && <span className="lock">🔒</span>}
+              </a>
+            ))}
+          </nav>
+          <span className="grow" />
+          <a href="#/sessions" className={`sessions-link ${tab === "sessions" ? "on" : ""}`}>
+            🎯 Sessions
+          </a>
+          <button className="search-trigger" onClick={() => setSearching(true)}>
+            🔍 Search <kbd>⌘K</kbd>
+          </button>
+          <button
+            className="icon-btn"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+        </header>
+        <nav className={`subtabs ${tab === "sessions" ? "hidden" : ""}`}>
+          {TABS.filter((t) => !(locked && t.open)).map((t) => (
             <a
-              key={s.id}
-              href={TAB_HREF.learn(s.id)}
-              className={`subject-tab ${s.id === route.subject && tab !== "sessions" ? "on" : ""} ${s.status === "locked" ? "locked" : ""}`}
-              title={s.status === "locked" ? "Lessons coming — map and resources ready" : s.title}
+              key={t.tab}
+              href={TAB_HREF[t.tab](route.subject)}
+              className={`subtab ${t.tab === tab ? "on" : ""}`}
             >
-              <span>{SUBJECT_ICON[s.id] ?? "📘"}</span> {SUBJECT_SHORT[s.id] ?? s.title}
-              {s.status === "locked" && <span className="lock">🔒</span>}
+              {t.icon} {t.label}
             </a>
           ))}
         </nav>
-        <span className="grow" />
-        <a href="#/sessions" className={`sessions-link ${tab === "sessions" ? "on" : ""}`}>
-          🎯 Sessions
-        </a>
-        <button className="search-trigger" onClick={() => setSearching(true)}>
-          🔍 Search <kbd>⌘K</kbd>
-        </button>
-        <button
-          className="icon-btn"
-          onClick={toggleTheme}
-          title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-        >
-          {theme === "light" ? "🌙" : "☀️"}
-        </button>
-      </header>
-      <nav className={`subtabs ${tab === "sessions" ? "hidden" : ""}`}>
-        {TABS.filter((t) => !(locked && t.open)).map((t) => (
-          <a
-            key={t.tab}
-            href={TAB_HREF[t.tab](route.subject)}
-            className={`subtab ${t.tab === tab ? "on" : ""}`}
-          >
-            {t.icon} {t.label}
-          </a>
-        ))}
-      </nav>
-      <main
-        className={`content ${route.page === "console" || route.page === "design" ? "bench" : ""}`}
-        key={window.location.hash}
-      >
-        {current && <Crumbs route={route} subject={current} page={page} />}
-        {error && <ErrorBox msg={error} route={route} />}
-        {!error && !page && <div className="loader" aria-label="loading" />}
-        {page?.kind === "home" && current && <SubjectHome subject={current} feedback={page.data} />}
-        {page?.kind === "dashboard" && (
-          <Dashboard data={page.data} topics={current?.topics ?? []} />
+        <main className="content bench" key={window.location.hash}>
+          {current && <Crumbs route={route} subject={current} page={page} />}
+          {error && <ErrorBox msg={error} route={route} />}
+          {!error && !page && <div className="loader" aria-label="loading" />}
+          {page?.kind === "home" && current && (
+            <SubjectHome subject={current} feedback={page.data} />
+          )}
+          {page?.kind === "dashboard" && (
+            <Dashboard data={page.data} topics={current?.topics ?? []} />
+          )}
+          {page?.kind === "sessions" && subjects && (
+            <SessionsPage sessions={page.data} subjects={subjects.subjects} />
+          )}
+          {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
+          {page?.kind === "lesson" && <LessonView lesson={page.data} />}
+          {page?.kind === "problem" && <ProblemCard p={page.data} open />}
+          {page?.kind === "design" && (
+            <DesignProblemPage
+              p={page.data}
+              view={route.page === "design" ? route.view : "problem"}
+              names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+            />
+          )}
+          {page?.kind === "console" && (
+            <DesignConsole
+              key={page.data.attempt.name}
+              problem={page.data.problem}
+              initial={page.data.attempt}
+            />
+          )}
+          {page?.kind === "topic" && <TopicPage data={page.data} />}
+          {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
+          {page?.kind === "problems" && (
+            <ProblemsPage
+              subject={route.subject}
+              rows={page.data}
+              names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+              lessons={
+                new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))
+              }
+            />
+          )}
+        </main>
+        {searching && subjects && (
+          <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />
         )}
-        {page?.kind === "sessions" && subjects && (
-          <SessionsPage sessions={page.data} subjects={subjects.subjects} />
-        )}
-        {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
-        {page?.kind === "lesson" && <LessonView lesson={page.data} />}
-        {page?.kind === "problem" && <ProblemCard p={page.data} open />}
-        {page?.kind === "design" && (
-          <DesignProblemPage
-            p={page.data}
-            view={route.page === "design" ? route.view : "problem"}
-            names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-          />
-        )}
-        {page?.kind === "console" && (
-          <DesignConsole
-            key={page.data.attempt.name}
-            problem={page.data.problem}
-            initial={page.data.attempt}
-          />
-        )}
-        {page?.kind === "topic" && <TopicPage data={page.data} />}
-        {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
-        {page?.kind === "problems" && (
-          <ProblemsPage
-            subject={route.subject}
-            rows={page.data}
-            names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-            lessons={new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))}
-          />
-        )}
-      </main>
-      {searching && subjects && (
-        <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />
-      )}
+      </SubjectContext.Provider>
     </RootContext.Provider>
   );
 }
