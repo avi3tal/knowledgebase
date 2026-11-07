@@ -89,6 +89,7 @@ export function HighLevelEditor({
           ＋ New version
         </button>
         {!isFirst &&
+          shown === Math.max(...versions) &&
           (confirmDelete ? (
             <ConfirmBar
               text={`Delete v${shown}? Its file is removed.`}

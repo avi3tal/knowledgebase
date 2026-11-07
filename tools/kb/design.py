@@ -459,6 +459,9 @@ def validate_design(d: Any) -> list[str]:
     if not isinstance(d, dict) or d.get("version") != VERSION:
         return [f"design.json must be an object with version {VERSION}"]
     e: list[str] = []
+    missing = [k for k in ("scope", "api", "data", "deep_dives", "wrapup") if k not in d]
+    if missing:
+        e.append(f"design.json is missing {', '.join(missing)} (send the whole document)")
     scope = d.get("scope", {})
     if not isinstance(scope, dict):
         e.append("scope must be an object")
@@ -490,11 +493,19 @@ def save(subject: str, slug: str, attempt: str, file: str, content: Any, version
     elif file == "estimates":
         ok = isinstance(content, dict) and isinstance(content.get("rows"), list) and len(content["rows"]) <= MAX_ROWS
         errors = [] if ok else [f"estimates must be {{version, rows: [...]}} with ≤ {MAX_ROWS} rows"]
+        if ok:
+            bad = sorted(
+                {str(r.get("unit")) for r in content["rows"] if isinstance(r, dict) and r.get("unit", "") not in UNITS}
+            )
+            errors += [f"unknown unit(s) {bad}; use one of {sorted(UNITS)}"] if bad else []
         path, text = adir / "estimates.json", json.dumps(content, indent=2) + "\n"
     elif file == "diagram":
         if not isinstance(version, int) or not 1 <= version <= MAX_VERSIONS:
             raise ProblemError(f"diagram version must be 1..{MAX_VERSIONS}")
         errors = validate_diagram(content, subject)
+        existing = len(diagram_versions(adir))
+        if version > existing + 1:
+            errors.append(f"versions are consecutive: next is v{existing + 1}")
         if isinstance(content, dict) and content.get("version") != version:
             errors.append("diagram.version must match the file version")
         path, text = adir / "diagrams" / f"v{version}.json", json.dumps(content, indent=2) + "\n"
@@ -512,8 +523,9 @@ def save(subject: str, slug: str, attempt: str, file: str, content: Any, version
 
 def delete_diagram(subject: str, slug: str, attempt: str, version: int) -> None:
     adir = attempt_dir(subject, slug, attempt)
-    if not isinstance(version, int) or not 2 <= version <= MAX_VERSIONS:
-        raise ProblemError("only versions 2..N can be deleted")
+    latest = len(diagram_versions(adir))
+    if not isinstance(version, int) or version < 2 or version != latest:
+        raise ProblemError(f"only the latest version (v{latest}, if ≥ 2) can be deleted, so versions stay consecutive")
     (adir / "diagrams" / f"v{version}.json").unlink(missing_ok=True)
 
 

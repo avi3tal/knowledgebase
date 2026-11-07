@@ -353,3 +353,22 @@ def test_requirement_sections_and_decision_choice() -> None:
     for check, want in cases:
         p.rubric = {"checks": [check]}
         assert design.run_checks(p, adir)["checks"][0]["passed"] is want, check
+
+
+def test_save_guards_against_gaps_partial_docs_and_bad_units() -> None:
+    p = design.load("system-design", "url-shortener")
+    adir = design.new_attempt(p)
+    a = ("system-design", "url-shortener", adir.name)
+    blank = {"version": 3, "why": "x", "nodes": [], "edges": []}
+    with pytest.raises(ProblemError, match="consecutive"):
+        design.save(*a, "diagram", blank, 3)
+    design.save(*a, "diagram", {**blank, "version": 2}, 2)
+    design.save(*a, "diagram", blank, 3)
+    with pytest.raises(ProblemError, match="latest"):
+        design.delete_diagram(*a, 2)
+    design.delete_diagram(*a, 3)
+    assert [d["version"] for d in design.diagram_versions(adir)] == [1, 2]
+    with pytest.raises(ProblemError, match="missing"):
+        design.save(*a, "design", {"version": 1})
+    with pytest.raises(ProblemError, match="unknown unit"):
+        design.save(*a, "estimates", {"version": 1, "rows": [{"name": "x", "formula": "1", "unit": "zz"}]})
