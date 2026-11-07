@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "why": "N2/F5: v1 computed fines in Library and had no way to queue for a title or tell anyone it came back. Add Reservation + ReservationQueue, a FinePolicy interface for penalty rules, and a Notifier interface so return logic never knows the channel.",
+  "nodes": [
+    { "id": "member_actor", "kind": "actor", "label": "Member", "x": 60, "y": 120 },
+    { "id": "librarian", "kind": "actor", "label": "Librarian", "x": 60, "y": 340 },
+    { "id": "library", "kind": "class", "label": "Library", "x": 240, "y": 220 },
+    { "id": "catalog", "kind": "class", "label": "Catalog", "x": 420, "y": 60 },
+    { "id": "book", "kind": "class", "label": "Book", "x": 620, "y": 60 },
+    { "id": "copy", "kind": "class", "label": "BookCopy", "x": 620, "y": 200 },
+    { "id": "status", "kind": "enum", "label": "CopyStatus", "x": 840, "y": 200 },
+    { "id": "member", "kind": "class", "label": "Member", "x": 420, "y": 340 },
+    { "id": "loan", "kind": "class", "label": "Loan", "x": 620, "y": 340 },
+    { "id": "resq", "kind": "class", "label": "ReservationQueue", "x": 840, "y": 60 },
+    { "id": "reservation", "kind": "class", "label": "Reservation", "x": 840, "y": 340 },
+    { "id": "finepolicy", "kind": "interface", "label": "FinePolicy", "x": 240, "y": 460 },
+    { "id": "perday", "kind": "class", "label": "PerDayFine", "x": 60, "y": 480 },
+    { "id": "notifier", "kind": "interface", "label": "Notifier", "x": 620, "y": 480 },
+    { "id": "email", "kind": "class", "label": "EmailNotifier", "x": 840, "y": 480 }
+  ],
+  "edges": [
+    { "from": "member_actor", "to": "library", "label": "borrow / return / search / reserve" },
+    { "from": "librarian", "to": "library", "label": "add books, members" },
+    { "from": "library", "to": "catalog", "label": "has" },
+    { "from": "catalog", "to": "book", "label": "indexes" },
+    { "from": "book", "to": "copy", "label": "has many" },
+    { "from": "copy", "to": "status", "label": "in status" },
+    { "from": "library", "to": "member", "label": "has many" },
+    { "from": "member", "to": "loan", "label": "has many (≤5 active)" },
+    { "from": "loan", "to": "copy", "label": "of" },
+    { "from": "book", "to": "resq", "label": "has" },
+    { "from": "resq", "to": "reservation", "label": "FIFO of" },
+    { "from": "library", "to": "resq", "label": "CopyAvailable event" },
+    { "from": "resq", "to": "notifier", "label": "uses" },
+    { "from": "email", "to": "notifier", "label": "implements" },
+    { "from": "library", "to": "finepolicy", "label": "uses" },
+    { "from": "perday", "to": "finepolicy", "label": "implements" }
+  ],
+  "flows": [{ "name": "return with waiting member", "path": ["member_actor", "library", "resq", "notifier", "email"] }]
+}

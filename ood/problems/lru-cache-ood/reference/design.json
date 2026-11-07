@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "get(key) returns the value (and marks it most recently used) or a miss; put(key, value) inserts or updates." },
+      { "id": "F2", "text": "Capacity is fixed at construction (e.g. 10,000 entries)." },
+      { "id": "F3", "text": "When full, put evicts the least recently used entry; the eviction rule is pluggable (LFU, TTL later)." },
+      { "id": "F4", "text": "Hit/miss statistics and an optional on-evict callback." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "get and put are O(1)." },
+      { "id": "N2", "text": "Thread-safe under dozens of concurrent threads (~90% reads) without one global bottleneck." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "Keys are hashable; values are opaque; size counted in entries, not bytes." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Distribution across machines, persistence, size in bytes." }
+    ]
+  },
+  "api": [
+    { "id": "E1", "method": "GET", "path": "Cache.get(key)", "request": "key: K", "response": "V | None", "notes": "Moves the entry to most recent; counts a hit or a miss." },
+    { "id": "E2", "method": "POST", "path": "Cache.put(key, value)", "request": "key: K, value: V", "response": "None", "notes": "Updates in place or inserts; evicts the policy's victim when full and fires on_evict." },
+    { "id": "E3", "method": "POST", "path": "Cache.delete(key)", "request": "key: K", "response": "bool", "notes": "" },
+    { "id": "E4", "method": "GET", "path": "Cache.stats()", "request": "", "response": "CacheStats(hits, misses, evictions)", "notes": "Provided by the stats decorator." }
+  ],
+  "data": [
+    { "id": "D1", "name": "index", "fields": "dict[K, Node] (hash map)", "store": "in memory", "why": "O(1) lookup of the node for a key." },
+    { "id": "D2", "name": "recency list", "fields": "doubly linked list of Node(key, value, prev, next) with sentinel head/tail", "store": "in memory", "why": "O(1) unlink, move-to-front and pop-oldest." },
+    { "id": "D3", "name": "Segment", "fields": "LRUCache + its own lock; segment = hash(key) % N", "store": "in memory", "why": "Splits contention N ways." }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Constant-time structures",
+      "options": [
+        { "name": "list only", "pros": "keeps order", "cons": "O(n) to find a key" },
+        { "name": "hash map only", "pros": "O(1) find", "cons": "no notion of least recent" },
+        { "name": "hash map + doubly linked list", "pros": "O(1) find, move and evict", "cons": "two structures to keep in sync" }
+      ],
+      "choice": "hash map key → node + doubly linked list ordered by recency",
+      "why": "get = lookup + move to head; put = insert at head and pop the tail when full; every step is O(1). The node stores its key so eviction can delete it from the map.",
+      "version": 1
+    },
+    {
+      "id": "DD2",
+      "title": "Thread safety",
+      "options": [
+        { "name": "one global mutex", "pros": "simple, exact LRU", "cons": "every call serialises; 30 threads queue up" },
+        { "name": "read-write lock", "pros": "parallel reads in most caches", "cons": "useless here: get moves the node, so it is a write" },
+        { "name": "segmented (striped) locks", "pros": "contention drops ~N×", "cons": "LRU is per segment (approximate globally)" }
+      ],
+      "choice": "SegmentedCache: N segments by hash(key) % N, each an LRUCache with its own mutex; a single-lock ThreadSafeCache decorator for small caches",
+      "why": "Because even reads reorder the list, a read-write lock buys nothing; splitting the key space removes the single hot lock, and per-segment LRU is an acceptable approximation. Callbacks run outside the lock so user code cannot deadlock the cache.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "A single lock around the list; removed by segmenting. Very hot single keys still serialise on their segment.",
+    "failures": "An on_evict callback that throws or blocks: run callbacks after releasing the lock and swallow/log their errors.",
+    "monitoring": "Hit ratio, eviction rate, lock wait time per segment.",
+    "scale": "New rules (LFU, TTL) are new EvictionPolicy implementations; stats and callbacks are decorators/listeners around any Cache; more threads → more segments. Size-by-bytes would make capacity a weigher function.",
+    "future": "Lock-free reads with buffered recency updates (sample and apply in batches), a distributed tier behind the same Cache interface."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "why": "F3/N2: callers now depend on a Cache interface; the 'who leaves' rule moves into an EvictionPolicy (LRU today, LFU later); thread safety and stats are added around any Cache: SegmentedCache splits keys into independently locked LRUCache segments, StatsCache is a decorator.",
+  "nodes": [
+    { "id": "client", "kind": "actor", "label": "Calling service", "x": 60, "y": 220 },
+    { "id": "cache", "kind": "interface", "label": "Cache[K, V]", "x": 260, "y": 220 },
+    { "id": "stats", "kind": "class", "label": "StatsCache (decorator)", "x": 260, "y": 60 },
+    { "id": "segmented", "kind": "class", "label": "SegmentedCache (striped locks)", "x": 260, "y": 400 },
+    { "id": "lru", "kind": "class", "label": "LRUCache", "x": 500, "y": 220 },
+    { "id": "policy", "kind": "interface", "label": "EvictionPolicy", "x": 720, "y": 60 },
+    { "id": "lrupolicy", "kind": "class", "label": "LRUPolicy", "x": 880, "y": 160 },
+    { "id": "lfupolicy", "kind": "class", "label": "LFUPolicy", "x": 880, "y": 40 },
+    { "id": "list", "kind": "class", "label": "DoublyLinkedList", "x": 720, "y": 300 },
+    { "id": "node", "kind": "class", "label": "Node (key, value, prev, next)", "x": 880, "y": 420 },
+    { "id": "listener", "kind": "interface", "label": "EvictionListener", "x": 500, "y": 440 }
+  ],
+  "edges": [
+    { "from": "client", "to": "cache", "label": "get / put" },
+    { "from": "stats", "to": "cache", "label": "implements + wraps" },
+    { "from": "segmented", "to": "cache", "label": "implements" },
+    { "from": "segmented", "to": "lru", "label": "has N segments" },
+    { "from": "lru", "to": "cache", "label": "implements" },
+    { "from": "lru", "to": "policy", "label": "uses" },
+    { "from": "lrupolicy", "to": "policy", "label": "implements" },
+    { "from": "lfupolicy", "to": "policy", "label": "implements" },
+    { "from": "lrupolicy", "to": "list", "label": "has (recency order)" },
+    { "from": "list", "to": "node", "label": "links many" },
+    { "from": "lru", "to": "listener", "label": "notifies on evict" }
+  ],
+  "flows": [{ "name": "get (hit)", "path": ["client", "cache", "segmented", "lru", "policy"] }]
+}

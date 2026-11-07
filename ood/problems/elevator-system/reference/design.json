@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Hall call: a person on a floor presses up or down; one car is assigned and stops there going that way." },
+      { "id": "F2", "text": "Car call: inside a car, pressing a floor button adds that destination to the car's stops." },
+      { "id": "F3", "text": "A bank of 4 cars serves 20 floors; each hall call is assigned to exactly one car." },
+      { "id": "F4", "text": "The dispatching policy can be changed (e.g. a rush-hour policy) without editing the controller." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Safety: an overloaded car (over capacity / weight) or a car with open doors never moves; emergency stop overrides everything." },
+      { "id": "N2", "text": "No starvation: every request is served in bounded time." },
+      { "id": "N3", "text": "Requests arrive concurrently from many floors while cars move." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "20 floors, 4 cars, 8 people / 640 kg per car." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Motor control hardware, fire-service mode, destination-dispatch keypads." }
+    ]
+  },
+  "api": [
+    { "id": "E1", "method": "POST", "path": "ElevatorController.request_elevator(floor, direction)", "request": "floor, Direction", "response": "assigned car id", "notes": "Hall call; the strategy picks the car, the car gets a stop." },
+    { "id": "E2", "method": "POST", "path": "ElevatorCar.select_floor(floor)", "request": "floor", "response": "", "notes": "Car call from the inside panel." },
+    { "id": "E3", "method": "POST", "path": "ElevatorCar.emergency_stop() / open_doors() / close_doors()", "request": "", "response": "", "notes": "Safety controls; override the stop list." },
+    { "id": "E4", "method": "POST", "path": "ElevatorController.set_strategy(strategy)", "request": "DispatchStrategy", "response": "", "notes": "Swap the dispatching policy at runtime." }
+  ],
+  "data": [
+    { "id": "D1", "name": "Request", "fields": "floor, direction: Direction | None, source: HALL | CAR, created_at", "store": "in memory", "why": "One button press; direction is None for car calls." },
+    { "id": "D2", "name": "ElevatorCar", "fields": "id, current_floor, direction, state: CarState, load_kg, up_stops (min-heap), down_stops (max-heap)", "store": "in memory", "why": "Everything the dispatcher needs to score a car, and the car's own stop list." },
+    { "id": "D3", "name": "ElevatorController", "fields": "cars, strategy: DispatchStrategy", "store": "in memory", "why": "The single place hall calls arrive." }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Dispatching hall calls to cars",
+      "options": [
+        { "name": "FCFS to any idle car", "pros": "trivial", "cons": "ignores cars already passing by; long waits" },
+        { "name": "nearest car", "pros": "short waits when idle", "cons": "picks cars moving away" },
+        { "name": "scored: nearest car heading toward the caller, penalise full cars", "pros": "good waits, fewer reversals", "cons": "needs a scoring function" }
+      ],
+      "choice": "DispatchStrategy interface; default NearestCarStrategy scores by distance and direction; RushHourStrategy parks idle cars at the lobby",
+      "why": "The policy is what the building wants to tune, so it sits behind a strategy the controller depends on (open/closed, dependency inversion).",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Ordering a car's stops",
+      "options": [
+        { "name": "FIFO queue", "pros": "fair by arrival", "cons": "zig-zags across floors" },
+        { "name": "LOOK (sweep): up stops sorted ascending, down stops descending", "pros": "few reversals, no starvation", "cons": "two structures to keep" }
+      ],
+      "choice": "LOOK with an up min-heap and a down max-heap",
+      "why": "The car keeps its direction while stops remain ahead, then reverses; every stop is reached within one round trip so nobody starves.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The controller is a single entry point for hall calls; it only scores snapshots and enqueues, so it stays cheap.",
+    "failures": "A car entering maintenance or emergency stop hands its hall calls back to the controller for reassignment.",
+    "monitoring": "Average and p95 wait time, trip time, reassignments, cars out of service.",
+    "scale": "Concurrency: one thread per car owns its movement loop; stops sit in a per-car lock-protected structure (add_stop takes the car lock), the controller reads immutable car snapshots and never moves a car. Growth: more cars are more workers; zoning or a rush-hour policy is just another strategy.",
+    "future": "Destination dispatch (choose floor in the lobby) as a different Request source and strategy; energy-saving idle parking."
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Borrow: a member checks out an available copy; the loan is due in 14 days." },
+      { "id": "F2", "text": "Return: checking in a copy closes the loan, charges a fine if late, and offers the copy to the next reservation." },
+      { "id": "F3", "text": "Search the catalogue by title, author or subject and see available copies." },
+      { "id": "F4", "text": "Rules: at most 5 items per member, renew once if nobody is waiting, fine per day overdue." },
+      { "id": "F5", "text": "Reserve a title when all copies are out; the first in the queue is notified and has 3 days to collect." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "A copy is never lent to two members, even when two desks act at once." },
+      { "id": "N2", "text": "Fine rules and notification channels change without editing the lending code." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "~50k titles, several physical copies per popular title, each with a barcode." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "E-books, inter-library loans, payment of fines." }
+    ]
+  },
+  "api": [
+    { "id": "E1", "method": "POST", "path": "Library.checkout(member_id, barcode)", "request": "member id, copy barcode", "response": "Loan", "notes": "Fails if the member is at the limit, owes fines, or the copy is held for someone else." },
+    { "id": "E2", "method": "POST", "path": "Library.return_copy(barcode)", "request": "copy barcode", "response": "fine in cents (0 if on time)", "notes": "Closes the loan; raises CopyAvailable for the reservation queue." },
+    { "id": "E3", "method": "GET", "path": "Catalog.search(query, by)", "request": "text, title|author|subject", "response": "list[Book] with available counts", "notes": "" },
+    { "id": "E4", "method": "POST", "path": "Library.reserve(member_id, isbn) / renew(loan_id)", "request": "", "response": "Reservation / Loan", "notes": "Renew refused when the title has reservations." }
+  ],
+  "data": [
+    { "id": "D1", "name": "Book", "fields": "isbn, title, authors, subjects", "store": "in memory / DB", "why": "The title as described in the catalogue." },
+    { "id": "D2", "name": "BookCopy", "fields": "barcode, book, status: CopyStatus, location", "store": "in memory / DB", "why": "The physical item; what is actually lent." },
+    { "id": "D3", "name": "Member", "fields": "id, name, active loans, fines owed", "store": "in memory / DB", "why": "Holds the limit check." },
+    { "id": "D4", "name": "Loan", "fields": "id, member, copy, borrowed_at, due_at, returned_at?, renewals", "store": "in memory / DB", "why": "One lending event; history survives the copy coming back." },
+    { "id": "D5", "name": "Reservation", "fields": "member, book, created_at, ready_until?", "store": "in memory / DB", "why": "FIFO line per title." }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Fines",
+      "options": [
+        { "name": "Loan computes the fine", "pros": "simple", "cons": "every rule change edits Loan" },
+        { "name": "FinePolicy strategy", "pros": "per-day, capped or zero rules are separate classes", "cons": "one more abstraction" }
+      ],
+      "choice": "FinePolicy interface (PerDayFine, CappedFine, NoFine) chosen per item category",
+      "why": "Loan only knows dates; the penalty rule is the part the library keeps changing (open/closed).",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Telling waiting members",
+      "options": [
+        { "name": "return_copy calls the email client", "pros": "direct", "cons": "lending depends on a channel; hard to add SMS" },
+        { "name": "Observer: CopyAvailable event + Notifier interface", "pros": "lending stays unaware of channels", "cons": "indirection" }
+      ],
+      "choice": "Observer: ReservationQueue listens for CopyAvailable and uses a Notifier interface",
+      "why": "Return logic stays small; channels (email, SMS) are pluggable Notifier implementations.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Search across 50k titles: an inverted index on title/author/subject rather than a scan.",
+    "failures": "Notification failure leaves the hold active and is retried; a lost copy moves to LOST and closes the loan with a replacement fee.",
+    "monitoring": "Loans per day, overdue count, average reservation wait.",
+    "scale": "Two desks borrowing the last copy: claim it with a compare-and-set on its status (or a row lock in the DB) and check the member limit in the same transaction. New media types (DVD, magazine) are new item subclasses; branches are a location on the copy.",
+    "future": "E-books as a copy with unlimited or licensed concurrency; inter-library loans as a new copy source."
+  }
+}

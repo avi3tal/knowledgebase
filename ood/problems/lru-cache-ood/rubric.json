@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Composite structure behind a narrow interface: combine a hash map (find) with an ordered structure (who goes next), hide both behind a small Cache interface, put the 'who goes next' rule in a policy object, and add cross-cutting concerns (locking, stats, callbacks) as wrappers or striped segments rather than inside the core.",
+  "checks": [
+    {
+      "id": "req-ops",
+      "type": "requirement",
+      "label": "Core operations captured",
+      "keywords": [
+        "get(",
+        "put(",
+        "get/put",
+        "get and put",
+        "lookup",
+        "insert"
+      ],
+      "tips": {
+        "nudge": "What do callers do with a cache?",
+        "hint": "Write the two basic operations as functional requirements.",
+        "show": "F1: get(key) returns the value or a miss; put(key, value) inserts or updates."
+      }
+    },
+    {
+      "id": "req-capacity",
+      "type": "requirement",
+      "label": "Bounded size captured",
+      "keywords": [
+        "capacity",
+        "bounded",
+        "max size",
+        "maximum",
+        "limit",
+        "fixed size"
+      ],
+      "tips": {
+        "nudge": "Can the cache grow forever?",
+        "hint": "State the size limit and when it is set.",
+        "show": "F2: Capacity is fixed at construction (e.g. 10,000 entries)."
+      }
+    },
+    {
+      "id": "req-eviction",
+      "type": "requirement",
+      "label": "Behaviour when full stated",
+      "keywords": [
+        "evict",
+        "least recently",
+        "lru",
+        "oldest",
+        "remove the",
+        "discard"
+      ],
+      "tips": {
+        "nudge": "It is full and a new key arrives. What happens?",
+        "hint": "Say which entry leaves and that the rule may change.",
+        "show": "F3: When full, put evicts the least-recently-used entry (rule pluggable: LFU, TTL later)."
+      }
+    },
+    {
+      "id": "req-threads",
+      "type": "requirement",
+      "label": "Concurrent use stated",
+      "keywords": [
+        "thread",
+        "concurren",
+        "parallel",
+        "multi-thread",
+        "multithread"
+      ],
+      "tips": {
+        "nudge": "The interviewer said who calls this.",
+        "hint": "Add a non-functional requirement about simultaneous callers.",
+        "show": "N2: Safe under dozens of concurrent threads, ~90% reads, without a global bottleneck."
+      }
+    },
+    {
+      "id": "api-get",
+      "type": "endpoint",
+      "label": "Read operation defined",
+      "keywords": [
+        "get(",
+        "get ",
+        ".get",
+        "lookup",
+        "fetch"
+      ],
+      "tips": {
+        "nudge": "What does a caller call to read?",
+        "hint": "An operation taking a key and returning the value or a miss marker.",
+        "show": "Cache.get(key: K) -> V | None (marks the entry as most recently used)."
+      }
+    },
+    {
+      "id": "api-put",
+      "type": "endpoint",
+      "label": "Write operation defined",
+      "keywords": [
+        "put(",
+        ".put",
+        "put ",
+        "set(",
+        ".set",
+        "insert"
+      ],
+      "tips": {
+        "nudge": "What does a caller call to write?",
+        "hint": "An operation taking key and value, possibly evicting.",
+        "show": "Cache.put(key: K, value: V) -> None (evicts per policy when full)."
+      }
+    },
+    {
+      "id": "data-index",
+      "type": "entity",
+      "label": "Lookup structure defined",
+      "keywords": [
+        "map",
+        "dict",
+        "hash",
+        "index"
+      ],
+      "tips": {
+        "nudge": "How do you find a key in O(1)?",
+        "hint": "Name the structure that maps keys to entries.",
+        "show": "index: dict[K, Node] (key → node in the recency list)."
+      }
+    },
+    {
+      "id": "data-order",
+      "type": "entity",
+      "label": "Usage-order structure defined",
+      "keywords": [
+        "linked list",
+        "doubly",
+        "recency",
+        "deque",
+        "ordered",
+        "prev",
+        "next"
+      ],
+      "tips": {
+        "nudge": "How do you know who is oldest, and move an entry to 'newest', in O(1)?",
+        "hint": "Name a structure where you can unlink any element and append in constant time.",
+        "show": "Doubly linked list of Node(key, value, prev, next) with sentinel head/tail; head = most recent."
+      }
+    },
+    {
+      "id": "comp-cache-iface",
+      "type": "component",
+      "label": "Callers depend on an abstraction",
+      "kinds": [
+        "interface",
+        "abstract"
+      ],
+      "keywords": [
+        "cache"
+      ],
+      "tips": {
+        "nudge": "Callers should not care whether it is LRU, LFU or thread-safe.",
+        "hint": "Add an interface with just the operations callers need.",
+        "show": "interface Cache[K, V] { get; put; delete; size } implemented by LRUCache and wrappers."
+      }
+    },
+    {
+      "id": "comp-policy",
+      "type": "component",
+      "label": "Replacement rule is pluggable",
+      "kinds": [
+        "interface",
+        "abstract"
+      ],
+      "keywords": [
+        "evict",
+        "policy",
+        "strategy",
+        "replacement"
+      ],
+      "tips": {
+        "nudge": "One team wants LFU next quarter.",
+        "hint": "Put 'which entry leaves' behind its own interface that the cache calls on access/insert/evict.",
+        "show": "interface EvictionPolicy { on_access(key); on_insert(key); victim() -> key } ← LRUPolicy, LFUPolicy."
+      }
+    },
+    {
+      "id": "comp-node",
+      "type": "component",
+      "label": "Per-entry object modelled",
+      "kinds": [
+        "class"
+      ],
+      "keywords": [
+        "node",
+        "entry"
+      ],
+      "tips": {
+        "nudge": "What does the map point to?",
+        "hint": "A small class that holds key, value and links.",
+        "show": "class Node { key, value, prev, next } (key is needed to delete from the map on eviction)."
+      }
+    },
+    {
+      "id": "edge-abstraction",
+      "type": "edge",
+      "label": "Concrete classes wired through abstractions",
+      "from_kinds": [
+        "class"
+      ],
+      "to_kinds": [
+        "interface",
+        "abstract"
+      ],
+      "tips": {
+        "nudge": "Does the cache know which policy it runs, or only its interface?",
+        "hint": "Draw the concrete cache implementing the cache interface and using the policy interface.",
+        "show": "LRUCache implements Cache and uses EvictionPolicy; ThreadSafeCache implements Cache and wraps any Cache."
+      }
+    },
+    {
+      "id": "dd-structures",
+      "type": "decision",
+      "label": "Structures that give constant time",
+      "keywords": [
+        "hash map",
+        "hashmap",
+        "dict",
+        "doubly",
+        "linked list",
+        "ordereddict",
+        "o(1)"
+      ],
+      "tips": {
+        "nudge": "A list alone is O(n) to find; a map alone has no order.",
+        "hint": "Combine two structures and say what each one is for.",
+        "show": "Hash map key → node + doubly linked list ordered by recency: get = lookup + move to head, put = insert at head + pop tail when full, all O(1)."
+      }
+    },
+    {
+      "id": "dd-thread-safety",
+      "type": "decision",
+      "label": "Safe under concurrent callers",
+      "keywords": [
+        "lock",
+        "mutex",
+        "synchroniz",
+        "striped",
+        "stripe",
+        "segment",
+        "shard",
+        "read-write",
+        "rwlock",
+        "concurren",
+        "thread"
+      ],
+      "tips": {
+        "nudge": "get moves a node, so even reads write. What does that do to a read-write lock?",
+        "hint": "Compare one global lock, a read-write lock, and splitting the cache into independently locked segments.",
+        "show": "Segmented (striped) cache: N segments by hash(key) % N, each an LRUCache with its own mutex; recency is approximate globally but contention drops ~N×. A read-write lock does not help because get mutates order."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Growth and extension considered",
+      "tips": {
+        "nudge": "LFU, TTL and stats are all coming. Where do they go?",
+        "hint": "Explain how new policies and cross-cutting features plug in, and how contention scales.",
+        "show": "New rules = new EvictionPolicy; TTL = expiry check on get + policy; stats/callbacks = decorator or listener; more threads = more segments."
+      }
+    },
+    {
+      "id": "sig-core",
+      "type": "signature",
+      "label": "Core public surface declared",
+      "names": [
+        "Cache",
+        "LRUCache",
+        "Node",
+        "EvictionPolicy",
+        "get",
+        "put"
+      ],
+      "tips": {
+        "nudge": "Have you written the interface, the implementation, the node, the policy and both operations?",
+        "hint": "Declare the classes and the two operations with type hints.",
+        "show": "class Cache(ABC, Generic[K, V]): get(key) -> V | None; put(key, value). class LRUCache(Cache). class Node. class EvictionPolicy(ABC)."
+      }
+    }
+  ]
+}

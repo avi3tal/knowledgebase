@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Resource allocation model: a facade owns a hierarchy of containers (lot → level → space), each resource tracks its own occupancy, and the two rules most likely to change (how a resource is picked, how usage is priced) live behind strategy interfaces so new policies are added, not edited in.",
+  "checks": [
+    {
+      "id": "req-entry",
+      "type": "requirement",
+      "label": "Arrival use case captured",
+      "keywords": [
+        "park",
+        "entry",
+        "enter",
+        "arrive",
+        "ticket",
+        "check in",
+        "check-in"
+      ],
+      "tips": {
+        "nudge": "What is the first thing that happens when a car pulls up to the barrier?",
+        "hint": "Write a functional requirement for letting a vehicle in and recording that it is inside.",
+        "show": "F1: At an entrance, a vehicle is assigned a free space that fits it and gets a ticket; it is refused if nothing fits."
+      }
+    },
+    {
+      "id": "req-exit",
+      "type": "requirement",
+      "label": "Departure use case captured",
+      "keywords": [
+        "exit",
+        "leave",
+        "unpark",
+        "departure",
+        "pay",
+        "check out",
+        "checkout"
+      ],
+      "tips": {
+        "nudge": "The stay has to end somehow. What does the driver do at the end?",
+        "hint": "Add a requirement for leaving: the fee, the payment and freeing the space.",
+        "show": "F2: At an exit, the ticket is scanned, the fee is computed from the duration and space size, paid, and the space is freed."
+      }
+    },
+    {
+      "id": "req-vehicle-types",
+      "type": "requirement",
+      "label": "Variety of vehicles handled",
+      "keywords": [
+        "motorcycle",
+        "motorbike",
+        "truck",
+        "van",
+        "vehicle type",
+        "vehicle size",
+        "kinds of vehicle",
+        "types of vehicle"
+      ],
+      "tips": {
+        "nudge": "Does every vehicle fit every space?",
+        "hint": "State which vehicle kinds exist and which space sizes each can use.",
+        "show": "F3: Motorcycles use any space, cars need regular or large, trucks need large."
+      }
+    },
+    {
+      "id": "req-occupancy",
+      "type": "requirement",
+      "label": "Occupancy visibility stated",
+      "keywords": [
+        "available",
+        "availability",
+        "free space",
+        "free spot",
+        "display",
+        "vacan",
+        "full",
+        "occupancy"
+      ],
+      "tips": {
+        "nudge": "The interviewer mentioned a board at the entrance. What does it show?",
+        "hint": "Add a requirement for showing how many spaces are free.",
+        "show": "F4: Each entrance display shows free spaces per size, updated on every park/unpark."
+      }
+    },
+    {
+      "id": "api-entry",
+      "type": "endpoint",
+      "label": "Arrival operation defined",
+      "keywords": [
+        ".park(",
+        " park(",
+        "park(v",
+        "enter",
+        "admit",
+        "issue_ticket",
+        "issue ticket",
+        "check_in",
+        "check in"
+      ],
+      "tips": {
+        "nudge": "Which public method does an entrance gate call?",
+        "hint": "One operation that takes a vehicle and returns a ticket (or fails).",
+        "show": "ParkingLot.park(vehicle) -> Ticket (raises LotFullError if no space fits)."
+      }
+    },
+    {
+      "id": "api-exit",
+      "type": "endpoint",
+      "label": "Departure operation defined",
+      "keywords": [
+        "unpark",
+        "exit",
+        "leave",
+        "check_out",
+        "checkout",
+        "pay"
+      ],
+      "tips": {
+        "nudge": "Which public method does an exit gate call?",
+        "hint": "An operation that takes the ticket, works out the fee and frees the space.",
+        "show": "ParkingLot.unpark(ticket, payment) -> Receipt."
+      }
+    },
+    {
+      "id": "data-ticket",
+      "type": "entity",
+      "label": "Record of a stay modelled",
+      "keywords": [
+        "ticket",
+        "entry_time",
+        "entry time",
+        "session",
+        "stay"
+      ],
+      "tips": {
+        "nudge": "To charge at the exit, what must you have remembered at the entrance?",
+        "hint": "An object that links a vehicle, a space and a start time.",
+        "show": "Ticket(id, vehicle, spot, entered_at, exited_at?, fee?)."
+      }
+    },
+    {
+      "id": "data-space",
+      "type": "entity",
+      "label": "Parking space modelled with its state",
+      "keywords": [
+        "spotsize",
+        "spot size",
+        "space size",
+        "parkingspot",
+        "parking spot",
+        "parking space",
+        "occupied",
+        "occupant",
+        "is_free",
+        "is_available"
+      ],
+      "tips": {
+        "nudge": "What is the smallest thing in the garage that is either free or taken?",
+        "hint": "Model the individual space: its size, where it is, and what is in it.",
+        "show": "ParkingSpot(id, level, size: SpotSize, vehicle: Vehicle | None)."
+      }
+    },
+    {
+      "id": "comp-space",
+      "type": "component",
+      "label": "Space is a first-class object",
+      "kinds": [
+        "class",
+        "abstract"
+      ],
+      "keywords": [
+        "spot",
+        "space",
+        "slot",
+        "bay"
+      ],
+      "tips": {
+        "nudge": "Is there a box on your diagram for the thing a vehicle occupies?",
+        "hint": "Add a class for a single space that knows its size and occupant.",
+        "show": "class ParkingSpot { size, vehicle?; can_fit(v); assign(v); release() }"
+      }
+    },
+    {
+      "id": "comp-vehicle",
+      "type": "component",
+      "label": "Vehicle family abstracted",
+      "kinds": [
+        "abstract",
+        "interface"
+      ],
+      "keywords": [
+        "vehicle"
+      ],
+      "tips": {
+        "nudge": "Car, motorcycle and truck share something. How do you avoid if/else on the type everywhere?",
+        "hint": "Introduce a common base type that the concrete vehicles extend.",
+        "show": "abstract Vehicle { plate; size() } ← Car, Motorcycle, Truck."
+      }
+    },
+    {
+      "id": "comp-size-enum",
+      "type": "component",
+      "label": "Fixed categories made explicit",
+      "kinds": [
+        "enum"
+      ],
+      "keywords": [
+        "size",
+        "type",
+        "kind"
+      ],
+      "tips": {
+        "nudge": "Some values form a small closed set. How do you stop typos like \"lareg\"?",
+        "hint": "Use an enumeration for the closed set of sizes.",
+        "show": "enum SpotSize { SMALL, REGULAR, LARGE } used by both spaces and vehicles."
+      }
+    },
+    {
+      "id": "edge-abstraction",
+      "type": "edge",
+      "label": "Changeable behaviour sits behind an abstraction",
+      "from_kinds": [
+        "class"
+      ],
+      "to_kinds": [
+        "interface",
+        "abstract"
+      ],
+      "tips": {
+        "nudge": "Which rules would the business most likely change next year?",
+        "hint": "Let a concrete class depend on (or implement) an interface for such a rule.",
+        "show": "ParkingLot uses SpotAllocationStrategy and PricingStrategy; NearestFirst and HourlyPricing implement them."
+      }
+    },
+    {
+      "id": "dd-allocation",
+      "type": "decision",
+      "label": "How a space gets chosen",
+      "keywords": [
+        "allocation",
+        "allocate",
+        "assign",
+        "nearest",
+        "first fit",
+        "first-fit",
+        "best fit",
+        "best-fit",
+        "spot selection",
+        "choose a spot",
+        "choosing a spot"
+      ],
+      "tips": {
+        "nudge": "Two free spaces fit the car. Which one wins, and where does that rule live?",
+        "hint": "Compare hard-coding the choice in ParkingLot with a pluggable policy; consider best fit vs nearest.",
+        "show": "SpotAllocationStrategy interface; default best-fit (smallest size that fits, nearest level first). Strategy keeps ParkingLot closed to modification."
+      }
+    },
+    {
+      "id": "dd-pricing",
+      "type": "decision",
+      "label": "How the fee is computed",
+      "keywords": [
+        "pricing",
+        "fee",
+        "tariff",
+        "hourly",
+        "per hour",
+        "hourly rate",
+        "rates",
+        "charge"
+      ],
+      "tips": {
+        "nudge": "The weekend tariff arrives. Which class do you have to edit?",
+        "hint": "Separate fee calculation from the lot and the ticket.",
+        "show": "PricingStrategy.fee(ticket, now) with HourlyPricing(rate per size); new tariffs are new classes."
+      }
+    },
+    {
+      "id": "wrap-concurrency",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Simultaneous gates and growth considered",
+      "tips": {
+        "nudge": "Two entrances, one free large space, same millisecond.",
+        "hint": "Say how a space is claimed atomically and how the model grows (more levels, new vehicle kinds).",
+        "show": "Claim a space under a per-size lock (or compare-and-set on the spot); keep free lists per size per level so lookup is O(1); new vehicles/sizes are new enum values and subclasses."
+      }
+    },
+    {
+      "id": "sig-core",
+      "type": "signature",
+      "label": "Core public surface declared",
+      "names": [
+        "ParkingLot",
+        "ParkingSpot",
+        "Ticket",
+        "park",
+        "unpark"
+      ],
+      "tips": {
+        "nudge": "Have you written the classes and the two operations as code?",
+        "hint": "Declare the facade, the space and the ticket classes, and the arrival/departure methods.",
+        "show": "class ParkingLot: def park(self, vehicle) -> Ticket; def unpark(self, ticket, payment) -> Receipt. class ParkingSpot, class Ticket."
+      }
+    }
+  ]
+}

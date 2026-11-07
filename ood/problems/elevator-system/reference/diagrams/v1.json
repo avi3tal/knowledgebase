@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "why": "Core objects first: a controller owns the cars and receives hall calls; each car keeps its own stops. The 'which car' rule is still hard-coded in the controller.",
+  "nodes": [
+    { "id": "passenger", "kind": "actor", "label": "Passenger", "x": 60, "y": 220 },
+    { "id": "controller", "kind": "class", "label": "ElevatorController", "x": 300, "y": 140 },
+    { "id": "car", "kind": "class", "label": "ElevatorCar", "x": 560, "y": 220 },
+    { "id": "request", "kind": "class", "label": "Request", "x": 300, "y": 360 },
+    { "id": "direction", "kind": "enum", "label": "Direction", "x": 800, "y": 140 },
+    { "id": "carstate", "kind": "enum", "label": "CarState", "x": 800, "y": 320 }
+  ],
+  "edges": [
+    { "from": "passenger", "to": "controller", "label": "hall call" },
+    { "from": "passenger", "to": "car", "label": "car call" },
+    { "from": "controller", "to": "car", "label": "has many / assigns" },
+    { "from": "controller", "to": "request", "label": "creates" },
+    { "from": "car", "to": "request", "label": "serves" },
+    { "from": "car", "to": "direction", "label": "moving" },
+    { "from": "car", "to": "carstate", "label": "in state" }
+  ],
+  "flows": [{ "name": "hall call", "path": ["passenger", "controller", "car"] }]
+}

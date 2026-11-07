@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Purchase: the customer selects a slot code; if the balance covers the price and the slot is in stock, the product is dispensed." },
+      { "id": "F2", "text": "Accept coins and notes of fixed denominations, rejecting anything else; keep a running balance across several insertions." },
+      { "id": "F3", "text": "Return exact change after a sale; cancel refunds the whole balance; refuse the sale if exact change is impossible." },
+      { "id": "F4", "text": "Sold-out slots refuse selection without taking money; an operator restocks slots and refills/empties the coin box in maintenance mode." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Behaviour per mode is easy to read and to extend (new modes, card payment) without editing every method." },
+      { "id": "N2", "text": "Money is never lost: every path ends in a dispensed product plus change, or a full refund." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "~30 slots × 10 items, one product and price per slot." },
+      { "id": "A2", "text": "One customer at a time; maintenance blocks sales." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Card payment (designed for, not built), telemetry to a fleet backend." }
+    ]
+  },
+  "api": [
+    { "id": "E1", "method": "POST", "path": "VendingMachine.insert_money(coin)", "request": "Coin", "response": "balance in cents", "notes": "Rejected (returned) in Dispensing/Maintenance." },
+    { "id": "E2", "method": "POST", "path": "VendingMachine.select_product(code)", "request": "slot code", "response": "Sale(product, change)", "notes": "Errors: SoldOut, InsufficientFunds, NoExactChange (money kept as balance or refunded)." },
+    { "id": "E3", "method": "POST", "path": "VendingMachine.cancel()", "request": "", "response": "list[Coin] refund", "notes": "Returns the full balance; machine goes back to Idle." },
+    { "id": "E4", "method": "POST", "path": "VendingMachine.restock(code, qty) / enter_maintenance()", "request": "operator", "response": "", "notes": "Only in Maintenance." }
+  ],
+  "data": [
+    { "id": "D1", "name": "Product", "fields": "name, price_cents", "store": "in memory", "why": "What is sold." },
+    { "id": "D2", "name": "Slot / Inventory", "fields": "code, product, quantity", "store": "in memory", "why": "Stock per slot; quantity 0 means sold out." },
+    { "id": "D3", "name": "CoinBox", "fields": "count per Coin", "store": "in memory", "why": "Limited coins drive whether change is possible." },
+    { "id": "D4", "name": "VendingMachine", "fields": "state: MachineState, balance_cents, inserted coins", "store": "in memory", "why": "The context the states act on." }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Organising mode-dependent behaviour",
+      "options": [
+        { "name": "mode enum + if/else in each method", "pros": "few classes", "cons": "every new mode touches every method; illegal transitions are easy" },
+        { "name": "State pattern", "pros": "one class per mode, transitions explicit", "cons": "more classes" }
+      ],
+      "choice": "State pattern: MachineState interface with IdleState, HasMoneyState, DispensingState, MaintenanceState",
+      "why": "Each state handles every event and sets the next state on the machine; adding Maintenance (or a CardAuthorising state) adds a class instead of editing a switch in four methods.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Making change",
+      "options": [
+        { "name": "greedy largest coin first", "pros": "simple, optimal for unlimited US coins", "cons": "fails with a limited coin box" },
+        { "name": "bounded DP over available coins", "pros": "finds a combination whenever one exists", "cons": "more code" }
+      ],
+      "choice": "ChangeMaker: greedy first, bounded DP fallback over the coin box counts",
+      "why": "The coin box is finite; we must know before dispensing whether exact change is possible, otherwise refuse and refund.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "None at runtime; the risky piece is change making with a near-empty coin box.",
+    "failures": "Dispense motor jams → refund and mark the slot faulty; no exact change → refuse the sale and keep or refund the balance; power loss → persist balance and resume in HasMoney.",
+    "monitoring": "Sales and sold-out events per slot, coin box levels, refusals for no change.",
+    "scale": "A new payment method is a PaymentMethod implementation plus possibly a new state; a new product type needs no change.",
+    "future": "Card payment via a PaymentMethod interface and a CardAuthorising state; remote stock telemetry."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "why": "F4/N2: v1 hard-coded 'nearest idle car' in the controller and kept stops in FIFO order (zig-zag, possible starvation). Dispatch moves behind a DispatchStrategy interface with two policies; each car orders stops with a LOOK stop list and runs its own loop.",
+  "nodes": [
+    { "id": "passenger", "kind": "actor", "label": "Passenger", "x": 60, "y": 240 },
+    { "id": "controller", "kind": "class", "label": "ElevatorController", "x": 280, "y": 140 },
+    { "id": "strategy", "kind": "interface", "label": "DispatchStrategy", "x": 280, "y": 40 },
+    { "id": "nearest", "kind": "class", "label": "NearestCarStrategy", "x": 520, "y": 40 },
+    { "id": "rush", "kind": "class", "label": "RushHourStrategy", "x": 760, "y": 40 },
+    { "id": "car", "kind": "class", "label": "ElevatorCar", "x": 520, "y": 240 },
+    { "id": "stops", "kind": "class", "label": "StopList (LOOK: up/down heaps)", "x": 760, "y": 240 },
+    { "id": "request", "kind": "class", "label": "Request", "x": 280, "y": 400 },
+    { "id": "direction", "kind": "enum", "label": "Direction", "x": 520, "y": 420 },
+    { "id": "carstate", "kind": "enum", "label": "CarState", "x": 760, "y": 420 }
+  ],
+  "edges": [
+    { "from": "passenger", "to": "controller", "label": "hall call" },
+    { "from": "passenger", "to": "car", "label": "car call" },
+    { "from": "controller", "to": "strategy", "label": "uses" },
+    { "from": "nearest", "to": "strategy", "label": "implements" },
+    { "from": "rush", "to": "strategy", "label": "implements" },
+    { "from": "controller", "to": "car", "label": "has many / assigns" },
+    { "from": "car", "to": "stops", "label": "owns" },
+    { "from": "controller", "to": "request", "label": "creates" },
+    { "from": "car", "to": "request", "label": "serves" },
+    { "from": "car", "to": "direction", "label": "moving" },
+    { "from": "car", "to": "carstate", "label": "in state" }
+  ],
+  "flows": [{ "name": "hall call", "path": ["passenger", "controller", "strategy", "car", "stops"] }]
+}

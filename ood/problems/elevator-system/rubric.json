@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Dispatcher + workers with a pluggable policy: a controller receives requests and assigns each to a worker through a strategy interface; each worker owns its own queue and state machine, so the policy, the ordering and the per-worker state change independently and are guarded separately.",
+  "checks": [
+    {
+      "id": "req-hall-call",
+      "type": "requirement",
+      "label": "Calls from a floor captured",
+      "keywords": [
+        "hall call",
+        "call an elevator",
+        "call a car",
+        "summon",
+        "up/down",
+        "up or down",
+        "from a floor",
+        "hall button"
+      ],
+      "tips": {
+        "nudge": "How does someone waiting in the corridor get a car?",
+        "hint": "Write a requirement for pressing up/down on a floor and a car arriving.",
+        "show": "F1: A person on floor f presses up or down; some car is assigned and stops at f going that way."
+      }
+    },
+    {
+      "id": "req-car-call",
+      "type": "requirement",
+      "label": "Requests from inside captured",
+      "keywords": [
+        "inside",
+        "car call",
+        "destination",
+        "cabin",
+        "car panel",
+        "select a floor",
+        "choose a floor"
+      ],
+      "tips": {
+        "nudge": "The person is now in the car. What do they do?",
+        "hint": "Add a requirement for choosing a destination floor from inside the car.",
+        "show": "F2: Inside a car, pressing a floor button adds that floor to the car's stops."
+      }
+    },
+    {
+      "id": "req-many-cars",
+      "type": "requirement",
+      "label": "More than one car handled",
+      "keywords": [
+        "multiple elevators",
+        "multiple cars",
+        "several cars",
+        "several elevators",
+        "4 cars",
+        "4 elevators",
+        "four",
+        "bank",
+        "n cars",
+        "n elevators",
+        "fleet"
+      ],
+      "tips": {
+        "nudge": "Is there one shaft or several?",
+        "hint": "State how many cars there are and that a hall call goes to exactly one of them.",
+        "show": "F3: A bank of 4 cars serves 20 floors; each hall call is assigned to exactly one car."
+      }
+    },
+    {
+      "id": "req-safety",
+      "type": "requirement",
+      "label": "Safety limits stated",
+      "keywords": [
+        "capacity",
+        "weight",
+        "overload",
+        "emergency",
+        "door",
+        "safety",
+        "safe"
+      ],
+      "tips": {
+        "nudge": "What must never happen, no matter what the dispatcher wants?",
+        "hint": "Add requirements about load limits, doors and emergency stops.",
+        "show": "N1: An overloaded car or a car with open doors never moves; emergency stop overrides all requests."
+      }
+    },
+    {
+      "id": "api-hall",
+      "type": "endpoint",
+      "label": "Floor-side operation defined",
+      "keywords": [
+        "hall",
+        "summon",
+        "request_elevator",
+        "request elevator",
+        "call_elevator",
+        "call elevator",
+        "floor, direction"
+      ],
+      "tips": {
+        "nudge": "Which method does a floor's up/down button call?",
+        "hint": "An operation on the system that takes a floor and a direction.",
+        "show": "ElevatorController.request_elevator(floor, direction) -> car id."
+      }
+    },
+    {
+      "id": "api-car",
+      "type": "endpoint",
+      "label": "Car-side operation defined",
+      "keywords": [
+        "select_floor",
+        "select floor",
+        "destination",
+        "press",
+        "car_call",
+        "add_stop",
+        "add stop"
+      ],
+      "tips": {
+        "nudge": "Which method does a floor button inside the car call?",
+        "hint": "An operation on a car that takes the target floor.",
+        "show": "ElevatorCar.select_floor(floor)."
+      }
+    },
+    {
+      "id": "data-request",
+      "type": "entity",
+      "label": "A request is modelled",
+      "keywords": [
+        "request",
+        "origin",
+        "target floor",
+        "hall call",
+        "car call",
+        "source"
+      ],
+      "tips": {
+        "nudge": "What do you need to remember about each button press?",
+        "hint": "Model a request with its floor, direction and kind (hall or car).",
+        "show": "Request(floor, direction: Direction | None, source: HALL|CAR, created_at)."
+      }
+    },
+    {
+      "id": "data-car-state",
+      "type": "entity",
+      "label": "A car's moving state is modelled",
+      "keywords": [
+        "current_floor",
+        "current floor",
+        "position",
+        "door",
+        "load",
+        "carstate",
+        "car state",
+        "status"
+      ],
+      "tips": {
+        "nudge": "To pick the best car, what must you know about each car right now?",
+        "hint": "Model each car's position, direction, door state and load.",
+        "show": "ElevatorCar(id, current_floor, direction, state, load_kg, up_stops, down_stops)."
+      }
+    },
+    {
+      "id": "comp-coordinator",
+      "type": "component",
+      "label": "Something coordinates the cars",
+      "kinds": [
+        "class"
+      ],
+      "keywords": [
+        "controller",
+        "dispatcher",
+        "manager",
+        "system",
+        "coordinator",
+        "bank"
+      ],
+      "tips": {
+        "nudge": "Who sees all cars at once?",
+        "hint": "Add a class that receives hall calls and knows every car.",
+        "show": "class ElevatorController { cars; strategy; request_elevator(floor, dir) }"
+      }
+    },
+    {
+      "id": "comp-policy",
+      "type": "component",
+      "label": "Assignment policy is swappable",
+      "kinds": [
+        "interface",
+        "abstract"
+      ],
+      "keywords": [
+        "strategy",
+        "scheduler",
+        "scheduling",
+        "dispatch",
+        "policy",
+        "algorithm",
+        "selector"
+      ],
+      "tips": {
+        "nudge": "The manager wants to try a rush-hour policy next week.",
+        "hint": "Put the 'which car' rule behind an interface the coordinator depends on.",
+        "show": "interface DispatchStrategy { choose_car(request, cars) -> ElevatorCar } ← NearestCarStrategy, RushHourStrategy."
+      }
+    },
+    {
+      "id": "comp-motion-enum",
+      "type": "component",
+      "label": "Motion states made explicit",
+      "kinds": [
+        "enum"
+      ],
+      "keywords": [
+        "direction",
+        "state",
+        "status"
+      ],
+      "tips": {
+        "nudge": "Up, down, idle: how are those represented?",
+        "hint": "Use enumerations for the closed sets of directions and car states.",
+        "show": "enum Direction { UP, DOWN, IDLE }; enum CarState { MOVING, STOPPED, DOORS_OPEN, MAINTENANCE }."
+      }
+    },
+    {
+      "id": "edge-abstraction",
+      "type": "edge",
+      "label": "Coordinator depends on an abstraction",
+      "from_kinds": [
+        "class"
+      ],
+      "to_kinds": [
+        "interface",
+        "abstract"
+      ],
+      "tips": {
+        "nudge": "Does the coordinator know which concrete policy it runs?",
+        "hint": "Draw the coordinator using the policy interface and the policies implementing it.",
+        "show": "ElevatorController → DispatchStrategy; NearestCarStrategy, RushHourStrategy implement it."
+      }
+    },
+    {
+      "id": "dd-dispatch",
+      "type": "decision",
+      "label": "How cars are chosen for calls",
+      "keywords": [
+        "nearest",
+        "elevator algorithm",
+        "sstf",
+        "fcfs",
+        "first come",
+        "dispatch",
+        "strategy",
+        "zone",
+        "which car",
+        "assign"
+      ],
+      "tips": {
+        "nudge": "Nearest idle car, nearest car moving your way, or something else?",
+        "hint": "Compare first-come-first-served, nearest car, and 'nearest car already heading toward you'; say where the rule lives.",
+        "show": "Strategy pattern; default scores each car by distance, penalising cars moving away or full; RushHourStrategy parks idle cars at the lobby."
+      }
+    },
+    {
+      "id": "dd-stop-order",
+      "type": "decision",
+      "label": "How one car orders its stops",
+      "keywords": [
+        "sorted",
+        "heap",
+        "priority queue",
+        "treeset",
+        "sortedset",
+        "up stops",
+        "down stops",
+        "look",
+        "scan",
+        "sweep",
+        "starvation"
+      ],
+      "tips": {
+        "nudge": "A car at floor 5 going up has stops at 3, 9 and 12. In which order?",
+        "hint": "Compare FIFO with continuing in the current direction (the elevator/LOOK algorithm).",
+        "show": "LOOK: keep up_stops (min-heap) and down_stops (max-heap); serve the current direction until empty, then reverse. No starvation, fewer reversals than FIFO."
+      }
+    },
+    {
+      "id": "wrap-concurrency",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Concurrent requests and growth considered",
+      "tips": {
+        "nudge": "Buttons are pressed on many floors while every car's loop is running.",
+        "hint": "Say what each thread owns, what is shared and how it is protected; then how you'd add cars or zones.",
+        "show": "One thread per car owns its movement; stops live in a per-car lock-protected structure (or a queue the car thread drains); the controller only reads car snapshots and enqueues. More cars = more workers; zoning = a strategy."
+      }
+    },
+    {
+      "id": "sig-core",
+      "type": "signature",
+      "label": "Core public surface declared",
+      "names": [
+        "ElevatorController",
+        "ElevatorCar",
+        "DispatchStrategy",
+        "request_elevator",
+        "select_floor"
+      ],
+      "tips": {
+        "nudge": "Have you written the coordinator, the car, the policy interface and the two button operations?",
+        "hint": "Declare the classes and the floor-side and car-side methods.",
+        "show": "class ElevatorController: request_elevator(floor, direction). class ElevatorCar: select_floor(floor). class DispatchStrategy(ABC): choose_car(...)."
+      }
+    }
+  ]
+}

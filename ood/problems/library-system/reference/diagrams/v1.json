@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "why": "Core objects first: split the catalogue title (Book) from the physical item (BookCopy), and make each borrowing a Loan. Fines and notifications are still hard-coded in Library.",
+  "nodes": [
+    { "id": "member_actor", "kind": "actor", "label": "Member", "x": 60, "y": 120 },
+    { "id": "librarian", "kind": "actor", "label": "Librarian", "x": 60, "y": 340 },
+    { "id": "library", "kind": "class", "label": "Library", "x": 260, "y": 220 },
+    { "id": "catalog", "kind": "class", "label": "Catalog", "x": 480, "y": 80 },
+    { "id": "book", "kind": "class", "label": "Book", "x": 700, "y": 80 },
+    { "id": "copy", "kind": "class", "label": "BookCopy", "x": 700, "y": 240 },
+    { "id": "status", "kind": "enum", "label": "CopyStatus", "x": 880, "y": 240 },
+    { "id": "member", "kind": "class", "label": "Member", "x": 480, "y": 400 },
+    { "id": "loan", "kind": "class", "label": "Loan", "x": 700, "y": 400 }
+  ],
+  "edges": [
+    { "from": "member_actor", "to": "library", "label": "borrow / return / search" },
+    { "from": "librarian", "to": "library", "label": "add books, members" },
+    { "from": "library", "to": "catalog", "label": "has" },
+    { "from": "catalog", "to": "book", "label": "indexes" },
+    { "from": "book", "to": "copy", "label": "has many" },
+    { "from": "copy", "to": "status", "label": "in status" },
+    { "from": "library", "to": "member", "label": "has many" },
+    { "from": "member", "to": "loan", "label": "has many (≤5 active)" },
+    { "from": "loan", "to": "copy", "label": "of" }
+  ],
+  "flows": [{ "name": "borrow", "path": ["member_actor", "library", "member", "loan", "copy"] }]
+}

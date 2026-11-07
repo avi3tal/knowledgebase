@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Park: at an entrance a vehicle is assigned a free space that fits it and receives a ticket; it is refused when nothing fits." },
+      { "id": "F2", "text": "Leave: at an exit the ticket is scanned, the fee is computed from duration and space size, paid, and the space is freed." },
+      { "id": "F3", "text": "Vehicle types: motorcycle fits any space, car needs regular or large, truck needs large." },
+      { "id": "F4", "text": "Each entrance display shows free spaces per size (availability)." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Several gates work at the same time: a space is never handed to two vehicles." },
+      { "id": "N2", "text": "Open to change: new tariffs, allocation rules or vehicle types should not require editing the core classes." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "3 levels × ~200 spaces; sizes SMALL, REGULAR, LARGE." },
+      { "id": "A2", "text": "Hourly rate per space size, partial hours rounded up." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Reservations, valet, EV charging, the real payment provider." }
+    ]
+  },
+  "api": [
+    { "id": "E1", "method": "POST", "path": "ParkingLot.park(vehicle)", "request": "Vehicle", "response": "Ticket, or LotFullError", "notes": "Called by an EntryGate; picks a space through the allocation strategy and claims it atomically." },
+    { "id": "E2", "method": "POST", "path": "ParkingLot.unpark(ticket, payment)", "request": "Ticket, Payment", "response": "Receipt", "notes": "Called by an ExitGate; fee from the pricing strategy, then the space is released." },
+    { "id": "E3", "method": "GET", "path": "ParkingLot.free_spots()", "request": "", "response": "dict[SpotSize, int]", "notes": "Feeds the display boards." }
+  ],
+  "data": [
+    { "id": "D1", "name": "ParkingSpot", "fields": "id, level, size: SpotSize, vehicle: Vehicle | None", "store": "in memory", "why": "The unit of occupancy; it alone knows if it is free." },
+    { "id": "D2", "name": "Ticket", "fields": "id, vehicle, spot, entered_at, exited_at?, fee?", "store": "in memory", "why": "Remembers the stay so the exit can charge it." },
+    { "id": "D3", "name": "Vehicle", "fields": "plate; size() returns the smallest size it needs (Car, Motorcycle, Truck)", "store": "in memory", "why": "Each vehicle states the smallest space it needs." },
+    { "id": "D4", "name": "Level", "fields": "number, free spots per SpotSize", "store": "in memory", "why": "Groups spaces and keeps per-size free lists for O(1) lookup." }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Spot allocation",
+      "options": [
+        { "name": "if/else inside ParkingLot.park", "pros": "short", "cons": "every new rule edits the facade" },
+        { "name": "SpotAllocationStrategy interface", "pros": "rules are swappable and testable alone", "cons": "one more type" }
+      ],
+      "choice": "SpotAllocationStrategy with a best-fit default (smallest size that fits, nearest level first)",
+      "why": "Best fit keeps large spaces for trucks; the strategy keeps ParkingLot closed to modification when the garage wants, say, nearest-to-elevator.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Fee calculation",
+      "options": [
+        { "name": "Ticket computes its own fee", "pros": "simple", "cons": "tariff logic tied to the ticket" },
+        { "name": "PricingStrategy", "pros": "weekend or flat tariffs are new classes", "cons": "indirection" }
+      ],
+      "choice": "PricingStrategy with HourlyPricing(rate per size)",
+      "why": "Pricing changes far more often than parking does; isolating it follows SRP and OCP.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Finding a free space by scanning 600 spaces; fixed with per-level, per-size free lists.",
+    "failures": "Payment failure leaves the ticket open and the barrier closed; a lost ticket falls back to a max-day fee by plate lookup.",
+    "monitoring": "Occupancy per size, refusals, average stay, revenue per day.",
+    "scale": "Gates run concurrently: a space is claimed under a per-size lock (or compare-and-set on spot.vehicle) so it is never assigned twice. More levels are more Level objects; a new vehicle kind is a new subclass and possibly a new SpotSize value.",
+    "future": "Reservations (a Reservation that holds a spot for a window), EV spaces as a SpotSize or a feature flag on ParkingSpot."
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Catalogue vs inventory: separate the description of a thing (title, ISBN) from its physical instances (copies with barcodes and status); model each lending event as its own object (loan, reservation) and keep business rules (limits, fines) and notifications behind interfaces.",
+  "checks": [
+    {
+      "id": "req-borrow",
+      "type": "requirement",
+      "label": "Lending use case captured",
+      "keywords": [
+        "borrow",
+        "check out",
+        "checkout",
+        "lend",
+        "loan",
+        "issue"
+      ],
+      "tips": {
+        "nudge": "What is the library's main job for a member?",
+        "hint": "Write a requirement for taking a copy home.",
+        "show": "F1: A member borrows an available copy; the loan is due in 14 days."
+      }
+    },
+    {
+      "id": "req-return",
+      "type": "requirement",
+      "label": "Return use case captured",
+      "keywords": [
+        "return",
+        "check in",
+        "check-in",
+        "checkin",
+        "bring back"
+      ],
+      "tips": {
+        "nudge": "The book has to come back.",
+        "hint": "Add a requirement for returning a copy and what happens then.",
+        "show": "F2: Returning a copy closes the loan, charges a fine if late, and offers the copy to the next reservation."
+      }
+    },
+    {
+      "id": "req-search",
+      "type": "requirement",
+      "label": "Discovery use case captured",
+      "keywords": [
+        "search",
+        "find",
+        "catalog",
+        "catalogue",
+        "look up",
+        "lookup",
+        "browse"
+      ],
+      "tips": {
+        "nudge": "How does a member know whether the library has a book?",
+        "hint": "Add a requirement for finding titles.",
+        "show": "F3: Members search the catalogue by title, author or subject and see how many copies are available."
+      }
+    },
+    {
+      "id": "req-rules",
+      "type": "requirement",
+      "label": "Lending rules stated",
+      "keywords": [
+        "limit",
+        "max",
+        "at most",
+        "due",
+        "fine",
+        "overdue",
+        "late",
+        "14 days",
+        "renew"
+      ],
+      "tips": {
+        "nudge": "Can a member take 200 books for a year?",
+        "hint": "State the limits, the loan period and what happens when it is exceeded.",
+        "show": "F4: At most 5 items per member, 14-day loans renewable once if nobody waits, a fine per day late."
+      }
+    },
+    {
+      "id": "req-reserve",
+      "type": "requirement",
+      "label": "Waiting for unavailable titles",
+      "keywords": [
+        "reserv",
+        "hold",
+        "waitlist",
+        "wait list",
+        "waiting",
+        "queue"
+      ],
+      "tips": {
+        "nudge": "Every copy is out. Does the member just leave?",
+        "hint": "Add a requirement for joining a line and being told when a copy is back.",
+        "show": "F5: Members reserve a title; on return the first in line is notified and has 3 days to collect."
+      }
+    },
+    {
+      "id": "api-borrow",
+      "type": "endpoint",
+      "label": "Lending operation defined",
+      "keywords": [
+        "checkout",
+        "check_out",
+        "borrow",
+        "lend",
+        "issue"
+      ],
+      "tips": {
+        "nudge": "Which method does the desk call when a member takes a copy?",
+        "hint": "An operation taking a member and a copy and returning the loan.",
+        "show": "Library.checkout(member_id, barcode) -> Loan."
+      }
+    },
+    {
+      "id": "api-return",
+      "type": "endpoint",
+      "label": "Return operation defined",
+      "keywords": [
+        "return_",
+        "return(",
+        "return a",
+        "check_in",
+        "checkin",
+        "check in",
+        "give back"
+      ],
+      "tips": {
+        "nudge": "Which method does the returns slot call?",
+        "hint": "An operation taking the copy's barcode.",
+        "show": "Library.return_copy(barcode) -> Fine | None."
+      }
+    },
+    {
+      "id": "data-copy",
+      "type": "entity",
+      "label": "Title and physical item distinguished",
+      "keywords": [
+        "barcode",
+        "bookcopy",
+        "book_copy",
+        "book copy",
+        "bookitem",
+        "book_item",
+        "book item",
+        "copies",
+        "physical"
+      ],
+      "tips": {
+        "nudge": "Three people borrowed the same novel. Is that one object or three?",
+        "hint": "Separate what describes a title from what sits on the shelf.",
+        "show": "Book(isbn, title, authors, subjects) has many BookCopy(barcode, status, location)."
+      }
+    },
+    {
+      "id": "data-loan",
+      "type": "entity",
+      "label": "Record of a lending modelled",
+      "keywords": [
+        "loan",
+        "lending",
+        "due_date",
+        "due date",
+        "borrowed_at"
+      ],
+      "tips": {
+        "nudge": "Where does the due date live?",
+        "hint": "Model each borrowing event as its own object.",
+        "show": "Loan(id, member, copy, borrowed_at, due_at, returned_at?, renewals)."
+      }
+    },
+    {
+      "id": "comp-member",
+      "type": "component",
+      "label": "The borrower is modelled",
+      "kinds": [
+        "class",
+        "abstract"
+      ],
+      "keywords": [
+        "member",
+        "patron",
+        "borrower",
+        "user",
+        "reader"
+      ],
+      "tips": {
+        "nudge": "Who holds the loans?",
+        "hint": "Add a class for the person who borrows.",
+        "show": "class Member { id, name, active_loans, fines_owed; can_borrow() }"
+      }
+    },
+    {
+      "id": "comp-copy",
+      "type": "component",
+      "label": "Physical item is a first-class object",
+      "kinds": [
+        "class"
+      ],
+      "keywords": [
+        "copy",
+        "item",
+        "bookitem",
+        "book item"
+      ],
+      "tips": {
+        "nudge": "Is there a box on your diagram for the thing with the barcode?",
+        "hint": "Add a class for a single physical copy with its status.",
+        "show": "class BookCopy { barcode, status: CopyStatus } with Book 1 → * BookCopy."
+      }
+    },
+    {
+      "id": "edge-abstraction",
+      "type": "edge",
+      "label": "Changeable rules sit behind an abstraction",
+      "from_kinds": [
+        "class"
+      ],
+      "to_kinds": [
+        "interface",
+        "abstract"
+      ],
+      "tips": {
+        "nudge": "The library changes its fine rules next month. Which classes change?",
+        "hint": "Have the lending service depend on interfaces for rules and notifications.",
+        "show": "Library uses FinePolicy (PerDayFine, CappedFine) and Notifier (EmailNotifier, SmsNotifier)."
+      }
+    },
+    {
+      "id": "dd-fines",
+      "type": "decision",
+      "label": "How penalties are worked out",
+      "keywords": [
+        "fine",
+        "penalty",
+        "late fee",
+        "overdue"
+      ],
+      "tips": {
+        "nudge": "Children's books have no fine, adult books have a cap. Where do those rules live?",
+        "hint": "Compare computing the fine inside Loan with a separate policy object.",
+        "show": "FinePolicy strategy chosen per item type; Loan only knows its dates; new rules are new policy classes."
+      }
+    },
+    {
+      "id": "dd-notify",
+      "type": "decision",
+      "label": "How waiting members hear about a return",
+      "keywords": [
+        "observer",
+        "notify",
+        "notification",
+        "subscribe",
+        "listener",
+        "event",
+        "publish"
+      ],
+      "tips": {
+        "nudge": "Return code should not know about email, SMS and push.",
+        "hint": "Compare calling an email client directly with raising an event that listeners handle.",
+        "show": "Observer: return_copy raises CopyAvailable; the ReservationQueue moves the copy to ON_HOLD and a Notifier interface tells the first member."
+      }
+    },
+    {
+      "id": "wrap-concurrency",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Simultaneous desks and growth considered",
+      "tips": {
+        "nudge": "Two desks scan the last copy of a bestseller in the same second.",
+        "hint": "Say how a copy is claimed atomically and how the model grows (new item types, more branches).",
+        "show": "Claim a copy with a compare-and-set on its status (or a per-copy lock / DB row lock); member limit checked inside the same transaction. New media (DVD) = a new Item subclass; branches = a location on the copy."
+      }
+    },
+    {
+      "id": "sig-core",
+      "type": "signature",
+      "label": "Core public surface declared",
+      "names": [
+        "Library",
+        "Book",
+        "BookCopy",
+        "Member",
+        "Loan",
+        "checkout"
+      ],
+      "tips": {
+        "nudge": "Have you written the title, the copy, the member, the loan and the lending method?",
+        "hint": "Declare the domain classes and the lending service with its checkout method.",
+        "show": "class Book, BookCopy, Member, Loan; class Library: checkout(member_id, barcode) -> Loan; return_copy(barcode)."
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "why": "Core objects first: one LRUCache class owns a hash map and a doubly linked list of nodes. Correct and O(1), but callers depend on the concrete class, the LRU rule is hard-wired, and it is not thread-safe.",
+  "nodes": [
+    { "id": "client", "kind": "actor", "label": "Calling service", "x": 60, "y": 200 },
+    { "id": "lru", "kind": "class", "label": "LRUCache", "x": 300, "y": 200 },
+    { "id": "list", "kind": "class", "label": "DoublyLinkedList", "x": 560, "y": 120 },
+    { "id": "node", "kind": "class", "label": "Node (key, value, prev, next)", "x": 800, "y": 200 },
+    { "id": "map", "kind": "class", "label": "dict[K, Node]", "x": 560, "y": 300 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lru", "label": "get / put" },
+    { "from": "lru", "to": "list", "label": "has (recency order)" },
+    { "from": "lru", "to": "map", "label": "has (index)" },
+    { "from": "list", "to": "node", "label": "links many" },
+    { "from": "map", "to": "node", "label": "points to" }
+  ],
+  "flows": [{ "name": "get (hit)", "path": ["client", "lru", "map", "node"] }]
+}

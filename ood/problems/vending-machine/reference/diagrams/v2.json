@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "why": "N1: in v1 every method switched on the mode field, and adding Maintenance meant editing all of them. Each mode becomes a class behind MachineState; the machine delegates every event to its current state. Change making moves into its own ChangeMaker.",
+  "nodes": [
+    { "id": "customer", "kind": "actor", "label": "Customer", "x": 60, "y": 160 },
+    { "id": "operator", "kind": "actor", "label": "Operator", "x": 60, "y": 340 },
+    { "id": "machine", "kind": "class", "label": "VendingMachine", "x": 260, "y": 250 },
+    { "id": "state", "kind": "interface", "label": "MachineState", "x": 460, "y": 60 },
+    { "id": "idle", "kind": "class", "label": "IdleState", "x": 300, "y": 40 },
+    { "id": "hasmoney", "kind": "class", "label": "HasMoneyState", "x": 620, "y": 40 },
+    { "id": "dispensing", "kind": "class", "label": "DispensingState", "x": 800, "y": 100 },
+    { "id": "maint", "kind": "class", "label": "MaintenanceState", "x": 640, "y": 180 },
+    { "id": "inventory", "kind": "class", "label": "Inventory", "x": 460, "y": 300 },
+    { "id": "slot", "kind": "class", "label": "Slot", "x": 640, "y": 300 },
+    { "id": "product", "kind": "class", "label": "Product", "x": 840, "y": 300 },
+    { "id": "coinbox", "kind": "class", "label": "CoinBox", "x": 460, "y": 440 },
+    { "id": "changer", "kind": "class", "label": "ChangeMaker", "x": 260, "y": 440 },
+    { "id": "coin", "kind": "enum", "label": "Coin", "x": 660, "y": 440 }
+  ],
+  "edges": [
+    { "from": "customer", "to": "machine", "label": "insert / select / cancel" },
+    { "from": "operator", "to": "machine", "label": "restock / maintenance" },
+    { "from": "machine", "to": "state", "label": "current state (delegates)" },
+    { "from": "idle", "to": "state", "label": "implements" },
+    { "from": "hasmoney", "to": "state", "label": "implements" },
+    { "from": "dispensing", "to": "state", "label": "implements" },
+    { "from": "maint", "to": "state", "label": "implements" },
+    { "from": "machine", "to": "inventory", "label": "has" },
+    { "from": "inventory", "to": "slot", "label": "has many" },
+    { "from": "slot", "to": "product", "label": "holds" },
+    { "from": "machine", "to": "coinbox", "label": "has" },
+    { "from": "coinbox", "to": "coin", "label": "counts" },
+    { "from": "changer", "to": "coinbox", "label": "uses" },
+    { "from": "dispensing", "to": "changer", "label": "uses" }
+  ],
+  "flows": [{ "name": "purchase", "path": ["customer", "machine", "state", "hasmoney", "dispensing"] }]
+}

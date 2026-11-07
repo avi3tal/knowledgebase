@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Event-driven object with modes: list the states and the events, give each state its own class behind one interface, and let the context delegate every event to the current state; side calculations (change making, payment methods) are separate collaborators.",
+  "checks": [
+    {
+      "id": "req-purchase",
+      "type": "requirement",
+      "label": "Purchase use case captured",
+      "keywords": [
+        "select",
+        "choose",
+        "buy",
+        "purchase",
+        "dispense",
+        "pick"
+      ],
+      "tips": {
+        "nudge": "Why does anyone walk up to this machine?",
+        "hint": "Write a functional requirement for choosing a product and receiving it.",
+        "show": "F1: The customer selects a slot; if paid enough and in stock, the product is dispensed."
+      }
+    },
+    {
+      "id": "req-money",
+      "type": "requirement",
+      "label": "Money intake captured",
+      "keywords": [
+        "coin",
+        "note",
+        "cash",
+        "insert",
+        "money",
+        "denomination",
+        "payment"
+      ],
+      "tips": {
+        "nudge": "Before anything is dispensed, what does the customer hand over?",
+        "hint": "Add a requirement for accepting money and which kinds are accepted.",
+        "show": "F2: Accept coins and notes of fixed denominations; reject anything else; keep a running balance."
+      }
+    },
+    {
+      "id": "req-change",
+      "type": "requirement",
+      "label": "Leftover money handled",
+      "keywords": [
+        "change",
+        "refund",
+        "cancel",
+        "return the money",
+        "money back"
+      ],
+      "tips": {
+        "nudge": "The customer paid 2 dollars for a 1.35 snack, or changed their mind.",
+        "hint": "Cover returning change after a sale and refunding on cancel.",
+        "show": "F3: Return exact change after a sale; on cancel, refund the full balance; refuse the sale if exact change is impossible."
+      }
+    },
+    {
+      "id": "req-stock",
+      "type": "requirement",
+      "label": "Stock limits handled",
+      "keywords": [
+        "stock",
+        "inventory",
+        "sold out",
+        "restock",
+        "refill",
+        "quantity",
+        "empty slot"
+      ],
+      "tips": {
+        "nudge": "What if the slot is empty?",
+        "hint": "Add requirements for refusing sold-out products and for operator restocking.",
+        "show": "F4: Sold-out slots refuse selection; an operator restocks slots and refills/empties the coin box in maintenance mode."
+      }
+    },
+    {
+      "id": "api-insert",
+      "type": "endpoint",
+      "label": "Money-in operation defined",
+      "keywords": [
+        "insert",
+        "deposit",
+        "add_coin",
+        "add coin",
+        "accept_coin",
+        "accept coin"
+      ],
+      "tips": {
+        "nudge": "Which method fires when a coin drops in?",
+        "hint": "One operation per inserted coin or note.",
+        "show": "VendingMachine.insert_money(coin: Coin) -> int (new balance)."
+      }
+    },
+    {
+      "id": "api-select",
+      "type": "endpoint",
+      "label": "Choice operation defined",
+      "keywords": [
+        "select",
+        "choose",
+        "product",
+        "dispense",
+        "slot"
+      ],
+      "tips": {
+        "nudge": "Which method fires when the customer presses a slot code?",
+        "hint": "An operation that takes the slot code and returns the product and change (or an error).",
+        "show": "VendingMachine.select_product(code: str) -> Sale(product, change: list[Coin])."
+      }
+    },
+    {
+      "id": "api-cancel",
+      "type": "endpoint",
+      "label": "Abort operation defined",
+      "keywords": [
+        "cancel",
+        "abort",
+        "return_money",
+        "refund(",
+        "give_back"
+      ],
+      "tips": {
+        "nudge": "How does a customer change their mind?",
+        "hint": "An operation that returns the current balance.",
+        "show": "VendingMachine.cancel() -> list[Coin]."
+      }
+    },
+    {
+      "id": "data-inventory",
+      "type": "entity",
+      "label": "What the machine sells is modelled",
+      "keywords": [
+        "inventory",
+        "slot",
+        "stock",
+        "quantity",
+        "product"
+      ],
+      "tips": {
+        "nudge": "Where do price and count live?",
+        "hint": "Model a product and the slot that holds a quantity of it.",
+        "show": "Product(name, price_cents); Slot(code, product, quantity); Inventory(slots by code)."
+      }
+    },
+    {
+      "id": "comp-state-iface",
+      "type": "component",
+      "label": "Mode-dependent behaviour has a home",
+      "kinds": [
+        "interface",
+        "abstract"
+      ],
+      "keywords": [
+        "state",
+        "mode"
+      ],
+      "tips": {
+        "nudge": "insert, select and cancel each mean something different in each mode. Where does that variation go?",
+        "hint": "Introduce one abstraction that declares every event, with one implementation per mode.",
+        "show": "interface MachineState { insert_money; select_product; cancel; } implemented by Idle, HasMoney, Dispensing, Maintenance."
+      }
+    },
+    {
+      "id": "comp-concrete-modes",
+      "type": "component",
+      "label": "Each mode is concrete",
+      "kinds": [
+        "class"
+      ],
+      "keywords": [
+        "idle",
+        "hasmoney",
+        "has money",
+        "dispens",
+        "maintenance",
+        "sold out",
+        "soldout",
+        "ready"
+      ],
+      "tips": {
+        "nudge": "Name the modes the machine passes through during one sale.",
+        "hint": "Add a class per mode on the diagram.",
+        "show": "IdleState → HasMoneyState → DispensingState → IdleState; MaintenanceState from any state via operator."
+      }
+    },
+    {
+      "id": "comp-coin-enum",
+      "type": "component",
+      "label": "Accepted money values constrained",
+      "kinds": [
+        "enum"
+      ],
+      "keywords": [
+        "coin",
+        "denomination",
+        "note",
+        "cash",
+        "money"
+      ],
+      "tips": {
+        "nudge": "Can someone insert a 7-cent coin?",
+        "hint": "Model the accepted denominations as a closed set.",
+        "show": "enum Coin { NICKEL=5, DIME=10, QUARTER=25, DOLLAR=100, FIVE=500 }."
+      }
+    },
+    {
+      "id": "edge-delegation",
+      "type": "edge",
+      "label": "Context delegates to an abstraction",
+      "from_kinds": [
+        "class"
+      ],
+      "to_kinds": [
+        "interface",
+        "abstract"
+      ],
+      "tips": {
+        "nudge": "Does the machine itself still branch on its mode?",
+        "hint": "Draw the machine holding a reference to the abstraction, and the concrete modes implementing it.",
+        "show": "VendingMachine → MachineState (current); IdleState/HasMoneyState/… implement MachineState."
+      }
+    },
+    {
+      "id": "dd-modes",
+      "type": "decision",
+      "label": "How mode-dependent behaviour is organised",
+      "keywords": [
+        "state pattern",
+        "state machine",
+        "states",
+        "transition",
+        "mode enum",
+        "if/else",
+        "switch"
+      ],
+      "tips": {
+        "nudge": "Compare a mode enum plus switch statements with something more object-oriented.",
+        "hint": "What does each approach cost when you add a Maintenance mode?",
+        "show": "State pattern: each mode is a class that handles every event and returns/sets the next state. Adding a mode adds a class; no switch to update in every method."
+      }
+    },
+    {
+      "id": "dd-change",
+      "type": "decision",
+      "label": "How change is made",
+      "keywords": [
+        "make change",
+        "making change",
+        "change-making",
+        "change making",
+        "changemaker",
+        "exact change",
+        "greedy",
+        "denomination",
+        "coin box",
+        "coinbox",
+        "dynamic programming"
+      ],
+      "tips": {
+        "nudge": "You owe 30 cents and have one quarter and three dimes. Does largest-coin-first work?",
+        "hint": "Compare greedy with a bounded search over the coins you actually hold; decide when to refuse the sale.",
+        "show": "ChangeMaker with bounded coin counts: try greedy, fall back to a small DP over available coins; if no exact combination exists, refuse before dispensing."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "What can go wrong at the machine",
+      "tips": {
+        "nudge": "The motor jams, or the coin box runs dry.",
+        "hint": "List the physical and money failures and what state the machine ends in.",
+        "show": "Dispense fails → refund and mark the slot faulty; not enough change → refuse sale and refund; power loss mid-sale → persist balance and resume in HasMoney."
+      }
+    },
+    {
+      "id": "sig-core",
+      "type": "signature",
+      "label": "Core public surface declared",
+      "names": [
+        "VendingMachine",
+        "MachineState",
+        "insert_money",
+        "select_product",
+        "cancel"
+      ],
+      "tips": {
+        "nudge": "Have you written the machine, the state abstraction and the three customer operations?",
+        "hint": "Declare the context class, the state interface and the three event methods.",
+        "show": "class MachineState(ABC): insert_money, select_product, cancel. class VendingMachine: same three methods, delegating to self.state."
+      }
+    }
+  ]
+}

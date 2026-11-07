@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "why": "Core objects first: the machine owns an inventory of slots and a coin box; the customer talks only to the machine. The mode is still a field the machine branches on.",
+  "nodes": [
+    { "id": "customer", "kind": "actor", "label": "Customer", "x": 60, "y": 200 },
+    { "id": "operator", "kind": "actor", "label": "Operator", "x": 60, "y": 380 },
+    { "id": "machine", "kind": "class", "label": "VendingMachine (mode field)", "x": 300, "y": 260 },
+    { "id": "inventory", "kind": "class", "label": "Inventory", "x": 560, "y": 160 },
+    { "id": "slot", "kind": "class", "label": "Slot", "x": 760, "y": 160 },
+    { "id": "product", "kind": "class", "label": "Product", "x": 760, "y": 320 },
+    { "id": "coinbox", "kind": "class", "label": "CoinBox", "x": 560, "y": 380 },
+    { "id": "coin", "kind": "enum", "label": "Coin", "x": 760, "y": 460 }
+  ],
+  "edges": [
+    { "from": "customer", "to": "machine", "label": "insert / select / cancel" },
+    { "from": "operator", "to": "machine", "label": "restock / maintenance" },
+    { "from": "machine", "to": "inventory", "label": "has" },
+    { "from": "inventory", "to": "slot", "label": "has many" },
+    { "from": "slot", "to": "product", "label": "holds" },
+    { "from": "machine", "to": "coinbox", "label": "has" },
+    { "from": "coinbox", "to": "coin", "label": "counts" }
+  ],
+  "flows": [{ "name": "purchase", "path": ["customer", "machine", "inventory", "slot"] }]
+}

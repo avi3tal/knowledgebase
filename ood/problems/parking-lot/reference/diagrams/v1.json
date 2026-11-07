@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "why": "Core objects first: who owns what. The lot has levels, levels have spaces, a space holds at most one vehicle, and a ticket records each stay.",
+  "nodes": [
+    { "id": "driver", "kind": "actor", "label": "Driver", "x": 60, "y": 200 },
+    { "id": "lot", "kind": "class", "label": "ParkingLot", "x": 260, "y": 200 },
+    { "id": "level", "kind": "class", "label": "Level", "x": 480, "y": 120 },
+    { "id": "spot", "kind": "class", "label": "ParkingSpot", "x": 700, "y": 120 },
+    { "id": "vehicle", "kind": "class", "label": "Vehicle (type field)", "x": 700, "y": 320 },
+    { "id": "ticket", "kind": "class", "label": "Ticket", "x": 480, "y": 320 },
+    { "id": "size", "kind": "enum", "label": "SpotSize", "x": 880, "y": 220 }
+  ],
+  "edges": [
+    { "from": "driver", "to": "lot", "label": "park / unpark" },
+    { "from": "lot", "to": "level", "label": "has many" },
+    { "from": "level", "to": "spot", "label": "has many" },
+    { "from": "spot", "to": "size", "label": "sized by" },
+    { "from": "spot", "to": "vehicle", "label": "holds 0..1" },
+    { "from": "lot", "to": "ticket", "label": "issues" },
+    { "from": "ticket", "to": "vehicle", "label": "for" }
+  ],
+  "flows": [{ "name": "park", "path": ["driver", "lot", "level", "spot"] }]
+}

@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "why": "N2: v1 put the space choice and the fee inside ParkingLot and used a type field on Vehicle, so every new tariff or vehicle meant editing core code. Vehicle becomes abstract with subclasses; allocation and pricing move behind strategy interfaces.",
+  "nodes": [
+    { "id": "driver", "kind": "actor", "label": "Driver", "x": 60, "y": 220 },
+    { "id": "lot", "kind": "class", "label": "ParkingLot", "x": 240, "y": 220 },
+    { "id": "level", "kind": "class", "label": "Level", "x": 440, "y": 120 },
+    { "id": "spot", "kind": "class", "label": "ParkingSpot", "x": 640, "y": 120 },
+    { "id": "size", "kind": "enum", "label": "SpotSize", "x": 860, "y": 120 },
+    { "id": "vehicle", "kind": "abstract", "label": "Vehicle", "x": 640, "y": 300 },
+    { "id": "car", "kind": "class", "label": "Car", "x": 520, "y": 440 },
+    { "id": "moto", "kind": "class", "label": "Motorcycle", "x": 680, "y": 440 },
+    { "id": "truck", "kind": "class", "label": "Truck", "x": 840, "y": 440 },
+    { "id": "ticket", "kind": "class", "label": "Ticket", "x": 440, "y": 300 },
+    { "id": "alloc", "kind": "interface", "label": "SpotAllocationStrategy", "x": 240, "y": 40 },
+    { "id": "bestfit", "kind": "class", "label": "BestFitAllocation", "x": 440, "y": 40 },
+    { "id": "pricing", "kind": "interface", "label": "PricingStrategy", "x": 240, "y": 420 },
+    { "id": "hourly", "kind": "class", "label": "HourlyPricing", "x": 60, "y": 420 }
+  ],
+  "edges": [
+    { "from": "driver", "to": "lot", "label": "park / unpark" },
+    { "from": "lot", "to": "level", "label": "has many" },
+    { "from": "level", "to": "spot", "label": "has many" },
+    { "from": "spot", "to": "size", "label": "sized by" },
+    { "from": "spot", "to": "vehicle", "label": "holds 0..1" },
+    { "from": "car", "to": "vehicle", "label": "extends" },
+    { "from": "moto", "to": "vehicle", "label": "extends" },
+    { "from": "truck", "to": "vehicle", "label": "extends" },
+    { "from": "lot", "to": "ticket", "label": "issues" },
+    { "from": "ticket", "to": "spot", "label": "for" },
+    { "from": "lot", "to": "alloc", "label": "uses" },
+    { "from": "bestfit", "to": "alloc", "label": "implements" },
+    { "from": "lot", "to": "pricing", "label": "uses" },
+    { "from": "hourly", "to": "pricing", "label": "implements" }
+  ],
+  "flows": [
+    { "name": "park", "path": ["driver", "lot", "alloc", "bestfit"] },
+    { "name": "unpark", "path": ["driver", "lot", "pricing", "hourly"] }
+  ]
+}
