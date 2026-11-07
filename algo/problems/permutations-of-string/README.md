@@ -1,6 +1,6 @@
 # Permutations of a String
 
-> Difficulty: **medium** · Patterns: backtracking, recursion · Sources: geeksforgeeks, interviewbit, interview:classic
+> Difficulty: **medium** · Patterns: backtracking, recursion · Sources: [geeksforgeeks](https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/), [interviewbit](https://www.youtube.com/watch?v=GuTPwotSdYw), interview:classic
 
 ## Problem
 Given a string `s` of **distinct** characters, return every permutation (rearrangement) of its

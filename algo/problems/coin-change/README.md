@@ -1,6 +1,6 @@
 # Coin Change (Fewest Coins)
 
-> Difficulty: **medium** · Patterns: dp-1d · Sources: [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html)
+> Difficulty: **medium** · Patterns: dp-1d, unbounded-knapsack · Sources: [leetcode](https://leetcode.com/problems/coin-change/), [interactivepython](https://runestone.academy/ns/books/published/pythonds/Recursion/DynamicProgramming.html)
 
 ## Problem
 Given coin denominations `coins` (unlimited supply of each) and a target `amount`, return the

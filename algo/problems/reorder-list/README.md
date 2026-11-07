@@ -1,6 +1,6 @@
 # Reorder List
 
-> Difficulty: **medium** · Patterns: linked-list, fast-slow-pointers · Sources: [leetcode](https://leetcode.com/problems/reorder-list/)
+> Difficulty: **medium** · Patterns: linked-list, fast-slow-pointers, in-place-reversal-linked-list · Sources: [leetcode](https://leetcode.com/problems/reorder-list/)
 
 ## Problem
 Given the `head` of a singly linked list `L0 → L1 → … → Ln-1 → Ln`, reorder it **in place** to

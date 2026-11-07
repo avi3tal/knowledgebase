@@ -1,6 +1,6 @@
 # Merge Two Sorted Lists
 
-> Difficulty: **easy** · Patterns: linked-list, two-pointers · Sources: [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), educative
+> Difficulty: **easy** · Patterns: linked-list, two-pointers · Sources: [leetcode](https://leetcode.com/problems/merge-two-sorted-lists/), [educative](https://www.educative.io/courses/data-structures-coding-interviews-python)
 
 ## Problem
 You're given the heads of two **sorted** singly linked lists, `list1` and `list2`. Merge them into

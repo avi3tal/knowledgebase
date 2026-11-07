@@ -1,6 +1,6 @@
 # Pair With Target Sum (exists?)
 
-> Difficulty: **easy** · Patterns: hashmap, two-pointers · Sources: classic interview question
+> Difficulty: **easy** · Patterns: hashmap, two-pointers · Sources: —
 
 ## Problem
 Given an **unsorted** array of integers `nums` and an integer `target`, return `true` if two

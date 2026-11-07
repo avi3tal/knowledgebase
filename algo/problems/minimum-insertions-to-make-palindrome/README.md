@@ -1,6 +1,6 @@
 # Minimum Insertions to Make a String Palindrome
 
-> Difficulty: **hard** · Patterns: dp-2d · Sources: [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit
+> Difficulty: **hard** · Patterns: dp-2d, palindromic-subsequence · Sources: [leetcode](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/), interviewbit
 
 ## Problem
 Given a string `s`, you may insert any character at **any position**. Return the minimum number

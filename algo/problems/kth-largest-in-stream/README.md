@@ -1,6 +1,6 @@
 # Kth Largest Element in a Stream
 
-> Difficulty: **easy** · Patterns: heap, design · Sources: [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/)
+> Difficulty: **easy** · Patterns: heap, design, top-k-elements · Sources: [leetcode](https://leetcode.com/problems/kth-largest-element-in-a-stream/)
 
 ## Problem
 Design a class that keeps returning the **k-th largest** element of a growing stream:

@@ -1,6 +1,6 @@
 # Same Tree
 
-> Difficulty: **easy** · Patterns: tree-dfs · Sources: [leetcode](https://leetcode.com/problems/same-tree/)
+> Difficulty: **easy** · Patterns: tree-dfs, multi-threaded · Sources: [leetcode](https://leetcode.com/problems/same-tree/)
 
 ## Problem
 Given the roots of two binary trees `p` and `q`, return `true` if they are **identical**: the

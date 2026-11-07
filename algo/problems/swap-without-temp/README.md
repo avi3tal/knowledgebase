@@ -1,6 +1,6 @@
 # Swap Two Elements Without a Temp Variable
 
-> Difficulty: **easy** · Patterns: math, bit-manipulation · Sources: classic interview question
+> Difficulty: **easy** · Patterns: math, bit-manipulation, bitwise-xor · Sources: —
 
 ## Problem
 Given an integer array `nums` and two indices `i` and `j` with `i != j`, swap `nums[i]` and

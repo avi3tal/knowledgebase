@@ -1,6 +1,6 @@
 # Longest Common Substring
 
-> Difficulty: **medium** · Patterns: dp-2d · Sources: [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit
+> Difficulty: **medium** · Patterns: dp-2d, longest-common-substring · Sources: [wikibooks](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Python), interviewbit
 
 ## Problem
 Given two strings `s1` and `s2`, return the **length** of the longest string that appears as a

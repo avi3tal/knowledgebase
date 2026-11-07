@@ -150,6 +150,12 @@ def validate(problem: Problem) -> list[str]:
         errors.append("README.md is missing")
     elif "<!--" in readme.read_text():
         errors.append("README.md still has template <!-- ... --> placeholders (fill or delete them)")
+    else:
+        from kb.scaffold import readme_header  # local import: scaffold imports schema
+
+        header = next((ln for ln in readme.read_text().splitlines() if ln.startswith("> Difficulty:")), None)
+        if header is not None and header != readme_header(m):
+            errors.append("README.md header line is out of date with meta.json — run `./kb sync`")
 
     if m.get("kind") == "design":
         errors += _validate_design(problem)

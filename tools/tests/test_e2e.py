@@ -88,6 +88,29 @@ def test_new_refuses_overwrite_and_bad_slug(scratch: Path) -> None:
         scaffold.new_problem(scratch, "Bad_Slug")
 
 
+def test_sync_readme_header(scratch: Path) -> None:
+    pdir = scratch / "two-sum"
+    shutil.copytree(FIXTURES / "two-sum", pdir, ignore=shutil.ignore_patterns("attempts"))
+    meta = json.loads((pdir / "meta.json").read_text())
+    meta["patterns"] = ["hashmap", "two-pointers"]
+    (pdir / "meta.json").write_text(json.dumps(meta))
+    problem = load_problem(pdir)
+    assert any("out of date" in e for e in validate(problem))
+    assert scaffold.sync_readme(problem) is True
+    assert scaffold.sync_readme(problem) is False  # idempotent
+    assert validate(load_problem(pdir)) == []
+    header = next(ln for ln in (pdir / "README.md").read_text().splitlines() if ln.startswith("> Difficulty"))
+    assert (
+        "Patterns: hashmap, two-pointers" in header and "[leetcode](https://leetcode.com/problems/two-sum/)" in header
+    )
+
+
+def test_new_problem_header_is_in_sync(scratch: Path) -> None:
+    pdir = scaffold.new_problem(scratch, "demo", sources=["leetcode=https://x.dev/demo", "interview:acme"])
+    header = next(ln for ln in (pdir / "README.md").read_text().splitlines() if ln.startswith("> Difficulty"))
+    assert header == scaffold.readme_header(load_problem(pdir).meta)
+
+
 def test_attempt_requires_valid_meta(scratch: Path) -> None:
     pdir = scratch / "broken"
     shutil.copytree(FIXTURES / "two-sum", pdir, ignore=shutil.ignore_patterns("attempts"))

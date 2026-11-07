@@ -219,6 +219,14 @@ def cmd_list(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sync(a: argparse.Namespace) -> int:
+    changed = [p.slug for p in scaffold.all_problems(problems_dir()) if scaffold.sync_readme(p)]
+    for slug in changed:
+        print(f"synced {slug}/README.md")
+    print(f"{len(changed)} README header(s) updated from meta.json")
+    return 0
+
+
 def cmd_index(a: argparse.Namespace) -> int:
     target = problems_dir() / "INDEX.md"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -332,6 +340,9 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("list", help="list problems")
     s.add_argument("--pattern")
     s.set_defaults(fn=cmd_list)
+
+    s = sub.add_parser("sync", help="rewrite README header lines (difficulty/patterns/sources) from meta.json")
+    s.set_defaults(fn=cmd_sync)
 
     s = sub.add_parser("index", help="regenerate problems/INDEX.md")
     s.set_defaults(fn=cmd_index)

@@ -1,6 +1,6 @@
 # Merge k Sorted Lists
 
-> Difficulty: **hard** · Patterns: linked-list, heap · Sources: [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/)
+> Difficulty: **hard** · Patterns: linked-list, heap, k-way-merge · Sources: [leetcode](https://leetcode.com/problems/merge-k-sorted-lists/), [interviewbit](https://www.interviewbit.com/problems/merge-k-sorted-lists/)
 
 ## Problem
 You're given an array of `k` linked lists, each sorted ascending. Merge them all into one sorted

@@ -51,7 +51,7 @@ def new_problem(
         "difficulty": difficulty,
         "patterns": ", ".join(patterns),
         "patterns_json": json.dumps(patterns),
-        "sources": ", ".join(s["name"] for s in srcs) or "—",
+        "sources": readme_header({"sources": srcs}).split(" · Sources: ")[1],
         "sources_json": json.dumps(srcs),
         "function": camel(slug),
         "time": "O(?)",
@@ -120,6 +120,32 @@ def new_attempt(problem: Problem, lang: str, pattern: str | None = None, today: 
         )
     )
     return adir
+
+
+def readme_header(meta: dict[str, Any]) -> str:
+    """The README's `> Difficulty: …` line, derived from meta.json (kept in sync by `kb sync`)."""
+    sources = ", ".join(f"[{s['name']}]({s['url']})" if s.get("url") else s["name"] for s in meta.get("sources", []))
+    return (
+        f"> Difficulty: **{meta.get('difficulty', '?')}** · Patterns: {', '.join(meta.get('patterns', []))}"
+        f" · Sources: {sources or '—'}"
+    )
+
+
+def sync_readme(problem: Problem) -> bool:
+    """Rewrite the README header line from meta.json; returns True if the file changed."""
+    readme = problem.dir / "README.md"
+    if not readme.exists():
+        return False
+    lines = readme.read_text().split("\n")
+    want = readme_header(problem.meta)
+    for i, line in enumerate(lines):
+        if line.startswith("> Difficulty:"):
+            if line == want:
+                return False
+            lines[i] = want
+            readme.write_text("\n".join(lines))
+            return True
+    return False
 
 
 def attempt_lang(attempt_dir: Path) -> str:

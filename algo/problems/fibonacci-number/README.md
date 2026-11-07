@@ -1,6 +1,6 @@
 # Fibonacci Number
 
-> Difficulty: **easy** · Patterns: dp-1d, recursion · Sources: [leetcode](https://leetcode.com/problems/fibonacci-number/)
+> Difficulty: **easy** · Patterns: dp-1d, recursion, fibonacci-numbers · Sources: [leetcode](https://leetcode.com/problems/fibonacci-number/)
 
 ## Problem
 `F(0) = 0`, `F(1) = 1`, and `F(n) = F(n-1) + F(n-2)` for `n > 1`. Given `n`, return `F(n)`.

@@ -1,6 +1,6 @@
 # Palindrome Linked List
 
-> Difficulty: **easy** · Patterns: linked-list, fast-slow-pointers · Sources: [leetcode](https://leetcode.com/problems/palindrome-linked-list/)
+> Difficulty: **easy** · Patterns: linked-list, fast-slow-pointers, in-place-reversal-linked-list · Sources: [leetcode](https://leetcode.com/problems/palindrome-linked-list/)
 
 ## Problem
 Given the `head` of a singly linked list, return `true` if the values read the same forwards

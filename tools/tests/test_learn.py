@@ -277,7 +277,7 @@ def test_studio_api(studio: str, progress: Path) -> None:
     assert any(t["id"] == "sliding-window" and t["has_lesson"] for t in subjects["subjects"][0]["topics"])
     status, lesson = _get(f"{studio}/api/lesson/algo/sliding-window")
     assert status == 200 and [b["type"] for b in lesson["blocks"]].count("trace") == 2
-    assert _get(f"{studio}/api/lesson/algo/islands")[0] == 404
+    assert _get(f"{studio}/api/lesson/algo/math")[0] == 404  # catalog topic without a lesson
     assert _get(f"{studio}/api/lesson/algo/..%2Fsecrets")[0] == 404
     assert _get(f"{studio}/api/problem/algo/two-sum")[1]["slug"] == "two-sum"
     assert _get(f"{studio}/api/feedback/algo")[1]["subject"] == "algo"

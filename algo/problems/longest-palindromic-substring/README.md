@@ -1,6 +1,6 @@
 # Longest Palindromic Substring
 
-> Difficulty: **medium** · Patterns: dp-2d, two-pointers · Sources: [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA)
+> Difficulty: **medium** · Patterns: dp-2d, two-pointers, palindromic-subsequence · Sources: [leetcode](https://leetcode.com/problems/longest-palindromic-substring/), [geeksforgeeks](https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/), [interviewbit](https://www.youtube.com/watch?v=UflHuQj6MVA)
 
 ## Problem
 Given a string `s`, return the longest contiguous substring of `s` that reads the same forwards and

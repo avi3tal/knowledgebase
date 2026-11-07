@@ -1,6 +1,6 @@
 # K Largest Elements
 
-> Difficulty: **easy** · Patterns: heap · Sources: [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/)
+> Difficulty: **easy** · Patterns: heap, top-k-elements · Sources: [interviewbit](https://www.interviewbit.com/problems/k-largest-elements/)
 
 ## Problem
 Given an integer array `nums` and an integer `k`, return the `k` largest elements of the array,
