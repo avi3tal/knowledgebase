@@ -1,5 +1,3 @@
-
-
 def binary_search(search_num, sorted_arr):
     """
     https://runestone.academy/runestone/books/published/pythonds/SortSearch/TheBinarySearch.html
@@ -24,7 +22,7 @@ def binary_search(search_num, sorted_arr):
     if mid_value < search_num:
         return binary_search(search_num, sorted_arr[mid_value:])
     if mid_value > search_num:
-        return binary_search(search_num, sorted_arr[:mid_value ])
+        return binary_search(search_num, sorted_arr[:mid_value])
 
 
 def binary_search_no_rec(search_num, sorted_arr):
@@ -34,7 +32,7 @@ def binary_search_no_rec(search_num, sorted_arr):
 
     while first <= last and not found:
         midpoint = (first + last) // 2
-        print(midpoint, sorted_arr[midpoint], sorted_arr[first: last])
+        print(midpoint, sorted_arr[midpoint], sorted_arr[first:last])
         if sorted_arr[midpoint] == search_num:
             found = True
         else:
@@ -49,4 +47,3 @@ if __name__ == "__main__":
     arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     print(binary_search_no_rec(5, arr))
-

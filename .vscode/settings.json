@@ -1,0 +1,17 @@
+{
+  // Format on save with the repo's tools (same config as `make lint`).
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": { "source.organizeImports.ruff": "explicit" }
+  },
+  "[go]": { "editor.defaultFormatter": "golang.go" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[markdown]": { "editor.formatOnSave": false },
+  "prettier.prettierPath": "./studio/node_modules/prettier",
+  "python.analysis.extraPaths": ["./tools"],
+  "files.exclude": { "**/__pycache__": true, "studio/node_modules": true, "studio/dist": true }
+}

@@ -1,15 +1,19 @@
 # Tooling config only — tools/kb is stdlib-only and run via ./kb (no install needed).
-[tool.black]
-line-length = 120
-target-version = ["py311"]
-
+# Ruff is the formatter and linter for all Python in the repo (VS Code: Ruff extension, format on save).
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-include = ["tools/**/*.py"]
+extend-exclude = ["studio", "*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Legacy solutions and old reference implementations: kept as written (formatting only), so
+# style/modernisation rules are off. Real bugs (pyflakes F, e.g. undefined names) still show.
+"algo/problems/*/attempts/*legacy*/*.py" = ["E501", "E701", "E741", "UP", "B", "I001", "F841"]
+"algo/ds/**/*.py" = ["E501", "E701", "E741", "UP", "B", "I001", "F841"]
+"archive/**/*.py" = ["ALL"]
 
 [tool.pytest.ini_options]
 testpaths = ["tools/tests"]

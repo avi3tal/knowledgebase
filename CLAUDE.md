@@ -29,7 +29,7 @@
 - New problems / attempts: the `/new-problem` skill (`.claude/skills/new-problem/SKILL.md`).
 - Generated files (`solution_test.go`, `kb_types.go`) are rewritten by `kb run`; edit `meta.json` instead.
 - Test fixtures for the tooling live in `tools/tests/testdata/problems/` (Go ignores `testdata` in `./...`).
-- Checks: `make test`, `make lint`. Python dev tools run via `uvx` (pytest, ruff, black).
+- Checks: `make test`, `make lint`. Python dev tools run via `uvx` (pytest, ruff).
 
 ## Style
-- Python: type hints, black/ruff. Go: gofmt, wrap errors with `%w`, table-driven tests.
+- Python: type hints, ruff (format + lint; format on save in VS Code). Go: gofmt, wrap errors with `%w`, table-driven tests.

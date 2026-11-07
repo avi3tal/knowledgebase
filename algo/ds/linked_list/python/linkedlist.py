@@ -1,4 +1,3 @@
-
 class Node(object):
     def __init__(self, data):
         self.data = data
@@ -18,7 +17,7 @@ class LinkedList(object):
             if self.size == 0:
                 msg = "{} is out of range. list is empty".format(index)
             else:
-                msg = "{} is out of range. last index is {}".format(index, self.size-1)
+                msg = "{} is out of range. last index is {}".format(index, self.size - 1)
             raise IndexError(msg)
 
     @property
@@ -53,7 +52,7 @@ class LinkedList(object):
 
         if index == 0:
             self.add_first(data)
-        elif index == self.size-1:
+        elif index == self.size - 1:
             self.add_last(data)
         else:
             self._size += 1
@@ -95,7 +94,7 @@ class LinkedList(object):
 
         if index == 0:
             return self.get_first()
-        elif index == self.size-1:
+        elif index == self.size - 1:
             return self.get_last()
         else:
             current_node = self._head
@@ -123,7 +122,7 @@ class LinkedList(object):
 
         if index == 0:
             self.remove_first()
-        elif index == self.size-1:
+        elif index == self.size - 1:
             self.remove_last()
         else:
             current_node = self._head
@@ -156,4 +155,3 @@ if __name__ == "__main__":
     linked_list.remove(0)
     for node in linked_list.iterate():
         print(node)
-

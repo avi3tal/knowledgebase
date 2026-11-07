@@ -18,16 +18,16 @@ test-studio: studio-install
 	cd studio && yarn typecheck && yarn test
 
 lint: studio-install
-	uvx ruff check tools
-	uvx black --check tools
-	@test -z "$$(gofmt -l tools)" || (gofmt -l tools; exit 1)
+	uvx ruff format --check .
+	uvx ruff check tools algo/learn
+	@test -z "$$(gofmt -l tools algo)" || (gofmt -l tools algo; exit 1)
 	cd studio && yarn format:check
 	./kb learn validate
 
 fmt: studio-install
-	uvx ruff check --fix tools
-	uvx black tools
-	gofmt -w tools
+	uvx ruff check --fix tools algo/learn
+	uvx ruff format .
+	gofmt -w tools algo
 	cd studio && yarn format
 
 index:

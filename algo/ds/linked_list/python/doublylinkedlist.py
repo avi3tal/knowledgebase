@@ -12,7 +12,6 @@ class Node(object):
 
 
 class DoublyLinkedList(LinkedList):
-
     def remove_first(self):
         if self._head is not None:
             self._size -= 1
@@ -22,7 +21,7 @@ class DoublyLinkedList(LinkedList):
     def remove(self, index):
         if index == 0:
             self.remove_first()
-        elif index == self.size-1:
+        elif index == self.size - 1:
             self.remove_last()
         else:
             current_node = self._head
@@ -49,7 +48,7 @@ class DoublyLinkedList(LinkedList):
 
         if index == 0:
             self.add_first(data)
-        elif index == self.size-1:
+        elif index == self.size - 1:
             self.add_last(data)
         else:
             self._size += 1

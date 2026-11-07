@@ -40,6 +40,6 @@ def max_heap(arr):
 if __name__ == "__main__":
     array = [1, 12, 9, 5, 6, 10]
     max_heap(array)
-    print("-"*len(array)*5)
+    print("-" * len(array) * 5)
     print("Final max_heap array:")
     print(array)

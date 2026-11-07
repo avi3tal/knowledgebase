@@ -14,8 +14,8 @@ def selection_sort(arr):
     for i in range(0, size):
         lowest = i
         for j in range(i, size):
-            if j+1 < size and arr[lowest] > arr[j+1]:
-                lowest = j+1
+            if j + 1 < size and arr[lowest] > arr[j + 1]:
+                lowest = j + 1
         arr[i], arr[lowest] = arr[lowest], arr[i]
 
 
@@ -24,4 +24,4 @@ if __name__ == "__main__":
     # array = [1, 12, 9, 5, 6, 10]
     array = [11, 12, 22, 25, 64]
     selection_sort(array)
-    print ("Sorted array is {}".format(array))
+    print("Sorted array is {}".format(array))

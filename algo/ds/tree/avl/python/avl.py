@@ -214,4 +214,3 @@ if __name__ == "__main__":
     tree4.remove(30)
 
     tree4.travers()
-
