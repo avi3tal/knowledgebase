@@ -1,18 +1,137 @@
 {
   "version": 2,
-  "why": "Data and load beyond one machine (A1, N3): a request coordinator hashes the key onto a consistent-hash ring with virtual nodes and forwards to the single owning storage node; adding a node moves only ~1/N of keys. Flaw left: each key lives on exactly one node, so a node failure makes its keys unavailable and a disk loss destroys them (breaks N1, N4).",
+  "why": "Compose P1 and P5 (A1, N3, F3): a coordinator hashes each key onto a consistent-hash ring with virtual nodes and forwards to the owning node, which stores it in an LSM engine. Adding a node moves ~1/N of keys. Flaw left: one copy per key, so a node failure loses availability and a disk loss loses data (N1, N4).",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "Service (client)", "x": 60, "y": 200 },
-    { "id": "coord", "kind": "coordinator", "label": "Request coordinator (hash ring)", "x": 400, "y": 200 },
-    { "id": "nodeA", "kind": "nosql", "label": "Storage node A (LSM)", "x": 640, "y": 80 },
-    { "id": "nodeB", "kind": "nosql", "label": "Storage node B (LSM)", "x": 640, "y": 200 },
-    { "id": "nodeC", "kind": "nosql", "label": "Storage node C (LSM)", "x": 640, "y": 320 }
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Service (ring-aware client library)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "coord",
+      "kind": "coordinator",
+      "label": "Request coordinator (any node: N=3, R=2, W=2)",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "gossip",
+      "kind": "coordinator",
+      "label": "Gossip membership + ring map (vnodes)",
+      "x": 250,
+      "y": 60
+    },
+    {
+      "id": "nodeA",
+      "kind": "nosql",
+      "label": "Node A (AZ1) replica",
+      "x": 470,
+      "y": 120
+    },
+    {
+      "id": "nodeB",
+      "kind": "nosql",
+      "label": "Node B (AZ2) replica",
+      "x": 470,
+      "y": 240
+    },
+    {
+      "id": "nodeC",
+      "kind": "nosql",
+      "label": "Node C (AZ3) replica (down)",
+      "x": 470,
+      "y": 360
+    },
+    {
+      "id": "wal",
+      "kind": "blob",
+      "label": "Commit log (WAL, fsync batches)",
+      "x": 710,
+      "y": 40
+    },
+    {
+      "id": "memtable",
+      "kind": "cache",
+      "label": "Memtable (sorted, in RAM)",
+      "x": 710,
+      "y": 170
+    },
+    {
+      "id": "sst",
+      "kind": "nosql",
+      "label": "SSTables + bloom filters (SSD)",
+      "x": 930,
+      "y": 100
+    },
+    {
+      "id": "compaction",
+      "kind": "worker",
+      "label": "Compaction (merge, drop tombstones)",
+      "x": 930,
+      "y": 260
+    }
   ],
   "edges": [
-    { "from": "client", "to": "coord", "label": "get / put" },
-    { "from": "coord", "to": "nodeA", "label": "owner of hash(key)" },
-    { "from": "coord", "to": "nodeB" },
-    { "from": "coord", "to": "nodeC" }
+    {
+      "from": "client",
+      "to": "coord",
+      "label": "get / put"
+    },
+    {
+      "from": "coord",
+      "to": "gossip",
+      "label": "ring map: token → node"
+    },
+    {
+      "from": "coord",
+      "to": "nodeA",
+      "label": "owner of hash(key)"
+    },
+    {
+      "from": "coord",
+      "to": "nodeB"
+    },
+    {
+      "from": "coord",
+      "to": "nodeC"
+    },
+    {
+      "from": "nodeA",
+      "to": "wal",
+      "label": "1. append write"
+    },
+    {
+      "from": "nodeA",
+      "to": "memtable",
+      "label": "2. insert"
+    },
+    {
+      "from": "memtable",
+      "to": "sst",
+      "label": "flush when full (~64 MB)"
+    },
+    {
+      "from": "nodeA",
+      "to": "sst",
+      "label": "read: memtable, then bloom → SSTable"
+    },
+    {
+      "from": "compaction",
+      "to": "sst",
+      "label": "merge sorted runs"
+    }
   ],
-  "flows": [{ "name": "put", "path": ["client", "coord", "nodeB"] }]
+  "flows": [
+    {
+      "name": "put",
+      "path": [
+        "client",
+        "coord",
+        "nodeA",
+        "wal"
+      ]
+    }
+  ]
 }

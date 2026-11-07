@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Several users edit the same document concurrently; everyone converges to the same text."
+      },
+      {
+        "id": "F2",
+        "text": "Edits from other collaborators appear in real time."
+      },
+      {
+        "id": "F3",
+        "text": "Version history: browse and restore earlier revisions."
+      },
+      {
+        "id": "F4",
+        "text": "Presence: see who is in the document and their cursors and selections."
+      },
+      {
+        "id": "F5",
+        "text": "Short offline periods: keep typing, sync on reconnect."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Low latency: others see an edit within ~200 ms p99 in-region; local typing never waits on the network."
+      },
+      {
+        "id": "N2",
+        "text": "Convergence: all copies end identical and keep each user's intent."
+      },
+      {
+        "id": "N3",
+        "text": "Durability: an acknowledged edit is never lost."
+      },
+      {
+        "id": "N4",
+        "text": "Availability 99.95%; a server crash interrupts a session for seconds only."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "1B documents, ~50 KB each; ~20M connected users at peak, ~5M typing at once, ~1 batched op per second each."
+      },
+      {
+        "id": "A2",
+        "text": "Most documents have 1–2 editors; at most ~100 concurrent editors per document (more as viewers)."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Spreadsheets/slides, comments and suggestions, full-text search, multi-region active-active editing of one doc."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/docs",
+      "request": "title",
+      "response": "201 {doc_id}",
+      "notes": "Creates metadata, ACL and an empty snapshot."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/docs/{id}",
+      "request": "",
+      "response": "200 {snapshot, rev, acl}",
+      "notes": "Latest snapshot plus the op-log tail, folded on the server."
+    },
+    {
+      "id": "E3",
+      "method": "WS",
+      "path": "/docs/{id}/session?rev=",
+      "request": "client → {op, base_rev, client_seq} | {cursor}",
+      "response": "server → {ack rev} | {op, rev, author} | {presence}",
+      "notes": "One socket per open document; ops are batched every ~100–200 ms."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "/docs/{id}/revisions?before=",
+      "request": "",
+      "response": "200 {revisions[{rev, author, ts}]}",
+      "notes": "History view; restore = a new op that sets the old state."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "op_log",
+      "fields": "doc_id (partition), rev (clustering), op (insert/delete/format + position), author, client_seq, ts",
+      "store": "nosql",
+      "why": "Append-only, ~100 B per op, read by doc in rev order; client_seq makes resends idempotent."
+    },
+    {
+      "id": "D2",
+      "name": "snapshots",
+      "fields": "doc_id, rev, document state (rich-text tree)",
+      "store": "blob",
+      "why": "Every ~500 ops; open = latest snapshot + tail."
+    },
+    {
+      "id": "D3",
+      "name": "docs",
+      "fields": "doc_id, title, owner, acl[(user, role)], created_at, last_rev",
+      "store": "sql",
+      "why": "Small relational data; lists and sharing queries."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Real-time session and transport",
+      "covers": [
+        "F2",
+        "N1",
+        "N4"
+      ],
+      "problem": "Deliver every edit to all other editors of the same document within ~200 ms, for ~20M connected users, and give each document one place where its edits are put in order.",
+      "options": [
+        {
+          "name": "HTTP polling every second",
+          "pros": "works everywhere, stateless servers",
+          "cons": "up to 1 s delay; 20M requests/s mostly empty; ordering still needs a single place"
+        },
+        {
+          "name": "SSE down + HTTP POST up",
+          "pros": "simple server push; proxies like it",
+          "cons": "two channels to keep in order; one request per edit batch"
+        },
+        {
+          "name": "WebSocket to the server that owns the document (route by doc_id, ownership lease)",
+          "pros": "one ordered, full-duplex channel; doc state in one server's memory",
+          "cons": "stateful servers: routing, leases and failover to design"
+        },
+        {
+          "name": "peer-to-peer (WebRTC) between editors",
+          "pros": "no server hop",
+          "cons": "NAT traversal, no central order or persistence, breaks with 100 editors"
+        }
+      ],
+      "choice": "WebSocket per editor, routed by doc_id to a collaboration server that holds an ownership lease for that document",
+      "why": "N1 needs push, and ordering is far simpler when one process owns a document. At ~50k sockets per server, 20M connections need ~400 servers. A single doc peaks at ~500 ops/s (100 editors), which one process handles easily. The lease in etcd guarantees one owner even during failover.",
+      "technologies": [
+        "websockets-sse",
+        "zookeeper-etcd",
+        "envoy-nginx"
+      ],
+      "patterns": [
+        "real-time-push",
+        "distributed-locking"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Browser editor (local copy + pending ops)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "L7 load balancer (WebSocket, route by doc_id)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "collab",
+            "kind": "service",
+            "label": "Collaboration server ×N (doc owner: OT, presence)",
+            "x": 460,
+            "y": 240
+          },
+          {
+            "id": "coord",
+            "kind": "coordinator",
+            "label": "Doc ownership leases (etcd)",
+            "x": 460,
+            "y": 60
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "WebSocket: ops, cursors"
+          },
+          {
+            "from": "lb",
+            "to": "collab",
+            "label": "route by doc_id"
+          },
+          {
+            "from": "collab",
+            "to": "coord",
+            "label": "acquire / renew doc lease"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Concurrency control: OT vs CRDT",
+      "covers": [
+        "F1",
+        "F5",
+        "N2"
+      ],
+      "problem": "Two people type at the same position at the same time, each on a local copy. Every copy must end up identical, and each person's intent (where their text went) must be kept.",
+      "options": [
+        {
+          "name": "lock a paragraph while someone edits it",
+          "pros": "no merge logic",
+          "cons": "people wait on each other; stuck locks; not real co-editing"
+        },
+        {
+          "name": "last write wins on the whole document",
+          "pros": "trivial",
+          "cons": "loses everyone's edits but one"
+        },
+        {
+          "name": "Operational Transformation with a central server",
+          "pros": "server assigns revisions and transforms each op against the ops it missed; compact ops; mature for rich text",
+          "cons": "needs a central orderer; transform functions are subtle; long offline periods mean big transforms"
+        },
+        {
+          "name": "CRDT (sequence CRDT with unique ids per character)",
+          "pros": "merges in any order without a server; great offline and P2P",
+          "cons": "per-character ids and tombstones grow the document; rich-text intent is harder"
+        }
+      ],
+      "choice": "Operational Transformation, ordered by the document's owner server; clients send one batch at a time and wait for its ack",
+      "why": "P1 already gives each document a single owner, which is exactly what OT needs, and it keeps the stored document compact. Sending one outstanding batch per client means the server only transforms against ops since the client's base revision. A CRDT is the better answer if offline-first or P2P were requirements; here offline is short (F5).",
+      "technologies": [
+        "websockets-sse"
+      ],
+      "patterns": [
+        "collaborative-editing",
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Browser editor (local copy + pending ops)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "L7 load balancer (WebSocket, route by doc_id)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "collab",
+            "kind": "service",
+            "label": "Collaboration server ×N (doc owner: OT, presence)",
+            "x": 460,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "op(base_rev=41, insert 'x' @ 120)"
+          },
+          {
+            "from": "lb",
+            "to": "collab",
+            "label": "transform vs ops 42..n, assign rev"
+          },
+          {
+            "from": "collab",
+            "to": "client",
+            "label": "ack rev + others' transformed ops"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Persistence: op log and snapshots",
+      "covers": [
+        "F3",
+        "N3"
+      ],
+      "problem": "Never lose an acknowledged edit, keep full revision history, and still open a document with a long history quickly.",
+      "options": [
+        {
+          "name": "save the whole document on every change",
+          "pros": "simple reads",
+          "cons": "50 KB per edit × 5M edits/s ≈ 250 GB/s of writes; no history"
+        },
+        {
+          "name": "append each op to a log, with no snapshots",
+          "pros": "tiny writes; perfect history",
+          "cons": "opening an old document replays a million ops"
+        },
+        {
+          "name": "append each op to a log before acking; snapshot asynchronously every ~500 ops",
+          "pros": "tiny durable writes; history = log; open = latest snapshot + short tail",
+          "cons": "two stores to keep consistent; snapshot jobs to run"
+        }
+      ],
+      "choice": "Op log (doc_id, rev) appended before the ack, plus asynchronous snapshots every ~500 ops",
+      "why": "An op is ~100 B, so 5M ops/s is ~0.5 GB/s of appends, cheap for a wide-column store partitioned by doc_id. Acking only after the append satisfies N3. Snapshots bound the replay on open and serve the history view; the snapshotter consumes a stream, so it never slows typing.",
+      "technologies": [
+        "cassandra",
+        "object-storage",
+        "kafka"
+      ],
+      "patterns": [
+        "event-sourcing",
+        "cqrs"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "collab",
+            "kind": "service",
+            "label": "Collaboration server ×N (doc owner: OT, presence)",
+            "x": 460,
+            "y": 240
+          },
+          {
+            "id": "oplog",
+            "kind": "nosql",
+            "label": "Op log: (doc_id, rev) → op",
+            "x": 700,
+            "y": 240
+          },
+          {
+            "id": "ops",
+            "kind": "stream",
+            "label": "Committed op stream",
+            "x": 700,
+            "y": 80
+          },
+          {
+            "id": "snapper",
+            "kind": "worker",
+            "label": "Snapshotter",
+            "x": 920,
+            "y": 80
+          },
+          {
+            "id": "snap",
+            "kind": "blob",
+            "label": "Snapshots: doc state @ rev",
+            "x": 920,
+            "y": 280
+          }
+        ],
+        "edges": [
+          {
+            "from": "collab",
+            "to": "oplog",
+            "label": "append op @ rev (before ack)"
+          },
+          {
+            "from": "collab",
+            "to": "ops",
+            "label": "publish committed op"
+          },
+          {
+            "from": "ops",
+            "to": "snapper",
+            "label": "consume ops"
+          },
+          {
+            "from": "snapper",
+            "to": "snap",
+            "label": "write snapshot every ~500 ops"
+          },
+          {
+            "from": "collab",
+            "to": "snap",
+            "label": "load latest snapshot on open"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Presence and cursors",
+      "covers": [
+        "F4"
+      ],
+      "problem": "Show who is in the document and where each person's cursor and selection are, updating smoothly, without turning every mouse move into a database write.",
+      "options": [
+        {
+          "name": "persist cursor positions in the database",
+          "pros": "survives restarts",
+          "cons": "a write per keystroke for data nobody needs after they leave"
+        },
+        {
+          "name": "Redis pub/sub shared by all servers",
+          "pros": "works when editors of one doc sit on different servers",
+          "cons": "an extra hop and a moving part we don't need: one server owns each doc"
+        },
+        {
+          "name": "ephemeral state in the owner server's memory, broadcast at ≤ 10 Hz",
+          "pros": "no storage at all; same channel as ops",
+          "cons": "lost on failover (clients simply resend)"
+        }
+      ],
+      "choice": "Ephemeral presence in the owning collaboration server's memory, throttled to ≤ 10 updates/s per user, cursor positions transformed like ops",
+      "why": "Presence is soft state: it is worthless a few seconds later, so persistence is waste. Since every editor of a document is on the same server (P1), broadcasting is a local loop. Cursors must be transformed by concurrent ops, or they jump to the wrong place.",
+      "technologies": [
+        "websockets-sse"
+      ],
+      "patterns": [
+        "real-time-push"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Browser editor (local copy + pending ops)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "L7 load balancer (WebSocket, route by doc_id)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "collab",
+            "kind": "service",
+            "label": "Collaboration server ×N (doc owner: OT, presence)",
+            "x": 460,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "cursor / selection (≤ 10 Hz)"
+          },
+          {
+            "from": "lb",
+            "to": "collab",
+            "label": "route by doc_id"
+          },
+          {
+            "from": "collab",
+            "to": "client",
+            "label": "broadcast presence (not persisted)"
+          }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Owner server crash and failover",
+      "options": [
+        {
+          "name": "hot standby replicating the doc in memory",
+          "pros": "near-zero takeover",
+          "cons": "doubles memory and fan-out for millions of mostly idle docs"
+        },
+        {
+          "name": "lease expires; any server takes ownership and rebuilds from snapshot + op-log tail",
+          "pros": "no standby cost; the log is already the source of truth",
+          "cons": "a few seconds of reconnect for that doc's editors"
+        }
+      ],
+      "choice": "Lease-based takeover: the lease (~5 s TTL) expires, a new owner loads the latest snapshot plus the op-log tail, and clients reconnect with their last acked rev",
+      "why": "Ops are acked only after the log append, so the log holds everything acknowledged (N3). The lease plus a fencing token (the lease revision) stops a paused old owner from appending, so two owners can never order the same document.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "Reconnect and short offline periods",
+      "options": [
+        {
+          "name": "discard local edits on disconnect",
+          "pros": "simple",
+          "cons": "users lose work"
+        },
+        {
+          "name": "keep pending ops and the last acked rev; on reconnect fetch ops since rev, transform pending ops, resend",
+          "pros": "seamless for minutes to hours",
+          "cons": "very long offline periods mean large transforms"
+        }
+      ],
+      "choice": "Client keeps pending ops + last acked rev; on reconnect the server sends ops since that rev, the client transforms its pending ops and resends them (idempotent by client_seq)",
+      "why": "F5 is about short gaps, which OT handles well. client_seq makes a resend after a lost ack harmless. Beyond a cap (e.g. 24 h or 10k ops) the client offers to save its version as a copy.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Very popular documents (100 editors, thousands of viewers) on one owner: move viewers to read-only fan-out replicas fed by the op stream. Op-log hot partitions per doc are fine at ~500 ops/s. Reconnect storms after a server dies: jittered backoff.",
+    "failures": "Owner crash: lease expires, a new owner rebuilds from snapshot + log, clients reconnect and resend pending ops. Op-log write fails: no ack, the client retries. Snapshotter down: opens get slower (longer tail), no data loss. Network drop: offline buffer and catch-up by rev.",
+    "monitoring": "Edit propagation latency (p50/p99 from send to peers' receipt), ack latency, transform error/conflict rate, ops per doc, sockets per server, lease takeovers, op-log append latency, snapshot lag (ops since last snapshot).",
+    "scale": "More collaboration servers: docs spread by consistent hashing on doc_id, and leases move with them. Op log scales by doc_id partitions. Viewers go to read-only replicas. ~400 servers at 20M sockets.",
+    "future": "Comments and suggestions as a separate op type, offline-first with a CRDT, multi-region with a per-doc home region, rich embeds."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "documents",
+      "formula": "1 * billion",
+      "unit": ""
+    },
+    {
+      "name": "snapshot_storage",
+      "formula": "documents * 50 * thousand / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "concurrent_connections",
+      "formula": "20 * million",
+      "unit": ""
+    },
+    {
+      "name": "active_typists",
+      "formula": "5 * million",
+      "unit": ""
+    },
+    {
+      "name": "ops_per_sec",
+      "formula": "active_typists * 1",
+      "unit": "/s"
+    },
+    {
+      "name": "oplog_per_day",
+      "formula": "ops_per_sec * 100 * day / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "collab_servers",
+      "formula": "concurrent_connections / (50 * thousand)",
+      "unit": ""
+    },
+    {
+      "name": "max_ops_per_doc",
+      "formula": "100 * 5",
+      "unit": "/s"
+    },
+    {
+      "name": "naive_full_save_bandwidth",
+      "formula": "ops_per_sec * 50 * thousand / 10**9",
+      "unit": "GB/s"
+    }
+  ]
+}

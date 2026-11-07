@@ -1,0 +1,417 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Media platform: make uploads resumable and durable first, then process them asynchronously as a DAG of small retryable tasks; serve the bytes as cacheable adaptive-bitrate segments from a CDN so origin and API stay off the hot path; keep metadata cached, search in an event-fed index, and counters aggregated from a stream.",
+  "checks": [
+    {
+      "id": "req-upload",
+      "type": "requirement",
+      "label": "Creator use case captured",
+      "keywords": [
+        "upload",
+        "publish"
+      ],
+      "tips": {
+        "nudge": "Before anyone can watch, what does a creator do?",
+        "hint": "Write a functional requirement for getting a video into the system and published.",
+        "show": "F1/F2: Creators upload videos (resumable); uploads are transcoded into several resolutions and published."
+      }
+    },
+    {
+      "id": "req-stream",
+      "type": "requirement",
+      "label": "Viewer use case captured",
+      "keywords": [
+        "watch",
+        "stream",
+        "play",
+        "view"
+      ],
+      "tips": {
+        "nudge": "What do the other 800 million people do?",
+        "hint": "Write a functional requirement for playing a video on any device.",
+        "show": "F3: Viewers stream videos on any device and network; quality adapts to bandwidth."
+      }
+    },
+    {
+      "id": "req-playback",
+      "type": "requirement",
+      "label": "Viewing experience expectation stated",
+      "keywords": [
+        "start",
+        "buffer",
+        "smooth",
+        "stall",
+        "latency",
+        "quality"
+      ],
+      "tips": {
+        "nudge": "What do viewers notice first when a video platform is bad?",
+        "hint": "State targets for how fast playback starts and how often it stalls.",
+        "show": "N1: Playback starts in < 2 s and rarely rebuffers, worldwide."
+      }
+    },
+    {
+      "id": "req-availability",
+      "type": "requirement",
+      "label": "Reliability expectation stated",
+      "keywords": [
+        "availab",
+        "durab",
+        "reliab",
+        "never lost",
+        "uptime"
+      ],
+      "tips": {
+        "nudge": "Which matters more: a video that can't play right now, or an upload that disappears?",
+        "hint": "Add non-functional requirements about availability and about losing uploads.",
+        "show": "N2/N3: Viewing 99.99% available; an uploaded original is never lost."
+      }
+    },
+    {
+      "id": "est-views-qps",
+      "type": "estimate",
+      "label": "Viewing request rate estimated",
+      "keywords": [
+        "view",
+        "watch",
+        "read",
+        "play"
+      ],
+      "unit": "/s",
+      "min": 5000,
+      "max": 500000,
+      "tips": {
+        "nudge": "Start from daily users and how many videos each one watches.",
+        "hint": "views/s = DAU × views per user / 86,400.",
+        "show": "view_qps = 800M × 5 / day ≈ 46,000 /s (peak ≈ 90,000 /s)."
+      }
+    },
+    {
+      "id": "est-egress",
+      "type": "estimate",
+      "label": "Outgoing bandwidth estimated",
+      "keywords": [
+        "egress",
+        "bandwidth",
+        "streaming",
+        "throughput",
+        "outbound"
+      ],
+      "unit": "Gbps",
+      "min": 5000,
+      "max": 1000000,
+      "tips": {
+        "nudge": "How many streams are playing at once, and how many bits per second is each?",
+        "hint": "concurrent = views/day × average watch time / 86,400; egress = concurrent × average bitrate.",
+        "show": "egress = 27.8M concurrent × 3 Mbps ≈ 83,000 Gbps (≈ 80 Tbps)."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Daily storage growth estimated",
+      "keywords": [
+        "storage",
+        "per_day",
+        "ingest",
+        "new_bytes",
+        "daily"
+      ],
+      "unit": "TB",
+      "min": 200,
+      "max": 20000,
+      "tips": {
+        "nudge": "500 hours arrive every minute. How much do you store for each hour of video?",
+        "hint": "storage/day = hours uploaded per day × bytes per video-hour across all renditions.",
+        "show": "storage_per_day = 720k h × ~3 GB ≈ 2,160 TB/day (~0.8 EB/year)."
+      }
+    },
+    {
+      "id": "api-upload",
+      "type": "endpoint",
+      "label": "Upload interface defined",
+      "method": "POST",
+      "keywords": [
+        "upload",
+        "video"
+      ],
+      "tips": {
+        "nudge": "A 20 GB upload on hotel Wi-Fi drops at 70%. What does the API let the client do?",
+        "hint": "A POST that starts an upload session, plus a way to send ranges and resume.",
+        "show": "POST /uploads {title, size} → {upload_id, upload_url}; PUT /uploads/{id} with Content-Range; resume from the last received byte."
+      }
+    },
+    {
+      "id": "api-watch",
+      "type": "endpoint",
+      "label": "Watch interface defined",
+      "method": "GET",
+      "keywords": [
+        "watch",
+        "video",
+        "manifest",
+        "stream",
+        "play"
+      ],
+      "tips": {
+        "nudge": "What does the player fetch to start playing, and from where?",
+        "hint": "A GET for the watch page metadata, and the manifest/segment URLs the player then pulls.",
+        "show": "GET /videos/{id} → {title, views, manifest_url}; the player GETs master.m3u8 and segments from the CDN."
+      }
+    },
+    {
+      "id": "data-video",
+      "type": "entity",
+      "label": "Video record defined",
+      "keywords": [
+        "video_id",
+        "status",
+        "rendition",
+        "manifest",
+        "title"
+      ],
+      "tips": {
+        "nudge": "Between upload and playback a video goes through states. What do you store about it?",
+        "hint": "One record per video: identity, owner, descriptive fields, processing state and what renditions exist.",
+        "show": "videos(video_id, channel_id, title, tags, status, renditions[], manifest_url, duration) sharded by video_id."
+      }
+    },
+    {
+      "id": "part-transcode",
+      "type": "part",
+      "label": "Processing uploads designed as its own part",
+      "keywords": [
+        "transcod",
+        "encod",
+        "pipeline",
+        "processing",
+        "upload"
+      ],
+      "choice_keywords": [
+        "transcod",
+        "encod",
+        "dag",
+        "segment",
+        "pipeline",
+        "worker",
+        "queue"
+      ],
+      "tips": {
+        "nudge": "A 3-hour 4K upload must be watchable in many resolutions within minutes. How do you split the work?",
+        "hint": "Add a part for the pipeline: compare inline transcoding, one job per video and segment-level fan-out.",
+        "show": "Part 'Transcoding pipeline': resumable upload to object storage → DAG orchestrator splits into segments → segment × rendition tasks on a queue → stateless workers → package manifests → publish."
+      }
+    },
+    {
+      "id": "part-delivery",
+      "type": "part",
+      "label": "Getting bytes to viewers designed as its own part",
+      "keywords": [
+        "cdn",
+        "deliver",
+        "adaptive",
+        "bitrate",
+        "abr",
+        "playback",
+        "stream"
+      ],
+      "choice_keywords": [
+        "cdn",
+        "adaptive",
+        "abr",
+        "hls",
+        "dash",
+        "bitrate",
+        "origin",
+        "edge"
+      ],
+      "tips": {
+        "nudge": "~80 Tbps, viewers from 2G phones to 4K TVs. Where do bytes come from, and in what shape?",
+        "hint": "Add a part for delivery: compare origin streaming, single-bitrate CDN and adaptive bitrate segments on a CDN.",
+        "show": "Part 'Delivery': HLS/DASH 2–6 s segments in a bitrate ladder, from CDN edges with an origin shield; the player switches rendition per segment."
+      }
+    },
+    {
+      "id": "part-metadata-search",
+      "type": "part",
+      "label": "Metadata and search designed as their own part",
+      "keywords": [
+        "search",
+        "metadata",
+        "catalog",
+        "discovery"
+      ],
+      "tips": {
+        "nudge": "Watch pages need metadata at ~100k reads/s and users type queries. Same store for both?",
+        "hint": "Add a part for metadata and search: compare one SQL DB, a cached sharded DB plus a search index, and a single NoSQL store.",
+        "show": "Part 'Metadata and search': SQL sharded by video_id with a read-through cache; Elasticsearch fed by metadata-change events."
+      }
+    },
+    {
+      "id": "part-views",
+      "type": "part",
+      "label": "View counting designed as its own part",
+      "keywords": [
+        "view count",
+        "views",
+        "counting",
+        "count",
+        "analytics"
+      ],
+      "tips": {
+        "nudge": "A viral video gets 20,000 views a second. What happens to its counter row?",
+        "hint": "Add a part for counting: compare incrementing per view, Redis INCR and aggregating events in windows.",
+        "show": "Part 'View counting': view events to Kafka by video_id; windowed workers dedupe and filter bots, then write batched increments."
+      }
+    },
+    {
+      "id": "comp-cdn",
+      "type": "component",
+      "label": "Bytes served close to viewers",
+      "kinds": [
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Can a few data centres push ~80 Tbps with a fast start in every country?",
+        "hint": "Put something between players and the origin that is near the viewer.",
+        "show": "A CDN with edges worldwide and an origin shield; segments and manifests are cached there."
+      }
+    },
+    {
+      "id": "comp-workers",
+      "type": "component",
+      "label": "Scalable processing capacity",
+      "kinds": [
+        "worker"
+      ],
+      "keywords": [
+        "transcod",
+        "encod",
+        "ffmpeg",
+        "convert"
+      ],
+      "tips": {
+        "nudge": "Who does ~300k cores' worth of work every day?",
+        "hint": "Add a fleet that processes uploads independently of the request path.",
+        "show": "Stateless transcode workers (ffmpeg) pulling segment × rendition tasks; preemptible capacity."
+      }
+    },
+    {
+      "id": "comp-object-store",
+      "type": "component",
+      "label": "A home for video files",
+      "kinds": [
+        "blob"
+      ],
+      "tips": {
+        "nudge": "Petabytes a year of immutable files. Database or something else?",
+        "hint": "Pick a store built for large immutable objects.",
+        "show": "Object storage for originals and for encoded segments/manifests (the CDN origin)."
+      }
+    },
+    {
+      "id": "edge-pipeline-queue",
+      "type": "edge",
+      "label": "Heavy processing decoupled from the upload request",
+      "from_kinds": [
+        "service",
+        "scheduler"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
+      "tips": {
+        "nudge": "Should the upload request wait while the video is encoded?",
+        "hint": "Connect the upload/orchestration side to something asynchronous that workers consume.",
+        "show": "Orchestrator → encode task queue → transcode workers (the upload returns as soon as the original is stored)."
+      }
+    },
+    {
+      "id": "dd-ladder",
+      "type": "decision",
+      "label": "Which encodings to produce decided",
+      "keywords": [
+        "ladder",
+        "codec",
+        "h.264",
+        "h264",
+        "av1",
+        "vp9",
+        "rendition",
+        "per-title",
+        "resolution"
+      ],
+      "choice_keywords": [
+        "codec",
+        "ladder",
+        "av1",
+        "vp9",
+        "h.264",
+        "h264",
+        "hevc",
+        "resolution"
+      ],
+      "tips": {
+        "nudge": "Which resolutions and codecs do you produce, and is it the same for every video?",
+        "hint": "Compare a fixed H.264 ladder with per-title ladders and newer codecs for some videos.",
+        "show": "Per-title ladder in H.264 for everything; VP9/AV1 only for videos past a popularity threshold, where the egress savings pay for the encode."
+      }
+    },
+    {
+      "id": "dd-popularity",
+      "type": "decision",
+      "label": "Popular vs rarely watched content handled",
+      "keywords": [
+        "long tail",
+        "long-tail",
+        "popular",
+        "cold",
+        "tier",
+        "pre-warm",
+        "prewarm"
+      ],
+      "choice_keywords": [
+        "tier",
+        "cold",
+        "pre-warm",
+        "prewarm",
+        "shield",
+        "long tail",
+        "long-tail",
+        "storage class"
+      ],
+      "tips": {
+        "nudge": "Most views go to few videos, most bytes stored belong to videos nobody watches. Does that change anything?",
+        "hint": "Think about caching, pre-warming and storage classes by popularity.",
+        "show": "Pre-warm the CDN for expected hits, origin shield for the long tail, move cold renditions to cheaper storage after ~90 days without views."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "label": "Bottlenecks and costs named",
+      "key": "bottlenecks",
+      "tips": {
+        "nudge": "What is the most expensive thing in this system, and what saturates first during an upload spike?",
+        "hint": "Walk the upload and playback paths and name what limits each.",
+        "show": "CDN egress and hit ratio; transcode capacity under spikes; hot metadata for viral videos; the orchestrator's state store."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "label": "Operability covered",
+      "key": "monitoring",
+      "tips": {
+        "nudge": "How would you know viewers in one country are buffering?",
+        "hint": "List player-side and pipeline-side metrics.",
+        "show": "Video start time and rebuffer ratio (player telemetry), CDN hit ratio per PoP, upload-to-publish latency, transcode queue depth, index and view-count lag."
+      }
+    }
+  ]
+}

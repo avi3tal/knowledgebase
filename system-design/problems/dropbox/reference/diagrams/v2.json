@@ -1,0 +1,98 @@
+{
+  "version": 2,
+  "why": "Compose P1 and P2 (F1, F3, N1, N3): bytes move as 4 MB content-addressed chunks straight to the block store via presigned URLs; only missing hashes are sent. Metadata lives in SQL sharded by namespace with an append-only journal that gives versions. Flaw left: other devices still poll, and two devices can overwrite each other.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Desktop / mobile client (watcher, chunker, local DB)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "meta",
+      "kind": "service",
+      "label": "Metadata / sync service ×N",
+      "x": 450,
+      "y": 240
+    },
+    {
+      "id": "edge",
+      "kind": "cdn",
+      "label": "Storage edge (presigned chunk PUT / GET)",
+      "x": 250,
+      "y": 420
+    },
+    {
+      "id": "blob",
+      "kind": "blob",
+      "label": "Block store: 4 MB chunks by SHA-256",
+      "x": 450,
+      "y": 420
+    },
+    {
+      "id": "mdb",
+      "kind": "sql",
+      "label": "Metadata DB (sharded by namespace): journal, versions, block index",
+      "x": 700,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "check hashes / commit / list changes"
+    },
+    {
+      "from": "lb",
+      "to": "meta"
+    },
+    {
+      "from": "meta",
+      "to": "mdb",
+      "label": "missing hashes? commit file version"
+    },
+    {
+      "from": "client",
+      "to": "edge",
+      "label": "PUT missing chunks (presigned, resumable)"
+    },
+    {
+      "from": "edge",
+      "to": "blob",
+      "label": "store chunk by hash"
+    },
+    {
+      "from": "meta",
+      "to": "blob",
+      "label": "verify chunks landed"
+    }
+  ],
+  "flows": [
+    {
+      "name": "upload",
+      "path": [
+        "client",
+        "lb",
+        "meta",
+        "mdb"
+      ]
+    },
+    {
+      "name": "chunk bytes",
+      "path": [
+        "client",
+        "edge",
+        "blob"
+      ]
+    }
+  ]
+}

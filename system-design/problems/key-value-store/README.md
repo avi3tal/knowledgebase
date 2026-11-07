@@ -19,9 +19,11 @@ delete it), but the data is far too big for one machine and the machines fail al
 - Capacity grows ~50% a year; adding servers must not require downtime.
 
 ## Your job
-Work through the stages in the console: scope → estimates → API & data → high-level design
-(evolve it: v1 → v2 → v3) → deep dives with trade-offs → wrap-up. Use the checklist on the right
-and ask for tips when stuck: nudge first, then hint, and *show* only as a last resort.
+Work through the console's stages: scope → estimates → API & data → **decompose** into parts
+(placement, copies, conflicts, failures, the on-disk engine…). Solve each part on its own: options,
+choice and a small diagram. Then **reduce** them into one high-level design (v1 → v2 → …), followed
+by deep dives and wrap-up. Use the checklist and ask for tips when stuck: nudge first, then hint,
+and *show* only as a last resort.
 
 ## Things worth deciding (no answers here)
 - Which servers own a given key, and how much data moves when you add a server?
@@ -29,3 +31,4 @@ and ask for tips when stuck: nudge first, then hint, and *show* only as a last r
 - Two clients write the same key on different sides of a network split. What does a later read
   return?
 - How does the cluster notice a dead server, and how does a replica that missed writes catch up?
+- What does one server do with a write between receiving it and acknowledging it?

@@ -1,0 +1,652 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Creators upload videos (up to hours long, many GB); uploads resume after a dropped connection."
+      },
+      {
+        "id": "F2",
+        "text": "Uploads are transcoded into several resolutions and formats, with thumbnails, and then published."
+      },
+      {
+        "id": "F3",
+        "text": "Viewers stream videos on any device and network; quality adapts to bandwidth."
+      },
+      {
+        "id": "F4",
+        "text": "Watch page shows title, description, channel, thumbnails and view counts."
+      },
+      {
+        "id": "F5",
+        "text": "Search videos by title, tags and channel."
+      },
+      {
+        "id": "F6",
+        "text": "Count views (approximate, near real time)."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Playback starts in < 2 s and rarely rebuffers, worldwide."
+      },
+      {
+        "id": "N2",
+        "text": "Highly available viewing (99.99%); a few minutes to publish and seconds of search lag are fine."
+      },
+      {
+        "id": "N3",
+        "text": "Durable: an uploaded original is never lost."
+      },
+      {
+        "id": "N4",
+        "text": "Cost-efficient: egress (~80 Tbps) and storage dominate the bill."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "800M DAU × 5 views = 4B views/day, ~10 min average watch at ~3 Mbps average bitrate."
+      },
+      {
+        "id": "A2",
+        "text": "500 hours uploaded per minute; ~3 GB stored per video-hour across all renditions plus the original."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Recommendations, comments, live streaming, ads, copyright matching."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/uploads",
+      "request": "title, size, content_type",
+      "response": "201 {upload_id, upload_url}",
+      "notes": "Starts a resumable upload session."
+    },
+    {
+      "id": "E2",
+      "method": "PUT",
+      "path": "/uploads/{upload_id}",
+      "request": "Content-Range: bytes a-b/total + chunk",
+      "response": "308 {received up to} | 200 {video_id}",
+      "notes": "Resume by asking how much arrived and sending the rest."
+    },
+    {
+      "id": "E3",
+      "method": "GET",
+      "path": "/videos/{video_id}",
+      "request": "",
+      "response": "200 {title, channel, views, manifest_url, thumbnails}",
+      "notes": "Watch page metadata, cached."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "<cdn>/{video_id}/master.m3u8 and /{rendition}/{seg}.ts",
+      "request": "",
+      "response": "manifest / segment bytes",
+      "notes": "Served by CDN edges; the player picks the rendition per segment."
+    },
+    {
+      "id": "E5",
+      "method": "GET",
+      "path": "/search?q=",
+      "request": "",
+      "response": "200 {videos[]}",
+      "notes": "Search index."
+    },
+    {
+      "id": "E6",
+      "method": "POST",
+      "path": "/videos/{video_id}/view",
+      "request": "viewer_id/session, position",
+      "response": "204",
+      "notes": "Fire-and-forget view heartbeat."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "videos",
+      "fields": "video_id (PK), channel_id, title, description, tags, status (uploading/processing/ready), renditions[], manifest_url, duration, created_at",
+      "store": "sql",
+      "why": "Sharded by video_id; read via cache."
+    },
+    {
+      "id": "D2",
+      "name": "media objects",
+      "fields": "{video_id}/{rendition}/{segment}.ts, manifests, thumbnails, original",
+      "store": "blob",
+      "why": "Immutable objects; origin for the CDN."
+    },
+    {
+      "id": "D3",
+      "name": "view_counts",
+      "fields": "video_id, count, updated_at",
+      "store": "nosql",
+      "why": "Written in batches by aggregators; read with the watch page."
+    },
+    {
+      "id": "D4",
+      "name": "search docs",
+      "fields": "video_id, title, tags, channel, popularity",
+      "store": "search",
+      "why": "Inverted index fed by change events."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Upload and transcoding pipeline",
+      "covers": [
+        "F1",
+        "F2",
+        "N3"
+      ],
+      "problem": "Accept ~500 hours of video per minute (720k hours a day), files up to hours long and many GB, and turn each into a ladder of resolutions and formats within minutes, surviving worker crashes.",
+      "options": [
+        {
+          "name": "transcode inside the upload request",
+          "pros": "simple",
+          "cons": "an hour-long video holds a connection for hours; a crash loses everything; no scaling"
+        },
+        {
+          "name": "one job per video on one worker, renditions in sequence",
+          "pros": "simple queue",
+          "cons": "a 3-hour 4K video takes many hours; a crash restarts the whole job; workers sized for the biggest file"
+        },
+        {
+          "name": "split into GOP-aligned segments; a DAG orchestrator fans out segment × rendition tasks over a queue to stateless workers, then packages",
+          "pros": "minutes of latency regardless of length; retry a 10 s segment, not a video; cheap preemptible workers",
+          "cons": "an orchestrator to run; segment boundaries and stitching must be exact"
+        }
+      ],
+      "choice": "Resumable chunked upload to object storage, then a per-video DAG: split → encode (segment × rendition, in parallel) → package (HLS/DASH manifests) + thumbnails → publish",
+      "why": "720k hours a day at ~10 core-hours per video-hour is ~300k cores, so the work must be fine-grained and retryable on cheap capacity. Segment-level tasks make publishing time roughly independent of length, and a crash costs one segment. The original is stored durably before anything else (N3).",
+      "technologies": [
+        "object-storage",
+        "kafka"
+      ],
+      "patterns": [
+        "fan-out",
+        "retries-dlq",
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Viewer / creator app (ABR player)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / load balancer",
+            "x": 240,
+            "y": 140
+          },
+          {
+            "id": "upload",
+            "kind": "service",
+            "label": "Upload service (resumable)",
+            "x": 430,
+            "y": 300
+          },
+          {
+            "id": "raw",
+            "kind": "blob",
+            "label": "Raw uploads (object storage)",
+            "x": 620,
+            "y": 290
+          },
+          {
+            "id": "orch",
+            "kind": "scheduler",
+            "label": "Pipeline orchestrator (DAG per video)",
+            "x": 620,
+            "y": 380
+          },
+          {
+            "id": "tasks",
+            "kind": "queue",
+            "label": "Encode tasks (segment × rendition)",
+            "x": 800,
+            "y": 380
+          },
+          {
+            "id": "workers",
+            "kind": "worker",
+            "label": "Transcode workers ×N (ffmpeg)",
+            "x": 960,
+            "y": 380
+          },
+          {
+            "id": "media",
+            "kind": "blob",
+            "label": "Encoded segments + manifests (origin)",
+            "x": 620,
+            "y": 470
+          },
+          {
+            "id": "vmeta",
+            "kind": "sql",
+            "label": "Video metadata (sharded by video_id)",
+            "x": 800,
+            "y": 60
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "upload / watch page"
+          },
+          {
+            "from": "lb",
+            "to": "upload",
+            "label": "resumable upload (chunks)"
+          },
+          {
+            "from": "upload",
+            "to": "raw",
+            "label": "write original"
+          },
+          {
+            "from": "upload",
+            "to": "orch",
+            "label": "upload complete"
+          },
+          {
+            "from": "orch",
+            "to": "tasks",
+            "label": "fan out segment × rendition"
+          },
+          {
+            "from": "tasks",
+            "to": "workers"
+          },
+          {
+            "from": "workers",
+            "to": "raw",
+            "label": "read segment"
+          },
+          {
+            "from": "workers",
+            "to": "media",
+            "label": "write encoded segments + manifest"
+          },
+          {
+            "from": "orch",
+            "to": "vmeta",
+            "label": "status = ready, renditions"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Storage and CDN delivery with adaptive bitrate",
+      "covers": [
+        "F3",
+        "N1",
+        "N4"
+      ],
+      "problem": "Serve ~28M concurrent streams (~80 Tbps) worldwide with playback starting in under 2 s and few stalls, on networks from 2G phones to fibre TVs.",
+      "options": [
+        {
+          "name": "progressive MP4 from our own origin servers",
+          "pros": "simple",
+          "cons": "80 Tbps from a few data centres is impossible; far-away viewers stall"
+        },
+        {
+          "name": "one bitrate per video through a CDN",
+          "pros": "edge caching",
+          "cons": "too big for phones on weak networks, too blurry for TVs; stalls when bandwidth drops"
+        },
+        {
+          "name": "HLS/DASH: 2–6 s segments in a bitrate ladder, served from CDN edges with an origin shield; the player picks the rendition per segment",
+          "pros": "starts low and climbs; adapts to every bandwidth change; segments are perfect cache objects",
+          "cons": "many renditions to store; manifests and cache keys to manage"
+        }
+      ],
+      "choice": "Adaptive bitrate streaming (HLS/DASH segments, 240p–4K ladder) from CDN edges with an origin shield in front of object storage",
+      "why": "Egress dominates cost and latency. CDN edges near viewers absorb ~95%+ of bytes because views are heavily skewed to popular videos. Small immutable segments cache well, and ABR lets the player start at a low rendition (fast start, N1) and switch per segment when bandwidth changes.",
+      "technologies": [
+        "object-storage"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Viewer / creator app (ABR player)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN edge (segments + manifests)",
+            "x": 240,
+            "y": 400
+          },
+          {
+            "id": "media",
+            "kind": "blob",
+            "label": "Encoded segments + manifests (origin)",
+            "x": 620,
+            "y": 470
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "GET manifest + segments (ABR)"
+          },
+          {
+            "from": "cdn",
+            "to": "media",
+            "label": "origin pull on miss"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Video metadata and search",
+      "covers": [
+        "F4",
+        "F5",
+        "N2"
+      ],
+      "problem": "Serve the watch page's metadata at ~100k reads/s (peak) and let users search billions of videos by title, tags and channel, while edits and new uploads show up within a minute.",
+      "options": [
+        {
+          "name": "one SQL database for metadata, LIKE queries for search",
+          "pros": "simple, consistent",
+          "cons": "billions of rows and 100k reads/s overload one primary; LIKE can't rank or tokenize"
+        },
+        {
+          "name": "SQL sharded by video_id behind a read-through cache; search in a separate inverted index fed by change events",
+          "pros": "cache absorbs the read skew; the index ranks, tokenizes, handles typos",
+          "cons": "the index lags writes by seconds; two systems to keep in sync"
+        },
+        {
+          "name": "one NoSQL store with secondary indexes for search",
+          "pros": "one system",
+          "cons": "weak relevance ranking and text analysis"
+        }
+      ],
+      "choice": "Metadata in SQL sharded by video_id with a Redis read-through cache; search in Elasticsearch, updated by an indexer consuming metadata-change events",
+      "why": "Reads vastly outnumber edits and concentrate on popular videos, so a cache carries most of them. Full-text relevance needs an inverted index; feeding it from events keeps the write path fast and a few seconds of search lag is acceptable (N2).",
+      "technologies": [
+        "redis",
+        "postgresql",
+        "elasticsearch",
+        "kafka"
+      ],
+      "patterns": [
+        "cqrs",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / load balancer",
+            "x": 240,
+            "y": 140
+          },
+          {
+            "id": "api",
+            "kind": "service",
+            "label": "Video API (watch page, metadata, search)",
+            "x": 430,
+            "y": 140
+          },
+          {
+            "id": "cache",
+            "kind": "cache",
+            "label": "Metadata cache (Redis)",
+            "x": 620,
+            "y": 60
+          },
+          {
+            "id": "vmeta",
+            "kind": "sql",
+            "label": "Video metadata (sharded by video_id)",
+            "x": 800,
+            "y": 60
+          },
+          {
+            "id": "events",
+            "kind": "stream",
+            "label": "View + metadata events (Kafka)",
+            "x": 620,
+            "y": 200
+          },
+          {
+            "id": "indexer",
+            "kind": "worker",
+            "label": "Search indexer",
+            "x": 800,
+            "y": 140
+          },
+          {
+            "id": "search",
+            "kind": "search",
+            "label": "Search index (Elasticsearch)",
+            "x": 960,
+            "y": 60
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "api"
+          },
+          {
+            "from": "api",
+            "to": "cache",
+            "label": "video metadata (read-through)"
+          },
+          {
+            "from": "api",
+            "to": "vmeta",
+            "label": "cache miss / edits"
+          },
+          {
+            "from": "api",
+            "to": "search",
+            "label": "search query"
+          },
+          {
+            "from": "api",
+            "to": "events",
+            "label": "view + metadata-change events"
+          },
+          {
+            "from": "events",
+            "to": "indexer"
+          },
+          {
+            "from": "indexer",
+            "to": "search",
+            "label": "index title, tags, channel"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Counting views",
+      "covers": [
+        "F6"
+      ],
+      "problem": "Count ~46k views/s (peak ~90k), with a viral video taking a large share, filtering bots and repeats, and show near-real-time counts without slowing playback.",
+      "options": [
+        {
+          "name": "UPDATE videos SET views = views + 1 per view",
+          "pros": "exact, simple",
+          "cons": "a write per view on the metadata DB; a viral video's row becomes a hot lock"
+        },
+        {
+          "name": "Redis INCR per view",
+          "pros": "fast",
+          "cons": "still a hot key per viral video; no dedup or bot filtering; durability on failover"
+        },
+        {
+          "name": "view events to a stream; windowed aggregation workers dedupe and filter, then write batched increments every few seconds",
+          "pros": "cheap, durable, absorbs spikes; fraud filtering fits naturally",
+          "cons": "counts lag by seconds to minutes"
+        }
+      ],
+      "choice": "View events to Kafka partitioned by video_id; aggregation workers dedupe (viewer, video, window), drop bots and write batched increments to view_counts",
+      "why": "Displayed counts may lag (F6 says approximate), so batching turns 46k writes/s into a few thousand. Partitioning by video_id makes each worker own its videos' counters in memory, which removes contention on viral videos.",
+      "technologies": [
+        "kafka",
+        "flink",
+        "cassandra"
+      ],
+      "patterns": [
+        "pre-aggregation",
+        "hot-keys",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Viewer / creator app (ABR player)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / load balancer",
+            "x": 240,
+            "y": 140
+          },
+          {
+            "id": "api",
+            "kind": "service",
+            "label": "Video API (watch page, metadata, search)",
+            "x": 430,
+            "y": 140
+          },
+          {
+            "id": "events",
+            "kind": "stream",
+            "label": "View + metadata events (Kafka)",
+            "x": 620,
+            "y": 200
+          },
+          {
+            "id": "counter",
+            "kind": "worker",
+            "label": "View counter (windowed, deduped)",
+            "x": 800,
+            "y": 240
+          },
+          {
+            "id": "views",
+            "kind": "nosql",
+            "label": "view_counts",
+            "x": 960,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "view heartbeat"
+          },
+          {
+            "from": "lb",
+            "to": "api"
+          },
+          {
+            "from": "api",
+            "to": "events",
+            "label": "view event"
+          },
+          {
+            "from": "events",
+            "to": "counter"
+          },
+          {
+            "from": "counter",
+            "to": "views",
+            "label": "batched increments"
+          }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Bitrate ladder and codecs",
+      "options": [
+        {
+          "name": "fixed ladder, H.264 only",
+          "pros": "plays everywhere; cheap to encode",
+          "cons": "the largest files: more egress per view"
+        },
+        {
+          "name": "per-title ladder; H.264 for all, plus VP9/AV1 for popular videos",
+          "pros": "30–50% fewer bytes where most views happen",
+          "cons": "extra encode compute; more renditions to store"
+        }
+      ],
+      "choice": "Per-title ladder with H.264 for every video; re-encode to VP9/AV1 once a video crosses a popularity threshold",
+      "why": "Egress (~80 Tbps) costs far more than compute, but only a small fraction of videos gets most views, so spending expensive encodes only on those buys most of the savings.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "Popular vs long-tail content",
+      "options": [
+        {
+          "name": "treat every video the same: all renditions on hot storage, CDN pull on demand",
+          "pros": "simple",
+          "cons": "pays hot-storage prices for petabytes nobody watches; first viewers of a launch all miss"
+        },
+        {
+          "name": "tier by popularity: pre-warm edges for expected hits, origin shield for the long tail, move cold renditions to cheaper storage and drop rarely used high renditions",
+          "pros": "matches cost to demand",
+          "cons": "tiering jobs and on-demand re-encode for rare requests"
+        }
+      ],
+      "choice": "Popularity tiers: pre-warm CDN for big launches, origin shield for the long tail, cold renditions to infrequent-access storage after 90 days without views",
+      "why": "Storage grows by ~2 PB a day and most of it is rarely watched after the first weeks; tiering keeps N4 under control without hurting the popular videos that drive N1.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "CDN egress and cache-hit ratio (cost and start time), transcode capacity during upload spikes (queue depth, preemptible workers), hot metadata rows for viral videos (cache), the orchestrator's state store.",
+    "failures": "Worker crash: the segment task is retried (idempotent by output key). Orchestrator restart: resumes the DAG from persisted state. CDN PoP down: DNS/anycast steers to the next PoP. Metadata shard down: cached pages keep serving. Stream down: view counts lag, playback is unaffected.",
+    "monitoring": "Video start time and rebuffer ratio from player telemetry, CDN hit ratio and egress per PoP, upload success rate, upload-to-publish latency, transcode queue depth and task retries, search index lag, view-count lag.",
+    "scale": "Add transcode workers (stateless, preemptible), more CDN capacity and PoPs, metadata shards by video_id, partitions on the events stream.",
+    "future": "Live streaming (low-latency HLS), recommendations, per-device codec negotiation, edge-side ad insertion."
+  }
+}

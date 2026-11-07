@@ -2,22 +2,52 @@
   "version": 1,
   "scope": {
     "functional": [
-      { "id": "F1", "text": "put(key, value), get(key), delete(key); keys ≤ 256 B, values ≤ 1 MB (avg ~1 KB)." },
-      { "id": "F2", "text": "Per-request consistency knobs: callers can ask for quorum reads/writes or fastest-possible." },
-      { "id": "F3", "text": "Add or remove servers without downtime." }
+      {
+        "id": "F1",
+        "text": "put(key, value), get(key), delete(key); keys ≤ 256 B, values ≤ 1 MB (avg ~1 KB)."
+      },
+      {
+        "id": "F2",
+        "text": "Per-request consistency knobs: callers can ask for quorum reads/writes or fastest-possible."
+      },
+      {
+        "id": "F3",
+        "text": "Add or remove servers without downtime."
+      }
     ],
     "non_functional": [
-      { "id": "N1", "text": "Highly available: writes are never refused because of node failures or a network partition (AP by default)." },
-      { "id": "N2", "text": "Eventually consistent by default; concurrent writes are surfaced as conflicts, not silently lost; tunable per request." },
-      { "id": "N3", "text": "p99 latency < 10 ms for get and put at 1M reads/s and 200k writes/s." },
-      { "id": "N4", "text": "Durable: data survives the loss of any single node or one availability zone." }
+      {
+        "id": "N1",
+        "text": "Highly available: writes are never refused because of node failures or a network partition (AP by default)."
+      },
+      {
+        "id": "N2",
+        "text": "Eventually consistent by default; concurrent writes are surfaced as conflicts, not silently lost; tunable per request."
+      },
+      {
+        "id": "N3",
+        "text": "p99 latency < 10 ms for get and put at 1M reads/s and 200k writes/s."
+      },
+      {
+        "id": "N4",
+        "text": "Durable: data survives the loss of any single node or one availability zone."
+      }
     ],
     "assumptions": [
-      { "id": "A1", "text": "20B keys × ~1.2 KB per entry incl. key and metadata; 4 TB disk per server, kept ≤ 50% full." },
-      { "id": "A2", "text": "One region, 3 AZs; some node fails every week." }
+      {
+        "id": "A1",
+        "text": "20B keys × ~1.2 KB per entry incl. key and metadata; 4 TB disk per server, kept ≤ 50% full."
+      },
+      {
+        "id": "A2",
+        "text": "One region, 3 AZs; some node fails every week."
+      }
     ],
     "out_of_scope": [
-      { "id": "O1", "text": "Range scans, secondary indexes, multi-key transactions, cross-region replication." }
+      {
+        "id": "O1",
+        "text": "Range scans, secondary indexes, multi-key transactions, cross-region replication."
+      }
     ]
   },
   "api": [
@@ -43,7 +73,7 @@
       "path": "/kv/{key}",
       "request": "context",
       "response": "204",
-      "notes": "Writes a tombstone (garbage-collected after repair windows)."
+      "notes": "Writes a tombstone (garbage-collected after the repair window)."
     }
   ],
   "data": [
@@ -62,53 +92,556 @@
       "why": "Small; held in memory on every node and spread by gossip."
     }
   ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Partitioning: which nodes own a key",
+      "covers": [
+        "F1",
+        "F3",
+        "N3"
+      ],
+      "problem": "Spread 72 TB and 2.6M replica ops/s over ~40 nodes so that adding a node (≈20 a year) moves little data and doesn't overload one peer.",
+      "options": [
+        {
+          "name": "hash(key) mod N",
+          "pros": "trivial, no metadata",
+          "cons": "changing N remaps almost every key: a full reshuffle on each growth step"
+        },
+        {
+          "name": "range partitioning with a split manager",
+          "pros": "range scans; splits follow load",
+          "cons": "hot ranges on sequential keys; needs a central split/merge manager, and scans are out of scope"
+        },
+        {
+          "name": "consistent hashing with virtual nodes",
+          "pros": "adding a node moves ~1/N of keys, taken from many peers in parallel; more vnodes for bigger machines",
+          "cons": "a ring map every node must agree on; no range scans"
+        }
+      ],
+      "choice": "Consistent hashing with ~256 virtual nodes per server",
+      "why": "F3 and 50% growth a year: a new node takes small slices from ~40 peers, so rebalancing moves ~1/N of 72 TB and the streaming load is spread, not concentrated on one neighbour. Scans are out of scope, so we lose nothing by hashing.",
+      "technologies": [
+        "cassandra",
+        "dynamodb"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Service (ring-aware client library)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "coord",
+            "kind": "coordinator",
+            "label": "Request coordinator (any node: N=3, R=2, W=2)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "gossip",
+            "kind": "coordinator",
+            "label": "Gossip membership + ring map (vnodes)",
+            "x": 250,
+            "y": 60
+          },
+          {
+            "id": "nodeA",
+            "kind": "nosql",
+            "label": "Node A (AZ1) replica",
+            "x": 470,
+            "y": 120
+          },
+          {
+            "id": "nodeB",
+            "kind": "nosql",
+            "label": "Node B (AZ2) replica",
+            "x": 470,
+            "y": 240
+          },
+          {
+            "id": "nodeC",
+            "kind": "nosql",
+            "label": "Node C (AZ3) replica (down)",
+            "x": 470,
+            "y": 360
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "coord",
+            "label": "get / put"
+          },
+          {
+            "from": "coord",
+            "to": "gossip",
+            "label": "ring map: token → node"
+          },
+          {
+            "from": "coord",
+            "to": "nodeA",
+            "label": "owner of hash(key)"
+          },
+          {
+            "from": "coord",
+            "to": "nodeB"
+          },
+          {
+            "from": "coord",
+            "to": "nodeC"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Replication and quorums",
+      "covers": [
+        "F2",
+        "N1",
+        "N4"
+      ],
+      "problem": "Keep every key alive through a node or AZ loss, never refuse a write, and still let callers ask for fresher reads.",
+      "options": [
+        {
+          "name": "single leader per partition (Raft/Paxos group)",
+          "pros": "simple strong consistency",
+          "cons": "writes stall during leader election; a partition that isolates the leader refuses writes (breaks N1)"
+        },
+        {
+          "name": "leaderless, N=3, strict quorum",
+          "pros": "no failover; R + W > N gives overlapping reads",
+          "cons": "a write fails when 2 of its 3 owners are unreachable"
+        },
+        {
+          "name": "leaderless, N=3, sloppy quorum + hinted handoff",
+          "pros": "a write always finds W healthy nodes, even mid-partition",
+          "cons": "a read may briefly miss a write that sits as a hint on a stand-in node"
+        }
+      ],
+      "choice": "Leaderless, N=3 (one replica per AZ), W=2, R=2 by default, with a sloppy quorum",
+      "why": "N1 forbids refusing writes and N4 needs a copy in each AZ. R + W > N (2 + 2 > 3) gives read-your-writes in the normal case; callers who need speed choose W=1/R=1, callers who need freshness choose R=3.",
+      "technologies": [
+        "cassandra"
+      ],
+      "patterns": [
+        "retries-dlq"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Service (ring-aware client library)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "coord",
+            "kind": "coordinator",
+            "label": "Request coordinator (any node: N=3, R=2, W=2)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "nodeA",
+            "kind": "nosql",
+            "label": "Node A (AZ1) replica",
+            "x": 470,
+            "y": 120
+          },
+          {
+            "id": "nodeB",
+            "kind": "nosql",
+            "label": "Node B (AZ2) replica",
+            "x": 470,
+            "y": 240
+          },
+          {
+            "id": "nodeC",
+            "kind": "nosql",
+            "label": "Node C (AZ3) replica (down)",
+            "x": 470,
+            "y": 360
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "coord",
+            "label": "put (w=2)"
+          },
+          {
+            "from": "coord",
+            "to": "nodeA",
+            "label": "replica 1"
+          },
+          {
+            "from": "coord",
+            "to": "nodeB",
+            "label": "replica 2"
+          },
+          {
+            "from": "coord",
+            "to": "nodeC",
+            "label": "replica 3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Conflict resolution for concurrent writes",
+      "covers": [
+        "N2"
+      ],
+      "problem": "With leaderless writes, two sides of a split can both accept a put to the same cart. A later read must neither lose one silently nor pick at random.",
+      "options": [
+        {
+          "name": "last-write-wins on wall-clock timestamps",
+          "pros": "one value, no client work",
+          "cons": "clock skew silently drops a write: a lost cart item"
+        },
+        {
+          "name": "version vectors, siblings returned to the client",
+          "pros": "detects true concurrency; nothing is lost; the app merges",
+          "cons": "clients must merge; vectors grow (prune old entries)"
+        },
+        {
+          "name": "CRDT values (sets, counters, maps)",
+          "pros": "replicas merge automatically",
+          "cons": "only for the data types you implement; heavier metadata"
+        }
+      ],
+      "choice": "Version vectors with siblings returned to the client; LWW as an opt-in per table",
+      "why": "N2 and the cart team's request: detect concurrency instead of guessing. A put carries the context of the read it was based on, so the store can tell an overwrite (descendant) from a concurrent write (sibling). Teams that don't care opt into LWW.",
+      "technologies": [
+        "dynamodb"
+      ],
+      "patterns": [
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Service (ring-aware client library)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "coord",
+            "kind": "coordinator",
+            "label": "Request coordinator (any node: N=3, R=2, W=2)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "nodeA",
+            "kind": "nosql",
+            "label": "Node A (AZ1) replica",
+            "x": 470,
+            "y": 120
+          },
+          {
+            "id": "nodeB",
+            "kind": "nosql",
+            "label": "Node B (AZ2) replica",
+            "x": 470,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "coord",
+            "label": "get → siblings + context; merge; put(context)"
+          },
+          {
+            "from": "coord",
+            "to": "nodeA",
+            "label": "write with version vector [A:3, B:1]"
+          },
+          {
+            "from": "coord",
+            "to": "nodeB",
+            "label": "write with version vector [A:2, B:2]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Failure detection and repair",
+      "covers": [
+        "N1",
+        "N4",
+        "F3"
+      ],
+      "problem": "Some node is down every week. The cluster must notice it, keep accepting its writes, and bring it (or its replacement) back in sync.",
+      "options": [
+        {
+          "name": "central heartbeat monitor",
+          "pros": "one simple view of the cluster",
+          "cons": "a single point of failure; the monitor's own partition causes false alarms"
+        },
+        {
+          "name": "gossip + phi-accrual failure detector, then hints, read repair and Merkle-tree anti-entropy",
+          "pros": "decentralised; each tool covers one time scale of drift",
+          "cons": "membership converges in seconds, not instantly; more moving parts"
+        }
+      ],
+      "choice": "Gossip membership with a phi-accrual detector; hinted handoff, read repair and Merkle-tree anti-entropy",
+      "why": "Three time scales of drift: minutes (a neighbour keeps hints and replays them), per read (repair a stale replica the read just saw), and long term (compare Merkle trees per range and stream only the keys that differ). No central monitor to fail.",
+      "technologies": [
+        "cassandra"
+      ],
+      "patterns": [
+        "retries-dlq"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "coord",
+            "kind": "coordinator",
+            "label": "Request coordinator (any node: N=3, R=2, W=2)",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "gossip",
+            "kind": "coordinator",
+            "label": "Gossip membership + ring map (vnodes)",
+            "x": 250,
+            "y": 60
+          },
+          {
+            "id": "nodeA",
+            "kind": "nosql",
+            "label": "Node A (AZ1) replica",
+            "x": 470,
+            "y": 120
+          },
+          {
+            "id": "nodeB",
+            "kind": "nosql",
+            "label": "Node B (AZ2) replica",
+            "x": 470,
+            "y": 240
+          },
+          {
+            "id": "nodeC",
+            "kind": "nosql",
+            "label": "Node C (AZ3) replica (down)",
+            "x": 470,
+            "y": 360
+          },
+          {
+            "id": "nodeD",
+            "kind": "nosql",
+            "label": "Node D (AZ3) holds hints for C",
+            "x": 470,
+            "y": 460
+          },
+          {
+            "id": "repair",
+            "kind": "worker",
+            "label": "Anti-entropy (Merkle tree compare)",
+            "x": 250,
+            "y": 420
+          }
+        ],
+        "edges": [
+          {
+            "from": "coord",
+            "to": "nodeC",
+            "label": "replica 3 (times out)"
+          },
+          {
+            "from": "coord",
+            "to": "nodeD",
+            "label": "hinted handoff for C"
+          },
+          {
+            "from": "nodeD",
+            "to": "nodeC",
+            "label": "replay hints when C returns"
+          },
+          {
+            "from": "nodeA",
+            "to": "gossip",
+            "label": "heartbeat / gossip"
+          },
+          {
+            "from": "nodeB",
+            "to": "gossip",
+            "label": "heartbeat / gossip"
+          },
+          {
+            "from": "repair",
+            "to": "nodeA",
+            "label": "compare range hashes"
+          },
+          {
+            "from": "repair",
+            "to": "nodeC",
+            "label": "stream differing keys"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P5",
+      "title": "Storage engine on each node",
+      "covers": [
+        "N3",
+        "N4"
+      ],
+      "problem": "Each node takes ~72k replica ops/s, mostly random-key writes, and must answer a point read in a few milliseconds without losing acknowledged writes on a crash.",
+      "options": [
+        {
+          "name": "B-tree (update in place)",
+          "pros": "fast point reads, mature",
+          "cons": "random writes rewrite pages: write amplification and SSD wear at our write rate"
+        },
+        {
+          "name": "LSM tree: WAL + memtable + immutable SSTables + compaction",
+          "pros": "writes are sequential appends; bloom filters keep reads to ~1 disk seek; tombstones fit naturally",
+          "cons": "compaction I/O spikes; reads may check several SSTables"
+        },
+        {
+          "name": "in-memory hash table + log",
+          "pros": "fastest reads",
+          "cons": "24 TB per replica set doesn't fit in RAM at a sane cost"
+        }
+      ],
+      "choice": "LSM tree: commit log, memtable, SSTables with bloom filters, size-tiered/leveled compaction",
+      "why": "The workload is write-heavy and point-lookup only. Sequential appends keep p99 under 10 ms at ~72k ops/s per node, fsync batching on the WAL makes acked writes durable, and bloom filters skip SSTables that can't hold the key.",
+      "technologies": [
+        "cassandra"
+      ],
+      "patterns": [
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "nodeA",
+            "kind": "nosql",
+            "label": "Node A (AZ1) replica",
+            "x": 470,
+            "y": 120
+          },
+          {
+            "id": "wal",
+            "kind": "blob",
+            "label": "Commit log (WAL, fsync batches)",
+            "x": 710,
+            "y": 40
+          },
+          {
+            "id": "memtable",
+            "kind": "cache",
+            "label": "Memtable (sorted, in RAM)",
+            "x": 710,
+            "y": 170
+          },
+          {
+            "id": "sst",
+            "kind": "nosql",
+            "label": "SSTables + bloom filters (SSD)",
+            "x": 930,
+            "y": 100
+          },
+          {
+            "id": "compaction",
+            "kind": "worker",
+            "label": "Compaction (merge, drop tombstones)",
+            "x": 930,
+            "y": 260
+          }
+        ],
+        "edges": [
+          {
+            "from": "nodeA",
+            "to": "wal",
+            "label": "1. append write"
+          },
+          {
+            "from": "nodeA",
+            "to": "memtable",
+            "label": "2. insert"
+          },
+          {
+            "from": "memtable",
+            "to": "sst",
+            "label": "flush when full (~64 MB)"
+          },
+          {
+            "from": "nodeA",
+            "to": "sst",
+            "label": "read: memtable, then bloom → SSTable"
+          },
+          {
+            "from": "compaction",
+            "to": "sst",
+            "label": "merge sorted runs"
+          }
+        ]
+      }
+    }
+  ],
   "deep_dives": [
     {
       "id": "DD1",
-      "title": "Partitioning keys across servers",
+      "title": "Deletes, tombstones and resurrection",
       "options": [
-        { "name": "hash(key) mod N", "pros": "trivial", "cons": "changing N remaps almost every key" },
-        { "name": "range partitioning", "pros": "range scans", "cons": "hot ranges, needs a split/merge manager (not needed: no scans)" },
-        { "name": "consistent hashing with virtual nodes", "pros": "adding a node moves ~1/N of keys, from many peers; vnode count handles uneven hardware", "cons": "ring metadata to keep in sync" }
+        {
+          "name": "remove the key physically on delete",
+          "pros": "no garbage left behind",
+          "cons": "a replica that missed the delete later 'repairs' the old value back to life"
+        },
+        {
+          "name": "write a tombstone, purge it after a grace period longer than the repair window",
+          "pros": "deletes replicate like writes; no resurrection",
+          "cons": "tombstones cost disk and slow reads until compaction purges them"
+        }
       ],
-      "choice": "consistent hashing with ~256 virtual nodes per server",
-      "why": "F3 and 50%/year growth: rebalancing must move little data and spread the streaming load across the cluster.",
-      "version": 2
+      "choice": "Tombstones with a 10-day grace period; anti-entropy must complete within it",
+      "why": "A delete is just another versioned write, so hints, read repair and Merkle repair spread it. Purging only after every replica has certainly seen it (repair runs at least weekly) prevents deleted carts from reappearing.",
+      "version": 4
     },
     {
       "id": "DD2",
-      "title": "Replication and quorums",
+      "title": "Hot keys",
       "options": [
-        { "name": "single leader per partition", "pros": "simple strong consistency", "cons": "writes stall during failover (breaks N1)" },
-        { "name": "leaderless, N=3, strict quorum", "pros": "R+W>N gives overlapping reads", "cons": "writes fail if 2 of 3 owners are unreachable" },
-        { "name": "leaderless, N=3, sloppy quorum + hinted handoff", "pros": "writes always find W healthy nodes", "cons": "a read may briefly miss a write held as a hint" }
+        {
+          "name": "do nothing: 3 replicas share the load",
+          "pros": "simple",
+          "cons": "one viral key pins three nodes at 100% and raises p99 for their other keys"
+        },
+        {
+          "name": "client-side cache with a short TTL for read-hot keys",
+          "pros": "absorbs reads before the cluster",
+          "cons": "stale reads for up to the TTL"
+        },
+        {
+          "name": "salt write-hot keys into k sub-keys and merge on read",
+          "pros": "spreads writes over k partitions",
+          "cons": "reads fan out k ways; the app must know"
+        }
       ],
-      "choice": "leaderless, N=3 (one replica per AZ), W=2, R=2 by default with sloppy quorum",
-      "why": "N1 says never refuse a write; N4 needs a copy per AZ. R+W>N gives read-your-writes in the common case; callers can choose W=1/R=1 for speed or R=3 for stronger reads.",
-      "version": 3
-    },
-    {
-      "id": "DD3",
-      "title": "Conflicting concurrent writes",
-      "options": [
-        { "name": "last-write-wins on timestamps", "pros": "simple, one value", "cons": "clock skew silently drops a write (a lost cart item)" },
-        { "name": "version vectors + client merge (siblings)", "pros": "nothing lost; the app decides", "cons": "clients must merge; vectors grow (prune old entries)" },
-        { "name": "CRDT values", "pros": "automatic merge", "cons": "only for supported data types" }
-      ],
-      "choice": "version vectors with siblings returned to the client; LWW as an opt-in per table",
-      "why": "N2 + the cart team's request: detect concurrency instead of guessing; teams that don't care opt into LWW.",
-      "version": 3
-    },
-    {
-      "id": "DD4",
-      "title": "Failure detection and repair",
-      "options": [
-        { "name": "central heartbeat monitor", "pros": "simple view", "cons": "itself a single point of failure" },
-        { "name": "gossip + phi-accrual failure detector", "pros": "decentralised, scales", "cons": "membership converges in seconds, not instantly" }
-      ],
-      "choice": "gossip membership; hinted handoff for short outages, read repair on reads, Merkle-tree anti-entropy for the rest",
-      "why": "Three time scales of drift: minutes (hints replay), per-read (repair on mismatch), long-term (Merkle trees compare ranges and stream only differing keys).",
-      "version": 3
+      "choice": "Client-side TTL cache for read-hot keys; salting only for known write-hot counters",
+      "why": "Per-node budgets assume uniform load (~72k ops/s each); a hot key breaks that assumption on 3 nodes. Most hotness is reads, which a 1 s cache removes cheaply.",
+      "version": 4
     }
   ],
   "wrapup": {

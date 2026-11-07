@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "why": "Compose P1 and P2 (F1, F2, N1, N2): editors hold a WebSocket routed by doc_id to the server that leases the document; it orders edits with OT and broadcasts them. Flaw left: the document lives in that server's memory and is only saved periodically, so a crash loses acknowledged edits and there is no history (N3, F3).",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Browser editor (local copy + pending ops)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "L7 load balancer (WebSocket, route by doc_id)",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "collab",
+      "kind": "service",
+      "label": "Collaboration server ×N (doc owner: OT, presence)",
+      "x": 460,
+      "y": 240
+    },
+    {
+      "id": "coord",
+      "kind": "coordinator",
+      "label": "Doc ownership leases (etcd)",
+      "x": 460,
+      "y": 60
+    },
+    {
+      "id": "docsvc",
+      "kind": "service",
+      "label": "Docs API (create, list, share, history)",
+      "x": 460,
+      "y": 420
+    },
+    {
+      "id": "meta",
+      "kind": "sql",
+      "label": "docs metadata + ACL",
+      "x": 700,
+      "y": 420
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "WebSocket ops / REST"
+    },
+    {
+      "from": "lb",
+      "to": "collab",
+      "label": "route by doc_id"
+    },
+    {
+      "from": "lb",
+      "to": "docsvc",
+      "label": "REST: create, list, share"
+    },
+    {
+      "from": "collab",
+      "to": "coord",
+      "label": "acquire / renew doc lease"
+    },
+    {
+      "from": "collab",
+      "to": "meta",
+      "label": "save full doc every 30 s"
+    },
+    {
+      "from": "docsvc",
+      "to": "meta",
+      "label": "titles, ACL"
+    }
+  ],
+  "flows": [
+    {
+      "name": "edit",
+      "path": [
+        "client",
+        "lb",
+        "collab"
+      ]
+    }
+  ]
+}

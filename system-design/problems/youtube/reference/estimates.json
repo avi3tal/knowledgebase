@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "dau",
+      "formula": "800 * million",
+      "unit": ""
+    },
+    {
+      "name": "views_per_day",
+      "formula": "dau * 5",
+      "unit": ""
+    },
+    {
+      "name": "view_qps",
+      "formula": "views_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_view_qps",
+      "formula": "view_qps * 2",
+      "unit": "/s"
+    },
+    {
+      "name": "concurrent_viewers",
+      "formula": "views_per_day * 600 / day",
+      "unit": ""
+    },
+    {
+      "name": "egress_bandwidth",
+      "formula": "concurrent_viewers * 3 / 1000",
+      "unit": "Gbps"
+    },
+    {
+      "name": "upload_hours_per_day",
+      "formula": "500 * 60 * 24",
+      "unit": ""
+    },
+    {
+      "name": "storage_per_day",
+      "formula": "upload_hours_per_day * 3 / 1000",
+      "unit": "TB"
+    },
+    {
+      "name": "storage_per_year",
+      "formula": "storage_per_day * 365 / 1000",
+      "unit": "PB"
+    },
+    {
+      "name": "transcode_cores",
+      "formula": "upload_hours_per_day * 10 / 24",
+      "unit": ""
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "version": 4,
+  "why": "Compose P4 (N1, N4): gossip tracks membership and suspects dead nodes. When C is down, D accepts its writes as hints (sloppy quorum) and replays them later; read repair and a Merkle-tree anti-entropy worker heal the remaining drift.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Service (ring-aware client library)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "coord",
+      "kind": "coordinator",
+      "label": "Request coordinator (any node: N=3, R=2, W=2)",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "gossip",
+      "kind": "coordinator",
+      "label": "Gossip membership + ring map (vnodes)",
+      "x": 250,
+      "y": 60
+    },
+    {
+      "id": "nodeA",
+      "kind": "nosql",
+      "label": "Node A (AZ1) replica",
+      "x": 470,
+      "y": 120
+    },
+    {
+      "id": "nodeB",
+      "kind": "nosql",
+      "label": "Node B (AZ2) replica",
+      "x": 470,
+      "y": 240
+    },
+    {
+      "id": "nodeC",
+      "kind": "nosql",
+      "label": "Node C (AZ3) replica (down)",
+      "x": 470,
+      "y": 360
+    },
+    {
+      "id": "nodeD",
+      "kind": "nosql",
+      "label": "Node D (AZ3) holds hints for C",
+      "x": 470,
+      "y": 460
+    },
+    {
+      "id": "repair",
+      "kind": "worker",
+      "label": "Anti-entropy (Merkle tree compare)",
+      "x": 250,
+      "y": 420
+    },
+    {
+      "id": "wal",
+      "kind": "blob",
+      "label": "Commit log (WAL, fsync batches)",
+      "x": 710,
+      "y": 40
+    },
+    {
+      "id": "memtable",
+      "kind": "cache",
+      "label": "Memtable (sorted, in RAM)",
+      "x": 710,
+      "y": 170
+    },
+    {
+      "id": "sst",
+      "kind": "nosql",
+      "label": "SSTables + bloom filters (SSD)",
+      "x": 930,
+      "y": 100
+    },
+    {
+      "id": "compaction",
+      "kind": "worker",
+      "label": "Compaction (merge, drop tombstones)",
+      "x": 930,
+      "y": 260
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "coord",
+      "label": "get / put (+ context)"
+    },
+    {
+      "from": "coord",
+      "to": "gossip",
+      "label": "ring map, who is up"
+    },
+    {
+      "from": "coord",
+      "to": "nodeA",
+      "label": "replica 1 (version vector)"
+    },
+    {
+      "from": "coord",
+      "to": "nodeB",
+      "label": "replica 2 (version vector)"
+    },
+    {
+      "from": "coord",
+      "to": "nodeC",
+      "label": "replica 3 (times out)"
+    },
+    {
+      "from": "coord",
+      "to": "nodeD",
+      "label": "hinted handoff for C"
+    },
+    {
+      "from": "nodeD",
+      "to": "nodeC",
+      "label": "replay hints when C returns"
+    },
+    {
+      "from": "nodeA",
+      "to": "gossip",
+      "label": "heartbeat / gossip"
+    },
+    {
+      "from": "nodeB",
+      "to": "gossip",
+      "label": "heartbeat / gossip"
+    },
+    {
+      "from": "repair",
+      "to": "nodeA",
+      "label": "compare range hashes"
+    },
+    {
+      "from": "repair",
+      "to": "nodeC",
+      "label": "stream differing keys"
+    },
+    {
+      "from": "nodeA",
+      "to": "wal",
+      "label": "1. append write"
+    },
+    {
+      "from": "nodeA",
+      "to": "memtable",
+      "label": "2. insert"
+    },
+    {
+      "from": "memtable",
+      "to": "sst",
+      "label": "flush when full (~64 MB)"
+    },
+    {
+      "from": "nodeA",
+      "to": "sst",
+      "label": "read: memtable, then bloom → SSTable"
+    },
+    {
+      "from": "compaction",
+      "to": "sst",
+      "label": "merge sorted runs"
+    }
+  ],
+  "flows": [
+    {
+      "name": "sloppy quorum put",
+      "path": [
+        "client",
+        "coord",
+        "nodeD",
+        "nodeC"
+      ]
+    },
+    {
+      "name": "anti-entropy",
+      "path": [
+        "repair",
+        "nodeA"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,591 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Upload and download files of any size (up to 50 GB) from any device."
+      },
+      {
+        "id": "F2",
+        "text": "Sync: a change on one device appears automatically on the user's other devices and for collaborators on shared folders."
+      },
+      {
+        "id": "F3",
+        "text": "Version history: restore any version (including deleted files) from the last 30 days."
+      },
+      {
+        "id": "F4",
+        "text": "Share folders with other users (view or edit)."
+      },
+      {
+        "id": "F5",
+        "text": "Offline edits are queued and synced when the device reconnects."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Durability: an acknowledged file is never lost (11 nines)."
+      },
+      {
+        "id": "N2",
+        "text": "Sync latency: changes visible on other online devices within ~10 s."
+      },
+      {
+        "id": "N3",
+        "text": "Bandwidth efficient and resumable: only changed chunks are transferred; uploads resume after a dropped connection."
+      },
+      {
+        "id": "N4",
+        "text": "No silent overwrites: all devices converge to the same tree; concurrent edits are kept."
+      },
+      {
+        "id": "N5",
+        "text": "Metadata available 99.9%+; uploads may degrade gracefully."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "500M users, 100M DAU, ~2 devices online per DAU, ~10 file changes per DAU per day, ~1 MB per change on average."
+      },
+      {
+        "id": "A2",
+        "text": "~5 GB stored per user on average; ~1,000 files per user."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Real-time co-editing inside a document, full-text search of file contents, billing."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/blocks/check",
+      "request": "namespace_id, block_hashes[]",
+      "response": "200 {missing[], upload_urls{hash → presigned URL}}",
+      "notes": "Only missing chunks are uploaded; URLs expire in ~15 min."
+    },
+    {
+      "id": "E2",
+      "method": "PUT",
+      "path": "<presigned chunk URL>",
+      "request": "≤ 4 MB chunk bytes",
+      "response": "200",
+      "notes": "Goes to the storage edge, not our servers; idempotent because the key is the hash."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/files/commit",
+      "request": "namespace_id, path, block_hashes[], size, base_rev",
+      "response": "200 {rev, seq} | 409 {conflict, current_rev} | 412 {missing[]}",
+      "notes": "Atomic: the version exists only once every chunk is in the block store."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "/changes?cursor=",
+      "request": "",
+      "response": "200 {entries[], cursor, has_more}",
+      "notes": "Delta since the cursor (namespace seqs); the same call after a long offline period."
+    },
+    {
+      "id": "E5",
+      "method": "GET",
+      "path": "/notify?cursor=",
+      "request": "",
+      "response": "200 {changes: true|false} after ≤ 60 s",
+      "notes": "Long-poll; returns early when a namespace changes."
+    },
+    {
+      "id": "E6",
+      "method": "GET",
+      "path": "/files/{path}/revisions",
+      "request": "",
+      "response": "200 {revisions[]}",
+      "notes": "Version history (30 days)."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "file_journal",
+      "fields": "namespace_id, seq (PK per namespace), path, rev, block_hashes[], size, deleted, device_id, ts",
+      "store": "sql",
+      "why": "Append-only per namespace: current tree, version history and sync cursor in one table; sharded by namespace_id."
+    },
+    {
+      "id": "D2",
+      "name": "block_index",
+      "fields": "hash (PK, SHA-256), size, ref_count, location, created_at",
+      "store": "sql",
+      "why": "Answers 'which chunks are missing' and drives chunk garbage collection; sharded by hash."
+    },
+    {
+      "id": "D3",
+      "name": "namespaces",
+      "fields": "namespace_id, owner_id, members[(user_id, role)], mount_path per member",
+      "store": "sql",
+      "why": "Shared folders are namespaces mounted into several users' trees."
+    },
+    {
+      "id": "D4",
+      "name": "chunks",
+      "fields": "key = SHA-256, bytes ≤ 4 MB, erasure-coded",
+      "store": "blob",
+      "why": "Immutable, content-addressed objects; dedup is free."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Chunked, resumable upload with dedup",
+      "covers": [
+        "F1",
+        "N1",
+        "N3"
+      ],
+      "problem": "Move ~1B file changes a day (~12 GB/s in) from flaky laptops and phones, files up to 50 GB, without re-sending unchanged bytes or restarting from zero after a drop.",
+      "options": [
+        {
+          "name": "whole file through the app servers",
+          "pros": "simple; one request",
+          "cons": "50 GB uploads pin app servers; a drop restarts from zero; a 1-byte edit re-sends the whole file"
+        },
+        {
+          "name": "whole file straight to object storage via a presigned URL",
+          "pros": "app servers stay out of the byte path",
+          "cons": "still all-or-nothing per file; no dedup; every edit re-uploads everything"
+        },
+        {
+          "name": "content-addressed 4 MB chunks: client hashes, server answers which are missing, client PUTs only those via presigned URLs",
+          "pros": "dedup across versions (and users); resume per chunk; parallel uploads; app servers only see hashes",
+          "cons": "a block index to maintain; smarter client; cross-user dedup can leak that a file exists"
+        }
+      ],
+      "choice": "4 MB content-addressed chunks (SHA-256), uploaded directly to the storage edge with presigned URLs; only missing hashes are sent",
+      "why": "Most edits touch a few chunks of a file, so the chunk diff cuts the ~12 GB/s ingress sharply and dedup saves a large share of 2.5 EB. A dropped connection loses at most one 4 MB chunk. App servers only handle metadata, so they scale with commits (~35k/s peak), not bytes.",
+      "technologies": [
+        "object-storage"
+      ],
+      "patterns": [
+        "chunking-dedup",
+        "presigned-urls",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Desktop / mobile client (watcher, chunker, local DB)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "meta",
+            "kind": "service",
+            "label": "Metadata / sync service ×N",
+            "x": 450,
+            "y": 240
+          },
+          {
+            "id": "edge",
+            "kind": "cdn",
+            "label": "Storage edge (presigned chunk PUT / GET)",
+            "x": 250,
+            "y": 420
+          },
+          {
+            "id": "blob",
+            "kind": "blob",
+            "label": "Block store: 4 MB chunks by SHA-256",
+            "x": 450,
+            "y": 420
+          },
+          {
+            "id": "mdb",
+            "kind": "sql",
+            "label": "Metadata DB (sharded by namespace): journal, versions, block index",
+            "x": 700,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "check hashes / commit / list changes"
+          },
+          {
+            "from": "lb",
+            "to": "meta"
+          },
+          {
+            "from": "meta",
+            "to": "mdb",
+            "label": "missing hashes? commit file version"
+          },
+          {
+            "from": "client",
+            "to": "edge",
+            "label": "PUT missing chunks (presigned, resumable)"
+          },
+          {
+            "from": "edge",
+            "to": "blob",
+            "label": "store chunk by hash"
+          },
+          {
+            "from": "meta",
+            "to": "blob",
+            "label": "verify chunks landed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Metadata and version history",
+      "covers": [
+        "F3",
+        "F4",
+        "N4"
+      ],
+      "problem": "Store the file tree, every version for 30 days and shared folders (~500B file rows, ~500 TB) so that commits are atomic and each device can ask 'what changed since I last looked?'.",
+      "options": [
+        {
+          "name": "one SQL database with a files table",
+          "pros": "transactions, easy queries",
+          "cons": "500 TB and ~35k commits/s at peak don't fit one primary"
+        },
+        {
+          "name": "NoSQL document per file",
+          "pros": "scales out easily",
+          "cons": "no transactions across files (folder moves); no natural ordered change log per folder"
+        },
+        {
+          "name": "SQL sharded by namespace (a user's root or a shared folder) with an append-only journal per namespace",
+          "pros": "transactions inside a namespace; the journal's seq is both version history and the sync cursor",
+          "cons": "huge shared folders become hot shards; moves across namespaces need two steps"
+        }
+      ],
+      "choice": "SQL sharded by namespace_id, with an append-only journal (namespace_id, seq) per namespace",
+      "why": "Almost every operation stays inside one namespace, so a shard can give it a transaction and a strictly increasing seq. One table then answers three questions: current tree (latest row per path), history (all rows per path, 30 days), and sync (rows with seq > cursor).",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "event-sourcing",
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "meta",
+            "kind": "service",
+            "label": "Metadata / sync service ×N",
+            "x": 450,
+            "y": 240
+          },
+          {
+            "id": "mdb",
+            "kind": "sql",
+            "label": "Metadata DB (sharded by namespace): journal, versions, block index",
+            "x": 700,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "meta"
+          },
+          {
+            "from": "meta",
+            "to": "mdb",
+            "label": "append journal row (namespace, seq)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Sync: telling other devices about changes",
+      "covers": [
+        "F2",
+        "F5",
+        "N2"
+      ],
+      "problem": "About 200M devices are online at a time. Each must learn within ~10 s that something changed in one of its namespaces, and catch up after hours offline.",
+      "options": [
+        {
+          "name": "every device polls /changes every 30 s",
+          "pros": "simple, stateless",
+          "cons": "200M / 30 s ≈ 6.7M requests/s, almost all empty; up to 30 s delay"
+        },
+        {
+          "name": "push full change payloads over WebSockets",
+          "pros": "lowest latency",
+          "cons": "servers hold per-device state and payloads; a reconnect still needs a replay path"
+        },
+        {
+          "name": "long-poll 'namespace changed' signal, then pull the delta by cursor",
+          "pros": "idle connections are cheap; one catch-up path for online and offline devices",
+          "cons": "~2,000 servers just to hold connections; one extra round trip per change"
+        }
+      ],
+      "choice": "Long-poll notification service fed by namespace change events; devices then pull /changes?cursor=",
+      "why": "The signal is tiny and the data path is the same cursor-based delta that offline devices use (F5), so there is only one way to sync. 200M held connections at ~100k each is ~2,000 notify servers, cheap next to 6.7M polls/s.",
+      "technologies": [
+        "kafka",
+        "websockets-sse"
+      ],
+      "patterns": [
+        "real-time-push",
+        "fan-out"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Desktop / mobile client (watcher, chunker, local DB)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "notify",
+            "kind": "service",
+            "label": "Notification service (long-poll) ×N",
+            "x": 450,
+            "y": 70
+          },
+          {
+            "id": "changes",
+            "kind": "stream",
+            "label": "Namespace change events",
+            "x": 700,
+            "y": 70
+          },
+          {
+            "id": "meta",
+            "kind": "service",
+            "label": "Metadata / sync service ×N",
+            "x": 450,
+            "y": 240
+          },
+          {
+            "id": "mdb",
+            "kind": "sql",
+            "label": "Metadata DB (sharded by namespace): journal, versions, block index",
+            "x": 700,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "long-poll, then GET /changes?cursor="
+          },
+          {
+            "from": "lb",
+            "to": "meta"
+          },
+          {
+            "from": "meta",
+            "to": "mdb",
+            "label": "rows with seq > cursor"
+          },
+          {
+            "from": "lb",
+            "to": "notify",
+            "label": "long-poll /notify (cursor)"
+          },
+          {
+            "from": "meta",
+            "to": "changes",
+            "label": "namespace changed (seq)"
+          },
+          {
+            "from": "changes",
+            "to": "notify",
+            "label": "wake subscribers"
+          },
+          {
+            "from": "notify",
+            "to": "client",
+            "label": "changes available"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Conflicts between devices",
+      "covers": [
+        "N4",
+        "F5"
+      ],
+      "problem": "Two devices (or a laptop that was offline for a day) edit the same file from the same base. Neither edit may be lost silently, and all devices must end up with the same tree.",
+      "options": [
+        {
+          "name": "last writer wins",
+          "pros": "simple; one file",
+          "cons": "silently discards an edit"
+        },
+        {
+          "name": "pessimistic locks (check-out)",
+          "pros": "no conflicts at all",
+          "cons": "breaks offline editing; locks get stuck on dead laptops"
+        },
+        {
+          "name": "optimistic commit on base revision; the loser becomes a 'conflicted copy'",
+          "pros": "never loses data; works offline",
+          "cons": "users occasionally see a duplicate file to reconcile"
+        },
+        {
+          "name": "automatic content merge (3-way / OT)",
+          "pros": "seamless for text",
+          "cons": "most files are binary; wrong merges corrupt files"
+        }
+      ],
+      "choice": "Optimistic concurrency: commit carries base_rev; on mismatch the server rejects and the client saves its version as 'name (conflicted copy, device, date)'",
+      "why": "N4 forbids silent loss and F5 requires offline edits, which rules out locks and LWW. Conflicts are rare (few files are edited on two devices at once), so a visible duplicate is an acceptable cost.",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Desktop / mobile client (watcher, chunker, local DB)",
+            "x": 60,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 250,
+            "y": 240
+          },
+          {
+            "id": "meta",
+            "kind": "service",
+            "label": "Metadata / sync service ×N",
+            "x": 450,
+            "y": 240
+          },
+          {
+            "id": "mdb",
+            "kind": "sql",
+            "label": "Metadata DB (sharded by namespace): journal, versions, block index",
+            "x": 700,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "commit(path, hashes, base_rev)"
+          },
+          {
+            "from": "lb",
+            "to": "meta"
+          },
+          {
+            "from": "meta",
+            "to": "mdb",
+            "label": "UPDATE … WHERE rev = base_rev"
+          }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Chunk size and boundaries",
+      "options": [
+        {
+          "name": "fixed-size 4 MB chunks",
+          "pros": "simple; cheap to hash on phones",
+          "cons": "inserting a byte early in a big file shifts every later chunk boundary"
+        },
+        {
+          "name": "content-defined chunking (rolling hash, ~4 MB average)",
+          "pros": "boundaries survive inserts, so more dedup on large edited files",
+          "cons": "more CPU on the client; variable chunk sizes complicate the index"
+        },
+        {
+          "name": "tiny chunks (64 KB)",
+          "pros": "fine-grained dedup",
+          "cons": "16× more index rows and requests"
+        }
+      ],
+      "choice": "Fixed 4 MB chunks by default; content-defined chunking only for large files of formats edited in place",
+      "why": "The average change is ~1 MB, i.e. one chunk, so fixed chunks lose little. CDC pays off for big files where bytes are inserted in the middle, so it is worth it only there.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Garbage-collecting unreferenced chunks",
+      "options": [
+        {
+          "name": "reference counting on every commit and expiry",
+          "pros": "chunks freed immediately",
+          "cons": "counts drift under retries and partial failures; one wrong decrement deletes live data"
+        },
+        {
+          "name": "periodic mark-and-sweep over the journal, with a grace period",
+          "pros": "self-correcting; a bug delays deletion instead of losing data",
+          "cons": "storage is freed days later; a heavy batch job"
+        }
+      ],
+      "choice": "Mark-and-sweep after the 30-day history window, deleting only chunks unreferenced for 7 more days",
+      "why": "N1 makes deleting a live chunk the worst possible bug; paying a few days of extra storage is far cheaper than losing a file.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Hot shared namespaces (a company-wide folder) concentrate commits on one metadata shard: split big namespaces or rate-limit; notification fan-out for namespaces with thousands of members; block index lookups during bulk first uploads.",
+    "failures": "Upload dropped: resume from the first missing chunk. Metadata shard primary dies: failover to a sync replica, commits pause seconds. Notify server dies: clients reconnect and pull /changes by cursor, nothing is lost. Block store region issue: erasure coding plus cross-region copies.",
+    "monitoring": "Commit p99 and 409 conflict rate, time from commit to other-device sync (end-to-end probe), chunk upload error/resume rate, dedup ratio, notify connection count, journal lag, GC deleted bytes vs. expected.",
+    "scale": "Add metadata shards by namespace range, more notify servers for connections, and block storage capacity; the byte path scales with the object store, not our servers.",
+    "future": "LAN sync between devices on the same network, selective sync / on-demand files, content search, delta compression inside chunks."
+  }
+}

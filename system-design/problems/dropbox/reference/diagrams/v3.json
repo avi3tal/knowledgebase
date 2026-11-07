@@ -1,0 +1,141 @@
+{
+  "version": 3,
+  "why": "Compose P3 and P4 (F2, N2, N4): each commit appends to the namespace journal and emits a change event; a long-poll notification service wakes the namespace's devices, which pull the delta by cursor. Commits are conditional on base_rev, so a concurrent edit becomes a conflicted copy instead of a lost write.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Desktop / mobile client (watcher, chunker, local DB)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "meta",
+      "kind": "service",
+      "label": "Metadata / sync service ×N",
+      "x": 450,
+      "y": 240
+    },
+    {
+      "id": "edge",
+      "kind": "cdn",
+      "label": "Storage edge (presigned chunk PUT / GET)",
+      "x": 250,
+      "y": 420
+    },
+    {
+      "id": "blob",
+      "kind": "blob",
+      "label": "Block store: 4 MB chunks by SHA-256",
+      "x": 450,
+      "y": 420
+    },
+    {
+      "id": "mdb",
+      "kind": "sql",
+      "label": "Metadata DB (sharded by namespace): journal, versions, block index",
+      "x": 700,
+      "y": 240
+    },
+    {
+      "id": "changes",
+      "kind": "stream",
+      "label": "Namespace change events",
+      "x": 700,
+      "y": 70
+    },
+    {
+      "id": "notify",
+      "kind": "service",
+      "label": "Notification service (long-poll) ×N",
+      "x": 450,
+      "y": 70
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "commit(hashes, base_rev) / GET /changes?cursor="
+    },
+    {
+      "from": "lb",
+      "to": "meta"
+    },
+    {
+      "from": "meta",
+      "to": "mdb",
+      "label": "missing hashes? UPDATE … WHERE rev = base_rev"
+    },
+    {
+      "from": "client",
+      "to": "edge",
+      "label": "PUT missing chunks (presigned, resumable)"
+    },
+    {
+      "from": "edge",
+      "to": "blob",
+      "label": "store chunk by hash"
+    },
+    {
+      "from": "meta",
+      "to": "blob",
+      "label": "verify chunks landed"
+    },
+    {
+      "from": "lb",
+      "to": "notify",
+      "label": "long-poll /notify (cursor)"
+    },
+    {
+      "from": "meta",
+      "to": "changes",
+      "label": "namespace changed (seq)"
+    },
+    {
+      "from": "changes",
+      "to": "notify",
+      "label": "wake subscribers"
+    },
+    {
+      "from": "notify",
+      "to": "client",
+      "label": "changes available"
+    }
+  ],
+  "flows": [
+    {
+      "name": "upload",
+      "path": [
+        "client",
+        "lb",
+        "meta",
+        "mdb"
+      ]
+    },
+    {
+      "name": "chunk bytes",
+      "path": [
+        "client",
+        "edge",
+        "blob"
+      ]
+    },
+    {
+      "name": "sync",
+      "path": [
+        "meta",
+        "changes",
+        "notify",
+        "client"
+      ]
+    }
+  ]
+}

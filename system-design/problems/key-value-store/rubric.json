@@ -133,7 +133,9 @@
         "node_ops",
         "node_qps",
         "per_machine",
-        "load"
+        "load",
+        "per node",
+        "per server"
       ],
       "unit": "/s",
       "min": 5000,
@@ -154,7 +156,9 @@
         "put /",
         "post /",
         "write",
-        "store a value"
+        "store a value",
+        "value",
+        "context"
       ],
       "tips": {
         "nudge": "What does a caller send to store a value, and what comes back?",
@@ -193,6 +197,130 @@
         "nudge": "Key and value are not enough when two replicas disagree.",
         "hint": "Store what you need to order or detect concurrent writes, and to delete safely.",
         "show": "record(key, value, version vector [(node, counter)…], tombstone flag, ts) in an LSM tree (memtable + SSTables) per node."
+      }
+    },
+    {
+      "id": "part-partitioning",
+      "type": "part",
+      "label": "Key placement designed as its own part",
+      "keywords": [
+        "partitioning",
+        "placement",
+        "consistent hash",
+        "hash ring",
+        "vnode",
+        "virtual node",
+        "shard",
+        "which nodes own",
+        "key distribution"
+      ],
+      "choice_keywords": [
+        "consistent hash",
+        "hash ring",
+        "vnode",
+        "virtual node",
+        "range",
+        "mod",
+        "rendezvous",
+        "shard"
+      ],
+      "tips": {
+        "nudge": "With hash(key) mod N, what happens to most keys when N goes from 40 to 41?",
+        "hint": "Add a part for placement: compare modulo hashing, range partitioning and consistent hashing.",
+        "show": "Part 'Partitioning': consistent hashing with ~256 virtual nodes per server; adding a server moves ~1/N of keys, spread over many peers."
+      }
+    },
+    {
+      "id": "part-replication",
+      "type": "part",
+      "label": "Copies and acknowledgements designed as their own part",
+      "keywords": [
+        "replica",
+        "replicat",
+        "quorum",
+        "r + w",
+        "r+w",
+        "copies",
+        "leaderless"
+      ],
+      "choice_keywords": [
+        "quorum",
+        "replica",
+        "leader",
+        "n=3",
+        "n = 3",
+        "w=",
+        "w =",
+        "r=",
+        "r =",
+        "copies"
+      ],
+      "tips": {
+        "nudge": "3 copies. A write waits for how many? A read asks how many?",
+        "hint": "Add a part for replication: leader-based vs leaderless; relate N, R and W.",
+        "show": "Part 'Replication and quorums': leaderless, N=3 (one per AZ), W=2, R=2 (R+W>N), sloppy quorum so writes are never refused."
+      }
+    },
+    {
+      "id": "part-conflicts",
+      "type": "part",
+      "label": "Concurrent writes designed as their own part",
+      "keywords": [
+        "conflict",
+        "concurren",
+        "vector clock",
+        "version vector",
+        "last-write-wins",
+        "last write wins",
+        "lww",
+        "crdt",
+        "sibling"
+      ],
+      "tips": {
+        "nudge": "Both sides of a split accepted a write to the same cart. What does the next read see?",
+        "hint": "Add a part for conflicts: compare last-write-wins timestamps with version vectors (and CRDTs).",
+        "show": "Part 'Conflict resolution': version vectors detect concurrent writes; both versions return as siblings and the client merges (cart union); LWW opt-in."
+      }
+    },
+    {
+      "id": "part-repair",
+      "type": "part",
+      "label": "Failure detection and healing designed as their own part",
+      "keywords": [
+        "failure",
+        "repair",
+        "gossip",
+        "hinted",
+        "anti-entropy",
+        "merkle",
+        "membership",
+        "heal"
+      ],
+      "tips": {
+        "nudge": "A node was down 2 hours. Who noticed, and how does it get the writes it missed?",
+        "hint": "Add a part for failures: a membership/failure detector, plus tools for short outages, stale reads and slow drift.",
+        "show": "Part 'Failure detection and repair': gossip + phi-accrual detector; hinted handoff; read repair; Merkle-tree anti-entropy per range."
+      }
+    },
+    {
+      "id": "part-storage-engine",
+      "type": "part",
+      "label": "Per-node storage engine designed as its own part",
+      "keywords": [
+        "storage engine",
+        "lsm",
+        "sstable",
+        "memtable",
+        "b-tree",
+        "btree",
+        "on disk",
+        "on-disk",
+        "compaction"
+      ],
+      "tips": {
+        "nudge": "72k mostly-write ops/s hit each node. How is a record laid out on disk?",
+        "hint": "Add a part for the storage engine: compare a B-tree, an LSM tree and an in-memory table.",
+        "show": "Part 'Storage engine': LSM tree: commit log, memtable, SSTables with bloom filters, compaction."
       }
     },
     {
@@ -261,92 +389,27 @@
       }
     },
     {
-      "id": "dd-partitioning",
+      "id": "dd-deletes",
       "type": "decision",
-      "label": "How keys map to servers decided",
+      "label": "Deletes stay deleted",
       "keywords": [
-        "consistent hash",
-        "consistent-hash",
-        "hash ring",
-        "ring",
-        "virtual node",
-        "vnode",
-        "range partition",
-        "modulo",
-        "mod n"
+        "tombstone",
+        "delete",
+        "resurrect",
+        "grace period",
+        "gc_grace"
       ],
       "tips": {
-        "nudge": "With hash(key) mod N, what happens to most keys when N goes from 40 to 41?",
-        "hint": "Compare modulo hashing, range partitioning and consistent hashing.",
-        "show": "Consistent hashing with ~256 virtual nodes per server: adding a server moves ~1/N of keys, spread evenly; heterogeneous servers get more vnodes."
-      }
-    },
-    {
-      "id": "dd-quorum",
-      "type": "decision",
-      "label": "How many copies must answer decided",
-      "keywords": [
-        "quorum",
-        "r + w",
-        "r+w",
-        "w=",
-        "r=",
-        "w =",
-        "r =",
-        "replication factor",
-        "sloppy"
-      ],
-      "tips": {
-        "nudge": "3 copies. A write waits for how many? A read asks how many?",
-        "hint": "Relate N, R and W; what does R + W > N buy you?",
-        "show": "N=3 across AZs, W=2, R=2 by default (R+W>N: reads overlap the latest write); callers may pick W=1 (fast, AP) or R=3. Sloppy quorum keeps writes available in a partition."
-      }
-    },
-    {
-      "id": "dd-conflicts",
-      "type": "decision",
-      "label": "Concurrent writes to one key resolved",
-      "keywords": [
-        "vector clock",
-        "version vector",
-        "last-write-wins",
-        "last write wins",
-        "lww",
-        "conflict",
-        "crdt",
-        "sibling"
-      ],
-      "tips": {
-        "nudge": "Both sides of a split accepted a write to the same cart. What does the next read see?",
-        "hint": "Compare last-write-wins timestamps with version vectors (and CRDTs).",
-        "show": "Version vectors detect concurrent writes; both versions are returned as siblings and the client merges (cart union); LWW is offered for data where losing one write is acceptable."
-      }
-    },
-    {
-      "id": "dd-repair",
-      "type": "decision",
-      "label": "Detecting and healing failed or stale replicas",
-      "keywords": [
-        "gossip",
-        "hinted handoff",
-        "hinted hand-off",
-        "merkle",
-        "anti-entropy",
-        "read repair",
-        "heartbeat",
-        "failure detect"
-      ],
-      "tips": {
-        "nudge": "A node was down 2 hours. How does it get the writes it missed?",
-        "hint": "Name mechanisms for short outages, for reads that see disagreement, and for slow drift.",
-        "show": "Gossip failure detection; hinted handoff (a neighbour keeps writes for the dead node and replays them); read repair on mismatched reads; periodic Merkle-tree comparison per range (anti-entropy)."
+        "nudge": "A replica was down while a key was deleted. Repair later compares it with its peers. What comes back?",
+        "hint": "Compare removing the key physically with writing a marker, and say when the marker may go.",
+        "show": "Tombstones replicate like writes and are purged only after a grace period (e.g. 10 days) longer than the anti-entropy cycle, so deleted data can't be resurrected."
       }
     },
     {
       "id": "wrap-failures",
       "type": "wrapup",
-      "key": "failures",
       "label": "Failure scenarios walked through",
+      "key": "failures",
       "tips": {
         "nudge": "Walk through: one node dies; one AZ is cut off; a disk silently corrupts data.",
         "hint": "For each, say what callers see and how the system heals.",
@@ -356,8 +419,8 @@
     {
       "id": "wrap-scale",
       "type": "wrapup",
-      "key": "scale",
       "label": "Growth plan described",
+      "key": "scale",
       "tips": {
         "nudge": "Capacity grows 50% a year. What does adding 20 servers look like?",
         "hint": "How data moves, how fast, and without downtime.",

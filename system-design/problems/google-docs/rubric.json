@@ -1,0 +1,448 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Stateful real-time collaboration: route every participant of one object to a single owner (lease), let the owner order and transform concurrent operations, append each op to a log before acknowledging, snapshot asynchronously for fast loads, and keep ephemeral state (presence) in memory only.",
+  "checks": [
+    {
+      "id": "req-concurrent",
+      "type": "requirement",
+      "label": "Core multi-user behaviour captured",
+      "keywords": [
+        "collaborat",
+        "concurrent",
+        "simultaneous",
+        "multiple users",
+        "several users",
+        "same document",
+        "co-edit",
+        "together"
+      ],
+      "tips": {
+        "nudge": "What makes this different from a plain text editor that saves to the cloud?",
+        "hint": "Write a functional requirement about several people editing the same document at once.",
+        "show": "F1: Several users edit the same document concurrently; everyone converges to the same text."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Responsiveness expectation stated",
+      "keywords": [
+        "latency",
+        "ms",
+        "real-time",
+        "real time",
+        "realtime",
+        "instant",
+        "within"
+      ],
+      "tips": {
+        "nudge": "How quickly should a co-author see your keystroke, and should your own typing ever wait?",
+        "hint": "State a latency target for edits reaching others.",
+        "show": "N1: Others see an edit within ~200 ms p99 in-region; local typing never waits on the network."
+      }
+    },
+    {
+      "id": "req-history",
+      "type": "requirement",
+      "label": "Past states of a document covered",
+      "keywords": [
+        "version",
+        "history",
+        "revision",
+        "restore"
+      ],
+      "tips": {
+        "nudge": "Someone deleted half the document by mistake an hour ago. Then what?",
+        "hint": "Add a requirement about seeing and restoring earlier states.",
+        "show": "F3: Version history: browse and restore earlier revisions."
+      }
+    },
+    {
+      "id": "req-durability",
+      "type": "requirement",
+      "label": "Data-safety expectation stated",
+      "keywords": [
+        "durab",
+        "never lost",
+        "never lose",
+        "data loss",
+        "lose an edit",
+        "lost edit"
+      ],
+      "tips": {
+        "nudge": "The server said 'saved'. What must never happen next?",
+        "hint": "Add a non-functional requirement about losing edits.",
+        "show": "N3: Durability: an acknowledged edit is never lost."
+      }
+    },
+    {
+      "id": "est-ops",
+      "type": "estimate",
+      "label": "Edit throughput estimated",
+      "keywords": [
+        "op",
+        "edit",
+        "write",
+        "keystroke",
+        "change"
+      ],
+      "unit": "/s",
+      "min": 100000,
+      "max": 50000000,
+      "tips": {
+        "nudge": "How many people are typing at the same moment, and how often does each one send?",
+        "hint": "ops/s = concurrent typists × batched ops per second each.",
+        "show": "ops_per_sec = 5M typists × ~1 batch/s ≈ 5M ops/s (but only ~500 ops/s on the busiest single doc)."
+      }
+    },
+    {
+      "id": "est-connections",
+      "type": "estimate",
+      "label": "Open connections estimated",
+      "keywords": [
+        "connection",
+        "socket",
+        "concurrent",
+        "online",
+        "connected"
+      ],
+      "unit": "",
+      "min": 1000000,
+      "max": 200000000,
+      "tips": {
+        "nudge": "Every open editor tab keeps a channel open. How many at peak?",
+        "hint": "Count connected users at peak (editors and viewers).",
+        "show": "concurrent_connections ≈ 20M at peak."
+      }
+    },
+    {
+      "id": "est-servers",
+      "type": "estimate",
+      "label": "Fleet size for live sessions estimated",
+      "keywords": [
+        "server",
+        "machine",
+        "node",
+        "host",
+        "fleet"
+      ],
+      "unit": "",
+      "min": 20,
+      "max": 5000,
+      "tips": {
+        "nudge": "One server can hold how many open sockets?",
+        "hint": "servers = connections / sockets per server (~50k).",
+        "show": "collab_servers = 20M / 50k ≈ 400."
+      }
+    },
+    {
+      "id": "est-oplog",
+      "type": "estimate",
+      "label": "Edit history growth estimated",
+      "keywords": [
+        "log",
+        "history",
+        "op_storage",
+        "ops_storage",
+        "per_day"
+      ],
+      "unit": "TB",
+      "min": 1,
+      "max": 1000,
+      "tips": {
+        "nudge": "If you keep every edit, how much does that add per day?",
+        "hint": "log growth = ops/s × bytes per op × seconds per day.",
+        "show": "oplog_per_day = 5M × 100 B × 86,400 ≈ 43 TB/day (snapshots + compaction of old ops keep it bounded)."
+      }
+    },
+    {
+      "id": "api-open",
+      "type": "endpoint",
+      "label": "Opening a document defined",
+      "method": "GET",
+      "keywords": [
+        "doc",
+        "document"
+      ],
+      "tips": {
+        "nudge": "What does the editor download when a tab opens?",
+        "hint": "A GET that returns the document state and the revision it corresponds to.",
+        "show": "GET /docs/{id} → {snapshot, rev, acl}"
+      }
+    },
+    {
+      "id": "api-ops",
+      "type": "endpoint",
+      "label": "Live edit channel defined",
+      "keywords": [
+        "websocket",
+        "ws",
+        "socket",
+        "session",
+        "/ops",
+        "operation",
+        "base_rev"
+      ],
+      "tips": {
+        "nudge": "After opening, how do edits flow both ways?",
+        "hint": "Define the persistent channel and the messages on it, including the revision each edit was based on.",
+        "show": "WS /docs/{id}/session: client → {op, base_rev, client_seq}; server → {ack rev} | {op, rev, author} | {presence}."
+      }
+    },
+    {
+      "id": "data-op",
+      "type": "entity",
+      "label": "Edit record defined",
+      "keywords": [
+        "operation",
+        "op_log",
+        "oplog",
+        "op log",
+        "rev",
+        "seq",
+        "snapshot"
+      ],
+      "tips": {
+        "nudge": "What exactly do you store for one keystroke batch?",
+        "hint": "A record per edit: which document, its position in the order, what changed, who.",
+        "show": "op_log(doc_id, rev, op, author, client_seq, ts) + snapshots(doc_id, rev, state)."
+      }
+    },
+    {
+      "id": "part-transport",
+      "type": "part",
+      "label": "Live connection and routing designed as their own part",
+      "keywords": [
+        "transport",
+        "websocket",
+        "session",
+        "real-time",
+        "realtime",
+        "connection",
+        "socket"
+      ],
+      "tips": {
+        "nudge": "Edits must reach co-authors in ~200 ms. Which channel, and which server do all editors of one document talk to?",
+        "hint": "Add a part for the session: compare polling, SSE, WebSockets and P2P, and decide how a document maps to a server.",
+        "show": "Part 'Real-time session': WebSocket per editor, routed by doc_id to a collaboration server holding the doc's ownership lease (etcd)."
+      }
+    },
+    {
+      "id": "part-concurrency",
+      "type": "part",
+      "label": "Merging simultaneous edits designed as its own part",
+      "keywords": [
+        "operational transform",
+        "transform",
+        "crdt",
+        "concurren",
+        "conflict",
+        "merge",
+        "converge"
+      ],
+      "choice_keywords": [
+        "operational transform",
+        "crdt",
+        "(ot)",
+        "ot ",
+        "ot,",
+        "ot;",
+        "lock",
+        "last write",
+        "lww"
+      ],
+      "tips": {
+        "nudge": "Alice inserts at position 10 while Bob deletes position 5. Apply both naively and what happens?",
+        "hint": "Add a part for concurrency control: compare locking, last-write-wins, Operational Transformation and CRDTs.",
+        "show": "Part 'Concurrency control': OT with the doc's owner assigning revisions and transforming each op against the ops its sender hadn't seen; CRDT if offline-first were required."
+      }
+    },
+    {
+      "id": "part-persistence",
+      "type": "part",
+      "label": "Saving edits and history designed as its own part",
+      "keywords": [
+        "persist",
+        "op log",
+        "oplog",
+        "snapshot",
+        "storage",
+        "durab",
+        "history"
+      ],
+      "tips": {
+        "nudge": "Saving the whole 50 KB document on every keystroke: what does that cost at your op rate?",
+        "hint": "Add a part for persistence: compare full saves, a pure op log and an op log with snapshots.",
+        "show": "Part 'Persistence': append each op to an op log (doc_id, rev) before acking; snapshot every ~500 ops asynchronously."
+      }
+    },
+    {
+      "id": "part-presence",
+      "type": "part",
+      "label": "Showing collaborators designed as its own part",
+      "keywords": [
+        "presence",
+        "cursor",
+        "who is",
+        "selection",
+        "avatar"
+      ],
+      "tips": {
+        "nudge": "Cursor moves happen far more often than edits. Should they be stored?",
+        "hint": "Add a part for presence: compare persisting it, a shared pub/sub and in-memory soft state.",
+        "show": "Part 'Presence': ephemeral in the owner server's memory, broadcast at ≤ 10 Hz on the same socket, cursors transformed like ops."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Connections spread and routed",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "20M sockets across hundreds of servers. Who decides where each one goes?",
+        "hint": "Something in front that spreads connections and keeps a document's editors together.",
+        "show": "L7 load balancer that terminates WebSockets and routes by doc_id (consistent hashing) to the owner."
+      }
+    },
+    {
+      "id": "comp-session",
+      "type": "component",
+      "label": "A stateful place where a document's edits meet",
+      "kinds": [
+        "service",
+        "worker"
+      ],
+      "keywords": [
+        "collab",
+        "session",
+        "real-time",
+        "realtime",
+        "websocket",
+        "editor",
+        "sync",
+        "ot "
+      ],
+      "tips": {
+        "nudge": "Where is the single order of a document's edits decided?",
+        "hint": "Add a stateful service that holds open documents and their editors.",
+        "show": "Collaboration server ×N: each owns a set of documents (lease), runs OT and broadcasts."
+      }
+    },
+    {
+      "id": "comp-snapshots",
+      "type": "component",
+      "label": "Fast document open despite long histories",
+      "kinds": [
+        "blob",
+        "nosql",
+        "sql"
+      ],
+      "keywords": [
+        "snapshot",
+        "checkpoint"
+      ],
+      "tips": {
+        "nudge": "A document with a million edits: does opening it replay all of them?",
+        "hint": "Store periodic materialised states somewhere.",
+        "show": "Snapshot store (object storage) with the document state every ~500 ops."
+      }
+    },
+    {
+      "id": "edge-oplog",
+      "type": "edge",
+      "label": "Edits recorded before they are confirmed",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "nosql",
+        "sql",
+        "stream",
+        "queue"
+      ],
+      "to_keywords": [
+        "op",
+        "log",
+        "event",
+        "operation",
+        "edit"
+      ],
+      "tips": {
+        "nudge": "When may the server tell a client 'your edit is saved'?",
+        "hint": "Connect the collaboration service to an append-only record of edits.",
+        "show": "Collaboration server → op log (append op @ rev before ack) and → op stream for snapshotting."
+      }
+    },
+    {
+      "id": "dd-failover",
+      "type": "decision",
+      "label": "Losing the server that owns a document handled",
+      "keywords": [
+        "failover",
+        "fail over",
+        "owner",
+        "lease",
+        "crash",
+        "takeover",
+        "fencing"
+      ],
+      "choice_keywords": [
+        "lease",
+        "takeover",
+        "take over",
+        "standby",
+        "rebuild",
+        "failover",
+        "fail over",
+        "replay"
+      ],
+      "tips": {
+        "nudge": "The server holding a busy document crashes. Who takes over, and what about edits in flight?",
+        "hint": "Compare a hot standby with rebuilding from storage, and say how you prevent two owners.",
+        "show": "Lease expires (~5 s); a new owner loads snapshot + op-log tail; clients reconnect with their last acked rev; a fencing token stops the old owner writing."
+      }
+    },
+    {
+      "id": "dd-reconnect",
+      "type": "decision",
+      "label": "Reconnecting after a gap handled",
+      "keywords": [
+        "reconnect",
+        "offline",
+        "catch up",
+        "catch-up",
+        "disconnect"
+      ],
+      "choice_keywords": [
+        "pending",
+        "offline",
+        "buffer",
+        "catch",
+        "queue",
+        "resend"
+      ],
+      "tips": {
+        "nudge": "A laptop loses Wi-Fi for 10 minutes while its user keeps typing. What happens on reconnect?",
+        "hint": "Think about what the client keeps, what it asks for, and how its edits fit in.",
+        "show": "Client keeps pending ops + last acked rev; server sends ops since that rev; client transforms pending ops and resends (idempotent by client_seq)."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "label": "Growth and hot documents covered",
+      "key": "scale",
+      "tips": {
+        "nudge": "A company all-hands doc has 5,000 viewers. What breaks?",
+        "hint": "Think about one owner per document and how far that stretches.",
+        "show": "Viewers move to read-only fan-out replicas fed by the op stream; more collab servers via consistent hashing on doc_id; op log partitions by doc_id."
+      }
+    }
+  ]
+}

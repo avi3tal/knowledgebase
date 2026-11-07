@@ -1,0 +1,163 @@
+{
+  "version": 3,
+  "why": "Compose P3 and P4 (N3, F3, F4): every op is appended to the op log before it is acked; a snapshotter turns the op stream into periodic snapshots for fast open and history. Presence and cursors stay in the owner's memory and ride the same socket.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Browser editor (local copy + pending ops)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "L7 load balancer (WebSocket, route by doc_id)",
+      "x": 250,
+      "y": 240
+    },
+    {
+      "id": "collab",
+      "kind": "service",
+      "label": "Collaboration server ×N (doc owner: OT, presence)",
+      "x": 460,
+      "y": 240
+    },
+    {
+      "id": "coord",
+      "kind": "coordinator",
+      "label": "Doc ownership leases (etcd)",
+      "x": 460,
+      "y": 60
+    },
+    {
+      "id": "docsvc",
+      "kind": "service",
+      "label": "Docs API (create, list, share, history)",
+      "x": 460,
+      "y": 420
+    },
+    {
+      "id": "meta",
+      "kind": "sql",
+      "label": "docs metadata + ACL",
+      "x": 700,
+      "y": 420
+    },
+    {
+      "id": "oplog",
+      "kind": "nosql",
+      "label": "Op log: (doc_id, rev) → op",
+      "x": 700,
+      "y": 240
+    },
+    {
+      "id": "ops",
+      "kind": "stream",
+      "label": "Committed op stream",
+      "x": 700,
+      "y": 80
+    },
+    {
+      "id": "snapper",
+      "kind": "worker",
+      "label": "Snapshotter",
+      "x": 920,
+      "y": 80
+    },
+    {
+      "id": "snap",
+      "kind": "blob",
+      "label": "Snapshots: doc state @ rev",
+      "x": 920,
+      "y": 280
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "WebSocket: ops, cursors / REST"
+    },
+    {
+      "from": "lb",
+      "to": "collab",
+      "label": "route by doc_id"
+    },
+    {
+      "from": "lb",
+      "to": "docsvc",
+      "label": "REST: create, list, share, history"
+    },
+    {
+      "from": "collab",
+      "to": "coord",
+      "label": "acquire / renew doc lease"
+    },
+    {
+      "from": "collab",
+      "to": "meta",
+      "label": "check ACL on join"
+    },
+    {
+      "from": "collab",
+      "to": "client",
+      "label": "ack + others' ops + presence"
+    },
+    {
+      "from": "docsvc",
+      "to": "meta",
+      "label": "titles, ACL"
+    },
+    {
+      "from": "docsvc",
+      "to": "snap",
+      "label": "history: snapshot @ rev"
+    },
+    {
+      "from": "collab",
+      "to": "oplog",
+      "label": "append op @ rev (before ack)"
+    },
+    {
+      "from": "collab",
+      "to": "ops",
+      "label": "publish committed op"
+    },
+    {
+      "from": "ops",
+      "to": "snapper",
+      "label": "consume ops"
+    },
+    {
+      "from": "snapper",
+      "to": "snap",
+      "label": "write snapshot every ~500 ops"
+    },
+    {
+      "from": "collab",
+      "to": "snap",
+      "label": "load latest snapshot on open"
+    }
+  ],
+  "flows": [
+    {
+      "name": "edit",
+      "path": [
+        "client",
+        "lb",
+        "collab",
+        "oplog"
+      ]
+    },
+    {
+      "name": "snapshot",
+      "path": [
+        "collab",
+        "ops",
+        "snapper",
+        "snap"
+      ]
+    }
+  ]
+}

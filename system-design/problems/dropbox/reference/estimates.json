@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "users",
+      "formula": "500 * million",
+      "unit": ""
+    },
+    {
+      "name": "dau",
+      "formula": "100 * million",
+      "unit": ""
+    },
+    {
+      "name": "file_changes_per_day",
+      "formula": "dau * 10",
+      "unit": ""
+    },
+    {
+      "name": "commit_qps",
+      "formula": "file_changes_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_commit_qps",
+      "formula": "commit_qps * 3",
+      "unit": "/s"
+    },
+    {
+      "name": "upload_bandwidth",
+      "formula": "file_changes_per_day * 1e6 / day / 1e9",
+      "unit": "GB/s"
+    },
+    {
+      "name": "storage_logical",
+      "formula": "users * 5e9 / 1e15",
+      "unit": "PB"
+    },
+    {
+      "name": "storage_after_dedup",
+      "formula": "storage_logical * 0.7",
+      "unit": "PB"
+    },
+    {
+      "name": "metadata_rows",
+      "formula": "users * 1000",
+      "unit": ""
+    },
+    {
+      "name": "metadata_size",
+      "formula": "metadata_rows * 1000 / 1e12",
+      "unit": "TB"
+    },
+    {
+      "name": "online_devices",
+      "formula": "dau * 2",
+      "unit": ""
+    },
+    {
+      "name": "notify_servers",
+      "formula": "online_devices / (100 * thousand)",
+      "unit": ""
+    },
+    {
+      "name": "naive_poll_qps",
+      "formula": "online_devices / 30",
+      "unit": "/s"
+    }
+  ]
+}

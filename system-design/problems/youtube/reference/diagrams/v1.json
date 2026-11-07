@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "why": "Naive start: one server accepts uploads, transcodes them inline, stores files on its disk and streams them to viewers; metadata in one SQL database. Uploads block for hours, 80 Tbps can't leave one server, and one failure stops everything.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Viewer / creator app (ABR player)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "svc",
+      "kind": "service",
+      "label": "Video server (upload, encode, stream)",
+      "x": 300,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "videos DB",
+      "x": 560,
+      "y": 160
+    },
+    {
+      "id": "disk",
+      "kind": "blob",
+      "label": "Video files on local disk",
+      "x": 560,
+      "y": 320
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "svc",
+      "label": "upload / watch"
+    },
+    {
+      "from": "svc",
+      "to": "db",
+      "label": "metadata, view count + 1"
+    },
+    {
+      "from": "svc",
+      "to": "disk",
+      "label": "store and read video files"
+    }
+  ],
+  "flows": []
+}

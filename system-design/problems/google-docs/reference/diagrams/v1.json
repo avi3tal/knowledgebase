@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: the editor saves the whole document to one service every few seconds and polls for changes; last write wins. Concurrent typing overwrites people's work and others see edits seconds late.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Browser editor (local copy + pending ops)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "svc",
+      "kind": "service",
+      "label": "Docs service",
+      "x": 300,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "docs table (full body)",
+      "x": 560,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "svc",
+      "label": "PUT whole doc / poll"
+    },
+    {
+      "from": "svc",
+      "to": "db",
+      "label": "UPDATE docs SET body"
+    }
+  ],
+  "flows": []
+}

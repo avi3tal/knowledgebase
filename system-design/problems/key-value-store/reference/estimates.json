@@ -1,12 +1,45 @@
 {
   "version": 1,
   "rows": [
-    { "name": "keys", "formula": "20 * billion", "unit": "" },
-    { "name": "raw_bytes", "formula": "keys * 1200", "unit": "B" },
-    { "name": "replicated_storage", "formula": "raw_bytes * 3 / 10**12", "unit": "TB" },
-    { "name": "usable_per_server_tb", "formula": "4 * 0.5", "unit": "" },
-    { "name": "nodes", "formula": "replicated_storage / usable_per_server_tb", "unit": "" },
-    { "name": "replica_ops", "formula": "1 * million * 2 + 200 * thousand * 3", "unit": "/s" },
-    { "name": "ops_per_node", "formula": "replica_ops / nodes", "unit": "/s" }
+    {
+      "name": "keys",
+      "formula": "20 * billion",
+      "unit": ""
+    },
+    {
+      "name": "raw_bytes",
+      "formula": "keys * 1200",
+      "unit": "B"
+    },
+    {
+      "name": "replicated_storage",
+      "formula": "raw_bytes * 3 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "usable_per_server_tb",
+      "formula": "4 * 0.5",
+      "unit": ""
+    },
+    {
+      "name": "nodes",
+      "formula": "replicated_storage / usable_per_server_tb",
+      "unit": ""
+    },
+    {
+      "name": "replica_ops",
+      "formula": "1 * million * 2 + 200 * thousand * 3",
+      "unit": "/s"
+    },
+    {
+      "name": "ops_per_node",
+      "formula": "replica_ops / nodes",
+      "unit": "/s"
+    },
+    {
+      "name": "rebalance_per_new_node",
+      "formula": "replicated_storage / (nodes + 1)",
+      "unit": "TB"
+    }
   ]
 }

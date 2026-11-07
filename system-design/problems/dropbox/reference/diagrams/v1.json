@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: the client uploads whole files to one service that stores bytes and metadata in one SQL database; other devices poll every 30 s. A 1-byte edit re-sends 50 GB, a dropped upload restarts, and the DB can't hold 2.5 EB.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Desktop / mobile client (watcher, chunker, local DB)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "svc",
+      "kind": "service",
+      "label": "File service",
+      "x": 300,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "files DB (metadata + bytes)",
+      "x": 560,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "svc",
+      "label": "upload whole file / poll for changes"
+    },
+    {
+      "from": "svc",
+      "to": "db",
+      "label": "INSERT file bytes + row"
+    }
+  ],
+  "flows": []
+}

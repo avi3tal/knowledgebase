@@ -1,0 +1,415 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Split bytes from metadata: content-addressed chunks go straight to object storage (dedup and resume for free), a per-namespace ordered journal is the single source of truth for versions and sync cursors, a cheap 'something changed' signal wakes devices that then pull the delta, and optimistic commits turn concurrent edits into visible conflicts instead of lost data.",
+  "checks": [
+    {
+      "id": "req-sync",
+      "type": "requirement",
+      "label": "Core cross-device behaviour captured",
+      "keywords": [
+        "sync",
+        "other device",
+        "every device",
+        "all devices",
+        "all their devices",
+        "propagat",
+        "across devices"
+      ],
+      "tips": {
+        "nudge": "A user saves a file on their laptop. What should happen on their phone?",
+        "hint": "Write a functional requirement about changes reaching the user's other devices.",
+        "show": "F2: A change on one device appears automatically on the user's other devices and for collaborators on shared folders."
+      }
+    },
+    {
+      "id": "req-versions",
+      "type": "requirement",
+      "label": "Past states of a file covered",
+      "keywords": [
+        "version",
+        "history",
+        "restore",
+        "revision",
+        "undo",
+        "previous"
+      ],
+      "tips": {
+        "nudge": "The user overwrote yesterday's report by mistake. What can they do?",
+        "hint": "Add a requirement about keeping and restoring earlier states of a file.",
+        "show": "F3: Version history: restore any version (including deleted files) from the last 30 days."
+      }
+    },
+    {
+      "id": "req-durability",
+      "type": "requirement",
+      "label": "Data-safety expectation stated",
+      "keywords": [
+        "durab",
+        "never lose",
+        "never lost",
+        "data loss",
+        "11 nines",
+        "99.999"
+      ],
+      "tips": {
+        "nudge": "What is the one thing a storage product can never do?",
+        "hint": "Add a non-functional requirement about losing files.",
+        "show": "N1: Durability: an acknowledged file is never lost (11 nines)."
+      }
+    },
+    {
+      "id": "req-efficiency",
+      "type": "requirement",
+      "label": "Network behaviour expectation stated",
+      "keywords": [
+        "bandwidth",
+        "resum",
+        "only the changed",
+        "only changed",
+        "delta",
+        "flaky",
+        "partial",
+        "chunk",
+        "dropped connection"
+      ],
+      "tips": {
+        "nudge": "Phones on trains, 50 GB video files, a one-word edit to a big document. What should the transfer look like?",
+        "hint": "State what may be re-sent after an edit and after a dropped connection.",
+        "show": "N3: Only changed chunks are transferred, and uploads resume after a dropped connection."
+      }
+    },
+    {
+      "id": "est-commit-qps",
+      "type": "estimate",
+      "label": "Rate of file changes estimated",
+      "keywords": [
+        "commit",
+        "upload",
+        "write",
+        "change",
+        "edit",
+        "save"
+      ],
+      "unit": "/s",
+      "min": 2000,
+      "max": 200000,
+      "tips": {
+        "nudge": "Start from daily active users and how often each one changes a file.",
+        "hint": "commits/s = DAU × changes per day / 86,400; then a peak factor.",
+        "show": "commit_qps = 100M × 10 / day ≈ 11,600 /s (peak ≈ 35,000 /s)."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Total stored bytes estimated",
+      "keywords": [
+        "storage",
+        "stored",
+        "total",
+        "bytes",
+        "capacity"
+      ],
+      "unit": "PB",
+      "min": 200,
+      "max": 20000,
+      "tips": {
+        "nudge": "How much does the average user keep, and how many users are there?",
+        "hint": "storage = users × average bytes per user; mention what dedup saves.",
+        "show": "storage = 500M × 5 GB = 2.5 EB (2,500 PB); ~1,750 PB after ~30% dedup."
+      }
+    },
+    {
+      "id": "est-bandwidth",
+      "type": "estimate",
+      "label": "Upload bandwidth estimated",
+      "keywords": [
+        "bandwidth",
+        "ingress",
+        "throughput",
+        "transfer",
+        "upload_bytes",
+        "network"
+      ],
+      "unit": "GB/s",
+      "min": 1,
+      "max": 200,
+      "tips": {
+        "nudge": "How many bytes per second arrive from all devices together?",
+        "hint": "bandwidth = changes per day × average bytes per change / 86,400.",
+        "show": "upload_bandwidth = 1B × 1 MB / day ≈ 11.6 GB/s (before chunk-level dedup)."
+      }
+    },
+    {
+      "id": "api-commit",
+      "type": "endpoint",
+      "label": "Write interface defined",
+      "method": "POST",
+      "keywords": [
+        "commit",
+        "file",
+        "upload",
+        "block",
+        "chunk"
+      ],
+      "tips": {
+        "nudge": "What does the client send to create a new version of a file, and what if someone else got there first?",
+        "hint": "A POST that names the file's content without carrying the bytes, plus the version it was based on.",
+        "show": "POST /files/commit {namespace_id, path, block_hashes[], base_rev} → 200 {rev, seq} | 409 conflict | 412 {missing blocks}"
+      }
+    },
+    {
+      "id": "api-changes",
+      "type": "endpoint",
+      "label": "Catch-up interface defined",
+      "method": "GET",
+      "keywords": [
+        "delta",
+        "change",
+        "cursor",
+        "list_folder",
+        "notify",
+        "poll",
+        "since"
+      ],
+      "tips": {
+        "nudge": "A laptop wakes up after a week. How does it ask what it missed?",
+        "hint": "A GET that takes a position in a change log and returns everything after it.",
+        "show": "GET /changes?cursor= → {entries[], cursor, has_more}; GET /notify?cursor= long-polls for 'something changed'."
+      }
+    },
+    {
+      "id": "data-file-version",
+      "type": "entity",
+      "label": "File version record defined",
+      "keywords": [
+        "block",
+        "chunk",
+        "hash",
+        "blocklist",
+        "block_list"
+      ],
+      "tips": {
+        "nudge": "If bytes live elsewhere, what does a file version row point at?",
+        "hint": "One row per version: path, revision, and the ordered list of pieces that make up the content.",
+        "show": "file_journal(namespace_id, seq, path, rev, block_hashes[], size, deleted, ts); block_index(hash PK, size, ref_count)."
+      }
+    },
+    {
+      "id": "part-upload",
+      "type": "part",
+      "label": "Moving file bytes designed as its own part",
+      "keywords": [
+        "upload",
+        "chunk",
+        "block",
+        "dedup",
+        "resum",
+        "transfer",
+        "bytes"
+      ],
+      "tips": {
+        "nudge": "A one-word edit to a 2 GB file: how many bytes should cross the network?",
+        "hint": "Add a part for the byte path: compare whole-file upload through servers, presigned whole-file upload and chunked content-addressed upload.",
+        "show": "Part 'Chunked upload': 4 MB chunks hashed with SHA-256; the server returns missing hashes; the client PUTs only those via presigned URLs to a storage edge / upload endpoint (draw that node between the client and the block store), resuming per chunk; identical chunks are stored once."
+      }
+    },
+    {
+      "id": "part-metadata",
+      "type": "part",
+      "label": "File tree and versions designed as their own part",
+      "keywords": [
+        "metadata",
+        "version",
+        "revision",
+        "journal",
+        "namespace",
+        "file tree"
+      ],
+      "choice_keywords": [
+        "sql",
+        "shard",
+        "journal",
+        "database",
+        "db",
+        "nosql",
+        "postgres",
+        "mysql",
+        "table",
+        "spanner"
+      ],
+      "tips": {
+        "nudge": "500B file rows and 30 days of history. Where do they live, and how are they split?",
+        "hint": "Add a part for metadata: compare one SQL DB, a document store and sharded SQL with an ordered log.",
+        "show": "Part 'Metadata and versions': SQL sharded by namespace_id with an append-only journal (namespace_id, seq): current tree, history and sync cursor in one table."
+      }
+    },
+    {
+      "id": "part-sync",
+      "type": "part",
+      "label": "Propagating changes designed as its own part",
+      "keywords": [
+        "sync",
+        "notif",
+        "long-poll",
+        "long poll",
+        "push",
+        "change feed",
+        "propagat",
+        "poll"
+      ],
+      "tips": {
+        "nudge": "200M devices are online. How does each one find out quickly that something changed?",
+        "hint": "Add a part for notification: compare polling, pushing payloads and a signal-then-pull design.",
+        "show": "Part 'Sync': commits emit namespace change events; a long-poll notify service wakes subscribed devices, which pull GET /changes?cursor=."
+      }
+    },
+    {
+      "id": "part-conflict",
+      "type": "part",
+      "label": "Simultaneous edits designed as their own part",
+      "keywords": [
+        "conflict",
+        "concurren",
+        "simultaneous",
+        "both edit",
+        "same file"
+      ],
+      "tips": {
+        "nudge": "Laptop and phone both edit report.docx from the same version while offline. What do they see later?",
+        "hint": "Add a part for conflicts: compare last-writer-wins, locks, optimistic commits and automatic merge.",
+        "show": "Part 'Conflicts': commit carries base_rev; the server accepts only if it is current; the losing device keeps its edit as 'report (conflicted copy)'."
+      }
+    },
+    {
+      "id": "comp-blob",
+      "type": "component",
+      "label": "A home for file contents",
+      "kinds": [
+        "blob"
+      ],
+      "tips": {
+        "nudge": "Petabytes of immutable bytes. Should they live in your database?",
+        "hint": "Pick a store built for large immutable objects.",
+        "show": "An object/block store (S3-like) holding 4 MB chunks keyed by their SHA-256. Clients reach it through a storage edge / upload endpoint with presigned URLs, never as a direct client → store edge."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Tens of thousands of commits per second at peak. What spreads them?",
+        "hint": "Stateless metadata servers behind something that distributes requests.",
+        "show": "Clients → load balancer → N stateless metadata/sync service instances."
+      }
+    },
+    {
+      "id": "comp-notify",
+      "type": "component",
+      "label": "Devices learn about changes without asking",
+      "kinds": [
+        "service",
+        "worker"
+      ],
+      "keywords": [
+        "notif",
+        "push",
+        "poll",
+        "websocket",
+        "subscri",
+        "watch"
+      ],
+      "tips": {
+        "nudge": "Polling every few seconds from 200M devices is expensive. What holds a connection open instead?",
+        "hint": "Add a component whose only job is to keep device connections and say 'something changed'.",
+        "show": "Notification service holding long-poll (or WebSocket) connections per device, subscribed to namespace change events."
+      }
+    },
+    {
+      "id": "edge-change-events",
+      "type": "edge",
+      "label": "Commits announce themselves asynchronously",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
+      "tips": {
+        "nudge": "After a commit, who tells the notification side, and should the commit wait for it?",
+        "hint": "Connect the service that commits to something asynchronous that others consume.",
+        "show": "Metadata service → namespace change events (Kafka) → notification service."
+      }
+    },
+    {
+      "id": "dd-chunking",
+      "type": "decision",
+      "label": "How files are cut into pieces decided",
+      "keywords": [
+        "chunk size",
+        "content-defined",
+        "rolling hash",
+        "rabin",
+        "fixed-size",
+        "fixed size",
+        "4 mb",
+        "boundar"
+      ],
+      "tips": {
+        "nudge": "Insert one byte at the start of a 1 GB file. With fixed-size pieces, how many change?",
+        "hint": "Compare fixed-size chunks with content-defined chunking, and pick a size.",
+        "show": "Fixed 4 MB chunks by default (the average change is one chunk); content-defined chunking with a rolling hash for large files edited in place."
+      }
+    },
+    {
+      "id": "dd-chunk-gc",
+      "type": "decision",
+      "label": "Reclaiming space safely decided",
+      "keywords": [
+        "garbage",
+        "reference count",
+        "refcount",
+        "unreferenced",
+        "mark and sweep",
+        "mark-and-sweep",
+        "orphan"
+      ],
+      "tips": {
+        "nudge": "A version expires after 30 days. When may its chunks be deleted, given other files may share them?",
+        "hint": "Compare reference counting with mark-and-sweep, and think about which failure is worse.",
+        "show": "Mark-and-sweep over the journal after the history window, plus a 7-day grace period: a bug delays deletion instead of deleting live data."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure scenarios walked through",
+      "key": "failures",
+      "tips": {
+        "nudge": "Walk through: the upload drops at 80%; a metadata shard's primary dies; a notify server dies.",
+        "hint": "For each, say what the user sees and how the system recovers.",
+        "show": "Resume from the first missing chunk; failover to a sync replica (commits pause seconds); clients reconnect and pull by cursor, nothing lost."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "label": "Operability covered",
+      "key": "monitoring",
+      "tips": {
+        "nudge": "How would you know sync is slow before users tweet about it?",
+        "hint": "List the metrics and the end-to-end probe you'd watch.",
+        "show": "Commit p99, conflict rate, commit-to-other-device latency probe, upload resume/error rate, dedup ratio, notify connections, journal lag."
+      }
+    }
+  ]
+}

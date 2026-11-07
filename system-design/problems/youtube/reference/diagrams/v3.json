@@ -1,0 +1,158 @@
+{
+  "version": 3,
+  "why": "Compose P2 (F3, N1, N4): players fetch HLS/DASH manifests and segments from CDN edges that pull from the origin on a miss, and switch renditions with bandwidth. API servers leave the byte path. Flaw left: metadata reads hit one DB, there is no search, and view counts update a hot row per view.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Viewer / creator app (ABR player)",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "API gateway / load balancer",
+      "x": 240,
+      "y": 140
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "label": "CDN edge (segments + manifests)",
+      "x": 240,
+      "y": 400
+    },
+    {
+      "id": "api",
+      "kind": "service",
+      "label": "Video API (watch page, metadata, search)",
+      "x": 430,
+      "y": 140
+    },
+    {
+      "id": "upload",
+      "kind": "service",
+      "label": "Upload service (resumable)",
+      "x": 430,
+      "y": 300
+    },
+    {
+      "id": "raw",
+      "kind": "blob",
+      "label": "Raw uploads (object storage)",
+      "x": 620,
+      "y": 290
+    },
+    {
+      "id": "orch",
+      "kind": "scheduler",
+      "label": "Pipeline orchestrator (DAG per video)",
+      "x": 620,
+      "y": 380
+    },
+    {
+      "id": "tasks",
+      "kind": "queue",
+      "label": "Encode tasks (segment × rendition)",
+      "x": 800,
+      "y": 380
+    },
+    {
+      "id": "workers",
+      "kind": "worker",
+      "label": "Transcode workers ×N (ffmpeg)",
+      "x": 960,
+      "y": 380
+    },
+    {
+      "id": "media",
+      "kind": "blob",
+      "label": "Encoded segments + manifests (origin)",
+      "x": 620,
+      "y": 470
+    },
+    {
+      "id": "vmeta",
+      "kind": "sql",
+      "label": "Video metadata (sharded by video_id)",
+      "x": 800,
+      "y": 60
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "upload / watch page"
+    },
+    {
+      "from": "lb",
+      "to": "upload",
+      "label": "resumable upload (chunks)"
+    },
+    {
+      "from": "upload",
+      "to": "raw",
+      "label": "write original"
+    },
+    {
+      "from": "upload",
+      "to": "orch",
+      "label": "upload complete"
+    },
+    {
+      "from": "orch",
+      "to": "tasks",
+      "label": "fan out segment × rendition"
+    },
+    {
+      "from": "tasks",
+      "to": "workers"
+    },
+    {
+      "from": "workers",
+      "to": "raw",
+      "label": "read segment"
+    },
+    {
+      "from": "workers",
+      "to": "media",
+      "label": "write encoded segments + manifest"
+    },
+    {
+      "from": "orch",
+      "to": "vmeta",
+      "label": "status = ready, renditions"
+    },
+    {
+      "from": "client",
+      "to": "cdn",
+      "label": "GET manifest + segments (ABR)"
+    },
+    {
+      "from": "cdn",
+      "to": "media",
+      "label": "origin pull on miss"
+    },
+    {
+      "from": "lb",
+      "to": "api"
+    },
+    {
+      "from": "api",
+      "to": "vmeta",
+      "label": "metadata, view count + 1"
+    }
+  ],
+  "flows": [
+    {
+      "name": "playback",
+      "path": [
+        "client",
+        "cdn",
+        "media"
+      ]
+    }
+  ]
+}
