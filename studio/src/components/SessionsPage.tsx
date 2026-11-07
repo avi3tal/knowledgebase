@@ -1,78 +1,179 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Focus, Session, SessionSpec, Subject } from "../api";
 import { api } from "../api";
 import { groupTopics, topicIcon } from "../catalog";
+import { sessionsSummary } from "../practice-bench";
 import { FOCUS_INFO, STATUS_LABEL, groupByStatus, scoreBand } from "../sessions";
+import { NavList } from "./panes";
+import { PlanWithClaude, Stat, sessionNavGroups, useSessions } from "./PracticeBench";
+import { Ring } from "./Ring";
+import { Workbench } from "./Workbench";
 
-/** All study sessions grouped by status, plus the "new session" builder. */
+/** All study sessions on the Workbench: the list left, cards or the builder center, totals right. */
 export function SessionsPage({ sessions, subjects }: { sessions: Session[]; subjects: Subject[] }) {
   const [building, setBuilding] = useState(sessions.length === 0);
-  return (
-    <div className="sessions">
-      <section className="hero sessions-hero">
-        <div className="hero-icon">🎯</div>
-        <div className="grow">
-          <h1>Study sessions</h1>
-          <div className="stats">
-            <span className="stat">
-              <b>{sessions.filter((s) => s.status === "active").length}</b> in progress
-            </span>
-            <span className="stat">
-              <b>{sessions.filter((s) => s.status === "done").length}</b> done
-            </span>
-            <span className="stat">stored privately in _workspace/sessions</span>
-          </div>
+  const list = useSessions(sessions) ?? sessions;
+  const nav = useMemo(() => sessionNavGroups(list), [list]);
+  const sum = sessionsSummary(sessions);
+  const claude = sessions.filter((s) => s.generator === "claude").length;
+
+  const header = (
+    <div className="rd-header pb-head">
+      <div className="rd-icon">🎯</div>
+      <div className="rd-head-main">
+        <div className="rd-kicker">
+          <span className="pb-kicker">Practice</span>
+          <span className="muted small">stored privately in _workspace/sessions</span>
         </div>
-        <button className="hero-btn" onClick={() => setBuilding((b) => !b)}>
-          {building ? "Close" : "＋ New session"}
-        </button>
-      </section>
-
-      {building && <SessionBuilder subjects={subjects} />}
-
-      {groupByStatus(sessions).map((g) => (
-        <section key={g.status}>
-          <h2 className="group-title">
-            <span className={`status-dot ${g.status}`} /> {STATUS_LABEL[g.status]}
-            <span className="muted small"> {g.sessions.length}</span>
-          </h2>
-          <div className="cards">
-            {g.sessions.map((s, i) => (
-              <a
-                key={s.id}
-                href={`#/session/${s.id}`}
-                className={`session-card ${s.status}`}
-                style={{ ["--i" as string]: i }}
-              >
-                <div className="tc-head">
-                  <span className="tc-icon">{FOCUS_INFO[s.target.focus].icon}</span>
-                  <span className="grow" />
-                  <span className={`score-chip ${scoreBand(s.score)}`}>
-                    {s.score === null ? "no score yet" : `${s.score}/100`}
-                  </span>
-                </div>
-                <div className="tc-name">{s.title}</div>
-                {s.target.goal && <div className="tc-usage">🎯 {s.target.goal}</div>}
-                <div
-                  className="progress-bar"
-                  title={`${Math.round(s.completion * 100)}% attempted`}
-                >
-                  <span style={{ width: `${s.completion * 100}%` }} />
-                </div>
-                <div className="tc-foot">
-                  <span className="tc-pill">{s.items.length} problems</span>
-                  <span className="tc-pill">{s.materials.length} lessons</span>
-                  <span className="tc-pill">
-                    {s.generator === "claude" ? "🤖 Claude plan" : "⚙️ kb"}
-                  </span>
-                  <span className="tc-pill">{s.created.slice(0, 10)}</span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-      ))}
+        <h1>Study sessions</h1>
+        <div className="pb-stats">
+          <Stat n={sum.total} label="sessions" />
+          <Stat n={sum.active} label="in progress" tone="accent" />
+          <Stat n={sum.done} label="done" tone="ok" />
+          <Stat n={sum.average ?? "—"} label="avg score" />
+        </div>
+      </div>
+      <button className="rd-btn primary big" onClick={() => setBuilding((b) => !b)}>
+        {building ? "✕ Close builder" : "＋ New session"}
+        <span className="rd-btn-sub">
+          {building ? "back to your sessions" : "kb picks the problems"}
+        </span>
+      </button>
     </div>
+  );
+
+  const tabs = (
+    <>
+      <button
+        className={`wb-tab pb-tab-list ${building ? "" : "on"}`}
+        onClick={() => setBuilding(false)}
+      >
+        🗂️ Sessions <span className="wb-tab-badge">{sessions.length}</span>
+      </button>
+      <button
+        className={`wb-tab pb-tab-new ${building ? "on" : ""}`}
+        onClick={() => setBuilding(true)}
+      >
+        ✨ New session
+      </button>
+    </>
+  );
+
+  const right = (
+    <div className="pb-side">
+      <section className="rd-card pb-score-card">
+        <h4>Average score</h4>
+        <div className="pb-score-ring">
+          <Ring
+            solved={sum.average ?? 0}
+            total={100}
+            size={96}
+            label={sum.average === null ? "–" : `${sum.average}`}
+          />
+        </div>
+        <div className="progress-bar" title={`${Math.round(sum.completion * 100)}% attempted`}>
+          <span style={{ width: `${sum.completion * 100}%` }} />
+        </div>
+        <div className="muted small">
+          {Math.round(sum.completion * 100)}% of live sessions attempted
+        </div>
+      </section>
+      <section className="rd-card">
+        <h4>Planned by</h4>
+        <div className="rd-practice-stats">
+          <span>
+            <b>{claude}</b> 🤖 Claude
+          </span>
+          <span>
+            <b>{sessions.length - claude}</b> ⚙️ kb
+          </span>
+        </div>
+      </section>
+      <PlanWithClaude />
+    </div>
+  );
+
+  const footer = (
+    <div className="pb-footer">
+      <span>
+        <b>{sum.total}</b> sessions · <b>{sum.active}</b> in progress · <b>{sum.done}</b> done
+      </span>
+      <span className="grow" />
+      <span className="muted">scores come from your kb runs, never stored</span>
+    </div>
+  );
+
+  return (
+    <Workbench
+      id="sessions"
+      header={header}
+      tabs={tabs}
+      left={{
+        title: "Sessions",
+        icon: "🎯",
+        content: (
+          <NavList groups={nav} placeholder="Filter sessions…" emptyText="No sessions yet." />
+        ),
+      }}
+      right={{ title: "Overview", icon: "📊", content: right }}
+      footer={footer}
+    >
+      <div className="pb-center sessions pb-sessions">
+        {building && <SessionBuilder subjects={subjects} />}
+        {!building && sessions.length === 0 && (
+          <div className="pb-empty">
+            <div className="pb-empty-icon">🎯</div>
+            <p>No sessions yet.</p>
+            <button className="rd-btn primary" onClick={() => setBuilding(true)}>
+              ✨ Build your first session
+            </button>
+          </div>
+        )}
+        {!building &&
+          groupByStatus(sessions).map((g) => (
+            <section key={g.status}>
+              <h2 className="group-title">
+                <span className={`status-dot ${g.status}`} /> {STATUS_LABEL[g.status]}
+                <span className="muted small"> {g.sessions.length}</span>
+              </h2>
+              <div className="cards">
+                {g.sessions.map((s, i) => (
+                  <a
+                    key={s.id}
+                    href={`#/session/${s.id}`}
+                    className={`session-card ${s.status}`}
+                    style={{ ["--i" as string]: i }}
+                  >
+                    <div className="tc-head">
+                      <span className="tc-icon">{FOCUS_INFO[s.target.focus].icon}</span>
+                      <span className="grow" />
+                      <span className={`score-chip ${scoreBand(s.score)}`}>
+                        {s.score === null ? "no score yet" : `${s.score}/100`}
+                      </span>
+                    </div>
+                    <div className="tc-name">{s.title}</div>
+                    {s.target.goal && <div className="tc-usage">🎯 {s.target.goal}</div>}
+                    <div
+                      className="progress-bar"
+                      title={`${Math.round(s.completion * 100)}% attempted`}
+                    >
+                      <span style={{ width: `${s.completion * 100}%` }} />
+                    </div>
+                    <div className="tc-foot">
+                      <span className="tc-pill">{s.items.length} problems</span>
+                      <span className="tc-pill">{s.materials.length} lessons</span>
+                      <span className="tc-pill">
+                        {s.generator === "claude" ? "🤖 Claude plan" : "⚙️ kb"}
+                      </span>
+                      <span className="tc-pill">{s.created.slice(0, 10)}</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          ))}
+      </div>
+    </Workbench>
   );
 }
 
