@@ -2,18 +2,29 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "kb: run current attempt",
+      "label": "kb: run / check current attempt",
       "type": "shell",
       "command": "./kb run '${fileDirname}'",
-      "group": { "kind": "test", "isDefault": true },
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
       "problemMatcher": []
     },
     {
       "label": "kb: run current attempt (no bench)",
       "type": "shell",
       "command": "./kb run '${fileDirname}' --no-bench",
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
       "problemMatcher": []
     },
     {
@@ -27,7 +38,9 @@
       "label": "kb: studio (UI dev mode, hot reload)",
       "type": "shell",
       "command": "yarn dev",
-      "options": { "cwd": "${workspaceFolder}/studio" },
+      "options": {
+        "cwd": "${workspaceFolder}/studio"
+      },
       "isBackground": true,
       "problemMatcher": []
     },
@@ -35,8 +48,112 @@
       "label": "kb: feedback",
       "type": "shell",
       "command": "./kb feedback",
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
       "problemMatcher": []
+    },
+    {
+      "label": "kb: design tip for a check (current design attempt)",
+      "type": "shell",
+      "command": "./kb sd tip '${fileDirname}' ${input:checkId} --level ${input:tipLevel}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: submit design attempt (unlocks the reference)",
+      "type": "shell",
+      "command": "./kb sd submit '${fileDirname}'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: review current attempt with Claude (/review)",
+      "type": "shell",
+      "command": "claude '/review ${fileDirname}'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: new study session",
+      "type": "shell",
+      "command": "./kb session new --focus ${input:focus} --count ${input:count} --subject ${input:subject}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: plan a study session with Claude (/session)",
+      "type": "shell",
+      "command": "claude '/session'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "kb: list study sessions",
+      "type": "shell",
+      "command": "./kb session list",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "checkId",
+      "type": "promptString",
+      "description": "Rubric check id (see the checklist, e.g. comp-cache)"
+    },
+    {
+      "id": "tipLevel",
+      "type": "pickString",
+      "description": "Tip level",
+      "options": ["nudge", "hint", "show"],
+      "default": "nudge"
+    },
+    {
+      "id": "focus",
+      "type": "pickString",
+      "description": "Session focus",
+      "options": ["mixed", "weak", "new", "review"],
+      "default": "mixed"
+    },
+    {
+      "id": "count",
+      "type": "promptString",
+      "description": "How many problems",
+      "default": "5"
+    },
+    {
+      "id": "subject",
+      "type": "pickString",
+      "description": "Subject",
+      "options": ["algo", "system-design", "ood"],
+      "default": "algo"
     }
   ]
 }

@@ -495,6 +495,11 @@ def cmd_sd(a: argparse.Namespace) -> int:
             raise ProblemError(f"{problem.slug} has no attempts — kb sd attempt {problem.slug}")
     else:
         problem, adir = target
+        if a.action == "tip":
+            if len(a.args) < 2:
+                raise ProblemError("usage: kb sd tip <attempt path> <check-id> [--level nudge|hint|show]")
+            print(design.tip(problem, a.args[1], a.level, adir.name))
+            return 0
     if a.action == "check":
         r = design.run_checks(problem, adir)
         _print_check(r)

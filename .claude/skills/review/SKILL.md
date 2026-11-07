@@ -15,6 +15,11 @@ AI review never runs automatically. The user asked, so be worth it: specific, ki
 ```
 If cases fail, the diff kb prints is the evidence. Don't restate what kb measured; build on it.
 
+For **design attempts** (system design / OOD, `…/<date>_design_<label>/`), `./kb run <attempt path>`
+prints the rubric checklist, smells per diagram version and the version diffs. Review the reasoning:
+are requirements and numbers consistent, does each version's `why` fix a real flaw, are the
+trade-offs argued? Never reveal `reference.md` unless the attempt has `submitted.json`.
+
 ## 2. Read only what was asked
 The attempt lives in `_workspace/attempts/<subject>/<slug>/<attempt>/` (solution file + notes.md),
 and the problem in `<subject>/problems/<slug>/` (README, meta.json with `expected_complexity`). Don't

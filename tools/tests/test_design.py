@@ -258,3 +258,19 @@ def test_design_api_end_to_end() -> None:
         assert status == 200 and rows[0]["slug"] == "url-shortener"
     finally:
         httpd.shutdown()
+
+
+def test_cli_sd_and_run_on_design_attempts(problem: design.DesignProblem, capsys: pytest.CaptureFixture) -> None:
+    from kb.cli import main
+
+    assert main(["sd", "validate", "url-shortener"]) == 0
+    assert main(["sd", "attempt", "url-shortener", "--label", "cli"]) == 0
+    (adir,) = problem.attempts()
+    assert main(["run", str(adir / "diagrams" / "v1.json"), "--no-log"]) == 1  # path form, nothing passes yet
+    assert main(["sd", "tip", str(adir), "comp-cache", "--level", "hint"]) == 0
+    copy_reference(problem, adir)
+    assert main(["run", str(adir / "design.json")]) == 0
+    assert "18/18 checks passed" in capsys.readouterr().out
+    assert len(history.runs()) == 1  # kb run records (like algo runs); --no-log doesn't
+    assert main(["sd", "submit", "url-shortener", adir.name]) == 0
+    assert (adir / "submitted.json").exists()
