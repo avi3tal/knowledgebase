@@ -16,9 +16,22 @@ AI review never runs automatically. The user asked, so be worth it: specific, ki
 If cases fail, the diff kb prints is the evidence. Don't restate what kb measured; build on it.
 
 For **design attempts** (system design / OOD, `…/<date>_design_<label>/`), `./kb run <attempt path>`
-prints the rubric checklist, smells per diagram version and the version diffs. Review the reasoning:
-are requirements and numbers consistent, does each version's `why` fix a real flaw, are the
-trade-offs argued? Never reveal `reference.md` unless the attempt has `submitted.json`.
+prints the rubric checklist, smells per diagram version and the version diffs. Review the reasoning
+in the order of the solution layout (`system-design/FORMAT.md`):
+- **Requirements and numbers:** are they consistent with each other, and does each choice cite them?
+- **Decompose (`design.json` → `parts`):**
+  - Is each part a real, separable sub-problem?
+  - Does `covers` point at the right F/N ids?
+  - Are there ≥ 2 honest options with real pros and cons?
+  - Does the `why` follow from the numbers?
+  - Are the technologies and patterns right for the job?
+  - A missing hard part (e.g. no part for the hot read path) is the most valuable feedback.
+- **Reduce:** does the final version compose every part? `part-not-composed` names the missing node
+  ids. Does each version's `why` fix a real flaw?
+- **Deep dives and evaluation:** failure modes, bottlenecks, monitoring, and a crisp 30-second answer.
+
+Never reveal `reference.md` unless the attempt has `submitted.json` or the learner already opened the
+solution (`progress/views.jsonl`). Even then, point at sections rather than pasting it.
 
 ## 2. Read only what was asked
 The attempt lives in `_workspace/attempts/<subject>/<slug>/<attempt>/` (solution file + notes.md),
