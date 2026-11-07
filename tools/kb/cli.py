@@ -227,6 +227,53 @@ def cmd_sync(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_refs(a: argparse.Namespace) -> int:
+    from kb import refs
+
+    if a.action == "validate":
+        bad = 0
+        results = refs.validate_all()
+        catalogs = {f"catalog:{s}": learn.validate_catalog(s) for s in learn.subjects()}
+        for name, errors in {**catalogs, **results}.items():
+            if a.file and name != a.file:
+                continue
+            bad += bool(errors)
+            print(red(f"✗ {name}") if errors else green(f"✓ {name}"))
+            for e in errors[:50]:
+                print(f"    - {e}")
+        return 1 if bad else 0
+    if a.action == "topics":  # ids researchers may use
+        for s in learn.subjects():
+            cat = learn.catalog(s)
+            for t in cat["topics"]:
+                print(f"{s:14} {t['id']:34} {t.get('kind', ''):12} {t['name']}")
+        return 0
+    rows = refs.for_problem(a.problem, limit=100) if a.problem else refs.for_topic(a.subject, a.topic or "", limit=100)
+    for r in rows:
+        where = r["url"] or f"page {r['page']}"
+        print(f"[{r['verdict']}/{r['access']}] {r['source_name']}: {r['title']} — {where}")
+    return 0
+
+
+def cmd_graph(a: argparse.Namespace) -> int:
+    from kb import refs
+
+    data = refs.neighbourhood(a.subject, f"topic:{a.topic}") if a.topic else refs.graph(a.subject)
+    if a.json:
+        print(json.dumps(data, indent=1, ensure_ascii=False))
+        return 0
+    counts: dict[str, int] = {}
+    for n in data["nodes"]:
+        counts[n["type"]] = counts.get(n["type"], 0) + 1
+    print(
+        f"{a.subject}: " + ", ".join(f"{v} {k}s" for k, v in sorted(counts.items())) + f", {len(data['edges'])} edges"
+    )
+    if a.topic:
+        for e in data["edges"]:
+            print(f"  {e['from']} --{e['type']}--> {e['to']}")
+    return 0
+
+
 def cmd_index(a: argparse.Namespace) -> int:
     target = problems_dir() / "INDEX.md"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -340,6 +387,20 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("list", help="list problems")
     s.add_argument("--pattern")
     s.set_defaults(fn=cmd_list)
+
+    s = sub.add_parser("refs", help="external resources: validate | topics | list")
+    s.add_argument("action", choices=["validate", "topics", "list"])
+    s.add_argument("--file", help="validate only this file name, e.g. algomaster.json")
+    s.add_argument("--subject", default="algo")
+    s.add_argument("--topic")
+    s.add_argument("--problem", help="list refs matched to a problem slug")
+    s.set_defaults(fn=cmd_refs)
+
+    s = sub.add_parser("graph", help="knowledge graph of a subject (or one topic's neighbourhood)")
+    s.add_argument("subject")
+    s.add_argument("--topic")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(fn=cmd_graph)
 
     s = sub.add_parser("sync", help="rewrite README header lines (difficulty/patterns/sources) from meta.json")
     s.set_defaults(fn=cmd_sync)

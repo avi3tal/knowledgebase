@@ -45,6 +45,51 @@ def catalog(subject: str) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
+TOPIC_KINDS = {"pattern", "fundamental", "concept", "case-study", "principle"}
+TOPIC_STATUS = {"open", "locked"}
+
+
+def validate_catalog(subject: str) -> list[str]:
+    """Catalog integrity: unique kebab ids, known kinds/status, prereqs/related point to real topics,
+    related is symmetric, no prerequisite cycles."""
+    cat, errors = catalog(subject), []
+    ids = [t.get("id") for t in cat.get("topics", [])]
+    if len(set(ids)) != len(ids):
+        errors.append("duplicate topic ids")
+    known = set(ids)
+    by_id = {t["id"]: t for t in cat["topics"]}
+    for t in cat["topics"]:
+        where = f"{subject}/{t.get('id')}"
+        if not SLUG_RE.match(str(t.get("id", ""))):
+            errors.append(f"{where}: id must be kebab-case")
+        if t.get("kind") not in TOPIC_KINDS:
+            errors.append(f"{where}: kind must be one of {sorted(TOPIC_KINDS)}")
+        if t.get("status", "open") not in TOPIC_STATUS:
+            errors.append(f"{where}: status must be one of {sorted(TOPIC_STATUS)}")
+        for key in ("prereqs", "related"):
+            for other in t.get(key, []):
+                if other not in known or other == t["id"]:
+                    errors.append(f"{where}: {key} has unknown/self id {other!r}")
+        for other in t.get("related", []):
+            if other in by_id and t["id"] not in by_id[other].get("related", []):
+                errors.append(f"{where}: related is not symmetric with {other!r}")
+    state: dict[str, int] = {}
+
+    def visit(tid: str) -> bool:  # True if a cycle is reachable
+        if state.get(tid) == 1:
+            return True
+        if state.get(tid) == 2:
+            return False
+        state[tid] = 1
+        cyclic = any(visit(p) for p in by_id.get(tid, {}).get("prereqs", []) if p in by_id)
+        state[tid] = 2
+        return cyclic
+
+    if any(visit(tid) for tid in by_id):
+        errors.append(f"{subject}: prerequisite cycle")
+    return errors
+
+
 def topic_ids(cat: dict[str, Any]) -> set[str]:
     return {t["id"] for t in cat["topics"]}
 

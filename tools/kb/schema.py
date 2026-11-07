@@ -138,6 +138,13 @@ def validate(problem: Problem) -> list[str]:
     srcs = m.get("sources", [])
     if not isinstance(srcs, list) or not all(isinstance(s, dict) and s.get("name") for s in srcs):
         errors.append("meta.sources must be a list of {name, url?}")
+    else:
+        from kb import refs  # local import: refs -> learn -> schema
+
+        index = refs.source_index()
+        unknown = [s["name"] for s in srcs if not refs.resolves(s["name"], index)]
+        if unknown:
+            errors.append(f"meta.sources {unknown} not in resources/sources.json (add the source or an alias)")
     ec = m.get("expected_complexity")
     if not isinstance(ec, dict) or not ec.get("time") or not ec.get("space"):
         errors.append("meta.expected_complexity needs 'time' and 'space'")

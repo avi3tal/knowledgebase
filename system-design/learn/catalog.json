@@ -1,0 +1,599 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "title": "System Design",
+  "status": "locked",
+  "source": {
+    "name": "kb curated topic map",
+    "note": "Locked subject: topics exist so research and the knowledge graph can reference them; lessons come later."
+  },
+  "topics": [
+    {
+      "id": "sd-framework",
+      "name": "How to approach a design interview",
+      "kind": "concept",
+      "group": "fundamentals",
+      "status": "locked",
+      "usage": "Requirements → estimates → API → data model → high-level design → deep dives → trade-offs.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": []
+    },
+    {
+      "id": "back-of-envelope",
+      "name": "Back-of-the-envelope estimation",
+      "kind": "concept",
+      "group": "fundamentals",
+      "status": "locked",
+      "usage": "QPS, storage, bandwidth and memory estimates from a few assumptions.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "sd-framework"
+      ],
+      "related": []
+    },
+    {
+      "id": "scalability-basics",
+      "name": "Scaling from zero to millions",
+      "kind": "concept",
+      "group": "fundamentals",
+      "status": "locked",
+      "usage": "Vertical vs horizontal scaling, stateless services, the path from one box to many.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "sd-framework"
+      ],
+      "related": []
+    },
+    {
+      "id": "latency-throughput",
+      "name": "Latency, throughput and availability",
+      "kind": "concept",
+      "group": "fundamentals",
+      "status": "locked",
+      "usage": "Latency numbers, percentiles, SLAs/SLOs, nines of availability.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "scalability-basics"
+      ],
+      "related": []
+    },
+    {
+      "id": "cap-consistency",
+      "name": "CAP, PACELC and consistency models",
+      "kind": "concept",
+      "group": "fundamentals",
+      "status": "locked",
+      "usage": "Strong vs eventual consistency, quorum reads/writes, trade-offs under partitions.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "replication"
+      ],
+      "related": []
+    },
+    {
+      "id": "networking-basics",
+      "name": "Networking: DNS, HTTP, TCP/UDP, WebSockets",
+      "kind": "concept",
+      "group": "fundamentals",
+      "status": "locked",
+      "usage": "How requests reach a service; long polling vs SSE vs WebSockets.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": []
+    },
+    {
+      "id": "api-design",
+      "name": "API design: REST, gRPC, GraphQL",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Resource modelling, pagination, idempotency, versioning.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "networking-basics"
+      ],
+      "related": []
+    },
+    {
+      "id": "load-balancing",
+      "name": "Load balancing",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "L4 vs L7, algorithms, health checks, sticky sessions.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "scalability-basics"
+      ],
+      "related": []
+    },
+    {
+      "id": "caching",
+      "name": "Caching",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Cache-aside / write-through / write-back, eviction, invalidation, hot keys.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "scalability-basics"
+      ],
+      "related": [
+        "cdn"
+      ]
+    },
+    {
+      "id": "cdn",
+      "name": "CDN and edge",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Push vs pull CDNs, cache control, serving static and video content.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "caching"
+      ],
+      "related": [
+        "caching"
+      ]
+    },
+    {
+      "id": "databases-sql-nosql",
+      "name": "Databases: SQL vs NoSQL",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Relational vs key-value / document / wide-column / graph; choosing a store.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "scalability-basics"
+      ],
+      "related": []
+    },
+    {
+      "id": "indexing",
+      "name": "Indexes and storage engines",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "B-trees vs LSM trees, secondary indexes, write vs read amplification.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "databases-sql-nosql"
+      ],
+      "related": []
+    },
+    {
+      "id": "replication",
+      "name": "Replication",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Leader-follower, multi-leader, leaderless; replication lag.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "databases-sql-nosql"
+      ],
+      "related": []
+    },
+    {
+      "id": "sharding",
+      "name": "Sharding and partitioning",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Range vs hash partitioning, rebalancing, hot partitions.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "databases-sql-nosql"
+      ],
+      "related": [
+        "consistent-hashing"
+      ]
+    },
+    {
+      "id": "consistent-hashing",
+      "name": "Consistent hashing",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Hash ring, virtual nodes, minimal remapping.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "sharding"
+      ],
+      "related": [
+        "sharding"
+      ]
+    },
+    {
+      "id": "message-queues",
+      "name": "Message queues and event streaming",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Queues vs logs (Kafka), delivery semantics, back-pressure, DLQs.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "scalability-basics"
+      ],
+      "related": []
+    },
+    {
+      "id": "rate-limiting",
+      "name": "Rate limiting",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Token bucket, leaky bucket, sliding window; distributed counters.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "caching"
+      ],
+      "related": []
+    },
+    {
+      "id": "unique-id-generation",
+      "name": "Unique ID generation",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "UUIDs, Snowflake IDs, ticket servers; ordering vs coordination.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": []
+    },
+    {
+      "id": "blob-storage",
+      "name": "Blob / object storage",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Chunking, metadata vs data, durability via replication or erasure coding.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "databases-sql-nosql"
+      ],
+      "related": []
+    },
+    {
+      "id": "search-indexing",
+      "name": "Search and inverted indexes",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Tokenisation, inverted index, ranking, typeahead tries.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "indexing"
+      ],
+      "related": []
+    },
+    {
+      "id": "microservices",
+      "name": "Microservices and service communication",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Sync vs async calls, service discovery, API gateway, sagas.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "api-design",
+        "message-queues"
+      ],
+      "related": []
+    },
+    {
+      "id": "observability",
+      "name": "Monitoring, logging and tracing",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Metrics, logs, traces, alerting; designing for operability.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": []
+    },
+    {
+      "id": "security-auth",
+      "name": "Authentication and authorization",
+      "kind": "concept",
+      "group": "building-blocks",
+      "status": "locked",
+      "usage": "Sessions vs tokens, OAuth/OIDC, secrets, encryption in transit/at rest.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "api-design"
+      ],
+      "related": []
+    },
+    {
+      "id": "url-shortener",
+      "name": "Design a URL shortener",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Key generation, redirects, analytics; read-heavy scaling.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "unique-id-generation",
+        "caching",
+        "databases-sql-nosql"
+      ],
+      "related": []
+    },
+    {
+      "id": "rate-limiter-design",
+      "name": "Design a rate limiter",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Algorithms, distributed counting, where to place the limiter.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "rate-limiting"
+      ],
+      "related": []
+    },
+    {
+      "id": "key-value-store",
+      "name": "Design a distributed key-value store",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Partitioning, replication, quorum, conflict resolution, gossip.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "consistent-hashing",
+        "replication",
+        "cap-consistency"
+      ],
+      "related": []
+    },
+    {
+      "id": "chat-system",
+      "name": "Design a chat system",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Presence, WebSockets, message ordering and storage, group chats.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "networking-basics",
+        "message-queues"
+      ],
+      "related": []
+    },
+    {
+      "id": "news-feed",
+      "name": "Design a news feed",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Fan-out on write vs read, ranking, caching timelines.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "caching",
+        "message-queues"
+      ],
+      "related": []
+    },
+    {
+      "id": "notification-system",
+      "name": "Design a notification system",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Multi-channel delivery, retries, templates, user preferences.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "message-queues"
+      ],
+      "related": []
+    },
+    {
+      "id": "search-autocomplete",
+      "name": "Design search autocomplete",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Trie / top-k per prefix, data collection, freshness.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "search-indexing",
+        "caching"
+      ],
+      "related": []
+    },
+    {
+      "id": "web-crawler",
+      "name": "Design a web crawler",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "URL frontier, politeness, dedup, distributed crawling.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "message-queues",
+        "blob-storage"
+      ],
+      "related": []
+    },
+    {
+      "id": "video-streaming",
+      "name": "Design a video platform (YouTube)",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Upload pipeline, transcoding, CDN delivery, adaptive bitrate.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cdn",
+        "blob-storage",
+        "message-queues"
+      ],
+      "related": []
+    },
+    {
+      "id": "file-sync",
+      "name": "Design file storage & sync (Google Drive)",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Chunked upload, dedup, sync conflicts, metadata service.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "blob-storage",
+        "databases-sql-nosql"
+      ],
+      "related": []
+    },
+    {
+      "id": "proximity-service",
+      "name": "Design a proximity service (nearby places)",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Geohash / quadtree indexes, read-heavy geo queries.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "indexing",
+        "caching"
+      ],
+      "related": []
+    },
+    {
+      "id": "payment-system",
+      "name": "Design a payment system",
+      "kind": "case-study",
+      "group": "case-studies",
+      "status": "locked",
+      "usage": "Idempotency, ledgers, reconciliation, exactly-once effects.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "api-design",
+        "message-queues",
+        "databases-sql-nosql"
+      ],
+      "related": []
+    },
+    {
+      "id": "genai-foundations",
+      "name": "GenAI system design: foundations",
+      "kind": "concept",
+      "group": "genai",
+      "status": "locked",
+      "usage": "LLM inference basics, tokens, latency/cost drivers, evaluation.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "sd-framework"
+      ],
+      "related": []
+    },
+    {
+      "id": "rag-system",
+      "name": "Design a retrieval-augmented generation (RAG) system",
+      "kind": "case-study",
+      "group": "genai",
+      "status": "locked",
+      "usage": "Chunking, embeddings, vector search, grounding and evaluation.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "genai-foundations",
+        "search-indexing"
+      ],
+      "related": []
+    },
+    {
+      "id": "llm-serving",
+      "name": "Design LLM serving at scale",
+      "kind": "case-study",
+      "group": "genai",
+      "status": "locked",
+      "usage": "Batching, KV cache, GPU scheduling, streaming tokens.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "genai-foundations",
+        "load-balancing"
+      ],
+      "related": []
+    }
+  ]
+}
