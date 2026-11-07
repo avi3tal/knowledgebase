@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Diagram } from "../api";
 import type { Highlight, Point } from "../design";
 import {
@@ -33,7 +34,7 @@ type Gesture =
   | null;
 
 const NONE: Highlight = { nodes: new Set(), edges: new Set() };
-const DRAG_MIME = "text/x-kb-kind";
+type ShapeDrag = { kind: string; x: number; y: number; sx: number; sy: number } | null;
 
 /**
  * Visio-like SVG canvas for a design diagram. Editable when `onChange` is given: drag shapes from
@@ -65,6 +66,7 @@ export function DiagramCanvas({
   const [gesture, setGesture] = useState<Gesture>(null);
   const [connectMode, setConnectMode] = useState(false);
   const [connectFrom, setConnectFrom] = useState<string | null>(null);
+  const [shapeDrag, setShapeDrag] = useState<ShapeDrag>(null);
 
   const nodes = useMemo(() => withPositions(diagram.nodes), [diagram.nodes]);
   const shown = useMemo(
@@ -95,19 +97,17 @@ export function DiagramCanvas({
   }, []);
   useLayoutEffect(fit, [fit]);
 
-  // Wheel: pinch / ⌘ / Ctrl zooms around the cursor, plain wheel pans (needs a non-passive listener).
+  // Pinch / ⌘ / Ctrl + wheel zooms around the cursor (needs a non-passive listener).
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
+      // Plain wheel keeps scrolling the page; drag the background to pan.
+      if (!(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       const r = svg.getBoundingClientRect();
-      if (e.ctrlKey || e.metaKey) {
-        const p = { x: e.clientX - r.left, y: e.clientY - r.top };
-        setView((v) => zoomAt(v, p, v.k * Math.exp(-e.deltaY * 0.01)));
-      } else {
-        setView((v) => ({ ...v, x: v.x - e.deltaX, y: v.y - e.deltaY }));
-      }
+      const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+      setView((v) => zoomAt(v, p, v.k * Math.exp(-e.deltaY * 0.01)));
     };
     svg.addEventListener("wheel", onWheel, { passive: false });
     return () => svg.removeEventListener("wheel", onWheel);
@@ -254,8 +254,24 @@ export function DiagramCanvas({
     sel?.type === "edge" ? diagram.edges.find((x) => edgeKey(x) === sel.id) : undefined;
   const pending = connectMode ? connectFrom : null;
 
+  const ghost =
+    shapeDrag && Math.hypot(shapeDrag.x - shapeDrag.sx, shapeDrag.y - shapeDrag.sy) > 4
+      ? kindStyle(shapeDrag.kind)
+      : null;
+
   return (
-    <div className={`dg ${editable ? "editable" : "readonly"}`}>
+    <div className={`dg ${editable ? "editable" : "readonly"} ${ghost ? "shape-dragging" : ""}`}>
+      {ghost &&
+        shapeDrag &&
+        createPortal(
+          <div
+            className="dg-ghost"
+            style={{ left: shapeDrag.x, top: shapeDrag.y, ["--kc" as string]: ghost.color }}
+          >
+            <span className="dg-shape-icon">{ghost.icon}</span> {ghost.label}
+          </div>,
+          document.body,
+        )}
       {editable && (
         <aside className="dg-palette" aria-label="shapes">
           <div className="dg-palette-title">Shapes</div>
@@ -265,13 +281,45 @@ export function DiagramCanvas({
               <button
                 key={k}
                 className="dg-shape"
-                draggable
                 style={{ ["--kc" as string]: s.color, ["--i" as string]: i }}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData(DRAG_MIME, k);
-                  e.dataTransfer.effectAllowed = "copy";
+                onPointerDown={(e) => {
+                  if (e.button !== 0) return;
+                  try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                  } catch {
+                    // synthetic events have no active pointer
+                  }
+                  setShapeDrag({
+                    kind: k,
+                    x: e.clientX,
+                    y: e.clientY,
+                    sx: e.clientX,
+                    sy: e.clientY,
+                  });
                 }}
-                onClick={() => addAtCentre(k)}
+                onPointerMove={(e) => {
+                  if (shapeDrag?.kind === k)
+                    setShapeDrag({ ...shapeDrag, x: e.clientX, y: e.clientY });
+                }}
+                onPointerUp={(e) => {
+                  if (shapeDrag?.kind !== k) return;
+                  setShapeDrag(null);
+                  const moved = Math.hypot(e.clientX - shapeDrag.sx, e.clientY - shapeDrag.sy) > 4;
+                  const r = svgRef.current?.getBoundingClientRect();
+                  if (!moved) addAtCentre(k);
+                  else if (
+                    r &&
+                    e.clientX >= r.left &&
+                    e.clientX <= r.right &&
+                    e.clientY >= r.top &&
+                    e.clientY <= r.bottom
+                  )
+                    drop(k, toWorld(e.clientX, e.clientY));
+                }}
+                onPointerCancel={() => setShapeDrag(null)}
+                onClick={(e) => {
+                  if (e.detail === 0) addAtCentre(k); // keyboard activation
+                }}
                 title={`Drag onto the canvas (or click) to add a ${s.label}`}
               >
                 <span className="dg-shape-icon">{s.icon}</span>
@@ -288,18 +336,6 @@ export function DiagramCanvas({
           tabIndex={0}
           style={{ height }}
           onKeyDown={onKey}
-          onDragOver={(e) => {
-            if (editable && e.dataTransfer.types.includes(DRAG_MIME)) {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = "copy";
-            }
-          }}
-          onDrop={(e) => {
-            const kind = e.dataTransfer.getData(DRAG_MIME);
-            if (!kind) return;
-            e.preventDefault();
-            drop(kind, toWorld(e.clientX, e.clientY));
-          }}
           aria-label="diagram canvas"
         >
           <svg
@@ -465,15 +501,15 @@ export function DiagramCanvas({
                         height={NODE_H - 20}
                         rx={2}
                       />
-                      <circle className="dg-icon-bg" cx={30} cy={NODE_H / 2} r={18} />
-                      <text className="dg-icon" x={30} y={NODE_H / 2 + 1}>
+                      <circle className="dg-icon-bg" cx={25} cy={NODE_H / 2} r={15} />
+                      <text className="dg-icon" x={25} y={NODE_H / 2 + 1}>
                         {s.icon}
                       </text>
-                      <text className="dg-label" x={56} y={25}>
-                        {truncate(n.label || n.id, 15)}
+                      <text className="dg-label" x={46} y={24}>
+                        {truncate(n.label || n.id, 13)}
                       </text>
-                      <text className="dg-kind" x={56} y={43}>
-                        {truncate(`${s.label} · ${n.id}`, 22)}
+                      <text className="dg-kind" x={46} y={40}>
+                        {truncate(`${s.label} · ${n.id}`, 17)}
                       </text>
                       {isNew && (
                         <g className="dg-new-badge" transform={`translate(${NODE_W - 30} -9)`}>

@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type {
   DesignAttempt,
   DesignCheck,
@@ -337,7 +338,13 @@ export function DesignConsole({
         </button>
       </header>
       {actionError && <div className="inline-error banner">⚠ {actionError}</div>}
-      {toast && <div className={`toast ${toast.good ? "good" : ""}`}>{toast.text}</div>}
+      {toast &&
+        createPortal(
+          <div className={`toast ${toast.good ? "good" : ""}`} role="status">
+            {toast.text}
+          </div>,
+          document.body,
+        )}
 
       <div className="console-grid">
         <nav className="stage-tabs" aria-label="stages">

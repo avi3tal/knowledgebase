@@ -50,7 +50,7 @@ export function DesignReferenceView({
   }
   if (!ref) return <div className="loader" aria-label="loading" />;
   return (
-    <div className="reference">
+    <div className="ref-view">
       <section className="pattern-card">
         <span className="pattern-kicker">🧠 Transferable pattern</span>
         <p>{ref.pattern}</p>

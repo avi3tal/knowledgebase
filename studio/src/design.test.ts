@@ -255,7 +255,7 @@ describe("geometry", () => {
 
   it("draws a curve from box edge to box edge with a midpoint between them", () => {
     const { d, mid } = edgePath({ x: 0, y: 0 }, { x: 400, y: 0 });
-    expect(d).toMatch(/^M170,30 C/);
+    expect(d).toMatch(new RegExp(`^M${NODE_W + 2},${NODE_H / 2} C`));
     expect(mid.x).toBeGreaterThan(NODE_W);
     expect(mid.x).toBeLessThan(400);
     expect(mid.y).toBe(NODE_H / 2);

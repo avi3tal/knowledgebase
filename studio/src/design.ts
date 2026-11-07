@@ -324,8 +324,8 @@ export function parseDiagramJson(
 
 // ---------------------------------------------------------------- geometry
 
-export const NODE_W = 168;
-export const NODE_H = 60;
+export const NODE_W = 140;
+export const NODE_H = 56;
 
 export interface Point {
   x: number;

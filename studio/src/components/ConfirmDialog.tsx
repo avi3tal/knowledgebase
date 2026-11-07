@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 /** In-page modal confirmation (never window.confirm). Esc cancels, Enter confirms. */
 export function ConfirmDialog({
@@ -25,7 +26,9 @@ export function ConfirmDialog({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onNo]);
-  return (
+  // Portal: the page content keeps a transform from its entry animation, which would
+  // otherwise make this fixed overlay position relative to <main>.
+  return createPortal(
     <div className="modal-backdrop" onClick={onNo}>
       <div
         className="modal"
@@ -43,7 +46,8 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
