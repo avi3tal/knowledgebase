@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Two minutes into 'design a hotel booking system', the candidate starts drawing `Room`, `Hotel`, `Booking` classes without asking anything. What step of the framework did they skip?",
+   "options": [
+    "ood-framework",
+    "uml-basics",
+    "oop-basics"
+   ],
+   "answer": "ood-framework",
+   "why": "Diagramming before scope/actors/use cases are clarified → the framework's step 1 was skipped."
+  },
+  {
+   "id": "q2",
+   "prompt": "The interviewer asks: 'Ten kiosks sell tickets for the same show at once. How do you avoid selling seat 12 twice?'",
+   "options": [
+    "lld-concurrency",
+    "ood-framework",
+    "behavioral-patterns"
+   ],
+   "answer": "lld-concurrency",
+   "why": "Shared mutable state + invariant under parallel access → concurrency (lock or atomic check-and-reserve)."
+  },
+  {
+   "id": "q3",
+   "prompt": "Ten minutes in, you have the nouns Ticket, Gate, Color, Fee and Customer and must decide which become entities, enums or value objects before drawing anything. Which topic covers this step?",
+   "options": [
+    "ood-framework",
+    "solid",
+    "creational-patterns"
+   ],
+   "answer": "ood-framework",
+   "why": "Turning nouns into entities, enums and value objects is the 'core objects' step of the interview flow."
+  },
+  {
+   "id": "q4",
+   "prompt": "Your diagram has a `FeeCalculator` with a long if/elif per vehicle type. The interviewer asks: 'What happens when we add electric vehicles?'",
+   "options": [
+    "solid",
+    "ood-framework",
+    "uml-basics"
+   ],
+   "answer": "solid",
+   "why": "The deciding signal is 'new type requires editing existing code' → OCP (SOLID), fixed by a pricing interface."
+  },
+  {
+   "id": "q5",
+   "prompt": "With 10 minutes left, the interviewer says: 'Show me how the classes in your diagram would look in code.' What should you produce?",
+   "options": [
+    "ood-framework",
+    "uml-basics",
+    "design-principles"
+   ],
+   "answer": "ood-framework",
+   "why": "Diagram → code signatures (public classes, typed methods, one key method body) is step 5 of the flow."
+  },
+  {
+   "id": "q6",
+   "prompt": "You need to show reviewers the order of calls between `Kiosk`, `SeatMap`, `PaymentGateway` and `Printer` for a purchase, including the declined-card branch.",
+   "options": [
+    "uml-basics",
+    "ood-framework",
+    "behavioral-patterns"
+   ],
+   "answer": "uml-basics",
+   "why": "Calls in time order with an alternative branch → sequence diagram with an `alt` fragment."
+  },
+  {
+   "id": "q7",
+   "prompt": "A candidate's design for a small to-do app has an abstract factory, a plugin loader, a command bus and an event-sourced history, for four stated use cases.",
+   "options": [
+    "design-principles",
+    "ood-framework",
+    "creational-patterns"
+   ],
+   "answer": "design-principles",
+   "why": "Patterns beyond what the requirements need → YAGNI/KISS (design principles). The framework says to apply patterns only where variation was identified."
+  }
+ ]
+}

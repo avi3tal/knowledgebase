@@ -1,0 +1,1380 @@
+{
+ "version": 1,
+ "title": "Polymorphism — one loop, three pay() rules",
+ "code": [
+  "def run_payroll(staff: list[list]) -> list[str]:",
+  "    class Worker:",
+  "        def __init__(self, name: str) -> None:",
+  "            self.name = name",
+  "",
+  "        def pay(self) -> int:",
+  "            raise NotImplementedError",
+  "",
+  "        def __repr__(self) -> str:",
+  "            return self.name",
+  "",
+  "    class Salaried(Worker):",
+  "        def __init__(self, name: str, monthly: int) -> None:",
+  "            super().__init__(name)",
+  "            self._monthly = monthly",
+  "",
+  "        def pay(self) -> int:",
+  "            return self._monthly",
+  "",
+  "    class Hourly(Worker):",
+  "        def __init__(self, name: str, hours: int, rate: int) -> None:",
+  "            super().__init__(name)",
+  "            self._hours, self._rate = hours, rate",
+  "",
+  "        def pay(self) -> int:",
+  "            overtime = max(0, self._hours - 160)",
+  "            regular = (self._hours - overtime) * self._rate",
+  "            return regular + overtime * self._rate * 3 // 2",
+  "",
+  "    class Contractor(Worker):",
+  "        def __init__(self, name: str, invoice: int) -> None:",
+  "            super().__init__(name)",
+  "            self._invoice = invoice",
+  "",
+  "        def pay(self) -> int:",
+  "            return self._invoice",
+  "",
+  "    kinds = {\"salaried\": Salaried, \"hourly\": Hourly, \"contractor\": Contractor}",
+  "    team: list[Worker] = [kinds[kind](*args) for kind, *args in staff]",
+  "    total = 0",
+  "    payslips: list[str] = []",
+  "    for worker in team:",
+  "        amount = worker.pay()",
+  "        total += amount",
+  "        payslips.append(f\"{worker}: {amount}\")",
+  "    payslips.append(f\"total: {total}\")",
+  "    return payslips"
+ ],
+ "view": [
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "worker",
+    "amount",
+    "total"
+   ]
+  },
+  {
+   "id": "payslips",
+   "type": "array",
+   "var": "payslips"
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "staff": [
+   [
+    "salaried",
+    "ana",
+    5000
+   ],
+   [
+    "hourly",
+    "ben",
+    170,
+    20
+   ],
+   [
+    "contractor",
+    "eve",
+    3000
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "Worker",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "Salaried",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "Hourly",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "Contractor",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ana",
+        "monthly": 5000
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ana"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ana",
+        "monthly": 5000
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "encapsulated data: only Salaried knows it has a monthly figure",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ana",
+        "monthly": 5000
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ben",
+        "hours": 170,
+        "rate": 20
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ben"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ben",
+        "hours": 170,
+        "rate": 20
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "eve",
+        "invoice": 3000
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "eve"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 32,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "eve",
+        "invoice": 3000
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": null
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 40,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": null,
+      "amount": null,
+      "total": 0
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ana",
+      "amount": null,
+      "total": 0
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "Salaried rule — same amount every month",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ana",
+      "amount": null,
+      "total": 0
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "pay",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": "polymorphic call — the loop doesn't know (or check) the concrete class",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ana",
+      "amount": 5000,
+      "total": 0
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 44,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ana",
+      "amount": 5000,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ana",
+      "amount": 5000,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__repr__",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ana",
+      "amount": 5000,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 5000,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 5000,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "pay",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": "Hourly rule — overtime past 160h pays 1.5×",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 5000,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "pay",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": "polymorphic call — the loop doesn't know (or check) the concrete class",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 3500,
+      "total": 5000
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 44,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 3500,
+      "total": 8500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 3500,
+      "total": 8500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__repr__",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "ben",
+      "amount": 3500,
+      "total": 8500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3500,
+      "total": 8500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 36,
+   "note": "Contractor rule — pays the invoice as sent",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3500,
+      "total": 8500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "pay",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": "polymorphic call — the loop doesn't know (or check) the concrete class",
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3000,
+      "total": 8500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 44,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3000,
+      "total": 11500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3000,
+      "total": 11500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      },
+      {
+       "fn": "__repr__",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3000,
+      "total": 11500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500",
+      "eve: 3000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 46,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3000,
+      "total": 11500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500",
+      "eve: 3000",
+      "total: 11500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 47,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "worker": "eve",
+      "amount": 3000,
+      "total": 11500
+     }
+    },
+    "payslips": {
+     "values": [
+      "ana: 5000",
+      "ben: 3500",
+      "eve: 3000",
+      "total: 11500"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_payroll",
+       "args": {
+        "staff": "[[\"salaried\", \"ana\", 5000], [..."
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": [
+  "ana: 5000",
+  "ben: 3500",
+  "eve: 3000",
+  "total: 11500"
+ ]
+}

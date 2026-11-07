@@ -1,0 +1,2070 @@
+{
+ "version": 1,
+ "title": "State — a document workflow without a status switch",
+ "code": [
+  "def run_doc_workflow(events: list[str]) -> list[str]:",
+  "    class State:",
+  "        name = \"?\"",
+  "",
+  "        def handle(self, event: str) -> \"State\":",
+  "            return self",
+  "",
+  "    class Draft(State):",
+  "        name = \"draft\"",
+  "",
+  "        def handle(self, event: str) -> State:",
+  "            if event == \"submit\":",
+  "                return Review()",
+  "            return self",
+  "",
+  "    class Review(State):",
+  "        name = \"review\"",
+  "",
+  "        def handle(self, event: str) -> State:",
+  "            if event == \"approve\":",
+  "                return Published()",
+  "            if event == \"reject\":",
+  "                return Draft()",
+  "            return self",
+  "",
+  "    class Published(State):",
+  "        name = \"published\"",
+  "",
+  "        def handle(self, event: str) -> State:",
+  "            if event == \"archive\":",
+  "                return Archived()",
+  "            return self",
+  "",
+  "    class Archived(State):",
+  "        name = \"archived\"",
+  "",
+  "    class Document:",
+  "        def __init__(self) -> None:",
+  "            self.state: State = Draft()",
+  "",
+  "        def apply(self, event: str) -> str:",
+  "            self.state = self.state.handle(event)",
+  "            return self.state.name",
+  "",
+  "    doc = Document()",
+  "    status = doc.state.name",
+  "    history: list[str] = [status]",
+  "    for event in events:",
+  "        status = doc.apply(event)",
+  "        history.append(status)",
+  "    return history"
+ ],
+ "view": [
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "event",
+    "status"
+   ]
+  },
+  {
+   "id": "history",
+   "type": "array",
+   "var": "history"
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "events": [
+   "approve",
+   "submit",
+   "reject",
+   "submit",
+   "approve",
+   "submit",
+   "archive"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "State",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "Draft",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "Review",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "Published",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "Archived",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 37,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "Document",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 37,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": null
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 46,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 47,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": null,
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "approve"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "approve"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "approve"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "draft accepts submit → review",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "reject",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "reject",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "reject"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "reject"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": "reject sends the document back to draft",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "reject",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "reject"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "reject"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "reject",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "reject"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "reject",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "reject",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "draft accepts submit → review",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "draft"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "approve"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "approve"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": "review accepts approve → published",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "approve"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "approve"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "review"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "approve"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "approve",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 32,
+   "note": "published ignores submit/approve/reject — no if/else in Document needed",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "submit"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "submit",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "archive",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "archive",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "archive"
+       }
+      },
+      {
+       "fn": "handle",
+       "args": {
+        "event": "archive"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "the context delegates to its current state object",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "archive",
+      "status": "published"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      },
+      {
+       "fn": "apply",
+       "args": {
+        "event": "archive"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 49,
+   "note": "the new status comes back from the state, not from a switch statement",
+   "state": {
+    "vars": {
+     "values": {
+      "event": "archive",
+      "status": "archived"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 50,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "archive",
+      "status": "archived"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published",
+      "archived"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 51,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "event": "archive",
+      "status": "archived"
+     }
+    },
+    "history": {
+     "values": [
+      "draft",
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "published",
+      "archived"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_doc_workflow",
+       "args": {
+        "events": "[\"approve\", \"submit\", \"reject..."
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": [
+  "draft",
+  "draft",
+  "review",
+  "draft",
+  "review",
+  "published",
+  "published",
+  "archived"
+ ]
+}

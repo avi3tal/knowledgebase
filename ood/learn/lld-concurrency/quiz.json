@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Two users click 'book' on the last cinema seat within the same millisecond and both get a confirmation. What topic does the fix belong to?",
+   "options": [
+    "lld-concurrency",
+    "behavioral-patterns",
+    "solid"
+   ],
+   "answer": "lld-concurrency",
+   "why": "A check-then-act race on shared state (seat free? → book) → make it atomic with a lock or optimistic version check."
+  },
+  {
+   "id": "q2",
+   "prompt": "An image service accepts uploads faster than its resize workers can process them; memory grows until the process crashes. Uploads should slow down instead.",
+   "options": [
+    "lld-concurrency",
+    "behavioral-patterns",
+    "structural-patterns"
+   ],
+   "answer": "lld-concurrency",
+   "why": "Producers outpacing consumers + 'slow the producer down' → bounded buffer (producer/consumer with back-pressure)."
+  },
+  {
+   "id": "q3",
+   "prompt": "When a sensor reading arrives, several dashboards, an alerting rule and a logger must each be informed. All run in the same thread.",
+   "options": [
+    "behavioral-patterns",
+    "lld-concurrency",
+    "creational-patterns"
+   ],
+   "answer": "behavioral-patterns",
+   "why": "One event, many listeners, same thread → Observer. Nothing is shared across threads, so there's no concurrency problem yet."
+  },
+  {
+   "id": "q4",
+   "prompt": "A config object is read thousands of times per second by request threads and replaced once an hour by a reloader thread.",
+   "options": [
+    "lld-concurrency",
+    "creational-patterns",
+    "design-principles"
+   ],
+   "answer": "lld-concurrency",
+   "why": "Many readers, rare writer → read-write lock, or an immutable config swapped atomically by reference."
+  },
+  {
+   "id": "q5",
+   "prompt": "A shared `Totals` object is updated by eight worker threads, each adding its batch's amount to `totals.money`. The class is well encapsulated, yet the final sum is sometimes too small.",
+   "options": [
+    "lld-concurrency",
+    "oop-basics",
+    "design-principles"
+   ],
+   "answer": "lld-concurrency",
+   "why": "The deciding signal is 'shared + mutated from several threads'. Encapsulation doesn't make read-modify-write atomic. Guard the update with a lock, or have each worker return its subtotal and sum them in one thread."
+  },
+  {
+   "id": "q6",
+   "prompt": "`transfer(a, b)` locks account a then b; at the same time `transfer(b, a)` locks b then a. Occasionally both hang forever.",
+   "options": [
+    "lld-concurrency",
+    "solid",
+    "behavioral-patterns"
+   ],
+   "answer": "lld-concurrency",
+   "why": "Two locks taken in opposite orders → deadlock. Fix: always acquire in a global order (e.g. by account id)."
+  },
+  {
+   "id": "q7",
+   "prompt": "A `Logger` is created lazily with `if Logger._instance is None: Logger._instance = Logger()`, and the team asks which pattern family that construct belongs to.",
+   "options": [
+    "creational-patterns",
+    "lld-concurrency",
+    "structural-patterns"
+   ],
+   "answer": "creational-patterns",
+   "why": "The question is about the construct itself (Singleton → creational). Its lazy-init race is a concurrency follow-up, but it's still a creational pattern."
+  }
+ ]
+}

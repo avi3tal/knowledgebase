@@ -1,0 +1,60 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Adding a new discount type requires editing `PriceCalculator.calculate()` and its 9-branch if/elif, which has broken existing discounts twice.",
+   "options": ["solid", "behavioral-patterns", "design-principles"],
+   "answer": "solid",
+   "why": "Old code edited for every new variant → OCP. Strategy is how you'd fix it, but the question asks what's violated."
+  },
+  {
+   "id": "q2",
+   "prompt": "`Ostrich` subclasses `Bird` and overrides `fly()` to raise an exception; a migration simulator that loops over birds crashes.",
+   "options": ["solid", "oop-basics", "design-principles"],
+   "answer": "solid",
+   "why": "A subtype that can't stand in for its base → Liskov substitution."
+  },
+  {
+   "id": "q3",
+   "prompt": "A `SmartDevice` interface has 14 methods; a simple thermostat implements 3 and stubs the rest with `pass`.",
+   "options": ["solid", "structural-patterns", "oop-basics"],
+   "answer": "solid",
+   "why": "Implementers forced to stub unused methods → Interface segregation: split into role interfaces."
+  },
+  {
+   "id": "q4",
+   "prompt": "`ReportService.__init__` creates `PostgresConnection(...)` and `S3Uploader(...)` itself; its unit tests need a running database and network access.",
+   "options": ["solid", "creational-patterns", "lld-concurrency"],
+   "answer": "solid",
+   "why": "High-level code constructing low-level details → Dependency inversion: inject abstractions."
+  },
+  {
+   "id": "q5",
+   "prompt": "Payment must support card, PayPal and bank transfer behind one call, and the team asks for the concrete design recipe (interface + one class per method, chosen at checkout).",
+   "options": ["behavioral-patterns", "solid", "creational-patterns"],
+   "answer": "behavioral-patterns",
+   "why": "The ask is for the recipe: interchangeable algorithms behind one interface → Strategy. OCP is the principle, but the question asks for the pattern."
+  },
+  {
+   "id": "q6",
+   "prompt": "The same 'is the user premium?' check (age of account > 1 year AND paid plan) is written out in four services.",
+   "options": ["design-principles", "solid", "oop-basics"],
+   "answer": "design-principles",
+   "why": "One rule duplicated in many places → DRY (design principles), not a SOLID letter."
+  },
+  {
+   "id": "q7",
+   "prompt": "`Employee` computes pay (finance's rules), formats the HR report (HR's layout) and saves itself to the database (DBA's schema).",
+   "options": ["solid", "design-principles", "structural-patterns"],
+   "answer": "solid",
+   "why": "Three actors, three reasons to change in one class → Single responsibility."
+  },
+  {
+   "id": "q8",
+   "prompt": "A `Cart` class exposes `items` as a public list; a promo module appends free items directly, bypassing the stock check.",
+   "options": ["oop-basics", "solid", "design-principles"],
+   "answer": "oop-basics",
+   "why": "State mutated from outside, invariant bypassed → encapsulation. It's not about reasons to change (SRP)."
+  }
+ ]
+}

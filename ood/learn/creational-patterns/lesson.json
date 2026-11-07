@@ -1,0 +1,123 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "creational-patterns",
+ "title": "Creational patterns",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "markdown",
+   "src": "02-builder-singleton.md"
+  },
+  {
+   "type": "trace",
+   "id": "email-builder",
+   "title": "Builder — collect parts, validate once, return an immutable product",
+   "source": "examples/email_builder.py",
+   "function": "build_email",
+   "input": {
+    "steps": [
+     [
+      "to",
+      "ana@example.com"
+     ],
+     [
+      "cc",
+      "ben@example.com"
+     ],
+     [
+      "subject",
+      "Q3 numbers"
+     ],
+     [
+      "cc",
+      "eve@example.com"
+     ],
+     [
+      "body",
+      "See attached."
+     ]
+    ]
+   },
+   "view": [
+    {
+     "id": "parts",
+     "type": "map",
+     "var": "parts",
+     "label": "builder.parts"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "method",
+      "arg",
+      "result"
+     ]
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "steps": [
+       [
+        "to",
+        "a@x.io"
+       ],
+       [
+        "subject",
+        "hi"
+       ]
+      ]
+     },
+     "expected": "to=a@x.io subject='hi' body=''"
+    },
+    {
+     "input": {
+      "steps": [
+       [
+        "body",
+        "text only"
+       ]
+      ]
+     },
+     "expected": "error: missing to, subject"
+    },
+    {
+     "input": {
+      "steps": [
+       [
+        "subject",
+        "s"
+       ],
+       [
+        "cc",
+        "c@x.io"
+       ],
+       [
+        "to",
+        "t@x.io"
+       ]
+      ]
+     },
+     "expected": "to=t@x.io cc=c@x.io subject='s' body=''"
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

@@ -1,0 +1,180 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "lld-concurrency",
+ "title": "Concurrency in low-level design",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "lost-update",
+   "title": "Race condition — the lost update, then the same schedule with a lock",
+   "source": "examples/lost_update.py",
+   "function": "interleave",
+   "input": {
+    "schedule": "AB",
+    "use_lock": false
+   },
+   "view": [
+    {
+     "id": "shared",
+     "type": "vars",
+     "vars": [
+      "thread",
+      "step",
+      "counter",
+      "lock_owner"
+     ]
+    },
+    {
+     "id": "seen",
+     "type": "map",
+     "var": "seen",
+     "label": "private copy per thread"
+    },
+    {
+     "id": "pc",
+     "type": "map",
+     "var": "pc",
+     "label": "next instruction per thread"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "schedule": "AB",
+      "use_lock": false
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "schedule": "AB",
+      "use_lock": true
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "schedule": "AABB",
+      "use_lock": false
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "schedule": "ABBA",
+      "use_lock": true
+     },
+     "expected": 2
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-producer-consumer.md"
+  },
+  {
+   "type": "trace",
+   "id": "bounded-buffer",
+   "title": "Bounded buffer — producers and consumers on a ring of 3 slots",
+   "source": "examples/bounded_buffer.py",
+   "function": "simulate_bounded_buffer",
+   "input": {
+    "capacity": 3,
+    "script": [
+     "take",
+     "put:a",
+     "put:b",
+     "put:c",
+     "put:d",
+     "put:e",
+     "take",
+     "take",
+     "take"
+    ]
+   },
+   "view": [
+    {
+     "id": "buf",
+     "type": "array",
+     "var": "buf",
+     "pointers": {
+      "head": "head",
+      "tail": "tail"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "count",
+      "blocked_takes",
+      "blocked_puts"
+     ]
+    },
+    {
+     "id": "log",
+     "type": "array",
+     "var": "log"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "capacity": 2,
+      "script": [
+       "put:x",
+       "take"
+      ]
+     },
+     "expected": [
+      "put x",
+      "take x"
+     ]
+    },
+    {
+     "input": {
+      "capacity": 1,
+      "script": [
+       "put:x",
+       "put:y",
+       "take"
+      ]
+     },
+     "expected": [
+      "put x",
+      "wait put y",
+      "take x",
+      "woken put y"
+     ]
+    },
+    {
+     "input": {
+      "capacity": 2,
+      "script": [
+       "take",
+       "put:x"
+      ]
+     },
+     "expected": [
+      "wait take",
+      "put x",
+      "woken take x"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-thread-safe-classes.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "A notification service must create an EmailSender, SmsSender or PushSender based on the user's preference string; plugins add new channels.",
+   "options": ["creational-patterns", "behavioral-patterns", "structural-patterns"],
+   "answer": "creational-patterns",
+   "why": "Choose which concrete class to instantiate from a key, extensible → factory with a registry."
+  },
+  {
+   "id": "q2",
+   "prompt": "An HTTP request object has a method, URL, optional headers (repeatable), optional query params, an optional body and a timeout; some combinations are invalid (GET with a body).",
+   "options": ["creational-patterns", "structural-patterns", "oop-basics"],
+   "answer": "creational-patterns",
+   "why": "Many optional/repeatable parts + cross-field validation before use → Builder."
+  },
+  {
+   "id": "q3",
+   "prompt": "Your app must run on two clouds. For each cloud you need a matching storage client, queue client and secrets client — never mixing clouds.",
+   "options": ["creational-patterns", "structural-patterns", "behavioral-patterns"],
+   "answer": "creational-patterns",
+   "why": "A *family* of related products that must match → Abstract factory."
+  },
+  {
+   "id": "q4",
+   "prompt": "Unit tests for `OrderService` are flaky because it calls `Database.get_instance()` internally and tests share data through it.",
+   "options": ["solid", "creational-patterns", "lld-concurrency"],
+   "answer": "solid",
+   "why": "The deciding signal is the hidden dependency that tests can't replace. That's DIP: inject the database instead of reaching for a global singleton."
+  },
+  {
+   "id": "q5",
+   "prompt": "A legacy `XmlInvoiceReader` has `parse_file(path)`, but the new pipeline expects every reader to implement `read(stream) -> Invoice`.",
+   "options": ["structural-patterns", "creational-patterns", "behavioral-patterns"],
+   "answer": "structural-patterns",
+   "why": "Making an existing class fit another interface is Adapter. Nothing new is being chosen or created."
+  },
+  {
+   "id": "q6",
+   "prompt": "A `DataImporter` base class runs validate → transform → save; each subclass needs to supply its own parser object to the first step.",
+   "options": ["creational-patterns", "structural-patterns", "design-principles"],
+   "answer": "creational-patterns",
+   "why": "The base workflow asks subclasses which product to create → Factory method."
+  },
+  {
+   "id": "q7",
+   "prompt": "Checkout must apply one of several discount rules, chosen per campaign and changed at runtime by marketing.",
+   "options": ["behavioral-patterns", "creational-patterns", "structural-patterns"],
+   "answer": "behavioral-patterns",
+   "why": "The variation is behaviour after construction → Strategy. A factory could produce the rule, but that isn't the core of the question."
+  }
+ ]
+}

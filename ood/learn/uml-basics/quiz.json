@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "The interviewer asks: 'If an Order is deleted, what happens to its OrderLines, and how would you show that on the diagram?'",
+   "options": ["uml-basics", "oop-basics", "design-principles"],
+   "answer": "uml-basics",
+   "why": "Lifecycle ownership between whole and part → composition (filled diamond) vs aggregation: a UML relationship question."
+  },
+  {
+   "id": "q2",
+   "prompt": "You need to show the order in which the booking service, seat lock, payment gateway and mailer are called, including what happens when payment times out.",
+   "options": ["uml-basics", "behavioral-patterns", "lld-concurrency"],
+   "answer": "uml-basics",
+   "why": "Calls in time order, with an alternative branch → sequence diagram with an `alt` fragment."
+  },
+  {
+   "id": "q3",
+   "prompt": "Your diagram has `Vehicle`, `Car`, `Truck`, `Motorbike`; the interviewer asks how a new `Bus` type will get its parking fee without editing `FeeCalculator`.",
+   "options": ["solid", "uml-basics", "creational-patterns"],
+   "answer": "solid",
+   "why": "'Add a type without editing existing code' → open/closed principle (SOLID). The diagram only records the answer."
+  },
+  {
+   "id": "q4",
+   "prompt": "A student can enrol in many courses and a course has many students; neither owns the other. What should the line between them look like?",
+   "options": ["uml-basics", "oop-basics", "structural-patterns"],
+   "answer": "uml-basics",
+   "why": "Independent lifecycles + many-to-many → plain association with `*` multiplicity on both ends (no diamond)."
+  },
+  {
+   "id": "q5",
+   "prompt": "Your box diagram shows `PaymentProcessor` with a hollow-triangle dashed arrow to `«interface» PaymentMethod`, and the interviewer asks what that arrow means in code.",
+   "options": ["uml-basics", "oop-basics", "behavioral-patterns"],
+   "answer": "uml-basics",
+   "why": "Dashed line + hollow triangle → realization: the class implements the interface (a notation question)."
+  },
+  {
+   "id": "q6",
+   "prompt": "When drawing the diagram you notice `Report` holds a reference to `Database`, `Mailer`, `PdfRenderer` and `Scheduler`, and has 25 methods.",
+   "options": ["solid", "uml-basics", "structural-patterns"],
+   "answer": "solid",
+   "why": "The diagram exposes a god class with many reasons to change → SRP (SOLID). UML just made it visible."
+  },
+  {
+   "id": "q7",
+   "prompt": "You must show that `Cart` uses a `Coupon` only as a method parameter in `apply(coupon)` and never stores it.",
+   "options": ["uml-basics", "design-principles", "oop-basics"],
+   "answer": "uml-basics",
+   "why": "Temporary use without a field → dependency (dashed arrow), not association."
+  }
+ ]
+}

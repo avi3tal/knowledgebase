@@ -1,0 +1,898 @@
+{
+ "version": 1,
+ "title": "Decorator — one render() call travels through stacked layers",
+ "code": [
+  "def render_message(text: str, layers: list[str]) -> str:",
+  "    class Formatter:",
+  "        def render(self, text: str) -> str:",
+  "            out = text",
+  "            return out",
+  "",
+  "    class Layer(Formatter):",
+  "        def __init__(self, inner: Formatter) -> None:",
+  "            self.inner = inner",
+  "",
+  "    class Trim(Layer):",
+  "        def render(self, text: str) -> str:",
+  "            text = text.strip()",
+  "            out = self.inner.render(text)",
+  "            return out",
+  "",
+  "    class Upper(Layer):",
+  "        def render(self, text: str) -> str:",
+  "            inner = self.inner",
+  "            out = inner.render(text).upper()",
+  "            return out",
+  "",
+  "    class Exclaim(Layer):",
+  "        def render(self, text: str) -> str:",
+  "            inner = self.inner",
+  "            out = inner.render(text) + \"!\"",
+  "            return out",
+  "",
+  "    kinds = {\"trim\": Trim, \"upper\": Upper, \"exclaim\": Exclaim}",
+  "    formatter: Formatter = Formatter()",
+  "    chain = \"Formatter\"",
+  "    for name in layers:",
+  "        formatter = kinds[name](formatter)",
+  "        chain = f\"{name}({chain})\"",
+  "    out = formatter.render(text)",
+  "    return out"
+ ],
+ "view": [
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "chain",
+    "text",
+    "out"
+   ]
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "text": "  hello  ",
+  "layers": [
+   "trim",
+   "upper",
+   "exclaim"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "Formatter",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "Layer",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "Trim",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "Upper",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "Exclaim",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": null,
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 31,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "Formatter",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a decorator HAS-A formatter and IS-A formatter",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "Formatter",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "inner": "<solution.render_message.<loc..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 33,
+   "note": "wrap the current formatter in one more layer",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "Formatter",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "trim(Formatter)",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a decorator HAS-A formatter and IS-A formatter",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "trim(Formatter)",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "inner": "<solution.render_message.<loc..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 33,
+   "note": "wrap the current formatter in one more layer",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "trim(Formatter)",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "upper(trim(Formatter))",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a decorator HAS-A formatter and IS-A formatter",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "upper(trim(Formatter))",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "inner": "<solution.render_message.<loc..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 33,
+   "note": "wrap the current formatter in one more layer",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "upper(trim(Formatter))",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "outermost layer — the call starts here and goes one level down",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "Upper passes the text down unchanged…",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "Trim works on the way IN — it changes the text before delegating",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "hello",
+      "out": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "hello"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "the innermost object — the plain component does no formatting",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "hello",
+      "out": "hello"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "hello"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "hello"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "hello",
+      "out": "hello"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "hello"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": "…and upper-cases the result on the way OUT",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": "HELLO"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": "Exclaim appends to whatever the inner layers produced",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": "HELLO!"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      },
+      {
+       "fn": "render",
+       "args": {
+        "text": "  hello  "
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 35,
+   "note": "one call on the outermost layer travels down the chain and back up",
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": "HELLO!"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 36,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "chain": "exclaim(upper(trim(Formatter)))",
+      "text": "  hello  ",
+      "out": "HELLO!"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "render_message",
+       "args": {
+        "text": "  hello  ",
+        "layers": "[\"trim\", \"upper\", \"exclaim\"]"
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": "HELLO!"
+}

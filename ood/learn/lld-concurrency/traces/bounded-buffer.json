@@ -1,0 +1,1808 @@
+{
+ "version": 1,
+ "title": "Bounded buffer — producers and consumers on a ring of 3 slots",
+ "code": [
+  "def simulate_bounded_buffer(capacity: int, script: list[str]) -> list[str]:",
+  "    buf: list[str] = [\"_\"] * capacity",
+  "    head = tail = count = 0",
+  "    blocked_puts: list[str] = []",
+  "    blocked_takes = 0",
+  "    log: list[str] = []",
+  "",
+  "    def store(item: str) -> None:",
+  "        nonlocal tail, count",
+  "        buf[tail] = item",
+  "        tail = (tail + 1) % capacity",
+  "        count += 1",
+  "",
+  "    def remove() -> str:",
+  "        nonlocal head, count",
+  "        item = buf[head]",
+  "        buf[head] = \"_\"",
+  "        head = (head + 1) % capacity",
+  "        count -= 1",
+  "        return item",
+  "",
+  "    for op in script:",
+  "        if op.startswith(\"put:\"):",
+  "            item = op[4:]",
+  "            if count == capacity:",
+  "                blocked_puts.append(item)",
+  "                log.append(f\"wait put {item}\")",
+  "                continue",
+  "            store(item)",
+  "            log.append(f\"put {item}\")",
+  "            if blocked_takes:",
+  "                blocked_takes -= 1",
+  "                log.append(f\"woken take {remove()}\")",
+  "        else:",
+  "            if count == 0:",
+  "                blocked_takes += 1",
+  "                log.append(\"wait take\")",
+  "                continue",
+  "            log.append(f\"take {remove()}\")",
+  "            if blocked_puts:",
+  "                item = blocked_puts.pop(0)",
+  "                store(item)",
+  "                log.append(f\"woken put {item}\")",
+  "    return log"
+ ],
+ "view": [
+  {
+   "id": "buf",
+   "type": "array",
+   "var": "buf",
+   "pointers": {
+    "head": "head",
+    "tail": "tail"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "count",
+    "blocked_takes",
+    "blocked_puts"
+   ]
+  },
+  {
+   "id": "log",
+   "type": "array",
+   "var": "log"
+  }
+ ],
+ "input": {
+  "capacity": 3,
+  "script": [
+   "take",
+   "put:a",
+   "put:b",
+   "put:c",
+   "put:d",
+   "put:e",
+   "take",
+   "take",
+   "take"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": null,
+      "tail": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": null,
+      "blocked_takes": null,
+      "blocked_puts": null
+     }
+    },
+    "log": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": null,
+      "blocked_puts": null
+     }
+    },
+    "log": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": null,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 36,
+   "note": "buffer empty → the consumer waits on not_empty",
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 1,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 37,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 1,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "write at tail, then advance it around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "a",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 1,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "a",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 1,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "a",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 1,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "a",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 1,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 32,
+   "note": "notify(not_empty) — a sleeping consumer wakes and takes it",
+   "state": {
+    "buf": {
+     "values": [
+      "a",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "read at head, free the slot, advance head around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 33,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "_",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "write at tail, then advance it around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 0,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "write at tail, then advance it around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "write at tail, then advance it around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": "buffer full → the producer waits on not_full",
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": [
+       "e"
+      ]
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "b",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": [
+       "e"
+      ]
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "read at head, free the slot, advance head around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "_",
+      "c"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": [
+       "e"
+      ]
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "_",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": [
+       "e"
+      ]
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "_",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": [
+       "e"
+      ]
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "_",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": [
+       "e"
+      ]
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 41,
+   "note": "notify(not_full) — the first sleeping producer wakes and stores",
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "_",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "write at tail, then advance it around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "c"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "read at head, free the slot, advance head around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 2,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 3,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "d",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e",
+      "take c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "read at head, free the slot, advance head around the ring",
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 0,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e",
+      "take c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 2,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e",
+      "take c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e",
+      "take c"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e",
+      "take c",
+      "take d"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 44,
+   "note": null,
+   "state": {
+    "buf": {
+     "values": [
+      "_",
+      "e",
+      "_"
+     ],
+     "pointers": {
+      "head": 1,
+      "tail": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "count": 1,
+      "blocked_takes": 0,
+      "blocked_puts": []
+     }
+    },
+    "log": {
+     "values": [
+      "wait take",
+      "put a",
+      "woken take a",
+      "put b",
+      "put c",
+      "put d",
+      "wait put e",
+      "take b",
+      "woken put e",
+      "take c",
+      "take d"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  "wait take",
+  "put a",
+  "woken take a",
+  "put b",
+  "put c",
+  "put d",
+  "wait put e",
+  "take b",
+  "woken put e",
+  "take c",
+  "take d"
+ ]
+}

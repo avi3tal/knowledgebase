@@ -1,0 +1,95 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "structural-patterns",
+ "title": "Structural patterns",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "markdown",
+   "src": "02-decorator-composite-proxy.md"
+  },
+  {
+   "type": "trace",
+   "id": "decorator-chain",
+   "title": "Decorator — one render() call travels through stacked layers",
+   "source": "examples/text_decorators.py",
+   "function": "render_message",
+   "input": {
+    "text": "  hello  ",
+    "layers": [
+     "trim",
+     "upper",
+     "exclaim"
+    ]
+   },
+   "view": [
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "chain",
+      "text",
+      "out"
+     ]
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "text": "  hello  ",
+      "layers": [
+       "trim",
+       "upper",
+       "exclaim"
+      ]
+     },
+     "expected": "HELLO!"
+    },
+    {
+     "input": {
+      "text": " hi ",
+      "layers": [
+       "exclaim",
+       "trim"
+      ]
+     },
+     "expected": "hi!"
+    },
+    {
+     "input": {
+      "text": " hi ",
+      "layers": [
+       "trim",
+       "exclaim",
+       "exclaim"
+      ]
+     },
+     "expected": "hi!!"
+    },
+    {
+     "input": {
+      "text": "ok",
+      "layers": []
+     },
+     "expected": "ok"
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

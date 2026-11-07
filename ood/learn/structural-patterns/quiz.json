@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Your app's `Storage` interface has `put(key, bytes)`. The new cloud SDK offers `upload_object(bucket, name, stream, metadata)`. Your code should keep calling `put`.",
+   "options": ["structural-patterns", "creational-patterns", "behavioral-patterns"],
+   "answer": "structural-patterns",
+   "why": "Incompatible interface you must fit into yours → Adapter."
+  },
+  {
+   "id": "q2",
+   "prompt": "An HTTP client should optionally get retries, request logging and response caching, in any combination per call site, without a subclass for each combination.",
+   "options": ["structural-patterns", "behavioral-patterns", "design-principles"],
+   "answer": "structural-patterns",
+   "why": "Stackable add-ons with the same interface → Decorator."
+  },
+  {
+   "id": "q3",
+   "prompt": "A bundle of products is priced as the sum of its items, and bundles can contain other bundles. The cart should call `price()` without checking what kind of item it holds.",
+   "options": ["structural-patterns", "behavioral-patterns", "oop-basics"],
+   "answer": "structural-patterns",
+   "why": "Part-whole tree treated uniformly → Composite. Polymorphism (oop-basics) is the mechanism, but the recursive group structure is the pattern."
+  },
+  {
+   "id": "q4",
+   "prompt": "Each incoming support ticket goes first to a bot, then to tier-1, then to tier-2. Whoever can solve it stops it there.",
+   "options": ["behavioral-patterns", "structural-patterns", "lld-concurrency"],
+   "answer": "behavioral-patterns",
+   "why": "'Whoever can handle it stops it' → Chain of responsibility. A decorator would always pass the call along."
+  },
+  {
+   "id": "q5",
+   "prompt": "A high-resolution map tile is expensive to load. The UI holds tile objects for the whole map, but each one should load its pixels only when first drawn.",
+   "options": ["structural-patterns", "creational-patterns", "lld-concurrency"],
+   "answer": "structural-patterns",
+   "why": "Same interface, delays creation of the real subject until first use → virtual Proxy. Not a creational factory: the caller already holds the object."
+  },
+  {
+   "id": "q6",
+   "prompt": "The checkout controller calls inventory, pricing, payment, shipping and email in a fixed order, and three other controllers copy the same sequence.",
+   "options": ["structural-patterns", "behavioral-patterns", "design-principles"],
+   "answer": "structural-patterns",
+   "why": "One simple entry point over a subsystem of many classes → Facade (which also removes the duplication)."
+  },
+  {
+   "id": "q7",
+   "prompt": "The team argues whether `SearchService` should inherit from `ElasticClient` to reuse its methods, or hold one as a field.",
+   "options": ["design-principles", "structural-patterns", "solid"],
+   "answer": "design-principles",
+   "why": "The question is the principle itself, composition over inheritance. No specific pattern is being asked for."
+  }
+ ]
+}

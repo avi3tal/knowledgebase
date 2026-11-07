@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "oop-basics",
+ "title": "OOP fundamentals",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "markdown",
+   "src": "02-inheritance-polymorphism.md"
+  },
+  {
+   "type": "trace",
+   "id": "polymorphic-payroll",
+   "title": "Polymorphism — one loop, three pay() rules",
+   "source": "examples/payroll.py",
+   "function": "run_payroll",
+   "input": {
+    "staff": [
+     [
+      "salaried",
+      "ana",
+      5000
+     ],
+     [
+      "hourly",
+      "ben",
+      170,
+      20
+     ],
+     [
+      "contractor",
+      "eve",
+      3000
+     ]
+    ]
+   },
+   "view": [
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "worker",
+      "amount",
+      "total"
+     ]
+    },
+    {
+     "id": "payslips",
+     "type": "array",
+     "var": "payslips"
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "staff": [
+       [
+        "salaried",
+        "ana",
+        5000
+       ]
+      ]
+     },
+     "expected": [
+      "ana: 5000",
+      "total: 5000"
+     ]
+    },
+    {
+     "input": {
+      "staff": [
+       [
+        "hourly",
+        "ben",
+        170,
+        20
+       ]
+      ]
+     },
+     "expected": [
+      "ben: 3500",
+      "total: 3500"
+     ]
+    },
+    {
+     "input": {
+      "staff": [
+       [
+        "hourly",
+        "cy",
+        100,
+        10
+       ],
+       [
+        "contractor",
+        "eve",
+        3000
+       ]
+      ]
+     },
+     "expected": [
+      "cy: 1000",
+      "eve: 3000",
+      "total: 4000"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

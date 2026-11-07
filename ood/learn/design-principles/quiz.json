@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "The tax rate 0.17 appears in the cart, the invoice PDF and the refund calculator; one was missed when the rate changed.",
+   "options": ["design-principles", "solid", "oop-basics"],
+   "answer": "design-principles",
+   "why": "Duplicated knowledge drifting apart → DRY. Put the rule in one place."
+  },
+  {
+   "id": "q2",
+   "prompt": "For a 2-day coding task with one database, a candidate builds a generic repository layer, a plugin loader and an event bus 'for future flexibility'.",
+   "options": ["design-principles", "structural-patterns", "creational-patterns"],
+   "answer": "design-principles",
+   "why": "Building for unstated requirements → YAGNI/KISS. No pattern is missing; there are too many."
+  },
+  {
+   "id": "q3",
+   "prompt": "A report controller does `report.owner.team.manager.email` to send a notification, and breaks every time the org model changes.",
+   "options": ["design-principles", "solid", "structural-patterns"],
+   "answer": "design-principles",
+   "why": "Long call chains through strangers → Law of Demeter; tell the report to `notify_owner_manager()`."
+  },
+  {
+   "id": "q4",
+   "prompt": "`Penguin` extends `Bird`, and `Penguin.fly()` raises NotImplementedError; code that loops over birds and calls fly() crashes.",
+   "options": ["solid", "design-principles", "oop-basics"],
+   "answer": "solid",
+   "why": "A subtype that can't honour the parent's contract → Liskov substitution (SOLID). The fix may be composition, but the principle named is LSP."
+  },
+  {
+   "id": "q5",
+   "prompt": "A game has `FlyingFireEnemy`, `FlyingIceEnemy`, `WalkingFireEnemy`, `WalkingIceEnemy`… adding 'swimming' would add three more classes.",
+   "options": ["design-principles", "creational-patterns", "behavioral-patterns"],
+   "answer": "design-principles",
+   "why": "Subclass explosion along independent axes → composition over inheritance (movement and element as components)."
+  },
+  {
+   "id": "q6",
+   "prompt": "A user can change their sort order (by price, by rating, by distance) while browsing, and the results list must re-sort without being rebuilt.",
+   "options": ["behavioral-patterns", "design-principles", "creational-patterns"],
+   "answer": "behavioral-patterns",
+   "why": "A concrete recipe (an interface for the sort rule, swapped at runtime) is being asked for → Strategy. Composition is the principle underneath, but the question wants the pattern."
+  },
+  {
+   "id": "q7",
+   "prompt": "`UserService` handles sign-up, password hashing, sending welcome emails and generating monthly PDF reports.",
+   "options": ["solid", "design-principles", "structural-patterns"],
+   "answer": "solid",
+   "why": "Several unrelated reasons to change in one class → SRP (SOLID). Low cohesion is the same idea in general terms, but SRP is the named rule."
+  }
+ ]
+}

@@ -1,0 +1,133 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "design-principles",
+ "title": "Design principles beyond SOLID",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "markdown",
+   "src": "02-composition-demeter.md"
+  },
+  {
+   "type": "trace",
+   "id": "strategy-swap",
+   "title": "Composition over inheritance — swapping a shipping policy at runtime",
+   "source": "examples/shipping_policy.py",
+   "function": "shipping_quotes",
+   "input": {
+    "events": [
+     [
+      "quote",
+      3
+     ],
+     [
+      "use",
+      "flat"
+     ],
+     [
+      "quote",
+      3
+     ],
+     [
+      "use",
+      "free-over-5"
+     ],
+     [
+      "quote",
+      3
+     ],
+     [
+      "quote",
+      6
+     ]
+    ]
+   },
+   "view": [
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "policy",
+      "kg",
+      "price"
+     ]
+    },
+    {
+     "id": "quotes",
+     "type": "array",
+     "var": "quotes"
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "events": [
+       [
+        "quote",
+        1
+       ]
+      ]
+     },
+     "expected": [
+      "1kg by-weight = 6"
+     ]
+    },
+    {
+     "input": {
+      "events": [
+       [
+        "use",
+        "flat"
+       ],
+       [
+        "quote",
+        50
+       ]
+      ]
+     },
+     "expected": [
+      "50kg flat = 10"
+     ]
+    },
+    {
+     "input": {
+      "events": [
+       [
+        "use",
+        "free-over-5"
+       ],
+       [
+        "quote",
+        4
+       ],
+       [
+        "quote",
+        5
+       ]
+      ]
+     },
+     "expected": [
+      "4kg free-over-5 = 7",
+      "5kg free-over-5 = 0"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

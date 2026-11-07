@@ -1,0 +1,237 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "behavioral-patterns",
+ "title": "Behavioral patterns",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "markdown",
+   "src": "02-observer-state.md"
+  },
+  {
+   "type": "trace",
+   "id": "observer-price-feed",
+   "title": "Observer — a price feed notifies its subscribers",
+   "source": "examples/price_alerts.py",
+   "function": "run_price_alerts",
+   "input": {
+    "actions": [
+     [
+      "sub",
+      "ana",
+      "ACME"
+     ],
+     [
+      "sub",
+      "ben",
+      "ACME"
+     ],
+     [
+      "sub",
+      "ben",
+      "GLOBX"
+     ],
+     [
+      "pub",
+      "ACME",
+      "101"
+     ],
+     [
+      "unsub",
+      "ana",
+      "ACME"
+     ],
+     [
+      "pub",
+      "ACME",
+      "99"
+     ],
+     [
+      "pub",
+      "GLOBX",
+      "7"
+     ]
+    ]
+   },
+   "view": [
+    {
+     "id": "subscribers",
+     "type": "map",
+     "var": "subscribers",
+     "label": "subscribers (ticker → observers)"
+    },
+    {
+     "id": "delivered",
+     "type": "array",
+     "var": "delivered"
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "actions": [
+       [
+        "sub",
+        "ana",
+        "ACME"
+       ],
+       [
+        "pub",
+        "ACME",
+        "5"
+       ]
+      ]
+     },
+     "expected": [
+      "ana: ACME=5"
+     ]
+    },
+    {
+     "input": {
+      "actions": [
+       [
+        "pub",
+        "ACME",
+        "5"
+       ]
+      ]
+     },
+     "expected": []
+    },
+    {
+     "input": {
+      "actions": [
+       [
+        "sub",
+        "ana",
+        "X"
+       ],
+       [
+        "sub",
+        "ben",
+        "X"
+       ],
+       [
+        "unsub",
+        "ana",
+        "X"
+       ],
+       [
+        "pub",
+        "X",
+        "1"
+       ]
+      ]
+     },
+     "expected": [
+      "ben: X=1"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "trace",
+   "id": "state-doc-workflow",
+   "title": "State — a document workflow without a status switch",
+   "source": "examples/doc_workflow.py",
+   "function": "run_doc_workflow",
+   "input": {
+    "events": [
+     "approve",
+     "submit",
+     "reject",
+     "submit",
+     "approve",
+     "submit",
+     "archive"
+    ]
+   },
+   "view": [
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "event",
+      "status"
+     ]
+    },
+    {
+     "id": "history",
+     "type": "array",
+     "var": "history"
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "events": [
+       "submit",
+       "approve"
+      ]
+     },
+     "expected": [
+      "draft",
+      "review",
+      "published"
+     ]
+    },
+    {
+     "input": {
+      "events": [
+       "approve"
+      ]
+     },
+     "expected": [
+      "draft",
+      "draft"
+     ]
+    },
+    {
+     "input": {
+      "events": [
+       "submit",
+       "reject",
+       "submit",
+       "approve",
+       "archive",
+       "submit"
+      ]
+     },
+     "expected": [
+      "draft",
+      "review",
+      "draft",
+      "review",
+      "published",
+      "archived",
+      "archived"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-more-patterns.md"
+  },
+  {
+   "type": "markdown",
+   "src": "04-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

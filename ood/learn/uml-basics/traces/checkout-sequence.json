@@ -1,0 +1,718 @@
+{
+ "version": 1,
+ "title": "Sequence diagram — a checkout where the card is declined",
+ "code": [
+  "def checkout(stock: dict[str, int], sku: str, card_ok: bool) -> list[str]:",
+  "    messages: list[str] = []",
+  "",
+  "    class Inventory:",
+  "        def __init__(self, levels: dict[str, int]) -> None:",
+  "            self.levels = levels",
+  "",
+  "        def reserve(self, item: str) -> bool:",
+  "            messages.append(f\"Checkout → Inventory: reserve({item})\")",
+  "            if self.levels.get(item, 0) == 0:",
+  "                return False",
+  "            self.levels[item] -= 1",
+  "            return True",
+  "",
+  "        def release(self, item: str) -> None:",
+  "            messages.append(f\"Checkout → Inventory: release({item})\")",
+  "            self.levels[item] += 1",
+  "",
+  "    class PaymentGateway:",
+  "        def charge(self, item: str) -> bool:",
+  "            messages.append(f\"Checkout → Payment: charge({item})\")",
+  "            return card_ok",
+  "",
+  "    class Mailer:",
+  "        def confirm(self, item: str) -> None:",
+  "            messages.append(f\"Checkout → Mailer: confirm({item})\")",
+  "",
+  "    class Checkout:",
+  "        def __init__(self, inventory: Inventory, payment: PaymentGateway, mailer: Mailer) -> None:",
+  "            self.inventory, self.payment, self.mailer = inventory, payment, mailer",
+  "",
+  "        def place(self, item: str) -> str:",
+  "            messages.append(f\"User → Checkout: place({item})\")",
+  "            if not self.inventory.reserve(item):",
+  "                return \"out of stock\"",
+  "            if not self.payment.charge(item):",
+  "                self.inventory.release(item)",
+  "                return \"declined\"",
+  "            self.mailer.confirm(item)",
+  "            return \"ok\"",
+  "",
+  "    shop = Checkout(Inventory(dict(stock)), PaymentGateway(), Mailer())",
+  "    outcome = shop.place(sku)",
+  "    messages.append(f\"Checkout ⇢ User: {outcome}\")",
+  "    return messages"
+ ],
+ "view": [
+  {
+   "id": "messages",
+   "type": "array",
+   "var": "messages",
+   "label": "messages (one arrow each)"
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "stock": {
+   "mug": 1
+  },
+  "sku": "mug",
+  "card_ok": false
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "Inventory",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "PaymentGateway",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "Mailer",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "Checkout",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "levels": "{\"mug\": 1}"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "inventory": "<solution.checkout.<locals>.I...",
+        "payment": "<solution.checkout.<locals>.P...",
+        "mailer": "<solution.checkout.<locals>.M..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 33,
+   "note": "the actor's message starts the sequence",
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      },
+      {
+       "fn": "reserve",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      },
+      {
+       "fn": "charge",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 36,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "compensating message",
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Inventory: release(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      },
+      {
+       "fn": "release",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 37,
+   "note": "[declined] — the second alt branch",
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Inventory: release(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      },
+      {
+       "fn": "place",
+       "args": {
+        "item": "mug"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Inventory: release(mug)"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 44,
+   "note": "the dashed return arrow back to the actor",
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Inventory: release(mug)",
+      "Checkout ⇢ User: declined"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Inventory: release(mug)",
+      "Checkout ⇢ User: declined"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "checkout",
+       "args": {
+        "stock": "{\"mug\": 1}",
+        "sku": "mug",
+        "card_ok": false
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": [
+  "User → Checkout: place(mug)",
+  "Checkout → Inventory: reserve(mug)",
+  "Checkout → Payment: charge(mug)",
+  "Checkout → Inventory: release(mug)",
+  "Checkout ⇢ User: declined"
+ ]
+}

@@ -1,0 +1,1254 @@
+{
+ "version": 1,
+ "title": "Builder — collect parts, validate once, return an immutable product",
+ "code": [
+  "def build_email(steps: list[list[str]]) -> str:",
+  "    class Email:",
+  "        def __init__(self, to: str, subject: str, body: str, cc: list[str]) -> None:",
+  "            self.to, self.subject, self.body, self.cc = to, subject, body, tuple(cc)",
+  "",
+  "        def __str__(self) -> str:",
+  "            cc = f\" cc={','.join(self.cc)}\" if self.cc else \"\"",
+  "            return f\"to={self.to}{cc} subject={self.subject!r} body={self.body!r}\"",
+  "",
+  "    class EmailBuilder:",
+  "        def __init__(self, parts: dict[str, object]) -> None:",
+  "            self.parts = parts",
+  "",
+  "        def to(self, addr: str) -> \"EmailBuilder\":",
+  "            self.parts[\"to\"] = addr",
+  "            return self",
+  "",
+  "        def subject(self, text: str) -> \"EmailBuilder\":",
+  "            self.parts[\"subject\"] = text",
+  "            return self",
+  "",
+  "        def cc(self, addr: str) -> \"EmailBuilder\":",
+  "            self.parts.setdefault(\"cc\", []).append(addr)",
+  "            return self",
+  "",
+  "        def body(self, text: str) -> \"EmailBuilder\":",
+  "            self.parts[\"body\"] = text",
+  "            return self",
+  "",
+  "        def build(self) -> Email:",
+  "            missing = [k for k in (\"to\", \"subject\") if k not in self.parts]",
+  "            if missing:",
+  "                raise ValueError(f\"missing {', '.join(missing)}\")",
+  "            return Email(self.parts[\"to\"], self.parts[\"subject\"], self.parts.get(\"body\", \"\"), self.parts.get(\"cc\", []))",
+  "",
+  "    parts: dict[str, object] = {}",
+  "    builder = EmailBuilder(parts)",
+  "    for method, arg in steps:",
+  "        getattr(builder, method)(arg)",
+  "    try:",
+  "        email = builder.build()",
+  "    except ValueError as err:",
+  "        return f\"error: {err}\"",
+  "    result = str(email)",
+  "    return result"
+ ],
+ "view": [
+  {
+   "id": "parts",
+   "type": "map",
+   "var": "parts",
+   "label": "builder.parts"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "method",
+    "arg",
+    "result"
+   ]
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "steps": [
+   [
+    "to",
+    "ana@example.com"
+   ],
+   [
+    "cc",
+    "ben@example.com"
+   ],
+   [
+    "subject",
+    "Q3 numbers"
+   ],
+   [
+    "cc",
+    "eve@example.com"
+   ],
+   [
+    "body",
+    "See attached."
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": null,
+      "arg": null,
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "Email",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": null,
+      "arg": null,
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": null,
+      "arg": null,
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "EmailBuilder",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": null,
+      "arg": null,
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the builder collects parts; no Email exists yet",
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": null,
+      "arg": null,
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "parts": "{}"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 37,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": null,
+      "arg": null,
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "method": "to",
+      "arg": "ana@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "to",
+      "arg": "ana@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "to",
+       "args": {
+        "addr": "ana@example.com"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "returning self is what makes the fluent .to(...).subject(...) chain work",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "to",
+      "arg": "ana@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "to",
+       "args": {
+        "addr": "ana@example.com"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": "in real code this is a fluent chain; the lesson replays it from a list",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "to",
+      "arg": "ana@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "cc",
+      "arg": "ben@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": "optional, repeatable part",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "cc",
+      "arg": "ben@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "cc",
+       "args": {
+        "addr": "ben@example.com"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": "in real code this is a fluent chain; the lesson replays it from a list",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "cc",
+      "arg": "ben@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "subject",
+      "arg": "Q3 numbers",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "subject",
+      "arg": "Q3 numbers",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "subject",
+       "args": {
+        "text": "Q3 numbers"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": "in real code this is a fluent chain; the lesson replays it from a list",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "subject",
+      "arg": "Q3 numbers",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "cc",
+      "arg": "eve@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": "optional, repeatable part",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "cc",
+      "arg": "eve@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "cc",
+       "args": {
+        "addr": "eve@example.com"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": "in real code this is a fluent chain; the lesson replays it from a list",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "cc",
+      "arg": "eve@example.com",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "body",
+       "args": {
+        "text": "See attached."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 39,
+   "note": "in real code this is a fluent chain; the lesson replays it from a list",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 31,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "build",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "build",
+       "args": {}
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "to": "ana@example.com",
+        "subject": "Q3 numbers",
+        "body": "See attached.",
+        "cc": "[\"ben@example.com\", \"eve@exam..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "build",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 41,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": null
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      },
+      {
+       "fn": "__str__",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 44,
+   "note": "the finished product is immutable and valid",
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": "to=ana@example.com cc=ben@example.com,eve@example.com subject='Q3 numbers' body='See attached.'"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "parts": {
+     "entries": [
+      [
+       "to",
+       "ana@example.com"
+      ],
+      [
+       "cc",
+       [
+        "ben@example.com",
+        "eve@example.com"
+       ]
+      ],
+      [
+       "subject",
+       "Q3 numbers"
+      ],
+      [
+       "body",
+       "See attached."
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "method": "body",
+      "arg": "See attached.",
+      "result": "to=ana@example.com cc=ben@example.com,eve@example.com subject='Q3 numbers' body='See attached.'"
+     }
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "build_email",
+       "args": {
+        "steps": "[[\"to\", \"ana@example.com\"], [..."
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": "to=ana@example.com cc=ben@example.com,eve@example.com subject='Q3 numbers' body='See attached.'"
+}

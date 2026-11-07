@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Shipping code does `if pkg.type == 'letter': ... elif pkg.type == 'parcel': ... elif pkg.type == 'pallet': ...` in five different methods.",
+   "options": ["oop-basics", "creational-patterns", "design-principles"],
+   "answer": "oop-basics",
+   "why": "Type switches on behaviour → polymorphism: each package class implements `cost()` / `label()`."
+  },
+  {
+   "id": "q2",
+   "prompt": "A `Wallet` exposes `balance` as a public field; three services subtract from it directly, and one forgot to check for overdraft.",
+   "options": ["oop-basics", "lld-concurrency", "solid"],
+   "answer": "oop-basics",
+   "why": "State changed from outside without the invariant → encapsulation: private balance, `withdraw()` enforces the rule."
+  },
+  {
+   "id": "q3",
+   "prompt": "`ReadOnlyFile` extends `File`; its `write()` silently does nothing, and callers that write through a `File` reference lose data.",
+   "options": ["solid", "oop-basics", "structural-patterns"],
+   "answer": "solid",
+   "why": "A subtype weakening the parent's contract → Liskov substitution (SOLID). It's an inheritance *misuse* question, not basic OOP."
+  },
+  {
+   "id": "q4",
+   "prompt": "The order module calls `SendGridClient().send_email(...)` directly in 12 places; switching provider means editing all of them.",
+   "options": ["oop-basics", "structural-patterns", "behavioral-patterns"],
+   "answer": "oop-basics",
+   "why": "Callers bound to a concrete vendor → abstraction: depend on a `Notifier` interface and inject the implementation."
+  },
+  {
+   "id": "q5",
+   "prompt": "Two `Money(5, 'EUR')` objects compare unequal and duplicate entries appear in a set of prices.",
+   "options": ["oop-basics", "design-principles", "creational-patterns"],
+   "answer": "oop-basics",
+   "why": "Value vs identity: Money is a value object, so implement equality and hashing (e.g. `@dataclass(frozen=True)`)."
+  },
+  {
+   "id": "q6",
+   "prompt": "Two threads call `counter.increment()`, which is a properly encapsulated method doing `self._n += 1`, and increments go missing.",
+   "options": ["lld-concurrency", "oop-basics", "solid"],
+   "answer": "lld-concurrency",
+   "why": "Encapsulation doesn't make read-modify-write atomic. Shared state across threads → a lock (concurrency)."
+  },
+  {
+   "id": "q7",
+   "prompt": "A game `Character` inherits from `Sword` to get `attack()`, and later needs to switch to a bow mid-game.",
+   "options": ["design-principles", "oop-basics", "creational-patterns"],
+   "answer": "design-principles",
+   "why": "Inheriting for reuse plus a runtime swap → composition over inheritance (a character HAS-A weapon)."
+  }
+ ]
+}

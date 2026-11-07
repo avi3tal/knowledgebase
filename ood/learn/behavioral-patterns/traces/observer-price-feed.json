@@ -1,0 +1,1685 @@
+{
+ "version": 1,
+ "title": "Observer — a price feed notifies its subscribers",
+ "code": [
+  "def run_price_alerts(actions: list[list[str]]) -> list[str]:",
+  "    class Watcher:",
+  "        def __init__(self, name: str, inbox: list[str]) -> None:",
+  "            self.name = name",
+  "            self.inbox = inbox",
+  "",
+  "        def notify(self, ticker: str, price: str) -> None:",
+  "            self.inbox.append(f\"{self.name}: {ticker}={price}\")",
+  "",
+  "        def __repr__(self) -> str:",
+  "            return self.name",
+  "",
+  "    class PriceFeed:",
+  "        def __init__(self, subscribers: dict[str, list[Watcher]]) -> None:",
+  "            self.subscribers = subscribers",
+  "",
+  "        def subscribe(self, ticker: str, watcher: Watcher) -> None:",
+  "            self.subscribers.setdefault(ticker, []).append(watcher)",
+  "",
+  "        def unsubscribe(self, ticker: str, watcher: Watcher) -> None:",
+  "            self.subscribers[ticker].remove(watcher)",
+  "",
+  "        def publish(self, ticker: str, price: str) -> None:",
+  "            for watcher in list(self.subscribers.get(ticker, [])):",
+  "                watcher.notify(ticker, price)",
+  "",
+  "    delivered: list[str] = []",
+  "    subscribers: dict[str, list[Watcher]] = {}",
+  "    feed = PriceFeed(subscribers)",
+  "    watchers: dict[str, Watcher] = {}",
+  "    for verb, *args in actions:",
+  "        if verb == \"sub\":",
+  "            name, ticker = args",
+  "            watcher = watchers.setdefault(name, Watcher(name, delivered))",
+  "            feed.subscribe(ticker, watcher)",
+  "        elif verb == \"unsub\":",
+  "            name, ticker = args",
+  "            feed.unsubscribe(ticker, watchers[name])",
+  "        else:",
+  "            ticker, price = args",
+  "            feed.publish(ticker, price)",
+  "    return delivered"
+ ],
+ "view": [
+  {
+   "id": "subscribers",
+   "type": "map",
+   "var": "subscribers",
+   "label": "subscribers (ticker → observers)"
+  },
+  {
+   "id": "delivered",
+   "type": "array",
+   "var": "delivered"
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "actions": [
+   [
+    "sub",
+    "ana",
+    "ACME"
+   ],
+   [
+    "sub",
+    "ben",
+    "ACME"
+   ],
+   [
+    "sub",
+    "ben",
+    "GLOBX"
+   ],
+   [
+    "pub",
+    "ACME",
+    "101"
+   ],
+   [
+    "unsub",
+    "ana",
+    "ACME"
+   ],
+   [
+    "pub",
+    "ACME",
+    "99"
+   ],
+   [
+    "pub",
+    "GLOBX",
+    "7"
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "Watcher",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "PriceFeed",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "subject keeps ticker → list of observers",
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "subscribers": "{}"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 29,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ana",
+        "inbox": "[]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": []
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "register the observer under its ticker",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "subscribe",
+       "args": {
+        "ticker": "ACME",
+        "watcher": "ana"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 35,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ben",
+        "inbox": "[]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "register the observer under its ticker",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "subscribe",
+       "args": {
+        "ticker": "ACME",
+        "watcher": "ben"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 35,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "name": "ben",
+        "inbox": "[]"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "register the observer under its ticker",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "subscribe",
+       "args": {
+        "ticker": "GLOBX",
+        "watcher": "ben"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 35,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each observer reacts its own way",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      },
+      {
+       "fn": "notify",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "same notify() call on each observer, whatever its concrete class",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each observer reacts its own way",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      },
+      {
+       "fn": "notify",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "same notify() call on each observer, whatever its concrete class",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "101"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 41,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ana",
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": "unsubscribe — no more news for it",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "unsubscribe",
+       "args": {
+        "ticker": "ACME",
+        "watcher": "ana"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "99"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each observer reacts its own way",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "99"
+       }
+      },
+      {
+       "fn": "notify",
+       "args": {
+        "ticker": "ACME",
+        "price": "99"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "same notify() call on each observer, whatever its concrete class",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "99"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "ACME",
+        "price": "99"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 41,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "GLOBX",
+        "price": "7"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each observer reacts its own way",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99",
+      "ben: GLOBX=7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "GLOBX",
+        "price": "7"
+       }
+      },
+      {
+       "fn": "notify",
+       "args": {
+        "ticker": "GLOBX",
+        "price": "7"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "same notify() call on each observer, whatever its concrete class",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99",
+      "ben: GLOBX=7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "GLOBX",
+        "price": "7"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "publish — loop over a copy",
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99",
+      "ben: GLOBX=7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      },
+      {
+       "fn": "publish",
+       "args": {
+        "ticker": "GLOBX",
+        "price": "7"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 41,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99",
+      "ben: GLOBX=7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": null,
+   "state": {
+    "subscribers": {
+     "entries": [
+      [
+       "ACME",
+       [
+        "ben"
+       ]
+      ],
+      [
+       "GLOBX",
+       [
+        "ben"
+       ]
+      ]
+     ]
+    },
+    "delivered": {
+     "values": [
+      "ana: ACME=101",
+      "ben: ACME=101",
+      "ben: ACME=99",
+      "ben: GLOBX=7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "run_price_alerts",
+       "args": {
+        "actions": "[[\"sub\", \"ana\", \"ACME\"], [\"su..."
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": [
+  "ana: ACME=101",
+  "ben: ACME=101",
+  "ben: ACME=99",
+  "ben: GLOBX=7"
+ ]
+}

@@ -1,0 +1,98 @@
+{
+ "version": 1,
+ "subject": "ood",
+ "topic": "uml-basics",
+ "title": "UML class & sequence diagrams",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-class-diagrams.md"
+  },
+  {
+   "type": "markdown",
+   "src": "02-sequence-diagrams.md"
+  },
+  {
+   "type": "trace",
+   "id": "checkout-sequence",
+   "title": "Sequence diagram — a checkout where the card is declined",
+   "source": "examples/checkout_sequence.py",
+   "function": "checkout",
+   "input": {
+    "stock": {
+     "mug": 1
+    },
+    "sku": "mug",
+    "card_ok": false
+   },
+   "view": [
+    {
+     "id": "messages",
+     "type": "array",
+     "var": "messages",
+     "label": "messages (one arrow each)"
+    },
+    {
+     "id": "calls",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "stock": {
+       "mug": 1
+      },
+      "sku": "mug",
+      "card_ok": true
+     },
+     "expected": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Mailer: confirm(mug)",
+      "Checkout ⇢ User: ok"
+     ]
+    },
+    {
+     "input": {
+      "stock": {
+       "mug": 0
+      },
+      "sku": "mug",
+      "card_ok": true
+     },
+     "expected": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout ⇢ User: out of stock"
+     ]
+    },
+    {
+     "input": {
+      "stock": {
+       "mug": 2
+      },
+      "sku": "mug",
+      "card_ok": false
+     },
+     "expected": [
+      "User → Checkout: place(mug)",
+      "Checkout → Inventory: reserve(mug)",
+      "Checkout → Payment: charge(mug)",
+      "Checkout → Inventory: release(mug)",
+      "Checkout ⇢ User: declined"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-interview-use.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

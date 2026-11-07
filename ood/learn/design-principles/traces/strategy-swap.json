@@ -1,0 +1,1276 @@
+{
+ "version": 1,
+ "title": "Composition over inheritance — swapping a shipping policy at runtime",
+ "code": [
+  "def shipping_quotes(events: list[list]) -> list[str]:",
+  "    class Policy:",
+  "        name = \"?\"",
+  "",
+  "        def cost(self, kg: int) -> int:",
+  "            raise NotImplementedError",
+  "",
+  "        def __repr__(self) -> str:",
+  "            return self.name",
+  "",
+  "    class ByWeight(Policy):",
+  "        name = \"by-weight\"",
+  "",
+  "        def cost(self, kg: int) -> int:",
+  "            return 4 + 2 * kg",
+  "",
+  "    class Flat(Policy):",
+  "        name = \"flat\"",
+  "",
+  "        def cost(self, kg: int) -> int:",
+  "            return 10",
+  "",
+  "    class FreeOverFive(Policy):",
+  "        name = \"free-over-5\"",
+  "",
+  "        def cost(self, kg: int) -> int:",
+  "            return 0 if kg >= 5 else 7",
+  "",
+  "    class Shipper:",
+  "        def __init__(self, policy: Policy) -> None:",
+  "            self.policy = policy",
+  "",
+  "        def quote(self, kg: int) -> int:",
+  "            return self.policy.cost(kg)",
+  "",
+  "    policies = {\"by-weight\": ByWeight(), \"flat\": Flat(), \"free-over-5\": FreeOverFive()}",
+  "    shipper = Shipper(policies[\"by-weight\"])",
+  "    policy = shipper.policy.name",
+  "    quotes: list[str] = []",
+  "    for verb, arg in events:",
+  "        if verb == \"use\":",
+  "            shipper.policy = policies[arg]",
+  "            policy = arg",
+  "        else:",
+  "            kg = arg",
+  "            price = shipper.quote(kg)",
+  "            quotes.append(f\"{kg}kg {policy} = {price}\")",
+  "    return quotes"
+ ],
+ "view": [
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "policy",
+    "kg",
+    "price"
+   ]
+  },
+  {
+   "id": "quotes",
+   "type": "array",
+   "var": "quotes"
+  },
+  {
+   "id": "calls",
+   "type": "callstack"
+  }
+ ],
+ "input": {
+  "events": [
+   [
+    "quote",
+    3
+   ],
+   [
+    "use",
+    "flat"
+   ],
+   [
+    "quote",
+    3
+   ],
+   [
+    "use",
+    "free-over-5"
+   ],
+   [
+    "quote",
+    3
+   ],
+   [
+    "quote",
+    6
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "Policy",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "ByWeight",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "Flat",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "FreeOverFive",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 29,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "Shipper",
+       "args": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 29,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 31,
+   "note": "composition — the shipper holds a policy object",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "__init__",
+       "args": {
+        "policy": "by-weight"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 37,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": null,
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 38,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": null,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": 3,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "by-weight rule: base fee plus 2 per kg",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": 3,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 3
+       }
+      },
+      {
+       "fn": "cost",
+       "args": {
+        "kg": 3
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": "delegate; Shipper never checks which policy it holds",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": 3,
+      "price": null
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 3
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 46,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 47,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "swap the strategy at runtime — no new Shipper, no subclass",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "by-weight",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "flat",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": "flat rule ignores the weight",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "flat",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 3
+       }
+      },
+      {
+       "fn": "cost",
+       "args": {
+        "kg": 3
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": "delegate; Shipper never checks which policy it holds",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "flat",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 3
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 46,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "flat",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 47,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "flat",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 42,
+   "note": "swap the strategy at runtime — no new Shipper, no subclass",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "flat",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 43,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": "promo rule: free from 5 kg, otherwise 7",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 3
+       }
+      },
+      {
+       "fn": "cost",
+       "args": {
+        "kg": 3
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": "delegate; Shipper never checks which policy it holds",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 3,
+      "price": 10
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 3
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 46,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 3,
+      "price": 7
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 47,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 3,
+      "price": 7
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 45,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 6,
+      "price": 7
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": "promo rule: free from 5 kg, otherwise 7",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 6,
+      "price": 7
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 6
+       }
+      },
+      {
+       "fn": "cost",
+       "args": {
+        "kg": 6
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 34,
+   "note": "delegate; Shipper never checks which policy it holds",
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 6,
+      "price": 7
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      },
+      {
+       "fn": "quote",
+       "args": {
+        "kg": 6
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 46,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 6,
+      "price": 0
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 47,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 6,
+      "price": 0
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7",
+      "6kg free-over-5 = 0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "line": 48,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "policy": "free-over-5",
+      "kg": 6,
+      "price": 0
+     }
+    },
+    "quotes": {
+     "values": [
+      "3kg by-weight = 10",
+      "3kg flat = 10",
+      "3kg free-over-5 = 7",
+      "6kg free-over-5 = 0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "calls": {
+     "frames": [
+      {
+       "fn": "shipping_quotes",
+       "args": {
+        "events": "[[\"quote\", 3], [\"use\", \"flat\"..."
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "result": [
+  "3kg by-weight = 10",
+  "3kg flat = 10",
+  "3kg free-over-5 = 7",
+  "6kg free-over-5 = 0"
+ ]
+}
