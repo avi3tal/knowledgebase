@@ -1,1 +1,602 @@
-/* Learn pages on the Workbench: home, lesson, topic, knowledge map. */
+/* Learn pages on the Workbench: home, lesson, topic, knowledge map.
+   Builds on the reader's rd-* classes (reader.css) and the theme variables in styles.css. */
+
+/* ---------------------------------------------------------------- header */
+.lb-header .rd-icon {
+  animation:
+    hero-shift 9s ease infinite,
+    lb-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.lb-header[style*="--c"] .lb-icon {
+  background: linear-gradient(
+    135deg,
+    var(--c) 0%,
+    color-mix(in srgb, var(--c) 55%, var(--rd-pattern)) 60%,
+    var(--rd-core) 100%
+  );
+  background-size: 200% 200%;
+}
+.lb-group-pill {
+  --c: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.lb-header[style*="--c"] .lb-group-pill,
+.lb-detail-head .lb-group-pill {
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.lb-usage {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.9em;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lb-stats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+  font-size: 0.88em;
+  color: var(--muted);
+}
+.lb-stats b {
+  color: var(--text);
+}
+.lb-hero-ring {
+  flex: 0 0 auto;
+  animation: lb-pop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.lb-hero-ring .ring text {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* ---------------------------------------------------------------- tabs */
+.lb-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c, var(--accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, var(--accent)) 20%, transparent);
+}
+.wb-tab.lb-tab.on {
+  color: var(--c);
+}
+.lb-tab-static {
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- side panes */
+.lb-right,
+.lb-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rd-otp .lb-card {
+  margin-top: 10px;
+}
+.lb-card {
+  animation: lb-rise 0.35s ease both;
+}
+.lb-card[style*="--c"] {
+  border-left: 3px solid var(--c);
+}
+.lb-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lb-card p {
+  margin: 0;
+}
+.lb-more {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.lb-sugg {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lb-sugg li {
+  animation: lb-rise 0.3s ease both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+.lb-sugg a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 7px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+.lb-sugg a:hover {
+  background: var(--accent-soft);
+  transform: translateX(2px);
+}
+.lb-sugg-icon {
+  flex: 0 0 auto;
+}
+.lb-sugg-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.lb-sugg-why {
+  flex: 0 0 auto;
+  font-size: 0.72em;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.lb-sugg-why.due {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+  color: var(--warn);
+}
+.lb-sugg-why.weak {
+  background: color-mix(in srgb, var(--bad) 15%, transparent);
+  color: var(--bad);
+}
+.lb-sugg-why.start {
+  background: color-mix(in srgb, var(--ok) 15%, transparent);
+  color: var(--ok);
+}
+.lb-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lb-quick .rd-btn,
+.lb-detail-actions .rd-btn {
+  text-align: center;
+  text-decoration: none;
+  justify-content: center;
+}
+
+.lb-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lb-link {
+  --c: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+  color: var(--text);
+  font-size: 0.85em;
+  text-decoration: none;
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+.lb-link:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--c) 20%, transparent);
+  text-decoration: none;
+}
+.lb-link-tag {
+  font-size: 0.72em;
+  font-weight: 700;
+  color: var(--c);
+}
+.lb-problems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.88em;
+}
+.lb-problems li {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.lb-problems .badge {
+  flex: 0 0 auto;
+}
+
+/* ---------------------------------------------------------------- center */
+.lb-center {
+  max-width: 860px;
+  margin: 0 auto;
+  animation: lb-rise 0.3s ease both;
+}
+.lb-home {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.lb-home .toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.lb-home .toolbar .filter {
+  flex: 1;
+}
+.lb-home .cards {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+.lb-lesson {
+  max-width: none;
+}
+.lb-section[hidden] {
+  display: none;
+}
+.lb-section:not([hidden]) {
+  animation: lb-rise 0.3s ease both;
+}
+.lb-block {
+  scroll-margin-top: 12px;
+}
+.lb-next-section {
+  display: flex;
+  justify-content: flex-end;
+  margin: 24px 0 8px;
+}
+.lb-hero-card {
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 10%, var(--panel)),
+    color-mix(in srgb, var(--rd-pattern) 8%, var(--panel))
+  );
+  border: 1px solid var(--border);
+}
+.lb-hero-card h2 {
+  margin-top: 0;
+}
+.lb-lead {
+  font-size: 1.08em;
+  line-height: 1.55;
+}
+.lb-topic .neighbourhood svg {
+  width: 100%;
+}
+.lb-diff h3 {
+  margin: 18px 0 8px;
+}
+.lb-problem-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
+}
+.lb-problem-grid li {
+  animation: lb-rise 0.3s ease both;
+  animation-delay: calc(min(var(--i, 0), 12) * 30ms);
+}
+.lb-problem-grid a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--d, var(--accent));
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.lb-problem-grid a:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+.lb-diff-easy {
+  --d: var(--rd-easy);
+}
+.lb-diff-medium {
+  --d: var(--rd-medium);
+}
+.lb-diff-hard {
+  --d: var(--rd-hard);
+}
+
+/* ---------------------------------------------------------------- footer */
+.lb-footer {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.lb-footer b {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------- knowledge map */
+.lb-filters {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lb-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.lb-filters label:hover {
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+}
+.lb-filters input {
+  accent-color: var(--c);
+}
+.lb-filters label:has(input:not(:checked)) {
+  opacity: 0.5;
+}
+.lb-filter-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+.lb-filter-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.lb-check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.88em;
+}
+.lb-key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.86em;
+}
+.lb-key li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lb-key-dot {
+  fill: var(--accent);
+  opacity: 0.8;
+}
+.lb-key-dot.lesson {
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.lb-map {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--accent) 7%, var(--bg)) 0%,
+    var(--bg) 70%
+  );
+}
+.lb-map-svg {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  animation: lb-fade 0.5s ease both;
+}
+.lb-map-empty {
+  margin: auto;
+}
+.lb-ring {
+  fill: none;
+  stroke: var(--border);
+  stroke-dasharray: 3 6;
+}
+.lb-arc {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 10;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+.lb-edge {
+  fill: none;
+  stroke: var(--c, var(--muted));
+  stroke-width: 1.6;
+  opacity: 0.45;
+  transition:
+    opacity 0.2s,
+    stroke-width 0.2s;
+}
+.lb-key .lb-edge {
+  opacity: 0.9;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.lb-edge.related {
+  stroke-dasharray: 5 5;
+  stroke: var(--muted);
+}
+.lb-key .lb-edge.related {
+  stroke: var(--muted);
+}
+.lb-edge.on {
+  opacity: 1;
+  stroke-width: 3;
+}
+.lb-edge.dim {
+  opacity: 0.08;
+}
+.lb-arrow {
+  fill: var(--muted);
+}
+.lb-node {
+  cursor: pointer;
+  transition: opacity 0.2s;
+  outline: none;
+}
+.lb-node.dim {
+  opacity: 0.25;
+}
+.lb-node-halo {
+  fill: var(--c);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.lb-node:hover .lb-node-halo,
+.lb-node:focus-visible .lb-node-halo,
+.lb-node.selected .lb-node-halo {
+  opacity: 0.25;
+}
+.lb-node.selected .lb-node-halo {
+  animation: lb-pulse 1.6s ease-in-out infinite;
+}
+.lb-node-dot {
+  fill: var(--c);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.lb-node.lesson .lb-node-dot {
+  stroke: var(--text);
+  stroke-width: 2.5;
+}
+.lb-node text {
+  fill: var(--text);
+  font-size: 17px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.lb-node:not(.lesson) text {
+  fill: var(--muted);
+}
+.lb-node:hover text,
+.lb-node.selected text {
+  fill: var(--c);
+  font-weight: 800;
+}
+
+.lb-detail {
+  animation: lb-rise 0.3s ease both;
+}
+.lb-detail-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.lb-detail-head h3 {
+  margin: 4px 0 0;
+}
+.lb-detail-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 1.4em;
+  background: color-mix(in srgb, var(--c) 18%, var(--panel));
+  animation: lb-pop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.lb-detail p {
+  margin: 0;
+  line-height: 1.45;
+}
+.lb-detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------- motion */
+@keyframes lb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lb-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes lb-pop {
+  from {
+    transform: scale(0.6);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes lb-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lb-card,
+  .lb-sugg li,
+  .lb-center,
+  .lb-section:not([hidden]),
+  .lb-problem-grid li,
+  .lb-map-svg,
+  .lb-detail,
+  .lb-detail-icon,
+  .lb-hero-ring,
+  .lb-header .rd-icon,
+  .lb-node.selected .lb-node-halo {
+    animation: none;
+  }
+}

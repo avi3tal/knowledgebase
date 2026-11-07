@@ -16,7 +16,12 @@ export function NeighbourhoodGraph({ graph, subject }: { graph: Graph; subject: 
   const cut = (s: string) => (s.length > 26 ? s.slice(0, 24) + "…" : s);
   return (
     <section className="neighbourhood">
-      <svg width={VIEW.width} height={VIEW.height} viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}>
+      <svg
+        width="100%"
+        viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ maxWidth: VIEW.width, height: "auto" }}
+      >
         {placed
           .filter((p) => p.role !== "center")
           .map((p) => (

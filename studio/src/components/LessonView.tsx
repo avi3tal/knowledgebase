@@ -1,104 +1,288 @@
-import type { Lesson } from "../api";
-import { designHref } from "../route";
+import { useContext, useMemo, useRef, useState } from "react";
+import type { Block, Lesson } from "../api";
+import { SubjectContext } from "../context";
+import type { SectionKey } from "../learn-bench";
+import {
+  blockId,
+  lessonHref,
+  lessonSections,
+  lessonToc,
+  prevNext,
+  topicNavGroups,
+  topicPageHref,
+} from "../learn-bench";
+import { designHref, problemHref } from "../route";
 import { isTrace } from "../trace";
+import { OnThisPage } from "./DesignReaderPanes";
+import {
+  PaneLoading,
+  PrevNextFooter,
+  TopicHeader,
+  TopicLinks,
+  usePrevNextKeys,
+} from "./LearnBenchParts";
 import { Markdown } from "./Markdown";
+import { NavList, useCenterScroller } from "./panes";
 import { ProblemCard } from "./ProblemCard";
 import { Quiz } from "./Quiz";
 import { ResourceList } from "./Resources";
-import { TopicChips } from "./TopicPage";
 import { TracePlayer } from "./TracePlayer";
+import { Workbench } from "./Workbench";
 
-export function LessonView({ lesson }: { lesson: Lesson }) {
-  return (
-    <article className="lesson">
-      <div className="lesson-links">
-        <TopicChips
-          subject={lesson.subject}
-          label="Learn first"
-          ids={lesson.prereqs ?? []}
-          names={lesson.names}
-        />
-        <TopicChips
-          subject={lesson.subject}
-          label="Related"
-          ids={lesson.related ?? []}
-          names={lesson.names}
-        />
-        <a className="muted small" href={`#/topic/${lesson.subject}/${lesson.topic}`}>
-          🗺️ topic map
-        </a>
-      </div>
-      {lesson.blocks.map((b, i) => {
-        switch (b.type) {
-          case "markdown":
-            return <Markdown key={i} text={b.text} path={b.path} />;
-          case "trace":
-            return isTrace(b.trace) ? (
-              <TracePlayer key={i} trace={b.trace} />
-            ) : (
-              <p key={i} className="why wrong">
-                Unsupported trace format — rebuild with <code>./kb learn build</code>.
-              </p>
-            );
-          case "quiz":
-            return (
-              <Quiz
-                key={i}
-                subject={lesson.subject}
-                topic={lesson.topic}
-                items={b.items}
-                names={lesson.names}
-              />
-            );
-          case "resources":
-            return <ResourceList key={i} items={b.resources} />;
-          case "problems":
-            return (
-              <section key={i}>
-                <h2>Practice</h2>
-                <p className="muted">
-                  Easy → hard. Start an attempt, solve it in VS Code, then <code>./kb run</code> it.
-                  Each run feeds your progress.
-                </p>
-                {b.problems.map((p) => (
-                  <ProblemCard key={p.slug} p={p} pattern={lesson.topic} />
-                ))}
-              </section>
-            );
-          case "design-problems":
-            return (
-              <section key={i}>
-                <h2>Practice in the design console</h2>
-                <p className="muted">
-                  Scope → estimates → API → versioned diagrams → deep dives → wrap-up, with live
-                  rubric checks and tips on demand.
-                </p>
-                <div className="cards design-cards">
-                  {b.problems.map((p, k) => (
-                    <a
-                      key={p.slug}
-                      className="topic-card design-card"
-                      href={designHref(lesson.subject, p.slug)}
-                      style={{ ["--i" as string]: k }}
-                    >
-                      <div className="tc-head">
-                        <span className="tc-icon">{lesson.subject === "ood" ? "🧩" : "🏗️"}</span>
-                        <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
-                      </div>
-                      <div className="tc-name">{p.title}</div>
-                      <div className="tc-foot">
-                        {p.minutes ? <span className="tc-pill">⏱ {p.minutes} min</span> : null}
-                        <span className={`tc-pill ${p.attempts.length ? "lesson" : ""}`}>
-                          {p.attempts.length} attempt{p.attempts.length === 1 ? "" : "s"}
-                        </span>
-                      </div>
-                    </a>
-                  ))}
+const TAB_COLOUR: Record<SectionKey, string> = {
+  learn: "var(--accent)",
+  quiz: "var(--rd-pattern)",
+  practice: "var(--ok)",
+  resources: "var(--rd-tech)",
+};
+
+function LessonBlock({ b, i, lesson }: { b: Block; i: number; lesson: Lesson }) {
+  switch (b.type) {
+    case "markdown":
+      return <Markdown text={b.text} path={b.path} anchors />;
+    case "trace":
+      return (
+        <div id={blockId(i)} className="lb-block">
+          {isTrace(b.trace) ? (
+            <TracePlayer trace={b.trace} />
+          ) : (
+            <p className="why wrong">
+              Unsupported trace format — rebuild with <code>./kb learn build</code>.
+            </p>
+          )}
+        </div>
+      );
+    case "quiz":
+      return (
+        <div id={blockId(i)} className="lb-block">
+          <Quiz
+            subject={lesson.subject}
+            topic={lesson.topic}
+            items={b.items}
+            names={lesson.names}
+          />
+        </div>
+      );
+    case "resources":
+      return (
+        <div id={blockId(i)} className="lb-block">
+          <ResourceList items={b.resources} />
+        </div>
+      );
+    case "problems":
+      return (
+        <section id={blockId(i)} className="lb-block">
+          <h2>Practice</h2>
+          <p className="muted">
+            Easy → hard. Start an attempt, solve it in VS Code, then <code>./kb run</code> it. Each
+            run feeds your progress.
+          </p>
+          {b.problems.map((p) => (
+            <ProblemCard key={p.slug} p={p} pattern={lesson.topic} />
+          ))}
+        </section>
+      );
+    case "design-problems":
+      return (
+        <section id={blockId(i)} className="lb-block">
+          <h2>Practice in the design console</h2>
+          <p className="muted">
+            Scope → estimates → API → versioned diagrams → deep dives → wrap-up, with live rubric
+            checks and tips on demand.
+          </p>
+          <div className="cards design-cards">
+            {b.problems.map((p, k) => (
+              <a
+                key={p.slug}
+                className="topic-card design-card"
+                href={designHref(lesson.subject, p.slug)}
+                style={{ ["--i" as string]: k }}
+              >
+                <div className="tc-head">
+                  <span className="tc-icon">{lesson.subject === "ood" ? "🧩" : "🏗️"}</span>
+                  <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
                 </div>
-              </section>
-            );
-        }
-      })}
-    </article>
+                <div className="tc-name">{p.title}</div>
+                <div className="tc-foot">
+                  {p.minutes ? <span className="tc-pill">⏱ {p.minutes} min</span> : null}
+                  <span className={`tc-pill ${p.attempts.length ? "lesson" : ""}`}>
+                    {p.attempts.length} attempt{p.attempts.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      );
+  }
+}
+
+/** A lesson in the Workbench: Learn | Quiz | Practice | Resources tabs, lessons list, TOC. */
+export function LessonView({ lesson }: { lesson: Lesson }) {
+  const { subject } = useContext(SubjectContext);
+  const topics = useMemo(() => subject?.topics ?? [], [subject]);
+  const topic = topics.find((t) => t.id === lesson.topic) ?? null;
+  const sections = useMemo(() => lessonSections(lesson.blocks), [lesson]);
+  const [active, setActive] = useState<SectionKey>(sections[0]?.key ?? "learn");
+  const tabbed = sections.length > 1;
+  const current = sections.find((s) => s.key === active) ?? sections[0];
+  const centerRef = useRef<HTMLDivElement>(null);
+  const scroller = useCenterScroller(centerRef);
+
+  const nav = useMemo(
+    () =>
+      topicNavGroups(topics, {
+        current: lesson.topic,
+        lessonsOnly: true,
+        href: (t) => lessonHref(lesson.subject, t.id),
+      }),
+    [topics, lesson.subject, lesson.topic],
+  );
+  const pn = prevNext(nav, lesson.topic);
+  usePrevNextKeys(pn.prev?.href ?? null, pn.next?.href ?? null);
+
+  const toc = useMemo(
+    () => lessonToc(lesson.blocks, tabbed ? current?.blocks : undefined),
+    [lesson, tabbed, current],
+  );
+
+  const problems = lesson.blocks.flatMap((b) =>
+    b.type === "problems" || b.type === "design-problems"
+      ? b.problems.map((p) => ({
+          slug: p.slug,
+          title: p.title,
+          difficulty: p.difficulty,
+          href: problemHref(lesson.subject, p.slug),
+        }))
+      : [],
+  );
+
+  const show = (key: SectionKey) => {
+    setActive(key);
+    scroller?.scrollTo({ top: 0 });
+  };
+
+  const tabs = tabbed ? (
+    <>
+      {sections.map((s) => (
+        <button
+          key={s.key}
+          className={`wb-tab ${active === s.key ? "on" : ""}`}
+          style={{ ["--tab-c" as string]: TAB_COLOUR[s.key] }}
+          onClick={() => show(s.key)}
+          aria-pressed={active === s.key}
+        >
+          {s.icon} {s.label}
+          {s.count > 0 && (
+            <span className="wb-tab-badge" title={s.key === "learn" ? "visual traces" : undefined}>
+              {s.key === "learn" ? `▶ ${s.count}` : s.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </>
+  ) : (
+    <span className="wb-tab on lb-tab-static">📖 Lesson</span>
+  );
+
+  const right = (
+    <OnThisPage toc={toc} scroller={scroller}>
+      <section className="rd-card lb-card">
+        <h4>Learn first</h4>
+        <TopicLinks
+          subject={lesson.subject}
+          ids={lesson.prereqs ?? []}
+          topics={topics}
+          names={lesson.names}
+        />
+      </section>
+      <section className="rd-card lb-card">
+        <h4>Related</h4>
+        <TopicLinks
+          subject={lesson.subject}
+          ids={lesson.related ?? []}
+          topics={topics}
+          names={lesson.names}
+        />
+      </section>
+      {problems.length > 0 && (
+        <section className="rd-card lb-card">
+          <h4>Practice problems</h4>
+          <ul className="lb-problems">
+            {problems.map((p) => (
+              <li key={p.slug}>
+                <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
+                <a href={p.href}>{p.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <a className="small lb-more" href={topicPageHref(lesson.subject, lesson.topic)}>
+        🗺️ topic page & neighbourhood →
+      </a>
+    </OnThisPage>
+  );
+
+  return (
+    <Workbench
+      id="lesson"
+      header={
+        <TopicHeader
+          topic={topic}
+          fallbackTitle={lesson.title}
+          topics={topics}
+          kicker={<span className="muted small">lesson</span>}
+        />
+      }
+      tabs={tabs}
+      left={{
+        title: "Lessons",
+        icon: "📖",
+        content: subject ? (
+          <NavList groups={nav} placeholder="Filter lessons…" emptyText="No lessons yet." />
+        ) : (
+          <PaneLoading />
+        ),
+      }}
+      right={{ title: "On this page", icon: "🧭", content: right }}
+      footer={
+        <PrevNextFooter
+          subject={lesson.subject}
+          prev={pn.prev}
+          next={pn.next}
+          index={pn.index}
+          total={pn.total}
+          noun="lesson"
+        />
+      }
+    >
+      <div className="lb-center" ref={centerRef}>
+        <article className="lesson lb-lesson">
+          {sections.map((s) => (
+            <div
+              key={s.key}
+              className={`lb-section lb-section-${s.key}`}
+              hidden={tabbed && s.key !== current?.key}
+            >
+              {s.blocks.map((i) => (
+                <LessonBlock key={i} b={lesson.blocks[i]!} i={i} lesson={lesson} />
+              ))}
+            </div>
+          ))}
+        </article>
+        {tabbed && current && (
+          <div className="lb-next-section">
+            {sections
+              .slice(sections.indexOf(current) + 1, sections.indexOf(current) + 2)
+              .map((s) => (
+                <button key={s.key} className="rd-btn primary" onClick={() => show(s.key)}>
+                  Next: {s.icon} {s.label} →
+                </button>
+              ))}
+          </div>
+        )}
+      </div>
+    </Workbench>
   );
 }
