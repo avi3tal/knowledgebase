@@ -452,3 +452,29 @@ def test_sd_content_gate_requires_layout_and_parts(problem: design.DesignProblem
     errors = design.validate_problem(p)
     assert "reference.md is missing the '## Patterns' section" in errors
     assert any("part:P9" in e for e in errors)
+
+
+def _graph(nodes: list[tuple[str, str]], edges: list[tuple[str, str, str]]) -> dict:
+    return {
+        "version": 1,
+        "nodes": [{"id": i, "kind": k} for i, k in nodes],
+        "edges": [{"from": a, "to": b, "label": lab} for a, b, lab in edges],
+    }
+
+
+def test_presigned_uploads_and_external_entries_are_not_smells() -> None:
+    nodes = [("c", "client"), ("s", "service"), ("b", "blob"), ("x", "external"), ("h", "service")]
+    edges = [("c", "s", ""), ("s", "b", ""), ("x", "h", "webhook"), ("h", "b", "")]
+    ok = _graph(nodes, [*edges, ("c", "b", "PUT chunk (presigned URL)")])
+    assert design.smells(ok, {}, "system-design") == []
+    bad = _graph(nodes, [*edges, ("c", "b", "PUT chunk")])
+    assert [s["rule"] for s in design.smells(bad, {}, "system-design")] == ["client-to-store"]
+
+
+def test_out_of_scope_items_do_not_satisfy_requirements(problem: design.DesignProblem) -> None:
+    adir = design.new_attempt(problem)
+    doc = json.loads((adir / "design.json").read_text())
+    doc["scope"]["out_of_scope"] = [{"id": "O1", "text": "Shorten URLs and redirect visitors"}]
+    design.save("system-design", "url-shortener", adir.name, "design", doc)
+    by = {c["id"]: c["passed"] for c in design.run_checks(problem, adir)["checks"]}
+    assert not by["req-shorten"] and not by["req-redirect"]

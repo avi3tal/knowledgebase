@@ -44,7 +44,13 @@ Every check has `id` (kebab), `type`, `label` and `tips: {nudge, hint, show}`.
 | `wrapup` | wrap-up | `key` ∈ bottlenecks, failures, monitoring, scale, future | that wrap-up answer has ≥ 15 chars |
 | `signature` | signatures | `names` | `signatures.py` / `signatures.go` declares every name: `Name`, `Class.method` (method on that class / Go receiver), or `Class(Base)` (Python base class) |
 
-Aim for 14–22 checks per system design problem, covering every stage, including **at least 2 `part` checks**. OOD problems lean on
+Aim for 14–22 checks per system design problem, covering every stage, including **at least 2 `part` checks**.
+- Keyword checks pass on *any* matching item. Run each `part`/`decision` check against every reference
+  part/deep dive, and add `choice_keywords` when a check passes on the wrong item. Short words match
+  inside longer ones ("ring" ⊂ "monitoring").
+- A requirement check never matches `out_of_scope` items unless `sections` names it.
+- `#/learn/system-design/<id>` links need a lesson folder; otherwise use `#/topic/...`. A part's
+  `covers` ids must exist in the reference scope. OOD problems lean on
 `component` (class kinds), `edge` and `signature`.
 
 **Flags** turn on smell rules: `read_heavy` → `single-store-read-heavy`; `needs_lb` → `no-load-balancer`.
@@ -128,6 +134,8 @@ Also present: `signatures.py` (signatures only), `notes.md`, and `submitted.json
 **System design:** `client-to-store`, `orphan-node`, `queue-no-consumer`, `unreachable` (a service, gateway or load
 balancer not reachable from a client), `single-store-read-heavy` (flag), `no-load-balancer` (flag),
 `part-not-composed` (final version only: a part's node id is missing).
+Exemptions: a client → blob edge whose label says "presigned" or "signed URL" is not `client-to-store`,
+and `external` nodes count as entry points for `unreachable` (webhooks, partner feeds).
 
 ## Check result (`DesignCheck` in `studio/src/api.ts`)
 ```

@@ -365,7 +365,14 @@ def smells(d: dict[str, Any], flags: dict[str, Any], subject: str) -> list[dict[
     def add(rule: str, ids: list[str]) -> None:
         out.append({"rule": rule, "message": SMELL_RULES[rule], "nodes": sorted(ids), "version": d.get("version")})
 
-    bad = [e["from"] for e in edges if kind[e["from"]] in ENTRY_KINDS and kind[e["to"]] in STORE_KINDS | {"cache"}]
+    def direct_ok(e: dict[str, Any]) -> bool:  # presigned / signed-URL transfers straight to object storage
+        return kind[e["to"]] == "blob" and bool(re.search(r"pre-?signed|signed url", str(e.get("label", "")), re.I))
+
+    bad = [
+        e["from"]
+        for e in edges
+        if kind[e["from"]] in ENTRY_KINDS and kind[e["to"]] in STORE_KINDS | {"cache"} and not direct_ok(e)
+    ]
     if bad:
         add("client-to-store", bad)
     touched = {e["from"] for e in edges} | {e["to"] for e in edges}
@@ -376,7 +383,8 @@ def smells(d: dict[str, Any], flags: dict[str, Any], subject: str) -> list[dict[
     if queues:
         add("queue-no-consumer", queues)
     # reachability from entry points (edges are directed requests/data flow)
-    entries = [i for i in nodes if kind[i] in ENTRY_KINDS]
+    # external systems (webhooks, partner feeds) can also start requests
+    entries = [i for i in nodes if kind[i] in ENTRY_KINDS | {"external"}]
     seen, stack = set(entries), list(entries)
     while stack:
         cur = stack.pop()
@@ -705,7 +713,8 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
         passed, detail = False, ""
         t = c["type"]
         if t == "requirement":
-            sections = c.get("sections") or list(scope)
+            # out-of-scope items never satisfy a requirement unless the check asks for that section
+            sections = c.get("sections") or [k for k in scope if k != "out_of_scope"]
             text = _norm([x.get("text", "") for k in sections for x in scope.get(k, []) if isinstance(x, dict)])
             passed = _hit(text, kw)
         elif t == "estimate":
@@ -1134,6 +1143,22 @@ def _validate_sd_content(problem: DesignProblem, topics: set[str]) -> list[str]:
     if not any(f.startswith("part:") for f in fences) or not any(f.startswith("v") for f in fences):
         e.append("reference.md should embed part diagrams (```diagram part:P1```) and versions (```diagram v2```)")
     links = re.findall(r"\(#/(?:learn|topic)/system-design/([a-z0-9-]+)\)", md)
+    lessons = re.findall(r"\(#/learn/system-design/([a-z0-9-]+)\)", md)
+    e += [
+        f"reference.md links #/learn/system-design/{t} but there is no lesson (use #/topic/)"
+        for t in sorted(set(lessons))
+        if not learn.has_lesson("system-design", t)
+    ]
+    scope_ids = {
+        str(x.get("id"))
+        for k in ("functional", "non_functional", "assumptions", "out_of_scope")
+        for x in (design.get("scope", {}) or {}).get(k, [])
+        if isinstance(x, dict)
+    }
+    for p in parts:
+        unknown = [c for c in p.get("covers", []) if c not in scope_ids] if isinstance(p, dict) else []
+        if unknown:
+            e.append(f"reference part {p.get('id')}: covers unknown requirement ids {unknown}")
     if not links:
         e.append("reference.md 'Learn more' should link lessons/topics, e.g. (#/topic/system-design/caching)")
     e += [f"reference.md links unknown topic {t!r}" for t in sorted(set(links) - topics)]
