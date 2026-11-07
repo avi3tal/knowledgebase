@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "peak_msgs", "formula": "1 * million", "unit": "/s" },
+    { "name": "avg_msgs", "formula": "300 * thousand", "unit": "/s" },
+    { "name": "msg_size", "formula": "1000", "unit": "B" },
+    { "name": "ingress_peak", "formula": "peak_msgs * msg_size / 10**9", "unit": "GB/s" },
+    { "name": "replicated_writes", "formula": "ingress_peak * 3", "unit": "GB/s" },
+    { "name": "consumer_egress", "formula": "ingress_peak * 3", "unit": "GB/s" },
+    { "name": "storage_7d_raw", "formula": "avg_msgs * msg_size * 7 * day / 10**12", "unit": "TB" },
+    { "name": "storage_7d_replicated", "formula": "storage_7d_raw * 3", "unit": "TB" },
+    { "name": "brokers", "formula": "storage_7d_replicated / 20 * 1.5", "unit": "" },
+    { "name": "partitions_needed", "formula": "ingress_peak * 1000 / 10", "unit": "" }
+  ]
+}

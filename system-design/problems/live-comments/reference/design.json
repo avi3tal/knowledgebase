@@ -1,0 +1,319 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Viewers post a short comment (≤ 200 characters) on a live video." },
+      { "id": "F2", "text": "Viewers of a live video see other viewers' new comments in real time." },
+      {
+        "id": "F3",
+        "text": "A viewer who joins late sees the most recent ~50 comments at once; comments are kept for replay with the recording."
+      },
+      {
+        "id": "F4",
+        "text": "Moderation: blocked words are filtered when posting; the streamer or a moderator can delete a comment and it disappears from screens."
+      }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "A comment appears on other viewers' screens within 2 s at p99." },
+      {
+        "id": "N2",
+        "text": "Hot streams: one video may have 5M concurrent viewers and 10k comments/s, and must not slow down other videos."
+      },
+      {
+        "id": "N3",
+        "text": "Available and durable: a posted comment is never lost from storage, but showing a sample of comments live on a hot stream is acceptable."
+      }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "20M concurrent viewers at peak across ~100k live videos; a viewer comments about once every 10 minutes." },
+      { "id": "A2", "text": "~300 B stored per comment; people read at most ~10 comments/s." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Video ingest and streaming, reactions/likes, threaded replies." }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/videos/{id}/comments",
+      "request": "client_comment_id, text",
+      "response": "201 {comment_id, ts}",
+      "notes": "Acked once appended to the log; client_comment_id dedups retries."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/videos/{id}/comments/stream (SSE)",
+      "request": "",
+      "response": "events: batch {comments[]}, delete {comment_id}",
+      "notes": "One long-lived stream per viewer; the client shows its own comment immediately."
+    },
+    {
+      "id": "E3",
+      "method": "GET",
+      "path": "/videos/{id}/comments/recent?limit=50",
+      "request": "",
+      "response": "[comments]",
+      "notes": "Called on join; cached at the CDN for 1 s."
+    },
+    {
+      "id": "E4",
+      "method": "DELETE",
+      "path": "/videos/{id}/comments/{comment_id}",
+      "request": "",
+      "response": "204",
+      "notes": "Moderators only; emits a tombstone event through the same log."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "comments",
+      "fields": "video_id + hour bucket (partition key), comment_id (time-ordered, clustering), user_id, text, status (visible|deleted), ts",
+      "store": "nosql",
+      "why": "Append-only, read by video and time range for replay; ~100 TB/year."
+    },
+    {
+      "id": "D2",
+      "name": "recent_comments",
+      "fields": "video_id → list of the last 50 comments",
+      "store": "cache",
+      "why": "What every joiner reads; tiny and hot."
+    },
+    {
+      "id": "D3",
+      "name": "subscriptions",
+      "fields": "in each gateway's memory: video_id → local connections; in Redis: channel video:{id} → subscribed gateways",
+      "store": "cache",
+      "why": "Routing is per gateway, never per viewer."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Comment ingestion and storage",
+      "covers": ["F1", "F4", "N3"],
+      "problem": "Accept ~33k comments/s at peak (10k/s on one hot video), filter them, and acknowledge only once the comment can't be lost, while both real-time delivery and long-term storage get every comment.",
+      "options": [
+        {
+          "name": "Write to SQL; readers poll it",
+          "pros": "simple, one source of truth",
+          "cons": "every viewer's poll hits the database; one table takes 33k writes/s"
+        },
+        {
+          "name": "Write to the database, then publish to delivery",
+          "pros": "durable before anyone sees it",
+          "cons": "dual write: a crash between the two loses the publish or shows comments that were never stored"
+        },
+        {
+          "name": "Log first: append to a replicated log keyed by video_id, ack, and let persisters and dispatchers consume independently",
+          "pros": "one durable write on the hot path; delivery and storage can't disagree; each consumer lags or retries alone",
+          "cons": "storage is eventually consistent (seconds); needs a log cluster"
+        }
+      ],
+      "choice": "Log first: the comment service filters and appends to Kafka keyed by video_id, acks, and persister workers batch-insert into Cassandra",
+      "why": "33k/s of tiny writes is easy for a partitioned log and painful for a single database. Making the log the only write removes the dual-write problem, and keying by video keeps each stream's comments in order for both consumers.",
+      "technologies": ["kafka", "cassandra"],
+      "patterns": ["idempotency"],
+      "diagram": {
+        "nodes": [
+          { "id": "client", "kind": "client", "label": "Viewers' apps", "x": 60, "y": 260 },
+          { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 320 },
+          { "id": "api", "kind": "service", "label": "Comment service ×N (validate, filter)", "x": 400, "y": 160 },
+          { "id": "stream", "kind": "stream", "label": "Comment log (Kafka, key = video_id)", "x": 590, "y": 160 },
+          { "id": "persister", "kind": "worker", "label": "Persister workers", "x": 770, "y": 60 },
+          { "id": "comments", "kind": "nosql", "label": "comments (Cassandra: video_id, time)", "x": 950, "y": 60 }
+        ],
+        "edges": [
+          { "from": "client", "to": "lb", "label": "POST comment / SSE subscribe" },
+          { "from": "lb", "to": "api", "label": "POST /videos/{id}/comments" },
+          { "from": "api", "to": "stream", "label": "append (ack after write)" },
+          { "from": "stream", "to": "persister", "label": "consume" },
+          { "from": "persister", "to": "comments", "label": "batched insert" }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Real-time delivery to viewers",
+      "covers": ["F2", "N1"],
+      "problem": "20M viewers on ~200 gateways must see new comments for the video they watch within 2 s, without the server doing work per viewer per comment.",
+      "options": [
+        {
+          "name": "Poll through the CDN every 2 s",
+          "pros": "stateless; the CDN collapses identical requests per video",
+          "cons": "~10M requests/s at the edge, mostly empty; latency = poll interval + TTL"
+        },
+        {
+          "name": "Per-viewer routing like chat (registry viewer → gateway)",
+          "pros": "precise",
+          "cons": "5M registry lookups and sends per comment on a hot video"
+        },
+        {
+          "name": "SSE gateways + pub/sub per video: each gateway subscribes once to every video its viewers watch and fans out in memory",
+          "pros": "one publish per gateway, not per viewer; push latency is milliseconds",
+          "cons": "stateful gateways; subscription churn when viewers zap between videos"
+        }
+      ],
+      "choice": "SSE gateways that subscribe to a pub/sub channel per video once and fan batches out to their local viewers",
+      "why": "Fan-out cost becomes 'number of gateways with a viewer of this video' (≤ 200) instead of 'number of viewers' (up to 5M). Comments flow one way, so SSE over plain HTTP is enough; posting is a normal POST.",
+      "technologies": ["websockets-sse", "redis", "envoy-nginx"],
+      "patterns": ["real-time-push", "fan-out"],
+      "diagram": {
+        "nodes": [
+          { "id": "client", "kind": "client", "label": "Viewers' apps", "x": 60, "y": 260 },
+          { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 320 },
+          { "id": "gw", "kind": "service", "label": "Comment gateways ×200 (SSE)", "x": 400, "y": 420 },
+          { "id": "pubsub", "kind": "queue", "label": "Per-video pub/sub channels (Redis)", "x": 590, "y": 420 },
+          { "id": "dispatcher", "kind": "worker", "label": "Dispatchers: batch + sample per video (500 ms)", "x": 770, "y": 300 }
+        ],
+        "edges": [
+          { "from": "client", "to": "lb", "label": "POST comment / SSE subscribe" },
+          { "from": "lb", "to": "gw", "label": "SSE /videos/{id}/comments/stream" },
+          { "from": "gw", "to": "pubsub", "label": "SUBSCRIBE video:{id} (once per gateway)" },
+          { "from": "pubsub", "to": "gw", "label": "batch → local viewers" },
+          { "from": "dispatcher", "to": "pubsub", "label": "publish one batch / 500 ms" }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Hot stream: more comments than anyone can read",
+      "covers": ["F2", "N2"],
+      "problem": "One stream has 5M viewers and 10k comments/s: that is 5 × 10^10 deliveries/s, and no human reads more than ~10 comments/s. One hot stream must not starve the others.",
+      "options": [
+        { "name": "Deliver every comment to everyone", "pros": "complete", "cons": "5 × 10^10 messages/s; unreadable on screen anyway" },
+        {
+          "name": "Send everything; let the client drop",
+          "pros": "simple server",
+          "cons": "the network still carries 10k comments/s to 5M phones"
+        },
+        {
+          "name": "Split viewers into rooms that only see their own room",
+          "pros": "bounded fan-out by construction",
+          "cons": "changes the product: viewers see different conversations"
+        },
+        {
+          "name": "Batch + sample per video: every 500 ms the dispatcher publishes one batch of at most ~10 comments chosen by rules",
+          "pros": "deliveries = viewers × 2/s regardless of comment rate; low-traffic videos still get every comment",
+          "cons": "most comments on a hot stream are never shown live"
+        }
+      ],
+      "choice": "Per-video dispatchers batch every 500 ms and sample down to ~10 comments per batch when the rate is high (keep verified, streamer and moderator comments first)",
+      "why": "Deliveries become 5M × 2 = 10M frames/s for the hottest stream and 40M/s overall, a bandwidth problem gateways can handle, and they stop growing with comment rate. Nothing a human could read is lost.",
+      "technologies": ["kafka", "redis"],
+      "patterns": ["backpressure", "hot-keys"],
+      "diagram": {
+        "nodes": [
+          { "id": "stream", "kind": "stream", "label": "Comment log (Kafka, key = video_id)", "x": 590, "y": 160 },
+          { "id": "dispatcher", "kind": "worker", "label": "Dispatchers: batch + sample per video (500 ms)", "x": 770, "y": 300 },
+          { "id": "pubsub", "kind": "queue", "label": "Per-video pub/sub channels (Redis)", "x": 590, "y": 420 },
+          { "id": "gw", "kind": "service", "label": "Comment gateways ×200 (SSE)", "x": 400, "y": 420 }
+        ],
+        "edges": [
+          { "from": "stream", "to": "dispatcher", "label": "consume (partition = video)" },
+          { "from": "dispatcher", "to": "pubsub", "label": "publish one batch / 500 ms" },
+          { "from": "pubsub", "to": "gw", "label": "batch → local viewers" }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Recent comments for joiners",
+      "covers": ["F3", "N2"],
+      "problem": "When a big stream starts, ~1M viewers join within a minute and each needs the last 50 comments immediately; all of them ask about the same video.",
+      "options": [
+        {
+          "name": "Query the comments table on each join",
+          "pros": "always correct",
+          "cons": "~17k reads/s on one partition: a hot partition"
+        },
+        { "name": "Redis list per video kept at 50 by the dispatcher", "pros": "O(1) reads in memory", "cons": "one hot key per big video" },
+        {
+          "name": "Redis list behind a CDN with a 1 s TTL",
+          "pros": "the edge absorbs the herd; the origin sees ~1 request/s per video per edge",
+          "cons": "a joiner may miss up to a second of comments, which the live stream fills in"
+        }
+      ],
+      "choice": "Dispatchers maintain a 50-item Redis list per video; GET /recent is served through the CDN with a 1 s TTL",
+      "why": "Every joiner of a video wants the same answer, so the response is perfectly cacheable for a second. That turns a hot key into a handful of origin reads, and the SSE stream covers the gap.",
+      "technologies": ["redis"],
+      "patterns": ["hot-keys"],
+      "diagram": {
+        "nodes": [
+          { "id": "client", "kind": "client", "label": "Viewers' apps", "x": 60, "y": 260 },
+          { "id": "cdn", "kind": "cdn", "label": "CDN (recent comments, 1 s TTL)", "x": 220, "y": 60 },
+          { "id": "api", "kind": "service", "label": "Comment service ×N (validate, filter)", "x": 400, "y": 160 },
+          { "id": "recent", "kind": "cache", "label": "Recent 50 per video (Redis list)", "x": 950, "y": 200 },
+          { "id": "dispatcher", "kind": "worker", "label": "Dispatchers: batch + sample per video (500 ms)", "x": 770, "y": 300 }
+        ],
+        "edges": [
+          { "from": "client", "to": "cdn", "label": "GET recent 50 on join" },
+          { "from": "cdn", "to": "api", "label": "cache miss" },
+          { "from": "api", "to": "recent", "label": "read last 50" },
+          { "from": "dispatcher", "to": "recent", "label": "LPUSH + LTRIM 50" }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Comment order on screen",
+      "options": [
+        { "name": "client timestamps", "pros": "no coordination", "cons": "skewed clocks reorder comments and invite spoofing" },
+        { "name": "global sequence", "pros": "total order", "cons": "a cross-video bottleneck for an order nobody can see" },
+        {
+          "name": "order within a video by log offset, time-ordered comment ids",
+          "pros": "free from the partition keyed by video",
+          "cons": "only per-video order, which is all a viewer sees"
+        }
+      ],
+      "choice": "order within a video by Kafka partition offset; comment ids are time-ordered for replay",
+      "why": "A viewer only ever sees one video's comments, and the log already orders them per partition. Batches carry comments in offset order, so every viewer sees the same sequence.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "Moderation and deletes",
+      "options": [
+        { "name": "filter only on the client", "pros": "no server work", "cons": "abusive text still reaches every phone" },
+        {
+          "name": "filter at post time + tombstone events for deletes",
+          "pros": "bad words never enter the log; deletes reach screens via the same path",
+          "cons": "the blocklist must be kept in sync on every comment service"
+        }
+      ],
+      "choice": "blocked-word filter in the comment service before the log; deletes are tombstone events that dispatchers publish and persisters apply",
+      "why": "F4: deletes must vanish from screens within seconds, and the live path already reaches every viewer in < 2 s. The recent-comments list drops the id too, and the 1 s CDN TTL bounds staleness.",
+      "version": 4
+    },
+    {
+      "id": "DD3",
+      "title": "Gateway subscription churn",
+      "options": [
+        {
+          "name": "subscribe per viewer",
+          "pros": "simple bookkeeping",
+          "cons": "millions of subscriptions; pub/sub becomes per-viewer fan-out"
+        },
+        {
+          "name": "subscribe per (gateway, video), reference-counted",
+          "pros": "pub/sub fan-out ≤ number of gateways",
+          "cons": "gateways track counts and unsubscribe when the last viewer leaves"
+        }
+      ],
+      "choice": "reference-counted subscriptions per (gateway, video)",
+      "why": "Keeps the pub/sub layer's work bounded by ~200 gateways per video no matter how many viewers watch.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Gateway egress on hot streams (~80 GB/s overall), the single Kafka partition and dispatcher of the hottest video (10k/s is fine for one consumer, but watch it), the recent-comments key of a viral video (CDN in front).",
+    "failures": "Gateway crash: viewers reconnect with jitter and refetch recent comments. Dispatcher crash: another consumer takes the partition and resumes from the committed offset (a few duplicate batches are harmless). Redis pub/sub loss: gateways resubscribe; comments are already in the log. Persister lag: storage catches up, live view is unaffected.",
+    "monitoring": "Post → screen latency p99, comments/s and viewers per video, sampling ratio on hot streams, gateway connections and egress, Kafka consumer lag for dispatchers and persisters, CDN hit ratio for /recent.",
+    "scale": "More gateways and pub/sub shards (channel hashed by video); more Kafka partitions; for extreme events add a relay tier between pub/sub and gateways per region.",
+    "future": "Personalised sampling (always show friends' comments, added at the gateway), reactions as aggregated counters, replay synced to the video timeline."
+  }
+}

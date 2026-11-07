@@ -1,14 +1,19 @@
 {
   "version": 1,
-  "why": "Naive start: clients send over HTTP and poll a single chat service every second; messages live in one SQL database. 10M connected clients polling = ~10M mostly-empty requests/s, up to 1 s delay (breaks N1), and one server and one database are single points of failure.",
+  "why": "Naive baseline: one HTTP service and one SQL table; clients poll every second. 10M clients polling is ~10M mostly empty requests/s and still up to a second late (breaks N1).",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
-    { "id": "chat", "kind": "service", "label": "Chat service (HTTP + polling)", "x": 400, "y": 160 },
-    { "id": "db", "kind": "sql", "label": "messages DB", "x": 640, "y": 160 }
+    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 240 },
+    { "id": "chat", "kind": "service", "label": "Chat service (HTTP)", "x": 370, "y": 240 },
+    { "id": "msgs", "kind": "sql", "label": "messages (single SQL)", "x": 660, "y": 240 }
   ],
   "edges": [
-    { "from": "client", "to": "chat", "label": "POST message, GET new messages every 1 s" },
-    { "from": "chat", "to": "db", "label": "insert / select" }
+    { "from": "client", "to": "chat", "label": "POST message / GET poll every 1 s" },
+    { "from": "chat", "to": "msgs", "label": "insert / select new" }
   ],
-  "flows": [{ "name": "poll", "path": ["client", "chat", "db"] }]
+  "flows": [
+    {
+      "name": "send + poll",
+      "path": ["client", "chat", "msgs"]
+    }
+  ]
 }

@@ -1,8 +1,6 @@
 {
   "version": 1,
-  "flags": {
-    "needs_lb": true
-  },
+  "flags": { "needs_lb": true },
   "pattern": "Stateful connection tier + stateless routing: terminate long-lived connections on a dedicated gateway fleet, keep a registry of who is connected where, persist each message once with a per-conversation sequence, and fan out asynchronously to online devices (push for the rest).",
   "checks": [
     {
@@ -31,9 +29,7 @@
       "id": "req-group",
       "type": "requirement",
       "label": "Conversations with more than two people",
-      "keywords": [
-        "group"
-      ],
+      "keywords": ["group"],
       "tips": {
         "nudge": "The interviewer mentioned a member cap. For what?",
         "hint": "Add group conversations and their size limit to scope.",
@@ -53,7 +49,9 @@
         "any device",
         "new device",
         "persist",
-        "not connected"
+        "not connected",
+        "push",
+        "notif"
       ],
       "tips": {
         "nudge": "The recipient's phone is in a drawer. Is the message lost?",
@@ -88,12 +86,7 @@
       "id": "est-message-rate",
       "type": "estimate",
       "label": "Message throughput estimated",
-      "keywords": [
-        "message",
-        "msg",
-        "send",
-        "write"
-      ],
+      "keywords": ["message", "msg", "send", "write"],
       "unit": "/s",
       "min": 5000,
       "max": 500000,
@@ -107,12 +100,7 @@
       "id": "est-connections",
       "type": "estimate",
       "label": "Concurrent connections estimated",
-      "keywords": [
-        "connection",
-        "concurrent",
-        "online",
-        "socket"
-      ],
+      "keywords": ["connection", "concurrent", "online", "socket"],
       "unit": "",
       "min": 1000000,
       "max": 100000000,
@@ -126,14 +114,7 @@
       "id": "est-storage",
       "type": "estimate",
       "label": "Storage for the retention period estimated",
-      "keywords": [
-        "storage",
-        "disk",
-        "bytes",
-        "size",
-        "per_year",
-        "yearly"
-      ],
+      "keywords": ["storage", "disk", "bytes", "size", "per_year", "yearly"],
       "unit": "TB",
       "min": 20,
       "max": 2000,
@@ -147,13 +128,7 @@
       "id": "api-send",
       "type": "endpoint",
       "label": "Sending interface defined",
-      "keywords": [
-        "send",
-        "client_msg_id",
-        "client msg id",
-        "post /conversations",
-        "post /messages"
-      ],
+      "keywords": ["send", "client_msg_id", "client msg id", "post /conversations", "post /messages"],
       "tips": {
         "nudge": "What does the client transmit when the user taps send, and what does it get back?",
         "hint": "Define the send operation (over the persistent connection or HTTP) with a client-generated id.",
@@ -165,15 +140,7 @@
       "type": "endpoint",
       "label": "Catch-up interface defined",
       "method": "GET",
-      "keywords": [
-        "message",
-        "history",
-        "conversation",
-        "sync",
-        "cursor",
-        "since",
-        "after"
-      ],
+      "keywords": ["message", "history", "conversation", "sync", "cursor", "since", "after"],
       "tips": {
         "nudge": "A phone reconnects after a flight. How does it get what it missed?",
         "hint": "A GET that pages through a conversation from the last sequence number the device saw.",
@@ -184,10 +151,7 @@
       "id": "data-messages",
       "type": "entity",
       "label": "Core data model defined",
-      "keywords": [
-        "message",
-        "msg"
-      ],
+      "keywords": ["message", "msg"],
       "tips": {
         "nudge": "What do you store for each message, and how is it found again?",
         "hint": "Think about the access pattern: 'latest N messages of conversation X'.",
@@ -198,13 +162,7 @@
       "id": "data-membership",
       "type": "entity",
       "label": "Who belongs to which conversation modelled",
-      "keywords": [
-        "member",
-        "participant",
-        "conversation",
-        "channel",
-        "group"
-      ],
+      "keywords": ["member", "participant", "conversation", "channel", "group"],
       "tips": {
         "nudge": "To deliver a group message you need to know who's in the group.",
         "hint": "Model conversations and their members, plus each member's read position.",
@@ -212,23 +170,55 @@
       }
     },
     {
+      "id": "part-connections",
+      "type": "part",
+      "label": "Holding connections and routing to them designed as a part",
+      "keywords": ["gateway", "registry", "session", "routing", "route", "presence", "connection", "websocket", "socket"],
+      "tips": {
+        "nudge": "Alice is on one of hundreds of servers and Bob on another. That routing problem deserves its own part.",
+        "hint": "Add a part for the connection tier: compare broadcasting to all servers, hashing users to servers, and a lookup table of who is connected where.",
+        "show": "Part 'Connection tier and routing': WebSocket gateways behind an L4 LB; a Redis session registry device → gateway with a heartbeat TTL (also presence)."
+      }
+    },
+    {
+      "id": "part-ordering",
+      "type": "part",
+      "label": "Storing messages in a stable order designed as a part",
+      "keywords": ["order", "sequence", "persist", "durab", "history", "storage", "message store"],
+      "tips": {
+        "nudge": "Two phones must show the same conversation in the same order, for a year. Which sub-problem is that?",
+        "hint": "Add a part for persistence and ordering: compare client timestamps, a global sequence and a per-conversation sequence, and pick a store for 'latest N of a conversation'.",
+        "show": "Part 'Message persistence and ordering': per-conversation seq (atomic counter), messages in Cassandra partitioned by conversation_id and clustered by seq, dedup by client_msg_id."
+      }
+    },
+    {
+      "id": "part-offline",
+      "type": "part",
+      "label": "Recipients without a connection handled as a part",
+      "keywords": ["offline", "push", "apns", "fcm", "catch up", "catch-up", "sync", "reconnect", "not connected"],
+      "tips": {
+        "nudge": "The phone is in a drawer, then a new laptop signs in. What do they each need?",
+        "hint": "Add a part for offline delivery: compare per-device inbox queues, data inside push payloads, and push-as-a-hint plus cursor sync.",
+        "show": "Part 'Offline delivery and catch-up': APNs/FCM wake-up push only; devices pull GET …/messages?after_seq= per changed conversation."
+      }
+    },
+    {
+      "id": "part-group-fanout",
+      "type": "part",
+      "label": "Delivering to many members designed as a part",
+      "keywords": ["group", "fan-out", "fanout", "fan out", "broadcast", "members"],
+      "tips": {
+        "nudge": "A 200-member group turns one send into 200 deliveries. Who does that work, and does the sender wait?",
+        "hint": "Add a part for group fan-out: compare inline delivery, copying into every inbox, and async workers fed by a stream.",
+        "show": "Part 'Group fan-out': persist once, publish to Kafka keyed by conversation; fan-out workers look up members and gateways and deliver; the sender is acked after the write."
+      }
+    },
+    {
       "id": "comp-connection-tier",
       "type": "component",
       "label": "Clients receive messages the moment they arrive",
-      "kinds": [
-        "service",
-        "api-gateway"
-      ],
-      "keywords": [
-        "websocket",
-        "web socket",
-        "ws gateway",
-        "connection",
-        "socket",
-        "persistent",
-        "realtime",
-        "real-time"
-      ],
+      "kinds": ["service", "api-gateway"],
+      "keywords": ["websocket", "web socket", "ws gateway", "connection", "socket", "persistent", "realtime", "real-time"],
       "tips": {
         "nudge": "The server must speak first when a message arrives. What does that need?",
         "hint": "A fleet of servers whose only job is to hold open connections.",
@@ -239,19 +229,8 @@
       "id": "comp-registry",
       "type": "component",
       "label": "Knowing which server holds a user's connection",
-      "kinds": [
-        "cache",
-        "coordinator",
-        "nosql"
-      ],
-      "keywords": [
-        "presence",
-        "session",
-        "connection",
-        "route",
-        "registry",
-        "online"
-      ],
+      "kinds": ["cache", "coordinator", "nosql"],
+      "keywords": ["presence", "session", "connection", "route", "registry", "online"],
       "tips": {
         "nudge": "Alice is on gateway 17, Bob on gateway 203. How does a message find Bob?",
         "hint": "Keep a lookup of user/device → gateway that gateways update on connect and disconnect.",
@@ -259,55 +238,15 @@
       }
     },
     {
-      "id": "comp-store",
-      "type": "component",
-      "label": "Durable message storage at write scale",
-      "kinds": [
-        "nosql",
-        "sql"
-      ],
-      "tips": {
-        "nudge": "Where do 146 TB of messages a year live?",
-        "hint": "A store partitioned by conversation that is good at appends and range reads.",
-        "show": "Wide-column store (Cassandra/HBase-like) partitioned by conversation_id, clustered by seq."
-      }
-    },
-    {
       "id": "edge-async-fanout",
       "type": "edge",
       "label": "Fan-out decoupled from the sender's request",
-      "from_kinds": [
-        "service"
-      ],
-      "to_kinds": [
-        "queue",
-        "stream"
-      ],
+      "from_kinds": ["service"],
+      "to_kinds": ["queue", "stream"],
       "tips": {
         "nudge": "A group message goes to 200 people. Should the sender wait for all of them?",
         "hint": "Persist, ack the sender, and hand delivery to something asynchronous.",
         "show": "Chat service → message stream (partitioned by conversation) → fan-out workers → recipients' gateways."
-      }
-    },
-    {
-      "id": "comp-push",
-      "type": "component",
-      "label": "Reaching users with no open connection",
-      "kinds": [
-        "external",
-        "service",
-        "worker"
-      ],
-      "keywords": [
-        "push",
-        "apns",
-        "fcm",
-        "notif"
-      ],
-      "tips": {
-        "nudge": "The app is closed. Who can still wake the phone?",
-        "hint": "Mobile OS vendors run that channel; you call it.",
-        "show": "Push notification service → APNs / FCM for recipients with no live session."
       }
     },
     {
@@ -333,22 +272,23 @@
     {
       "id": "dd-ordering",
       "type": "decision",
-      "label": "Ordering and duplicates handled",
+      "label": "Duplicates and gaps handled",
       "keywords": [
-        "sequence",
-        "ordering",
-        "order",
-        "monotonic",
         "idempot",
         "dedup",
+        "duplicate",
         "exactly once",
+        "exactly-once",
         "at-least-once",
-        "at least once"
+        "at least once",
+        "gap",
+        "retry",
+        "retries"
       ],
       "tips": {
-        "nudge": "Two devices send at the same moment, and the network retries one send. What does each phone show?",
-        "hint": "Who assigns the order, and how are retries recognised?",
-        "show": "Per-conversation sequence assigned on write (one partition owns a conversation); at-least-once delivery with client_msg_id dedup; clients sort by seq."
+        "nudge": "The network drops the ack and the phone sends the same message again. Then a worker crashes mid-delivery. What does each phone show?",
+        "hint": "Decide the delivery guarantee and how retries and missing messages are recognised.",
+        "show": "At-least-once delivery: the store ignores a repeated client_msg_id; clients drop a seq they already have and fetch any gap with after_seq."
       }
     },
     {

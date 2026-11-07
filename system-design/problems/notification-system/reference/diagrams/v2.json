@@ -1,31 +1,38 @@
 {
   "version": 2,
-  "why": "Decouple callers from providers (N3) and stop losing messages (N1): a load-balanced notification API validates, checks preferences (cached), writes the log and returns 202; work goes into one durable queue per channel, drained by channel workers. A slow SMS vendor now only backs up the SMS queue. Flaw left: OTPs queue behind campaign messages in the same channel (N2), failed sends are just dropped after one retry, and nothing caps marketing per user.",
+  "why": "Compose P1 (F2, F3, N1): a load-balanced API checks preferences and caps once, logs the request under its idempotency key, enqueues it and answers 202. Callers are decoupled, but everything shares one queue, so a campaign still delays login codes and a slow SMS vendor holds up push.",
   "nodes": [
-    { "id": "producer", "kind": "client", "label": "Product services", "x": 60, "y": 200 },
-    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 200 },
-    { "id": "api", "kind": "service", "label": "Notification API (validate, prefs, log)", "x": 400, "y": 200 },
-    { "id": "prefcache", "kind": "cache", "label": "Prefs + devices cache", "x": 600, "y": 40 },
-    { "id": "prefdb", "kind": "sql", "label": "preferences, devices, contacts", "x": 800, "y": 40 },
-    { "id": "log", "kind": "nosql", "label": "notification_log (TTL 30d)", "x": 800, "y": 440 },
-    { "id": "queues", "kind": "queue", "label": "Queues per channel (push / SMS / email)", "x": 600, "y": 240 },
-    { "id": "workers", "kind": "worker", "label": "Channel workers", "x": 800, "y": 240 },
-    { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 1000, "y": 140 },
-    { "id": "sms", "kind": "external", "label": "SMS vendor", "x": 1000, "y": 240 },
-    { "id": "email", "kind": "external", "label": "Email vendor", "x": 1000, "y": 340 }
+    { "id": "producer", "kind": "client", "label": "Product services", "x": 60, "y": 120 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 200, "y": 230 },
+    { "id": "api", "kind": "service", "label": "Notification API ×N (validate, prefs, caps, log)", "x": 360, "y": 230 },
+    { "id": "prefcache", "kind": "cache", "label": "Prefs + devices cache", "x": 540, "y": 40 },
+    { "id": "prefdb", "kind": "sql", "label": "preferences, devices, contacts", "x": 760, "y": 40 },
+    { "id": "limits", "kind": "cache", "label": "Counters: user caps", "x": 720, "y": 440 },
+    { "id": "log", "kind": "nosql", "label": "notification_log (TTL 30 d, idempotency)", "x": 920, "y": 450 },
+    { "id": "urgent", "kind": "queue", "label": "Delivery queue (all traffic)", "x": 540, "y": 160 },
+    { "id": "urgentw", "kind": "worker", "label": "Channel workers", "x": 720, "y": 160 },
+    { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 920, "y": 140 },
+    { "id": "sms", "kind": "external", "label": "SMS vendor(s)", "x": 920, "y": 240 },
+    { "id": "email", "kind": "external", "label": "Email vendor(s)", "x": 920, "y": 340 }
   ],
   "edges": [
     { "from": "producer", "to": "lb", "label": "POST /notifications" },
     { "from": "lb", "to": "api" },
     { "from": "api", "to": "prefcache", "label": "opted in? devices?" },
     { "from": "prefcache", "to": "prefdb", "label": "read-through" },
-    { "from": "api", "to": "log", "label": "status = queued" },
-    { "from": "api", "to": "queues", "label": "enqueue per channel" },
-    { "from": "queues", "to": "workers" },
-    { "from": "workers", "to": "apns" },
-    { "from": "workers", "to": "sms" },
-    { "from": "workers", "to": "email" },
-    { "from": "workers", "to": "log", "label": "status = sent / failed" }
+    { "from": "api", "to": "limits", "label": "per-user marketing cap" },
+    { "from": "api", "to": "log", "label": "queued / suppressed (unique idempotency key)" },
+    { "from": "api", "to": "urgent", "label": "transactional (202 returned)" },
+    { "from": "urgent", "to": "urgentw" },
+    { "from": "urgentw", "to": "apns", "label": "push" },
+    { "from": "urgentw", "to": "sms", "label": "SMS" },
+    { "from": "urgentw", "to": "email", "label": "email" },
+    { "from": "urgentw", "to": "log", "label": "sent / failed" }
   ],
-  "flows": [{ "name": "send", "path": ["producer", "lb", "api", "queues", "workers", "apns"] }]
+  "flows": [
+    {
+      "name": "accept",
+      "path": ["producer", "lb", "api", "urgent", "urgentw", "sms"]
+    }
+  ]
 }

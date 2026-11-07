@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "concurrent_viewers", "formula": "20 * million", "unit": "" },
+    { "name": "comments_peak", "formula": "concurrent_viewers / 600", "unit": "/s" },
+    { "name": "hot_viewers", "formula": "5 * million", "unit": "" },
+    { "name": "hot_comments", "formula": "10 * thousand", "unit": "/s" },
+    { "name": "naive_hot_deliveries", "formula": "hot_viewers * hot_comments", "unit": "/s" },
+    { "name": "batched_deliveries", "formula": "concurrent_viewers * 2", "unit": "/s" },
+    { "name": "egress", "formula": "batched_deliveries * 2000 / 10**9", "unit": "GB/s" },
+    { "name": "gateways", "formula": "concurrent_viewers / (100 * thousand)", "unit": "" },
+    { "name": "storage_per_year", "formula": "comments_peak / 3 * day * 365 * 300 / 10**12", "unit": "TB" }
+  ]
+}

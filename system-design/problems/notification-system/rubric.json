@@ -18,7 +18,17 @@
       "id": "req-producers",
       "type": "requirement",
       "label": "Who asks for notifications, and how",
-      "keywords": ["other services", "internal services", "teams", "producer", "trigger", "event", "campaign", "schedul", "caller"],
+      "keywords": [
+        "other services",
+        "internal services",
+        "teams",
+        "producer",
+        "trigger",
+        "event",
+        "campaign",
+        "schedul",
+        "caller"
+      ],
       "tips": {
         "nudge": "The users of this platform are not end users. Who are they?",
         "hint": "Describe how internal services and campaigns request a send (now or scheduled).",
@@ -40,7 +50,17 @@
       "id": "req-reliability",
       "type": "requirement",
       "label": "Delivery guarantee stated",
-      "keywords": ["at-least-once", "at least once", "no loss", "not lost", "never lost", "never be lost", "reliab", "durable", "duplicate"],
+      "keywords": [
+        "at-least-once",
+        "at least once",
+        "no loss",
+        "not lost",
+        "never lost",
+        "never be lost",
+        "reliab",
+        "durable",
+        "duplicate"
+      ],
       "tips": {
         "nudge": "A login code silently disappears. Or arrives three times. Which is worse, and what do you promise?",
         "hint": "State what happens to an accepted request and how duplicates are treated.",
@@ -51,7 +71,16 @@
       "id": "req-urgency",
       "type": "requirement",
       "label": "Not all messages are equally urgent",
-      "keywords": ["priority", "transactional", "otp", "login code", "urgent", "critical", "within a few seconds", "seconds"],
+      "keywords": [
+        "priority",
+        "transactional",
+        "otp",
+        "login code",
+        "urgent",
+        "critical",
+        "within a few seconds",
+        "seconds"
+      ],
       "tips": {
         "nudge": "Login code vs. weekend sale: same latency expectation?",
         "hint": "Give each class its own latency target.",
@@ -146,6 +175,60 @@
       }
     },
     {
+      "id": "part-gate",
+      "type": "part",
+      "label": "Accepting requests and applying policy designed as a part",
+      "keywords": [
+        "accept",
+        "ingest",
+        "gate",
+        "policy",
+        "preference",
+        "opt-out",
+        "opt out",
+        "intake",
+        "validate",
+        "entrance"
+      ],
+      "tips": {
+        "nudge": "Before anything is delivered, someone has to say yes, no or later. Make that its own sub-problem.",
+        "hint": "Add a part for the entrance: compare sending inline, checking preferences in every worker, and one gate that checks, logs and enqueues.",
+        "show": "Part 'Accept and enforce policy': load-balanced API checks cached prefs + per-user caps, writes notification_log with a unique idempotency key, enqueues, returns 202."
+      }
+    },
+    {
+      "id": "part-isolation",
+      "type": "part",
+      "label": "Urgent and bulk traffic kept apart, designed as a part",
+      "keywords": [
+        "priority",
+        "isolation",
+        "transactional",
+        "marketing",
+        "campaign",
+        "bulkhead",
+        "per channel",
+        "per-channel",
+        "separate queue"
+      ],
+      "tips": {
+        "nudge": "A 50M-message campaign is queued. A login code arrives behind it. Then what?",
+        "hint": "Add a part about sharing capacity: compare one queue, queues per channel, and queues per channel × priority with a paced scheduler for campaigns.",
+        "show": "Part 'Traffic isolation': transactional and bulk queues per channel with dedicated workers; a scheduler releases campaigns at a set rate."
+      }
+    },
+    {
+      "id": "part-delivery",
+      "type": "part",
+      "label": "Talking to third-party providers designed as a part",
+      "keywords": ["provider", "vendor", "deliver", "apns", "fcm", "third-party", "third party", "retry", "throttl"],
+      "tips": {
+        "nudge": "Apple, Google and the SMS vendor throttle you and fail. Who deals with that, and how?",
+        "hint": "Add a part for the provider side: compare naive fast sends, a single aggregator, and token buckets + backoff retries + DLQ with idempotency.",
+        "show": "Part 'Provider delivery': per-provider token buckets, circuit breaker, delay queue with exponential backoff → DLQ, idempotency checked in the log."
+      }
+    },
+    {
       "id": "comp-policy-store",
       "type": "component",
       "label": "Recipient settings checked before sending",
@@ -193,21 +276,21 @@
       }
     },
     {
-      "id": "dd-isolation",
-      "type": "decision",
-      "label": "How different message types share capacity",
-      "keywords": ["priority", "separate queue", "per-channel", "per channel", "transactional", "marketing", "isolation", "bulkhead"],
-      "tips": {
-        "nudge": "A 50M-message campaign is queued. A login code arrives behind it. Then what?",
-        "hint": "Think about separating traffic by urgency and by channel.",
-        "show": "Separate queues (and worker pools) per channel × priority: transactional never waits behind marketing; a slow SMS vendor never blocks push."
-      }
-    },
-    {
       "id": "dd-throttling",
       "type": "decision",
       "label": "Volume limits for users and providers decided",
-      "keywords": ["rate limit", "rate-limit", "throttl", "frequency cap", "per user per day", "quiet hours", "token bucket", "per-user cap", "daily cap", "send rate"],
+      "keywords": [
+        "rate limit",
+        "rate-limit",
+        "throttl",
+        "frequency cap",
+        "per user per day",
+        "quiet hours",
+        "token bucket",
+        "per-user cap",
+        "daily cap",
+        "send rate"
+      ],
       "tips": {
         "nudge": "Providers throttle you, and users hate spam. Where do you count?",
         "hint": "Decide per-user caps and per-provider send rates, and where they're enforced.",

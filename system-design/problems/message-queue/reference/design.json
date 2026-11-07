@@ -1,0 +1,344 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Producers publish messages (key, value, headers) to a named topic." },
+      { "id": "F2", "text": "Messages with the same key are delivered in the order they were produced." },
+      { "id": "F3", "text": "Consumers subscribe as groups: each group receives every message; members of one group share the work." },
+      { "id": "F4", "text": "Consumers resume where they left off after a restart, and can rewind to an earlier offset or time to replay." },
+      { "id": "F5", "text": "Retention per topic: by time/size (default 7 days), or keep the latest value per key (compaction)." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "High throughput: ~1M messages/s (~1 GB/s) at peak; produce p99 < 10 ms in-region, end-to-end < 100 ms." },
+      { "id": "N2", "text": "Durable: an acknowledged message survives the loss of any single broker or availability zone." },
+      { "id": "N3", "text": "Highly available: a failed broker's partitions get a new leader within seconds." },
+      { "id": "N4", "text": "Scales horizontally by adding brokers and partitions." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "Average message ~1 KB; average load ~300k/s, peak ~1M/s; ~3 consumer groups read each message." },
+      { "id": "A2", "text": "~2,000 topics and ~50k partitions; brokers with ~20 TB usable disk and 10 Gbps NICs." }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Cross-datacenter mirroring, schema registry, stream-processing APIs, per-message priority and delayed delivery."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/topics/{topic}/records (Produce)",
+      "request": "batch of {key, value, headers}, acks (0|1|all), producer_id, sequence",
+      "response": "{partition, base_offset} per batch",
+      "notes": "Sent to the partition leader; producer_id + sequence make retries idempotent."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/topics/{topic}/partitions/{p}/records?offset=&max_bytes=&max_wait_ms= (Fetch)",
+      "request": "",
+      "response": "record batches + high watermark",
+      "notes": "Long-poll; only records up to the high watermark (replicated to the ISR) are returned."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/groups/{group}/join, /groups/{group}/offsets",
+      "request": "member_id, subscribed topics | {partition: offset}",
+      "response": "assigned partitions + generation | 200",
+      "notes": "Membership, assignment and offset commits go to the group coordinator."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "/metadata?topics=",
+      "request": "",
+      "response": "partitions → leader broker, replicas, ISR",
+      "notes": "Clients talk to leaders directly; no load balancer in the data path."
+    },
+    {
+      "id": "E5",
+      "method": "POST",
+      "path": "/topics",
+      "request": "name, partitions, replication_factor, retention_ms, cleanup_policy (delete|compact)",
+      "response": "201",
+      "notes": "Admin."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "partition log",
+      "fields": "topic-partition → segment files (base_offset.log + offset index + time index); record batches [offset, timestamp, key, value, headers, producer_id, sequence]",
+      "store": "blob",
+      "why": "Append-only files on each replica's local disk: sequential IO, page cache, zero-copy sends."
+    },
+    {
+      "id": "D2",
+      "name": "committed offsets",
+      "fields": "(consumer group, topic, partition) → committed offset, metadata, commit time",
+      "store": "stream",
+      "why": "An internal compacted topic: replicated like any data, latest value per key."
+    },
+    {
+      "id": "D3",
+      "name": "cluster metadata",
+      "fields": "topics, partitions, replica lists, leader, ISR, leader epoch, broker registrations",
+      "store": "coordinator",
+      "why": "Small, must be strongly consistent: kept by the Raft controller quorum."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Partitioned append-only log and storage",
+      "covers": ["F1", "F2", "F3", "N1"],
+      "problem": "Absorb ~1M messages/s (~1 GB/s) on commodity brokers, keep order per key, and let many consumer groups read the same data at different positions without the broker tracking each message.",
+      "options": [
+        {
+          "name": "Rows in a database, deleted when acked",
+          "pros": "familiar, queryable",
+          "cons": "an index entry and a delete per message: random IO at 1M/s; replay is impossible after delete"
+        },
+        {
+          "name": "In-memory queue per topic with per-message acks (classic broker)",
+          "pros": "very low latency at small volume; flexible routing",
+          "cons": "memory-bound, per-message state × consumers, no replay; one queue is one order and one bottleneck"
+        },
+        {
+          "name": "Topics split into partitions; each partition an append-only log of segment files with a sparse offset index",
+          "pros": "sequential disk IO, page cache and zero-copy reads; a consumer's state is one offset; partitions spread over brokers",
+          "cons": "order only within a partition; consumer parallelism ≤ partitions; changing the partition count remaps keys"
+        }
+      ],
+      "choice": "Partitioned, segmented append-only log: key hash → partition, producers batch and compress, brokers append to the active segment and serve reads by offset",
+      "why": "1 GB/s across ~40 brokers is ~25 MB/s of sequential writes each, easy for disks when nothing is random. Offsets turn 'which messages did group X read' into one integer per partition, so 3 groups cost the same as 1. Hashing the key keeps per-key order.",
+      "technologies": ["kafka"],
+      "patterns": ["hot-keys", "backpressure"],
+      "diagram": {
+        "nodes": [
+          { "id": "producer", "kind": "client", "label": "Producers (client lib: partitioner, batching)", "x": 60, "y": 140 },
+          { "id": "leader", "kind": "service", "label": "Brokers ×40: partition leaders", "x": 280, "y": 160 },
+          { "id": "segments", "kind": "blob", "label": "Partition logs: segments + offset index (local disk)", "x": 540, "y": 200 },
+          { "id": "consumer", "kind": "client", "label": "Consumer group members", "x": 60, "y": 380 }
+        ],
+        "edges": [
+          { "from": "producer", "to": "leader", "label": "produce(topic, key, batch), acks=all" },
+          { "from": "leader", "to": "segments", "label": "append batch (sequential)" },
+          { "from": "consumer", "to": "leader", "label": "fetch(partition, offset)" }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Replication and leader election",
+      "covers": ["N2", "N3"],
+      "problem": "An acknowledged message must survive losing any broker or an availability zone, and a partition must get a new leader within seconds, without two brokers both believing they lead it.",
+      "options": [
+        {
+          "name": "Async primary → backup",
+          "pros": "lowest produce latency",
+          "cons": "acked writes that weren't copied yet are lost on failover"
+        },
+        {
+          "name": "Synchronous copy to all replicas",
+          "pros": "no loss",
+          "cons": "one slow or dead replica stalls every write to the partition"
+        },
+        {
+          "name": "Majority quorum per partition (Raft)",
+          "pros": "well-understood safety; no extra membership list",
+          "cons": "tens of thousands of Raft groups to heartbeat; losing a majority blocks writes"
+        },
+        {
+          "name": "Leader + in-sync replica set (ISR), acks=all, min ISR = 2, leaders elected from the ISR by a controller quorum",
+          "pros": "no loss with acks=all; a slow replica is dropped from the ISR instead of blocking; one controller handles all partitions",
+          "cons": "needs a controller; unclean election (allowing a non-ISR leader) is an availability vs loss trade-off"
+        }
+      ],
+      "choice": "Replication factor 3 across zones; followers pull from the leader; acks=all waits for the ISR with min.insync.replicas=2; a Raft controller quorum stores metadata and elects leaders from the ISR with a new epoch",
+      "why": "N2 says no acked loss after one failure: with RF 3 and min ISR 2 every acked message is on two zones. The epoch fences a deposed leader, so there is one writer per partition. Cost: produce latency includes one follower round trip (~a few ms in-region), within N1.",
+      "technologies": ["kafka", "zookeeper-etcd"],
+      "patterns": ["consensus-coordination", "replication"],
+      "diagram": {
+        "nodes": [
+          { "id": "leader", "kind": "service", "label": "Brokers ×40: partition leaders", "x": 280, "y": 160 },
+          { "id": "follower", "kind": "service", "label": "Brokers: follower replicas (ISR)", "x": 280, "y": 20 },
+          { "id": "controller", "kind": "coordinator", "label": "Controller quorum (KRaft / Raft ×3)", "x": 540, "y": 20 },
+          { "id": "segments", "kind": "blob", "label": "Partition logs: segments + offset index (local disk)", "x": 540, "y": 200 }
+        ],
+        "edges": [
+          { "from": "follower", "to": "leader", "label": "fetch from offset (replicate)" },
+          { "from": "follower", "to": "segments", "label": "append replica copy" },
+          { "from": "leader", "to": "controller", "label": "heartbeat / ISR shrink + expand" },
+          { "from": "controller", "to": "leader", "label": "elect leader from ISR (new epoch)" },
+          { "from": "controller", "to": "follower", "label": "leader + ISR updates" }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Consumer groups and offsets",
+      "covers": ["F3", "F4"],
+      "problem": "Each subscribing application (a consumer group) gets every message once across its members, members come and go, and a restarted member resumes where its group left off, or rewinds on purpose.",
+      "options": [
+        {
+          "name": "Broker pushes and tracks an ack per message per consumer",
+          "pros": "simple consumers",
+          "cons": "per-message state × groups; slow consumers are flooded (no backpressure); redelivery bookkeeping"
+        },
+        {
+          "name": "Consumers pull; one committed offset per (group, partition); a group coordinator assigns partitions to members",
+          "pros": "state is one number; consumers set their own pace and can rewind; replays are free",
+          "cons": "parallelism ≤ partitions; rebalances pause consumption; one slow message blocks its partition"
+        }
+      ],
+      "choice": "Pull-based fetch (long-poll) with committed offsets stored in an internal compacted topic; a group coordinator per group (chosen by hashing the group id) runs heartbeats and sticky/cooperative partition assignment",
+      "why": "With ~3 groups per message and 1M messages/s, per-message acks would be 3M state updates/s; offsets are one commit per partition every few seconds. Pull gives natural backpressure: a slow group simply lags.",
+      "technologies": ["kafka"],
+      "patterns": ["backpressure", "idempotency"],
+      "diagram": {
+        "nodes": [
+          { "id": "consumer", "kind": "client", "label": "Consumer group members", "x": 60, "y": 380 },
+          { "id": "groupcoord", "kind": "service", "label": "Group coordinator (on a broker)", "x": 280, "y": 380 },
+          { "id": "offsets", "kind": "stream", "label": "__consumer_offsets (compacted topic)", "x": 540, "y": 380 },
+          { "id": "leader", "kind": "service", "label": "Brokers ×40: partition leaders", "x": 280, "y": 160 }
+        ],
+        "edges": [
+          { "from": "consumer", "to": "groupcoord", "label": "join group / heartbeat / commit offset" },
+          { "from": "groupcoord", "to": "offsets", "label": "write committed offset" },
+          { "from": "offsets", "to": "groupcoord", "label": "reload on coordinator failover" },
+          { "from": "consumer", "to": "leader", "label": "fetch(partition, offset)" }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Retention and compaction",
+      "covers": ["F5", "N4"],
+      "problem": "Keep 7 days of data (~540 TB with replicas) while disks stay bounded, let keyed topics keep the latest value per key forever, and make longer retention affordable.",
+      "options": [
+        {
+          "name": "Delete when consumed",
+          "pros": "small disks",
+          "cons": "impossible with several groups at different positions; no replay"
+        },
+        { "name": "Per-message TTL", "pros": "precise", "cons": "per-message bookkeeping and random deletes" },
+        {
+          "name": "Delete whole closed segments by age or size",
+          "pros": "O(1) file deletes; no per-message state",
+          "cons": "granularity is a segment (e.g. 1 GB or 1 h)"
+        },
+        {
+          "name": "Log compaction for keyed topics",
+          "pros": "bounded by key count, not time; a changelog becomes a table",
+          "cons": "background rewrite IO; deletes need tombstones"
+        },
+        {
+          "name": "Tiered storage: closed segments offloaded to object storage",
+          "pros": "months of retention at object-storage prices; brokers stay small",
+          "cons": "historical reads are slower; another dependency"
+        }
+      ],
+      "choice": "Time/size-based deletion of closed segments by default, compaction for keyed topics, and tiered storage to object storage for long retention",
+      "why": "Segments make retention a file delete. Compaction serves the 'latest value per key forever' topics without unbounded growth, and tiering decouples retention from broker disk (~20 TB each).",
+      "technologies": ["kafka", "object-storage"],
+      "patterns": ["event-sourcing"],
+      "diagram": {
+        "nodes": [
+          { "id": "cleaner", "kind": "worker", "label": "Log cleaner: retention + compaction", "x": 780, "y": 200 },
+          { "id": "segments", "kind": "blob", "label": "Partition logs: segments + offset index (local disk)", "x": 540, "y": 200 },
+          { "id": "tier", "kind": "blob", "label": "Object storage (tiered old segments)", "x": 980, "y": 200 }
+        ],
+        "edges": [
+          { "from": "cleaner", "to": "segments", "label": "delete expired segments / compact" },
+          { "from": "cleaner", "to": "tier", "label": "upload closed segments" }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Delivery semantics",
+      "options": [
+        {
+          "name": "at-most-once: commit the offset before processing",
+          "pros": "never duplicates",
+          "cons": "a crash after commit loses messages"
+        },
+        { "name": "at-least-once: process, then commit", "pros": "never loses", "cons": "a crash before commit replays some messages" },
+        {
+          "name": "exactly-once: idempotent producer + transactions that write outputs and offsets atomically",
+          "pros": "no loss, no duplicates inside the system",
+          "cons": "extra latency and coordination; only covers effects that go back into the log"
+        }
+      ],
+      "choice": "at-least-once by default with an idempotent producer (producer_id + per-partition sequence, so broker-side retries never duplicate); exactly-once via transactions as an opt-in for read-process-write pipelines",
+      "why": "Most consumers write to external systems that need their own idempotency anyway; the idempotent producer removes the common duplicate source (retried produce) at almost no cost.",
+      "version": 4
+    },
+    {
+      "id": "DD2",
+      "title": "Push vs pull to consumers",
+      "options": [
+        {
+          "name": "broker pushes",
+          "pros": "lowest latency when consumers keep up",
+          "cons": "floods slow consumers; broker tracks each consumer's rate"
+        },
+        {
+          "name": "consumer pulls with long-poll",
+          "pros": "consumer controls pace and batch size; natural backpressure",
+          "cons": "an empty poll costs a request (mitigated by max_wait)"
+        }
+      ],
+      "choice": "pull with long-poll (max_wait_ms, min_bytes)",
+      "why": "Consumers at very different speeds read the same log; pull keeps the broker stateless about them and lets a lagging group catch up in big batches.",
+      "version": 4
+    },
+    {
+      "id": "DD3",
+      "title": "Hot partitions and choosing partition counts",
+      "options": [
+        {
+          "name": "few partitions per topic",
+          "pros": "less metadata and fewer files",
+          "cons": "throughput and consumer parallelism are capped"
+        },
+        {
+          "name": "many partitions up front, sized for peak / per-partition throughput",
+          "pros": "room to grow consumers without remapping keys",
+          "cons": "more open files and longer elections"
+        }
+      ],
+      "choice": "size partitions for peak throughput ÷ ~10 MB/s per partition and for the max consumer count, with headroom; split hot keys by salting when per-key order allows",
+      "why": "Adding partitions later changes key → partition mapping and breaks per-key order across the change, so pick generously; a single hot key is bounded by one partition's throughput.",
+      "version": 2
+    },
+    {
+      "id": "DD4",
+      "title": "Making the broker fast",
+      "options": [
+        { "name": "per-message writes and reads through application buffers", "pros": "simple", "cons": "syscalls and copies per message" },
+        {
+          "name": "producer batching + compression, OS page cache, zero-copy sendfile to consumers",
+          "pros": "few large sequential IOs; reads of recent data never touch disk",
+          "cons": "batching adds a few ms of linger"
+        }
+      ],
+      "choice": "batch + compress in the producer, keep batches intact on disk, serve consumers with zero-copy from the page cache",
+      "why": "N1 needs 1 GB/s with modest hardware; most consumers read the last few seconds, which are still in the page cache.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Hot partitions from skewed keys (bounded by one leader's disk and NIC), controller metadata for very high partition counts, consumer parallelism capped by partitions, rebalances pausing large groups.",
+    "failures": "Broker dies: controller elects new leaders from the ISR within seconds; producers retry (idempotent, no duplicates); consumers refetch metadata. Zone lost: RF 3 across zones keeps two copies, min ISR 2 still met. Slow follower: dropped from the ISR, writes continue. Consumer dies: coordinator reassigns its partitions; the new owner resumes from the committed offset (at-least-once replays).",
+    "monitoring": "Under-replicated and offline partitions, ISR shrink rate, produce/fetch latency p99, consumer lag per group (messages and seconds), disk usage vs retention, controller election count, request queue time.",
+    "scale": "Add brokers and move partitions onto them (throttled reassignment); add partitions for new parallelism (re-keying caveat); tiered storage for longer retention; separate clusters per domain for blast radius.",
+    "future": "Cross-region mirroring, delayed/scheduled messages, per-message acks (share groups) for queue-style work, a schema registry."
+  }
+}

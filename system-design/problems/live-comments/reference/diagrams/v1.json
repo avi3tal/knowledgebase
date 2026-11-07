@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "why": "Naive baseline: one service and one SQL table; viewers poll for new comments every second. 20M viewers polling is 20M queries/s on one database, and a hot video's 10k comments/s are unreadable anyway.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Viewers' apps", "x": 60, "y": 260 },
+    { "id": "api", "kind": "service", "label": "Comment service", "x": 400, "y": 260 },
+    { "id": "comments", "kind": "sql", "label": "comments (single SQL)", "x": 760, "y": 260 }
+  ],
+  "edges": [
+    { "from": "client", "to": "api", "label": "POST comment / GET new comments every 1 s" },
+    { "from": "api", "to": "comments", "label": "insert / select since" }
+  ],
+  "flows": [
+    {
+      "name": "post + poll",
+      "path": ["client", "api", "comments"]
+    }
+  ]
+}

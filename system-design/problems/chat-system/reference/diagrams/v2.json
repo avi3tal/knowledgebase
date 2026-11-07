@@ -1,24 +1,31 @@
 {
   "version": 2,
-  "why": "N1: replace polling with WebSockets on a dedicated gateway fleet behind a load balancer; a session registry (device → gateway) lets the chat service find the recipient's gateway; messages move to a wide-column store partitioned by conversation to absorb ~70k writes/s and 146 TB/year. Flaw left: the chat service delivers to every group member inline, so a 200-member group slows the sender and a slow gateway stalls the send.",
+  "why": "Compose P1 + P2 (N1, N2): WebSocket gateways behind an L4 load balancer with a session registry so a message can find the recipient's gateway; the chat service assigns a per-conversation seq and appends to a wide-column store. The chat service still delivers inline, so group sends are slow and fragile.",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
-    { "id": "lb", "kind": "load-balancer", "label": "Load balancer (L4, sticky)", "x": 220, "y": 160 },
-    { "id": "gw", "kind": "service", "label": "WebSocket gateways ×200", "x": 400, "y": 160 },
-    { "id": "chat", "kind": "service", "label": "Chat service", "x": 400, "y": 300 },
-    { "id": "sessions", "kind": "cache", "label": "Session registry (device → gateway)", "x": 640, "y": 40 },
-    { "id": "msgs", "kind": "nosql", "label": "messages (wide-column, by conversation)", "x": 640, "y": 300 },
-    { "id": "members", "kind": "sql", "label": "conversation_members", "x": 640, "y": 420 }
+    { "id": "client", "kind": "client", "label": "Mobile / web app (one socket per device)", "x": 60, "y": 240 },
+    { "id": "lb", "kind": "load-balancer", "label": "L4 load balancer", "x": 210, "y": 240 },
+    { "id": "gw", "kind": "service", "label": "Chat gateways ×170 (WebSocket)", "x": 370, "y": 240 },
+    { "id": "sessions", "kind": "cache", "label": "Session registry: device → gateway (Redis, TTL)", "x": 370, "y": 60 },
+    { "id": "chat", "kind": "service", "label": "Chat service ×N (assign seq, persist)", "x": 560, "y": 240 },
+    { "id": "seq", "kind": "cache", "label": "Per-conversation seq counters", "x": 560, "y": 60 },
+    { "id": "msgs", "kind": "nosql", "label": "messages (Cassandra: conversation_id, seq)", "x": 760, "y": 160 },
+    { "id": "members", "kind": "sql", "label": "conversations + members (SQL)", "x": 940, "y": 60 }
   ],
   "edges": [
-    { "from": "client", "to": "lb", "label": "WebSocket" },
-    { "from": "lb", "to": "gw" },
-    { "from": "gw", "to": "sessions", "label": "register on connect" },
-    { "from": "gw", "to": "chat", "label": "send" },
-    { "from": "chat", "to": "msgs", "label": "append" },
-    { "from": "chat", "to": "members", "label": "who is in the chat" },
-    { "from": "chat", "to": "sessions", "label": "lookup recipients" },
-    { "from": "chat", "to": "gw", "label": "deliver (inline)" }
+    { "from": "client", "to": "lb", "label": "WebSocket (wss)" },
+    { "from": "lb", "to": "gw", "label": "spread connections" },
+    { "from": "gw", "to": "sessions", "label": "register on connect / heartbeat" },
+    { "from": "gw", "to": "chat", "label": "send / sync after_seq" },
+    { "from": "chat", "to": "seq", "label": "INCR seq" },
+    { "from": "chat", "to": "msgs", "label": "append (dedup by client_msg_id)" },
+    { "from": "chat", "to": "members", "label": "check membership, bump last_seq" },
+    { "from": "chat", "to": "sessions", "label": "find recipient gateways" },
+    { "from": "chat", "to": "gw", "label": "deliver inline (one by one)" }
   ],
-  "flows": [{ "name": "send 1:1", "path": ["client", "lb", "gw", "chat", "msgs"] }]
+  "flows": [
+    {
+      "name": "send",
+      "path": ["client", "lb", "gw", "chat", "msgs"]
+    }
+  ]
 }

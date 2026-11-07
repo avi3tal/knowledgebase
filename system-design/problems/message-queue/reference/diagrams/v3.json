@@ -1,0 +1,32 @@
+{
+  "version": 3,
+  "why": "Compose P2 (N2, N3): every partition has 3 replicas across zones; followers pull from the leader, acks=all waits for the in-sync set, and a Raft controller quorum elects a new leader from the ISR when a broker dies. Consumers still track their own position by hand.",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Producers (client lib: partitioner, batching)", "x": 60, "y": 140 },
+    { "id": "consumer", "kind": "client", "label": "Consumer group members", "x": 60, "y": 380 },
+    { "id": "follower", "kind": "service", "label": "Brokers: follower replicas (ISR)", "x": 280, "y": 20 },
+    { "id": "leader", "kind": "service", "label": "Brokers ×40: partition leaders", "x": 280, "y": 160 },
+    { "id": "controller", "kind": "coordinator", "label": "Controller quorum (KRaft / Raft ×3)", "x": 540, "y": 20 },
+    { "id": "segments", "kind": "blob", "label": "Partition logs: segments + offset index (local disk)", "x": 540, "y": 200 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "leader", "label": "produce(topic, key, batch), acks=all" },
+    { "from": "leader", "to": "segments", "label": "append batch (sequential)" },
+    { "from": "consumer", "to": "leader", "label": "fetch(partition, offset)" },
+    { "from": "follower", "to": "leader", "label": "fetch from offset (replicate)" },
+    { "from": "follower", "to": "segments", "label": "append replica copy" },
+    { "from": "leader", "to": "controller", "label": "heartbeat / ISR shrink + expand" },
+    { "from": "controller", "to": "leader", "label": "elect leader from ISR (new epoch)" },
+    { "from": "controller", "to": "follower", "label": "leader + ISR updates" }
+  ],
+  "flows": [
+    {
+      "name": "produce",
+      "path": ["producer", "leader", "segments"]
+    },
+    {
+      "name": "replicate",
+      "path": ["follower", "leader"]
+    }
+  ]
+}

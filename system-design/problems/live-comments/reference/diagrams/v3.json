@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "why": "Compose P1 + P3 (F1, N2, N3): the log is the only write (no dual write); persisters fill Cassandra while per-video dispatchers batch and sample every 500 ms, so deliveries stop growing with the comment rate. Joiners still see an empty screen until the next batch.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Viewers' apps", "x": 60, "y": 260 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 320 },
+    { "id": "api", "kind": "service", "label": "Comment service ×N (validate, filter)", "x": 400, "y": 160 },
+    { "id": "gw", "kind": "service", "label": "Comment gateways ×200 (SSE)", "x": 400, "y": 420 },
+    { "id": "stream", "kind": "stream", "label": "Comment log (Kafka, key = video_id)", "x": 590, "y": 160 },
+    { "id": "pubsub", "kind": "queue", "label": "Per-video pub/sub channels (Redis)", "x": 590, "y": 420 },
+    { "id": "persister", "kind": "worker", "label": "Persister workers", "x": 770, "y": 60 },
+    { "id": "comments", "kind": "nosql", "label": "comments (Cassandra: video_id, time)", "x": 950, "y": 60 },
+    { "id": "dispatcher", "kind": "worker", "label": "Dispatchers: batch + sample per video (500 ms)", "x": 770, "y": 300 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb", "label": "POST comment / SSE subscribe" },
+    { "from": "lb", "to": "api", "label": "POST /videos/{id}/comments" },
+    { "from": "lb", "to": "gw", "label": "SSE /videos/{id}/comments/stream" },
+    { "from": "api", "to": "stream", "label": "append (ack after write)" },
+    { "from": "stream", "to": "persister", "label": "consume" },
+    { "from": "persister", "to": "comments", "label": "batched insert" },
+    { "from": "stream", "to": "dispatcher", "label": "consume (partition = video)" },
+    { "from": "dispatcher", "to": "pubsub", "label": "publish one batch / 500 ms" },
+    { "from": "gw", "to": "pubsub", "label": "SUBSCRIBE video:{id} (once per gateway)" },
+    { "from": "pubsub", "to": "gw", "label": "batch → local viewers" }
+  ],
+  "flows": [
+    {
+      "name": "post",
+      "path": ["client", "lb", "api", "stream"]
+    },
+    {
+      "name": "live",
+      "path": ["stream", "dispatcher", "pubsub", "gw"]
+    }
+  ]
+}

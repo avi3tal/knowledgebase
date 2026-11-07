@@ -2,22 +2,24 @@
   "version": 1,
   "scope": {
     "functional": [
-      { "id": "F1", "text": "Send a message one-to-one; it is delivered to every device of the recipient." },
+      { "id": "F1", "text": "Send a 1:1 message; it is delivered to every device of the recipient." },
       { "id": "F2", "text": "Group chats of up to 200 members; a group message reaches every member." },
-      { "id": "F3", "text": "History is kept for 1 year and syncs to any device; offline users catch up on reconnect and get a push notification." },
-      { "id": "F4", "text": "Secondary: online indicator and read receipts." }
+      { "id": "F3", "text": "History is kept for 1 year and syncs to any device, including a newly signed-in one." },
+      { "id": "F4", "text": "Recipients who are offline get a push notification and catch up when they reconnect." },
+      { "id": "F5", "text": "Secondary: online indicator and read receipts." }
     ],
     "non_functional": [
       { "id": "N1", "text": "Online-to-online delivery latency < 500 ms at p99 (real-time feel)." },
-      { "id": "N2", "text": "Messages are never lost once acknowledged to the sender, and appear in the same order on every device." },
-      { "id": "N3", "text": "Highly available: losing a server must only cause a quick reconnect." }
+      { "id": "N2", "text": "A message acknowledged to the sender is never lost, and appears in the same order on every device." },
+      { "id": "N3", "text": "Highly available: losing a server only causes a quick reconnect; ~10M concurrent connections at peak." }
     ],
     "assumptions": [
       { "id": "A1", "text": "50M DAU × 40 msgs/day; 20% of DAU connected at peak; peak = 3× average." },
-      { "id": "A2", "text": "~200 B stored per message; media lives in blob storage and is referenced by URL." }
+      { "id": "A2", "text": "~200 B stored per message; media lives in blob storage and messages carry a link." },
+      { "id": "A3", "text": "Average group size ~50 for delivery math; a third of messages go to groups." }
     ],
     "out_of_scope": [
-      { "id": "O1", "text": "End-to-end encryption key management, voice/video calls, media upload pipeline." }
+      { "id": "O1", "text": "End-to-end encryption key management, voice/video calls, the media upload pipeline." }
     ]
   },
   "api": [
@@ -27,7 +29,7 @@
       "path": "/conversations/{id}/messages (or a WebSocket 'send' frame)",
       "request": "client_msg_id, text, media_url?",
       "response": "ack {message_id, seq, created_at}",
-      "notes": "client_msg_id makes retries idempotent."
+      "notes": "client_msg_id makes retries idempotent; the ack means 'persisted'."
     },
     {
       "id": "E2",
@@ -40,9 +42,17 @@
     {
       "id": "E3",
       "method": "GET",
+      "path": "/conversations?changed_since=",
+      "request": "",
+      "response": "[{conversation_id, last_seq}]",
+      "notes": "Tells a reconnecting device which conversations to sync."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
       "path": "/ws (upgrade)",
       "request": "auth token, device_id",
-      "response": "server pushes 'message', 'receipt' and 'presence' frames",
+      "response": "server pushes 'message', 'receipt' and 'presence' frames; client acks by seq",
       "notes": "One WebSocket per device."
     }
   ],
@@ -52,21 +62,199 @@
       "name": "messages",
       "fields": "conversation_id (partition key), seq (clustering), message_id, client_msg_id, sender_id, body, created_at",
       "store": "nosql",
-      "why": "Append-heavy, read as 'latest N of one conversation': a wide-column store partitioned by conversation fits."
+      "why": "Append-heavy, read as 'latest N of one conversation': a wide-column store partitioned by conversation fits; ~146 TB/year."
     },
     {
       "id": "D2",
-      "name": "conversation_members",
-      "fields": "conversation_id, user_id, role, joined_at, last_read_seq",
+      "name": "conversations + conversation_members",
+      "fields": "conversations(conversation_id, type, last_seq); conversation_members(conversation_id, user_id, role, joined_at, last_read_seq)",
       "store": "sql",
-      "why": "Small, relational, read on every group fan-out (cached)."
+      "why": "Small and relational; read on every fan-out (cached), written on joins and to bump last_seq."
     },
     {
       "id": "D3",
       "name": "sessions",
-      "fields": "device_id → gateway_id, user_id, last_heartbeat (TTL)",
+      "fields": "device_id → gateway_id, user_id, last_heartbeat (TTL 60 s)",
       "store": "cache",
       "why": "Ephemeral routing state; doubles as presence."
+    },
+    {
+      "id": "D4",
+      "name": "devices",
+      "fields": "user_id, device_id, platform, push_token",
+      "store": "sql",
+      "why": "Push tokens for offline delivery."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Connection tier and routing",
+      "covers": ["F1", "N1", "N3"],
+      "problem": "Hold ~10M open WebSocket connections across ~170 gateways and, for any message, find the gateway(s) holding the recipient's devices in a few milliseconds.",
+      "options": [
+        {
+          "name": "Broadcast every message to every gateway (pub/sub)",
+          "pros": "no routing state at all",
+          "cons": "each gateway sees every delivery: >1M deliveries/s × 170 gateways is wasted work"
+        },
+        {
+          "name": "Place users deterministically: consistent hash user → gateway",
+          "pros": "no lookup; the sender computes the target",
+          "cons": "the load balancer must read auth before routing; a user's devices are forced onto one box; a lost gateway moves many users at once"
+        },
+        {
+          "name": "Connect anywhere + session registry (device → gateway) with heartbeat TTL",
+          "pros": "any gateway takes any device; the registry doubles as presence",
+          "cons": "one lookup per delivery; stale entries live until the TTL expires"
+        }
+      ],
+      "choice": "Gateways behind an L4 load balancer + a session registry (device → gateway) in Redis with a heartbeat TTL",
+      "why": "10M connections at ~60k per box is ~170 stateful gateways. Keeping state only there (plus a small registry, 10M entries × ~100 B ≈ 1 GB) lets everything else stay stateless; the TTL clears entries of crashed gateways within a minute.",
+      "technologies": ["websockets-sse", "redis", "envoy-nginx"],
+      "patterns": ["real-time-push"],
+      "diagram": {
+        "nodes": [
+          { "id": "client", "kind": "client", "label": "Mobile / web app (one socket per device)", "x": 60, "y": 240 },
+          { "id": "lb", "kind": "load-balancer", "label": "L4 load balancer", "x": 210, "y": 240 },
+          { "id": "gw", "kind": "service", "label": "Chat gateways ×170 (WebSocket)", "x": 370, "y": 240 },
+          { "id": "sessions", "kind": "cache", "label": "Session registry: device → gateway (Redis, TTL)", "x": 370, "y": 60 }
+        ],
+        "edges": [
+          { "from": "client", "to": "lb", "label": "WebSocket (wss)" },
+          { "from": "lb", "to": "gw", "label": "spread connections" },
+          { "from": "gw", "to": "sessions", "label": "register on connect / heartbeat" }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Message persistence and ordering",
+      "covers": ["F1", "F3", "N2"],
+      "problem": "Store ~70k messages/s at peak exactly once, give every message of a conversation an order all devices agree on, and keep a year (~146 TB) readable by conversation.",
+      "options": [
+        { "name": "Order by client timestamp", "pros": "no coordination", "cons": "clocks skew, so two phones show different orders" },
+        {
+          "name": "One global sequence (SQL auto-increment)",
+          "pros": "total order",
+          "cons": "a single hot counter at 70k/s and a single point of failure; nobody needs cross-conversation order"
+        },
+        {
+          "name": "Time-ordered ids (Snowflake)",
+          "pros": "no shared state, roughly sortable",
+          "cons": "two messages sent in the same millisecond via different servers can swap; gaps are undetectable"
+        },
+        {
+          "name": "Per-conversation sequence + wide-column store keyed by (conversation_id, seq)",
+          "pros": "order exactly where users see it; scales out by conversation; gaps are detectable",
+          "cons": "one counter per conversation; a very busy group is a hot partition"
+        }
+      ],
+      "choice": "Per-conversation sequence from an atomic counter, messages stored in Cassandra partitioned by conversation_id and clustered by seq",
+      "why": "N2 needs one order per conversation, not a global one. INCR on a per-conversation key is O(1) and spreads across Redis shards; the store's access pattern is 'latest N of conversation X', which a partition + clustering key answers in one read. client_msg_id makes retried sends idempotent.",
+      "technologies": ["cassandra", "redis"],
+      "patterns": ["idempotency"],
+      "diagram": {
+        "nodes": [
+          { "id": "gw", "kind": "service", "label": "Chat gateways ×170 (WebSocket)", "x": 370, "y": 240 },
+          { "id": "chat", "kind": "service", "label": "Chat service ×N (assign seq, persist)", "x": 560, "y": 240 },
+          { "id": "seq", "kind": "cache", "label": "Per-conversation seq counters", "x": 560, "y": 60 },
+          { "id": "msgs", "kind": "nosql", "label": "messages (Cassandra: conversation_id, seq)", "x": 760, "y": 160 },
+          { "id": "members", "kind": "sql", "label": "conversations + members (SQL)", "x": 940, "y": 60 }
+        ],
+        "edges": [
+          { "from": "gw", "to": "chat", "label": "send / sync after_seq" },
+          { "from": "chat", "to": "seq", "label": "INCR seq" },
+          { "from": "chat", "to": "msgs", "label": "append (dedup by client_msg_id)" },
+          { "from": "chat", "to": "members", "label": "check membership, bump last_seq" }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Offline delivery, push and catch-up",
+      "covers": ["F3", "F4"],
+      "problem": "A recipient's device has no open connection: it must learn that something arrived, and on reconnect (or on a brand-new device) fetch exactly what it missed.",
+      "options": [
+        {
+          "name": "Per-device inbox queue (copy each message until the device acks)",
+          "pros": "trivial drain on reconnect",
+          "cons": "storage and writes multiply by devices; a lost phone's queue grows forever"
+        },
+        {
+          "name": "Put the message itself in the push payload",
+          "pros": "one hop",
+          "cons": "push is best effort with tiny payload limits; it is not history and can't fill gaps"
+        },
+        {
+          "name": "Push as a wake-up hint + cursor sync (device keeps last_seq per conversation, pulls after_seq)",
+          "pros": "one stored copy; works for any number of devices and for new devices",
+          "cons": "the client must track cursors and page; one extra round trip on reconnect"
+        }
+      ],
+      "choice": "Push (APNs/FCM) only as a wake-up hint; devices catch up by pulling after their last seq per conversation",
+      "why": "Messages are already stored once in order (P2), so a cursor is enough to catch up; conversations.last_seq tells a device which conversations changed. Push providers are best effort, so they carry no data we depend on.",
+      "technologies": ["postgresql"],
+      "patterns": ["real-time-push"],
+      "diagram": {
+        "nodes": [
+          { "id": "fanout", "kind": "worker", "label": "Fan-out workers", "x": 760, "y": 420 },
+          { "id": "sessions", "kind": "cache", "label": "Session registry: device → gateway (Redis, TTL)", "x": 370, "y": 60 },
+          { "id": "push", "kind": "service", "label": "Push service", "x": 900, "y": 300 },
+          { "id": "devices", "kind": "sql", "label": "device push tokens", "x": 1000, "y": 200 },
+          { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 1000, "y": 420 }
+        ],
+        "edges": [
+          { "from": "fanout", "to": "sessions", "label": "which gateway holds each device?" },
+          { "from": "fanout", "to": "push", "label": "offline devices" },
+          { "from": "push", "to": "devices", "label": "tokens" },
+          { "from": "push", "to": "apns", "label": "wake-up notification" }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Group fan-out",
+      "covers": ["F2", "N1"],
+      "problem": "A third of messages go to groups of up to 200 people; peak deliveries exceed 1M/s. The sender's acknowledgement must not wait for 200 recipients.",
+      "options": [
+        {
+          "name": "Sender's chat server delivers to each member inline",
+          "pros": "simple, no extra hop",
+          "cons": "ack latency grows with group size; one slow gateway stalls the sender"
+        },
+        {
+          "name": "Fan-out on write: copy the message into every member's inbox table",
+          "pros": "a member's reads are one query",
+          "cons": "200 writes per group message (~10M writes/s at peak) for data already stored once"
+        },
+        {
+          "name": "Persist once, publish to a stream; async fan-out workers deliver",
+          "pros": "sender acked after one write; workers retry independently and scale with partitions",
+          "cons": "one more hop (tens of ms); at-least-once delivery means clients must dedup"
+        }
+      ],
+      "choice": "Persist once, publish to a Kafka stream keyed by conversation; fan-out workers resolve members and gateways and deliver",
+      "why": "Deliveries (>1M/s) are ~20× the send rate, so they need their own tier that can lag and retry without touching the sender's < 500 ms ack. Keying the stream by conversation keeps per-conversation order through fan-out.",
+      "technologies": ["kafka"],
+      "patterns": ["fan-out"],
+      "diagram": {
+        "nodes": [
+          { "id": "chat", "kind": "service", "label": "Chat service ×N (assign seq, persist)", "x": 560, "y": 240 },
+          { "id": "stream", "kind": "stream", "label": "Message stream (Kafka, key = conversation)", "x": 560, "y": 420 },
+          { "id": "fanout", "kind": "worker", "label": "Fan-out workers", "x": 760, "y": 420 },
+          { "id": "members", "kind": "sql", "label": "conversations + members (SQL)", "x": 940, "y": 60 },
+          { "id": "sessions", "kind": "cache", "label": "Session registry: device → gateway (Redis, TTL)", "x": 370, "y": 60 },
+          { "id": "gw", "kind": "service", "label": "Chat gateways ×170 (WebSocket)", "x": 370, "y": 240 }
+        ],
+        "edges": [
+          { "from": "chat", "to": "stream", "label": "publish after persist" },
+          { "from": "stream", "to": "fanout", "label": "consume (per conversation, in order)" },
+          { "from": "fanout", "to": "members", "label": "who is in it?" },
+          { "from": "fanout", "to": "sessions", "label": "which gateway holds each device?" },
+          { "from": "fanout", "to": "gw", "label": "deliver to online devices" }
+        ]
+      }
     }
   ],
   "deep_dives": [
@@ -74,43 +262,81 @@
       "id": "DD1",
       "title": "Server-to-client transport",
       "options": [
-        { "name": "short polling", "pros": "plain HTTP", "cons": "10M clients × 1 req/s, mostly empty, and up to 1 s delay" },
-        { "name": "long polling", "pros": "works through any proxy", "cons": "reconnect per message, awkward for sends" },
-        { "name": "WebSocket", "pros": "one bidirectional connection per device; server pushes instantly", "cons": "stateful servers; need a routing registry" }
+        { "name": "short polling", "pros": "plain HTTP", "cons": "10M clients × 1 req/s, mostly empty, and up to 1 s late" },
+        { "name": "long polling", "pros": "works through any proxy", "cons": "a new request after every message; awkward for sends" },
+        {
+          "name": "WebSocket",
+          "pros": "one bidirectional connection per device; server pushes instantly",
+          "cons": "stateful servers that need a routing registry"
+        }
       ],
-      "choice": "WebSocket, with long polling as a fallback",
-      "why": "N1 needs the server to speak first; 10M concurrent connections fit on ~150–200 gateways and the statefulness is isolated in that tier.",
+      "choice": "WebSocket, with long polling as a fallback for hostile networks",
+      "why": "N1 needs the server to speak first; 10M concurrent connections fit on ~170 gateways and the statefulness is isolated in that tier (P1).",
       "version": 2
     },
     {
       "id": "DD2",
-      "title": "Ordering and duplicates",
+      "title": "Retries, duplicates and gaps",
       "options": [
-        { "name": "order by client timestamp", "pros": "no coordination", "cons": "clocks skew; devices disagree" },
-        { "name": "global sequence", "pros": "total order", "cons": "a global bottleneck nobody needs" },
-        { "name": "per-conversation sequence", "pros": "order where users can see it; scales by conversation", "cons": "one owner per conversation at a time" }
+        {
+          "name": "exactly-once delivery end to end",
+          "pros": "clean for clients",
+          "cons": "needs distributed transactions across gateways and phones"
+        },
+        {
+          "name": "at-least-once + dedup by client_msg_id and seq",
+          "pros": "simple, survives every retry",
+          "cons": "clients must drop duplicates and fetch gaps"
+        }
       ],
-      "choice": "per-conversation sequence + at-least-once delivery with dedup",
-      "why": "N2: the chat service assigns seq when it writes (the stream partition keyed by conversation_id is the single owner); retries reuse client_msg_id so the store dedups; clients sort by seq and fetch gaps.",
+      "choice": "at-least-once delivery with dedup: the store ignores a repeated client_msg_id, clients drop a seq they already have and fetch any gap",
+      "why": "N2: the sender retries until it gets an ack, workers redeliver after a crash, and phones reconnect mid-stream. Sequence numbers make both duplicates and gaps visible, so order stays identical on every device.",
       "version": 3
     },
     {
       "id": "DD3",
-      "title": "Group fan-out",
+      "title": "Gateway crash and reconnect storms",
       "options": [
-        { "name": "sender's server delivers to each member synchronously", "pros": "simple", "cons": "slow ack, one bad gateway stalls the sender" },
-        { "name": "async fan-out workers off a stream", "pros": "sender acked after one write; workers retry independently", "cons": "an extra hop (~tens of ms)" }
+        {
+          "name": "clients reconnect immediately",
+          "pros": "fastest recovery for one user",
+          "cons": "60k clients hit the load balancer in the same second"
+        },
+        {
+          "name": "exponential backoff with jitter, then sync after last_seq",
+          "pros": "spreads the load over seconds",
+          "cons": "a few seconds of extra delay"
+        }
       ],
-      "choice": "async fan-out workers off a stream",
-      "why": "With 200-member groups a third of messages fan out ~200×; decoupling keeps sender latency flat and lets delivery retry.",
-      "version": 3
+      "choice": "exponential backoff with jitter; the registry entry expires by TTL; the device syncs after its last seq",
+      "why": "N3: a gateway loss must cost only a reconnect. Jitter turns a thundering herd into a smooth ramp, and cursor sync means nothing is lost while the device was away.",
+      "version": 4
+    },
+    {
+      "id": "DD4",
+      "title": "Presence and read receipts",
+      "options": [
+        {
+          "name": "push every presence change to all contacts",
+          "pros": "always fresh",
+          "cons": "presence churn would dwarf message traffic"
+        },
+        {
+          "name": "presence from the registry, fetched when a chat opens; receipts as small messages in the conversation",
+          "pros": "cheap; reuses the message path",
+          "cons": "presence can be a heartbeat interval stale"
+        }
+      ],
+      "choice": "presence read from the session registry on demand; read receipts update last_read_seq and travel as lightweight messages",
+      "why": "F5 is secondary; it must not multiply load. A receipt is just 'read up to seq', which one number per member captures.",
+      "version": 4
     }
   ],
   "wrapup": {
-    "bottlenecks": "Very active large groups (fan-out cost), the session registry on every delivery (cache locally, shard by user), hot conversation partitions in the message store.",
-    "failures": "Gateway crash: clients reconnect with backoff + jitter to another gateway and sync from last seq. Fan-out worker lag: the stream retains messages and workers replay. Retried sends are deduped by client_msg_id.",
-    "monitoring": "End-to-end delivery latency (send → device ack), connections per gateway, reconnect rate, stream consumer lag, push failure rate.",
-    "scale": "More gateways behind the LB; shard the registry by user; add stream partitions and store nodes; for very large groups switch to pull-on-open instead of per-member fan-out.",
-    "future": "End-to-end encryption, message search, multi-region active-active with per-conversation home regions."
+    "bottlenecks": "Very active large groups (fan-out cost and a hot conversation partition), the session registry on every delivery (shard by device, cache locally), the per-conversation counter of a busy group.",
+    "failures": "Gateway crash: clients reconnect with backoff + jitter and sync from last seq. Fan-out worker lag or crash: Kafka retains messages and workers replay from their offset; duplicates are dropped by seq. Retried sends are deduped by client_msg_id. Push provider down: devices still catch up on next open.",
+    "monitoring": "End-to-end delivery latency (send → device ack) p99, connections per gateway, reconnect rate, Kafka consumer lag, registry hit rate, push failure rate.",
+    "scale": "More gateways behind the LB; shard the registry by device; add stream partitions and Cassandra nodes; for very large groups (thousands) switch to pull-on-open instead of per-member fan-out.",
+    "future": "End-to-end encryption, message search, multi-region with a home region per conversation."
   }
 }

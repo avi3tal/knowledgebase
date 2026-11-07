@@ -3,13 +3,25 @@
   "scope": {
     "functional": [
       { "id": "F1", "text": "Deliver notifications by mobile push (iOS/Android), SMS and email." },
-      { "id": "F2", "text": "Internal services send a notification to a user from a template + params, now or scheduled; campaigns target a segment." },
-      { "id": "F3", "text": "Users opt out per category and channel; marketing is capped at a few per user per day; suppressed sends are recorded." },
+      {
+        "id": "F2",
+        "text": "Internal services send a notification to a user from a template + params, now or scheduled; campaigns target a segment."
+      },
+      {
+        "id": "F3",
+        "text": "Users opt out per category and channel; marketing is capped at a few per user per day; suppressed sends are recorded."
+      },
       { "id": "F4", "text": "Producers can look up the status of a notification (queued, sent, failed, suppressed) for 30 days." }
     ],
     "non_functional": [
-      { "id": "N1", "text": "Accepted notifications are never lost (at-least-once to the provider); duplicates suppressed by idempotency key." },
-      { "id": "N2", "text": "Transactional messages (OTP, password reset) handed to the provider within ~5 s p99, even during campaigns; marketing may lag minutes." },
+      {
+        "id": "N1",
+        "text": "Accepted notifications are never lost (at-least-once to the provider); duplicates suppressed by idempotency key."
+      },
+      {
+        "id": "N2",
+        "text": "Transactional messages (OTP, password reset) handed to the provider within ~5 s p99, even during campaigns; marketing may lag minutes."
+      },
       { "id": "N3", "text": "One slow or failing provider must not affect the other channels." }
     ],
     "assumptions": [
@@ -69,40 +81,213 @@
       "why": "~6k writes/s average with bursts, simple key lookups, TTL expiry: ~7.5 TB."
     }
   ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Accept fast and enforce policy at one gate",
+      "covers": ["F2", "F3", "N1"],
+      "problem": "Dozens of teams call the platform (~6k/s average, ~58k/s in campaigns). Each request must be validated, checked against opt-outs and caps, made durable and answered in milliseconds, without waiting on Apple or the SMS vendor, and a retried request must not send twice.",
+      "options": [
+        {
+          "name": "Synchronous send: call the provider inside the request",
+          "pros": "caller learns the outcome immediately",
+          "cons": "callers wait seconds on providers; a provider blip loses the message or fails the caller"
+        },
+        {
+          "name": "Accept, enqueue, and let each channel worker check preferences",
+          "pros": "fast accept",
+          "cons": "every worker re-implements policy; one forgotten check sends marketing to an opted-out user"
+        },
+        {
+          "name": "Accept → check prefs and caps once → write the log (unique idempotency key) → enqueue → 202",
+          "pros": "callers decoupled; policy enforced in exactly one place; the log answers status and dedups retries",
+          "cons": "an extra write per request; the cache must be invalidated when a user opts out"
+        }
+      ],
+      "choice": "A load-balanced Notification API that checks preferences (cached) and per-user caps, records the request in notification_log under a unique idempotency key, enqueues it and returns 202",
+      "why": "F3 says no path may skip opt-outs, so the check lives at the only entrance. Providers take seconds and fail, so N1 is met by persisting before acking and delivering later. 300M devices ≈ 75 GB fits a cache, so the check is cheap.",
+      "technologies": ["redis", "postgresql", "cassandra"],
+      "patterns": ["idempotency"],
+      "diagram": {
+        "nodes": [
+          { "id": "producer", "kind": "client", "label": "Product services", "x": 60, "y": 120 },
+          { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 200, "y": 230 },
+          { "id": "api", "kind": "service", "label": "Notification API ×N (validate, prefs, caps, log)", "x": 360, "y": 230 },
+          { "id": "prefcache", "kind": "cache", "label": "Prefs + devices cache", "x": 540, "y": 40 },
+          { "id": "prefdb", "kind": "sql", "label": "preferences, devices, contacts", "x": 760, "y": 40 },
+          { "id": "limits", "kind": "cache", "label": "Counters: user caps + provider token buckets", "x": 720, "y": 440 },
+          { "id": "log", "kind": "nosql", "label": "notification_log (TTL 30 d, idempotency)", "x": 920, "y": 450 },
+          { "id": "urgent", "kind": "queue", "label": "Transactional queues (per channel)", "x": 540, "y": 160 }
+        ],
+        "edges": [
+          { "from": "producer", "to": "lb", "label": "POST /notifications" },
+          { "from": "lb", "to": "api" },
+          { "from": "api", "to": "prefcache", "label": "opted in? devices?" },
+          { "from": "prefcache", "to": "prefdb", "label": "read-through" },
+          { "from": "api", "to": "limits", "label": "per-user marketing cap" },
+          { "from": "api", "to": "log", "label": "queued / suppressed (unique idempotency key)" },
+          { "from": "api", "to": "urgent", "label": "transactional (202 returned)" }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Traffic isolation and campaign pacing",
+      "covers": ["F2", "N2", "N3"],
+      "problem": "A 50M-user campaign and a login code arrive in the same second. The login code must reach its provider within ~5 s, and a slow SMS vendor must not delay push.",
+      "options": [
+        {
+          "name": "One shared queue",
+          "pros": "simplest",
+          "cons": "the code waits behind 50M marketing messages; a slow SMS vendor blocks push"
+        },
+        {
+          "name": "Queues per channel",
+          "pros": "a slow vendor only backs up its own channel (N3)",
+          "cons": "inside a channel, codes still wait behind marketing (breaks N2)"
+        },
+        {
+          "name": "One queue with priority ordering",
+          "pros": "one thing to run",
+          "cons": "priority queues starve or reorder badly under huge backlogs; most brokers don't do it well"
+        },
+        {
+          "name": "Queues per channel × priority, dedicated worker pools, and a scheduler that releases campaigns at a set rate",
+          "pros": "N2 and N3 both hold; campaign load is shaped, not dumped",
+          "cons": "more queues and pools to run and size"
+        }
+      ],
+      "choice": "Separate transactional and bulk queues per channel with their own workers; campaigns enter through a paced scheduler",
+      "why": "Bulkheads: transactional traffic is small (a few % of volume), so its queues are always near empty and its workers idle-ready. The scheduler turns a 10× burst into a steady flow that providers accept.",
+      "technologies": ["kafka"],
+      "patterns": ["backpressure"],
+      "diagram": {
+        "nodes": [
+          { "id": "marketing", "kind": "client", "label": "Campaign tool", "x": 60, "y": 340 },
+          { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 200, "y": 230 },
+          { "id": "api", "kind": "service", "label": "Notification API ×N (validate, prefs, caps, log)", "x": 360, "y": 230 },
+          { "id": "scheduler", "kind": "scheduler", "label": "Campaign scheduler (paced)", "x": 360, "y": 420 },
+          { "id": "urgent", "kind": "queue", "label": "Transactional queues (per channel)", "x": 540, "y": 160 },
+          { "id": "bulk", "kind": "queue", "label": "Bulk / marketing queues (per channel)", "x": 540, "y": 300 },
+          { "id": "urgentw", "kind": "worker", "label": "Transactional workers", "x": 720, "y": 160 },
+          { "id": "bulkw", "kind": "worker", "label": "Bulk workers", "x": 720, "y": 300 }
+        ],
+        "edges": [
+          { "from": "marketing", "to": "lb", "label": "POST campaign (send_at)" },
+          { "from": "lb", "to": "api" },
+          { "from": "api", "to": "urgent", "label": "transactional (202 returned)" },
+          { "from": "api", "to": "scheduler", "label": "scheduled / campaign" },
+          { "from": "scheduler", "to": "bulk", "label": "paced release" },
+          { "from": "urgent", "to": "urgentw" },
+          { "from": "bulk", "to": "bulkw" }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Provider delivery under limits and failures",
+      "covers": ["F1", "F4", "N1", "N3"],
+      "problem": "Third-party providers throttle (429s), time out and go down for minutes, and SMS costs money. Workers must send at the rate each provider allows, retry without hammering it, never send the same SMS twice, and record the outcome.",
+      "options": [
+        {
+          "name": "Send as fast as possible, retry immediately on error",
+          "pros": "simple",
+          "cons": "429 storms; a sick provider gets hammered; duplicates after ambiguous timeouts"
+        },
+        {
+          "name": "Buy a single aggregator (CPaaS) and let it handle everything",
+          "pros": "less code",
+          "cons": "one vendor's outage is your outage; costs more per message; still need idempotency on your side"
+        },
+        {
+          "name": "Per-provider token buckets + circuit breaker + delay queue with exponential backoff → DLQ, idempotency checked in the log",
+          "pros": "smooth sending under limits; outages wait instead of fail; duplicates prevented",
+          "cons": "shared counter store; more moving parts"
+        }
+      ],
+      "choice": "Workers take a token from the provider's bucket before each send, send with an idempotency key, and on failure park the message in a delay queue with exponential backoff and jitter; after N tries it goes to a dead-letter queue. Every outcome is written to the log.",
+      "why": "N1 means at-least-once, and providers fail often, so retries are normal, not exceptional. Token buckets turn 58k/s bursts into what each provider accepts; the log plus provider-side keys make a redelivered message a no-op.",
+      "technologies": ["redis", "kafka", "cassandra"],
+      "patterns": ["retries-dlq", "backpressure", "idempotency"],
+      "diagram": {
+        "nodes": [
+          { "id": "urgentw", "kind": "worker", "label": "Transactional workers", "x": 720, "y": 160 },
+          { "id": "bulkw", "kind": "worker", "label": "Bulk workers", "x": 720, "y": 300 },
+          { "id": "limits", "kind": "cache", "label": "Counters: user caps + provider token buckets", "x": 720, "y": 440 },
+          { "id": "retry", "kind": "queue", "label": "Retry delay queue (backoff) → DLQ", "x": 540, "y": 440 },
+          { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 920, "y": 140 },
+          { "id": "sms", "kind": "external", "label": "SMS vendor(s)", "x": 920, "y": 240 },
+          { "id": "email", "kind": "external", "label": "Email vendor(s)", "x": 920, "y": 340 },
+          { "id": "log", "kind": "nosql", "label": "notification_log (TTL 30 d, idempotency)", "x": 920, "y": 450 }
+        ],
+        "edges": [
+          { "from": "urgentw", "to": "apns", "label": "push" },
+          { "from": "urgentw", "to": "sms", "label": "SMS" },
+          { "from": "urgentw", "to": "email", "label": "email" },
+          { "from": "bulkw", "to": "apns", "label": "push" },
+          { "from": "bulkw", "to": "sms", "label": "SMS" },
+          { "from": "bulkw", "to": "email", "label": "email" },
+          { "from": "urgentw", "to": "limits", "label": "provider token bucket" },
+          { "from": "bulkw", "to": "limits", "label": "provider token bucket" },
+          { "from": "urgentw", "to": "retry", "label": "on failure" },
+          { "from": "bulkw", "to": "retry", "label": "on failure" },
+          { "from": "retry", "to": "urgentw", "label": "redeliver after backoff" },
+          { "from": "retry", "to": "bulkw", "label": "redeliver after backoff" },
+          { "from": "urgentw", "to": "log", "label": "sent / failed (idempotency check)" },
+          { "from": "bulkw", "to": "log", "label": "sent / failed" }
+        ]
+      }
+    }
+  ],
   "deep_dives": [
     {
       "id": "DD1",
-      "title": "Retries and duplicates",
+      "title": "Ambiguous timeouts, retries and duplicates",
       "options": [
-        { "name": "no retry", "pros": "never duplicates", "cons": "provider blips lose OTPs (breaks N1)" },
-        { "name": "immediate retry loop in the worker", "pros": "simple", "cons": "hammers a struggling provider, blocks the worker" },
-        { "name": "delay queue with exponential backoff + DLQ, idempotency keys", "pros": "survives outages, bounded load", "cons": "more moving parts" }
+        { "name": "no retry", "pros": "never duplicates", "cons": "provider blips lose login codes (breaks N1)" },
+        { "name": "immediate retry loop in the worker", "pros": "simple", "cons": "hammers a struggling provider and blocks the worker" },
+        {
+          "name": "delay queue with exponential backoff + DLQ, idempotency key per (notification, channel)",
+          "pros": "survives outages, bounded load, no double sends",
+          "cons": "more moving parts"
+        }
       ],
-      "choice": "delay queue with exponential backoff + jitter, then a dead-letter queue; idempotency key per (notification, channel)",
-      "why": "N1: at-least-once. The log records sent/attempts and the key is passed to providers that support it, so a redelivered message after a worker crash is detected and skipped. OTPs carry a TTL and are dropped once expired.",
-      "version": 3
+      "choice": "delay queue with exponential backoff + jitter, then a dead-letter queue; idempotency key per (notification, channel) checked in the log and passed to providers that accept one",
+      "why": "A timeout does not tell you whether the SMS went out. The worker records 'sending' before the call and 'sent' after; a redelivered message that finds 'sent' is skipped, and providers that accept a key dedup the rest. Login codes carry a TTL and are dropped once expired instead of arriving late.",
+      "version": 4
     },
     {
       "id": "DD2",
-      "title": "Isolating traffic classes",
+      "title": "Where user caps and provider limits are enforced",
       "options": [
-        { "name": "one shared queue", "pros": "simple", "cons": "a campaign backlog delays login codes; a slow SMS vendor blocks push" },
-        { "name": "queues per channel", "pros": "N3 holds", "cons": "OTPs still wait behind marketing in the same channel" },
-        { "name": "queues per channel × priority with dedicated workers", "pros": "N2 and N3 both hold", "cons": "more queues to operate" }
+        { "name": "let providers reject excess", "pros": "no work", "cons": "429s become retries; user caps are never enforced" },
+        {
+          "name": "per-user frequency cap in the API + per-provider token buckets in workers",
+          "pros": "users protected once at the gate; provider limits respected smoothly",
+          "cons": "a shared counter store on the hot path"
+        }
       ],
-      "choice": "queues per channel × priority with dedicated worker pools",
-      "why": "Transactional queues are small and always drained first by their own workers; marketing is fed in by a scheduler at a controlled rate.",
-      "version": 3
+      "choice": "per-user frequency cap checked in the API, per-provider token buckets in the workers, both as Redis counters",
+      "why": "Caps are a product rule about the user, so they belong at the single gate (P1). Send rates are an operational limit of each provider, so they belong where sending happens (P3); a burst is spread out instead of rejected.",
+      "version": 4
     },
     {
       "id": "DD3",
-      "title": "Rate limiting users and providers",
+      "title": "Expanding a campaign segment",
       "options": [
-        { "name": "let providers reject excess", "pros": "no work", "cons": "429s become retries; user caps not enforced" },
-        { "name": "per-user frequency cap in the API + per-provider token buckets in workers", "pros": "users protected, provider limits respected smoothly", "cons": "shared counter store" }
+        {
+          "name": "API expands the segment into 50M jobs at once",
+          "pros": "simple",
+          "cons": "50M enqueues in seconds floods queues and the log"
+        },
+        {
+          "name": "scheduler pages through the segment and releases batches at a target rate",
+          "pros": "steady load; easy to pause or cancel",
+          "cons": "a campaign takes longer to finish"
+        }
       ],
-      "choice": "per-user frequency cap in the API + per-provider token buckets in workers (Redis)",
-      "why": "Caps are a product rule, enforced once at the gate; provider send rates are an operational limit, enforced where the sending happens.",
+      "choice": "the scheduler pages through the segment and releases batches at a configured rate per channel",
+      "why": "Marketing may lag minutes (N2), so trading speed for a smooth load is free; it also makes cancelling a bad campaign possible halfway.",
       "version": 3
     }
   ],

@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "why": "Compose P2 (F2, N1): SSE gateways subscribe once per video to a pub/sub channel and fan out in memory, replacing polling. Remaining flaws: the service writes SQL and then publishes (a dual write), and every comment still goes to every viewer of a hot video.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Viewers' apps", "x": 60, "y": 260 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 320 },
+    { "id": "api", "kind": "service", "label": "Comment service ×N (validate, filter)", "x": 400, "y": 160 },
+    { "id": "gw", "kind": "service", "label": "Comment gateways ×200 (SSE)", "x": 400, "y": 420 },
+    { "id": "pubsub", "kind": "queue", "label": "Per-video pub/sub channels (Redis)", "x": 590, "y": 420 },
+    { "id": "comments", "kind": "sql", "label": "comments (single SQL)", "x": 950, "y": 60 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb", "label": "POST comment / SSE subscribe" },
+    { "from": "lb", "to": "api", "label": "POST /videos/{id}/comments" },
+    { "from": "lb", "to": "gw", "label": "SSE /videos/{id}/comments/stream" },
+    { "from": "gw", "to": "pubsub", "label": "SUBSCRIBE video:{id} (once per gateway)" },
+    { "from": "pubsub", "to": "gw", "label": "batch → local viewers" },
+    { "from": "api", "to": "comments", "label": "insert" },
+    { "from": "api", "to": "pubsub", "label": "publish each comment" }
+  ],
+  "flows": [
+    {
+      "name": "post",
+      "path": ["client", "lb", "api", "pubsub", "gw"]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "why": "Compose P1 (F1, F2, N1): topics split into partitions spread over brokers; each partition is an append-only segmented log read by offset, so throughput is sequential IO and any number of readers cost the same. Still one copy of each partition: losing a broker loses data (N2).",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Producers (client lib: partitioner, batching)", "x": 60, "y": 140 },
+    { "id": "consumer", "kind": "client", "label": "Consumer group members", "x": 60, "y": 380 },
+    { "id": "leader", "kind": "service", "label": "Brokers ×40: partition leaders", "x": 280, "y": 160 },
+    { "id": "segments", "kind": "blob", "label": "Partition logs: segments + offset index (local disk)", "x": 540, "y": 200 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "leader", "label": "produce(topic, key, batch), acks=all" },
+    { "from": "leader", "to": "segments", "label": "append batch (sequential)" },
+    { "from": "consumer", "to": "leader", "label": "fetch(partition, offset)" }
+  ],
+  "flows": [
+    {
+      "name": "produce",
+      "path": ["producer", "leader", "segments"]
+    },
+    {
+      "name": "fetch",
+      "path": ["consumer", "leader"]
+    }
+  ]
+}

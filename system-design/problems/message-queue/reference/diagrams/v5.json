@@ -1,0 +1,49 @@
+{
+  "version": 5,
+  "why": "Compose P4 (F5): a log cleaner deletes closed segments past retention, compacts keyed topics to the latest value per key, and uploads closed segments to object storage for long retention.",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Producers (client lib: partitioner, batching)", "x": 60, "y": 140 },
+    { "id": "consumer", "kind": "client", "label": "Consumer group members", "x": 60, "y": 380 },
+    { "id": "follower", "kind": "service", "label": "Brokers: follower replicas (ISR)", "x": 280, "y": 20 },
+    { "id": "leader", "kind": "service", "label": "Brokers ×40: partition leaders", "x": 280, "y": 160 },
+    { "id": "groupcoord", "kind": "service", "label": "Group coordinator (on a broker)", "x": 280, "y": 380 },
+    { "id": "controller", "kind": "coordinator", "label": "Controller quorum (KRaft / Raft ×3)", "x": 540, "y": 20 },
+    { "id": "segments", "kind": "blob", "label": "Partition logs: segments + offset index (local disk)", "x": 540, "y": 200 },
+    { "id": "offsets", "kind": "stream", "label": "__consumer_offsets (compacted topic)", "x": 540, "y": 380 },
+    { "id": "cleaner", "kind": "worker", "label": "Log cleaner: retention + compaction", "x": 780, "y": 200 },
+    { "id": "tier", "kind": "blob", "label": "Object storage (tiered old segments)", "x": 980, "y": 200 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "leader", "label": "produce(topic, key, batch), acks=all" },
+    { "from": "leader", "to": "segments", "label": "append batch (sequential)" },
+    { "from": "consumer", "to": "leader", "label": "fetch(partition, offset)" },
+    { "from": "follower", "to": "leader", "label": "fetch from offset (replicate)" },
+    { "from": "follower", "to": "segments", "label": "append replica copy" },
+    { "from": "leader", "to": "controller", "label": "heartbeat / ISR shrink + expand" },
+    { "from": "controller", "to": "leader", "label": "elect leader from ISR (new epoch)" },
+    { "from": "controller", "to": "follower", "label": "leader + ISR updates" },
+    { "from": "consumer", "to": "groupcoord", "label": "join group / heartbeat / commit offset" },
+    { "from": "groupcoord", "to": "offsets", "label": "write committed offset" },
+    { "from": "offsets", "to": "groupcoord", "label": "reload on coordinator failover" },
+    { "from": "cleaner", "to": "segments", "label": "delete expired segments / compact" },
+    { "from": "cleaner", "to": "tier", "label": "upload closed segments" }
+  ],
+  "flows": [
+    {
+      "name": "produce",
+      "path": ["producer", "leader", "segments"]
+    },
+    {
+      "name": "replicate",
+      "path": ["follower", "leader"]
+    },
+    {
+      "name": "consume",
+      "path": ["consumer", "groupcoord", "offsets"]
+    },
+    {
+      "name": "retention",
+      "path": ["cleaner", "tier"]
+    }
+  ]
+}

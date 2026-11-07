@@ -1,0 +1,65 @@
+{
+  "version": 4,
+  "why": "Compose P3 (N1, N3, F4): workers send within per-provider token buckets, failed sends wait in a delay queue with exponential backoff (then a DLQ), and every outcome is checked against and recorded in the log, so redeliveries never send twice.",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Product services", "x": 60, "y": 120 },
+    { "id": "marketing", "kind": "client", "label": "Campaign tool", "x": 60, "y": 340 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 200, "y": 230 },
+    { "id": "api", "kind": "service", "label": "Notification API ×N (validate, prefs, caps, log)", "x": 360, "y": 230 },
+    { "id": "scheduler", "kind": "scheduler", "label": "Campaign scheduler (paced)", "x": 360, "y": 420 },
+    { "id": "prefcache", "kind": "cache", "label": "Prefs + devices cache", "x": 540, "y": 40 },
+    { "id": "prefdb", "kind": "sql", "label": "preferences, devices, contacts", "x": 760, "y": 40 },
+    { "id": "urgent", "kind": "queue", "label": "Transactional queues (per channel)", "x": 540, "y": 160 },
+    { "id": "bulk", "kind": "queue", "label": "Bulk / marketing queues (per channel)", "x": 540, "y": 300 },
+    { "id": "retry", "kind": "queue", "label": "Retry delay queue (backoff) → DLQ", "x": 540, "y": 440 },
+    { "id": "urgentw", "kind": "worker", "label": "Transactional workers", "x": 720, "y": 160 },
+    { "id": "bulkw", "kind": "worker", "label": "Bulk workers", "x": 720, "y": 300 },
+    { "id": "limits", "kind": "cache", "label": "Counters: user caps + provider token buckets", "x": 720, "y": 440 },
+    { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 920, "y": 140 },
+    { "id": "sms", "kind": "external", "label": "SMS vendor(s)", "x": 920, "y": 240 },
+    { "id": "email", "kind": "external", "label": "Email vendor(s)", "x": 920, "y": 340 },
+    { "id": "log", "kind": "nosql", "label": "notification_log (TTL 30 d, idempotency)", "x": 920, "y": 450 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "lb", "label": "POST /notifications" },
+    { "from": "marketing", "to": "lb", "label": "POST campaign (send_at)" },
+    { "from": "lb", "to": "api" },
+    { "from": "api", "to": "prefcache", "label": "opted in? devices?" },
+    { "from": "prefcache", "to": "prefdb", "label": "read-through" },
+    { "from": "api", "to": "limits", "label": "per-user marketing cap" },
+    { "from": "api", "to": "log", "label": "queued / suppressed (unique idempotency key)" },
+    { "from": "api", "to": "urgent", "label": "transactional (202 returned)" },
+    { "from": "api", "to": "scheduler", "label": "scheduled / campaign" },
+    { "from": "scheduler", "to": "bulk", "label": "paced release" },
+    { "from": "urgent", "to": "urgentw" },
+    { "from": "bulk", "to": "bulkw" },
+    { "from": "urgentw", "to": "apns", "label": "push" },
+    { "from": "urgentw", "to": "sms", "label": "SMS" },
+    { "from": "urgentw", "to": "email", "label": "email" },
+    { "from": "bulkw", "to": "apns", "label": "push" },
+    { "from": "bulkw", "to": "sms", "label": "SMS" },
+    { "from": "bulkw", "to": "email", "label": "email" },
+    { "from": "urgentw", "to": "limits", "label": "provider token bucket" },
+    { "from": "bulkw", "to": "limits", "label": "provider token bucket" },
+    { "from": "urgentw", "to": "retry", "label": "on failure" },
+    { "from": "bulkw", "to": "retry", "label": "on failure" },
+    { "from": "retry", "to": "urgentw", "label": "redeliver after backoff" },
+    { "from": "retry", "to": "bulkw", "label": "redeliver after backoff" },
+    { "from": "urgentw", "to": "log", "label": "sent / failed (idempotency check)" },
+    { "from": "bulkw", "to": "log", "label": "sent / failed" }
+  ],
+  "flows": [
+    {
+      "name": "login code",
+      "path": ["producer", "lb", "api", "urgent", "urgentw", "sms"]
+    },
+    {
+      "name": "campaign",
+      "path": ["marketing", "lb", "api", "scheduler", "bulk", "bulkw", "apns"]
+    },
+    {
+      "name": "retry",
+      "path": ["urgentw", "retry", "urgentw"]
+    }
+  ]
+}

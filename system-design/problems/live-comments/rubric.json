@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "flags": { "read_heavy": true, "needs_lb": true },
+  "pattern": "Broadcast to a huge audience: write once to a log, route per server (not per viewer) through pub/sub, and cap what each viewer receives by batching and sampling so delivery cost depends on audience size, not on write rate.",
+  "checks": [
+    {
+      "id": "req-post",
+      "type": "requirement",
+      "label": "Core write use case captured",
+      "keywords": [
+        "post a comment",
+        "post comment",
+        "posts a comment",
+        "write a comment",
+        "add a comment",
+        "leave a comment",
+        "send a comment",
+        "comment on",
+        "submit",
+        "post"
+      ],
+      "tips": {
+        "nudge": "What does a viewer do besides watch?",
+        "hint": "Write a functional requirement for adding a comment to a live video.",
+        "show": "F1: Viewers post a short comment (≤ 200 characters) on a live video."
+      }
+    },
+    {
+      "id": "req-live-view",
+      "type": "requirement",
+      "label": "Core read use case captured",
+      "keywords": [
+        "real time",
+        "real-time",
+        "realtime",
+        "live",
+        "as they are posted",
+        "appear",
+        "other viewers",
+        "see new"
+      ],
+      "tips": {
+        "nudge": "What makes these comments different from comments under a recorded video?",
+        "hint": "Capture that viewers see each other's comments while the stream is on.",
+        "show": "F2: Viewers of a live video see other viewers' new comments in real time."
+      }
+    },
+    {
+      "id": "req-recent",
+      "type": "requirement",
+      "label": "Viewers arriving mid-stream considered",
+      "keywords": ["recent", "join", "late", "history", "replay", "last 50", "backfill", "catch up", "catch-up"],
+      "tips": {
+        "nudge": "You open a stream that started an hour ago. What is on screen?",
+        "hint": "Add a requirement for what a joiner sees, and whether comments outlive the stream.",
+        "show": "F3: A late joiner sees the last ~50 comments at once; comments are kept for replay with the recording."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Freshness expectation stated",
+      "sections": ["non_functional"],
+      "keywords": ["latency", "second", "delay", "lag", "fast", "p99", "p95", "within"],
+      "tips": {
+        "nudge": "How old can a comment be before the conversation stops making sense next to the video?",
+        "hint": "State a post → screen latency target.",
+        "show": "N1: A comment appears on other viewers' screens within 2 s at p99."
+      }
+    },
+    {
+      "id": "req-hot-stream",
+      "type": "requirement",
+      "label": "The extreme case named",
+      "sections": ["non_functional", "assumptions"],
+      "keywords": [
+        "hot",
+        "popular",
+        "viral",
+        "single stream",
+        "one stream",
+        "one video",
+        "celebrity",
+        "5m",
+        "5 million",
+        "millions of viewers"
+      ],
+      "tips": {
+        "nudge": "Averages hide the event everyone remembers. Which one?",
+        "hint": "Name the biggest single stream you must support and its comment rate.",
+        "show": "N2: One video may have 5M concurrent viewers and 10k comments/s without slowing other videos."
+      }
+    },
+    {
+      "id": "est-comment-rate",
+      "type": "estimate",
+      "label": "Write throughput estimated",
+      "keywords": ["comment", "write", "post"],
+      "unit": "/s",
+      "min": 3000,
+      "max": 1000000,
+      "tips": {
+        "nudge": "How often does a watching viewer comment?",
+        "hint": "concurrent viewers ÷ seconds between comments per viewer.",
+        "show": "comments_peak = 20M / 600 s ≈ 33k /s (hot video alone ≈ 10k /s)."
+      }
+    },
+    {
+      "id": "est-viewers",
+      "type": "estimate",
+      "label": "Concurrent audience estimated",
+      "keywords": ["viewer", "concurrent", "connection", "online", "audience"],
+      "unit": "",
+      "min": 1000000,
+      "max": 200000000,
+      "tips": {
+        "nudge": "How many open connections does the read side hold at peak?",
+        "hint": "Write the concurrent viewer count down, and the size of the biggest single stream.",
+        "show": "concurrent_viewers = 20M; hot_viewers = 5M; at 100k connections per gateway ≈ 200 gateways."
+      }
+    },
+    {
+      "id": "est-deliveries",
+      "type": "estimate",
+      "label": "Read-side fan-out estimated",
+      "keywords": ["deliver", "fan", "push", "frames", "messages_out", "outbound"],
+      "unit": "/s",
+      "min": 1000000,
+      "max": 1000000000000,
+      "tips": {
+        "nudge": "Each comment has to reach how many screens?",
+        "hint": "Multiply viewers by comments per second for the hot video, then compare with sending a batch twice a second.",
+        "show": "naive: 5M × 10k = 5 × 10^10 /s (impossible); batched: 20M × 2 = 40M /s (~80 GB/s at 2 KB per batch)."
+      }
+    },
+    {
+      "id": "api-post",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "method": "POST",
+      "keywords": ["comment"],
+      "tips": {
+        "nudge": "What does the app call when the viewer taps send?",
+        "hint": "A POST on the video's comments with a client-generated id for retries.",
+        "show": "POST /videos/{id}/comments {client_comment_id, text} → 201 {comment_id, ts}"
+      }
+    },
+    {
+      "id": "api-stream",
+      "type": "endpoint",
+      "label": "Read interface defined",
+      "method": "GET",
+      "keywords": ["stream", "subscribe", "sse", "event", "live", "ws", "socket", "since", "recent"],
+      "tips": {
+        "nudge": "How does the app receive comments it didn't ask for one by one?",
+        "hint": "A long-lived GET the server writes events into, plus something for the joiner's first screen.",
+        "show": "GET /videos/{id}/comments/stream (SSE: batch, delete events); GET /videos/{id}/comments/recent?limit=50"
+      }
+    },
+    {
+      "id": "data-comments",
+      "type": "entity",
+      "label": "Core data model defined",
+      "keywords": ["comment"],
+      "tips": {
+        "nudge": "What do you store for each comment, and how is it read back for a replay?",
+        "hint": "Partition by video, order by time.",
+        "show": "comments(video_id + hour bucket PK, comment_id time-ordered CK, user_id, text, status, ts) in Cassandra."
+      }
+    },
+    {
+      "id": "part-ingest",
+      "type": "part",
+      "label": "Accepting and keeping comments designed as a part",
+      "keywords": ["ingest", "write path", "post", "storage", "persist", "durab", "accept"],
+      "tips": {
+        "nudge": "A posted comment has to be stored and shown. What if those two disagree?",
+        "hint": "Add a part for the write path: compare SQL + polling, database-then-publish, and appending to a log both sides consume.",
+        "show": "Part 'Comment ingestion': append to Kafka keyed by video_id and ack; persisters batch-insert into Cassandra; dispatchers read the same log."
+      }
+    },
+    {
+      "id": "part-delivery",
+      "type": "part",
+      "label": "Getting comments onto screens designed as a part",
+      "keywords": ["deliver", "real-time", "real time", "realtime", "push", "sse", "websocket", "gateway", "subscri"],
+      "tips": {
+        "nudge": "20M viewers on hundreds of servers. How does a comment find its viewers?",
+        "hint": "Add a part for delivery: compare CDN polling, per-viewer routing, and gateways subscribing per video.",
+        "show": "Part 'Real-time delivery': SSE gateways subscribe once per video to a Redis pub/sub channel and fan out in memory."
+      }
+    },
+    {
+      "id": "part-hot-stream",
+      "type": "part",
+      "label": "The biggest stream designed as a part",
+      "keywords": ["hot", "sampl", "batch", "popular", "viral", "too many", "rate"],
+      "tips": {
+        "nudge": "5M viewers × 10k comments/s. Can anyone read that? Should you send it?",
+        "hint": "Add a part for the hot stream: compare delivering everything, client-side dropping, rooms, and server-side batching + sampling.",
+        "show": "Part 'Hot stream': dispatchers batch every 500 ms and sample to ~10 comments per batch; deliveries = viewers × 2 /s."
+      }
+    },
+    {
+      "id": "part-recent",
+      "type": "part",
+      "label": "First screen for joiners designed as a part",
+      "keywords": ["recent", "join", "late", "backfill", "last 50", "history", "replay"],
+      "tips": {
+        "nudge": "A million people open the same stream in a minute. What do they all ask for?",
+        "hint": "Add a part for the joiner's first screen: compare database reads, an in-memory list, and an edge cache in front.",
+        "show": "Part 'Recent comments': a 50-item Redis list per video maintained by dispatchers, served through the CDN with a 1 s TTL."
+      }
+    },
+    {
+      "id": "comp-push-tier",
+      "type": "component",
+      "label": "Viewers receive comments without asking",
+      "kinds": ["service", "api-gateway"],
+      "keywords": ["gateway", "sse", "websocket", "socket", "connection", "push", "real-time", "realtime", "stream"],
+      "tips": {
+        "nudge": "Polling 20M clients every second is 20M requests/s. What lets the server speak first?",
+        "hint": "A fleet whose only job is holding long-lived connections.",
+        "show": "Comment gateways ×200 (SSE, ~100k connections each) behind the load balancer."
+      }
+    },
+    {
+      "id": "comp-pubsub",
+      "type": "component",
+      "label": "Comments routed to the servers that need them",
+      "kinds": ["queue", "stream", "cache"],
+      "keywords": ["pub/sub", "pubsub", "pub-sub", "channel", "subscri", "broadcast", "topic"],
+      "tips": {
+        "nudge": "A comment on video X must reach only the gateways that have viewers of X.",
+        "hint": "Something gateways subscribe to, keyed by video.",
+        "show": "Redis pub/sub channel video:{id}; each gateway subscribes once per video it serves."
+      }
+    },
+    {
+      "id": "edge-ingest-async",
+      "type": "edge",
+      "label": "Posting decoupled from delivery",
+      "from_kinds": ["service"],
+      "to_kinds": ["stream", "queue"],
+      "tips": {
+        "nudge": "Should the POST wait until 5M screens have the comment?",
+        "hint": "Ack after one durable write; everything else consumes asynchronously.",
+        "show": "Comment service → Kafka (key = video_id) → persisters and dispatchers."
+      }
+    },
+    {
+      "id": "dd-ordering",
+      "type": "decision",
+      "label": "Order of comments on screen decided",
+      "keywords": ["order", "timestamp", "sequence", "offset", "sort"],
+      "tips": {
+        "nudge": "Two viewers see the same two comments. Must they appear in the same order?",
+        "hint": "Decide who assigns the order and at what scope.",
+        "show": "Order per video by Kafka partition offset (time-ordered ids for replay); no global order needed."
+      }
+    },
+    {
+      "id": "dd-moderation",
+      "type": "decision",
+      "label": "Abusive content and deletions handled",
+      "keywords": ["moderat", "delete", "removal", "remove", "spam", "abuse", "filter", "blocklist", "tombstone"],
+      "tips": {
+        "nudge": "A slur is posted on a 5M-viewer stream. Where is it stopped, and how is it taken back?",
+        "hint": "Decide what is filtered at post time and how a delete reaches screens that already show it.",
+        "show": "Blocked-word filter in the comment service before the log; deletes are tombstone events on the same live path; recent list and storage apply them."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks named",
+      "tips": {
+        "nudge": "Which resource runs out first during a World Cup final?",
+        "hint": "Walk the read path for the hottest video.",
+        "show": "Gateway egress (~80 GB/s), the hot video's single partition and dispatcher, the hot recent-comments key (CDN in front)."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How would you know comments are arriving 10 s late on one stream?",
+        "hint": "Measure end to end, per video.",
+        "show": "Post → screen p99, comments/s and viewers per video, sampling ratio, gateway egress, consumer lag, CDN hit ratio."
+      }
+    }
+  ]
+}

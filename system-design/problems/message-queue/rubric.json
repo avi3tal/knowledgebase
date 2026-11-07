@@ -1,0 +1,277 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "A replicated, partitioned append-only log: make writes sequential, make reader state a single offset, replicate each partition with a leader elected by a small consensus group, and bound disk by deleting whole segments. Ordering, scale and durability are all per partition.",
+  "checks": [
+    {
+      "id": "req-publish",
+      "type": "requirement",
+      "label": "Write side captured",
+      "keywords": ["publish", "produce", "producer", "send message", "send a message", "write message", "append"],
+      "tips": {
+        "nudge": "Who puts data into the system, and into what?",
+        "hint": "Write a functional requirement for sending messages to a named topic.",
+        "show": "F1: Producers publish messages (key, value, headers) to a named topic."
+      }
+    },
+    {
+      "id": "req-consume",
+      "type": "requirement",
+      "label": "Read side captured",
+      "keywords": ["consume", "consumer", "subscribe", "subscriber", "read message", "pull", "fetch"],
+      "tips": {
+        "nudge": "Three different services want the same events. What do they each get?",
+        "hint": "Capture how applications read: each application sees everything, and its instances share the work.",
+        "show": "F3: Consumers subscribe as groups: each group receives every message; members of a group split the partitions."
+      }
+    },
+    {
+      "id": "req-durability",
+      "type": "requirement",
+      "label": "Loss tolerance stated",
+      "sections": ["non_functional"],
+      "keywords": ["durab", "no loss", "not lost", "never lost", "replicat", "survive", "persist"],
+      "tips": {
+        "nudge": "A broker's disk dies one second after it said 'got it'. What did you promise?",
+        "hint": "State what an acknowledgement guarantees and which failures it survives.",
+        "show": "N2: An acknowledged message survives the loss of any single broker or availability zone."
+      }
+    },
+    {
+      "id": "req-ordering",
+      "type": "requirement",
+      "label": "Ordering promise stated",
+      "keywords": ["order", "sequence", "fifo"],
+      "tips": {
+        "nudge": "'Order created', then 'order paid'. Must every consumer see them in that order? And events of two different orders?",
+        "hint": "Say at what scope order is guaranteed.",
+        "show": "F2: Messages with the same key are delivered in the order they were produced (no global order)."
+      }
+    },
+    {
+      "id": "req-retention",
+      "type": "requirement",
+      "label": "How long data stays, and why that matters",
+      "keywords": ["retention", "retain", "replay", "rewind", "compact", "days", "keep"],
+      "tips": {
+        "nudge": "A consumer shipped a bug yesterday. Can it read yesterday's messages again?",
+        "hint": "Add requirements for retention and replay.",
+        "show": "F4/F5: Consumers can rewind to an offset or time; topics keep 7 days by default, or the latest value per key (compaction)."
+      }
+    },
+    {
+      "id": "est-throughput",
+      "type": "estimate",
+      "label": "Message rate estimated",
+      "keywords": ["msg", "message", "produce", "publish", "write", "event", "record"],
+      "unit": "/s",
+      "min": 100000,
+      "max": 10000000,
+      "tips": {
+        "nudge": "Write down the peak, not only the average.",
+        "hint": "Messages per second at peak and on average.",
+        "show": "peak_msgs = 1M /s; avg_msgs = 300k /s."
+      }
+    },
+    {
+      "id": "est-bandwidth",
+      "type": "estimate",
+      "label": "Byte throughput estimated",
+      "keywords": ["ingress", "bandwidth", "throughput", "bytes", "network", "egress"],
+      "unit": "GB/s",
+      "min": 0.1,
+      "max": 50,
+      "tips": {
+        "nudge": "Brokers run out of disk and network bandwidth before CPU. How many bytes per second?",
+        "hint": "messages/s × message size; then × replication factor for writes and × consumer groups for reads.",
+        "show": "ingress = 1M × 1 KB = 1 GB/s; replicated writes 3 GB/s; consumer egress ≈ 3 GB/s."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Storage for the retention period estimated",
+      "keywords": ["storage", "disk", "retention", "retained", "size"],
+      "unit": "TB",
+      "min": 50,
+      "max": 5000,
+      "tips": {
+        "nudge": "Seven days of everything, times how many copies?",
+        "hint": "average bytes/s × 7 days × replication factor.",
+        "show": "300k/s × 1 KB × 7 days ≈ 180 TB raw, ≈ 540 TB with 3 replicas."
+      }
+    },
+    {
+      "id": "est-brokers",
+      "type": "estimate",
+      "label": "Cluster size estimated",
+      "keywords": ["broker", "server", "node", "machine", "host"],
+      "unit": "",
+      "min": 5,
+      "max": 2000,
+      "tips": {
+        "nudge": "Which runs out first on a broker: disk or network?",
+        "hint": "Divide replicated storage by usable disk per broker and compare with the network budget; add headroom.",
+        "show": "540 TB / 20 TB ≈ 27 brokers for disk; with 50% headroom ≈ 40 brokers (network: ~5 GB/s total out / 40 ≈ 125 MB/s each, fine)."
+      }
+    },
+    {
+      "id": "api-produce",
+      "type": "endpoint",
+      "label": "Write interface defined",
+      "method": "POST",
+      "keywords": ["produce", "publish", "record", "message", "send"],
+      "tips": {
+        "nudge": "What does a producer send, to whom, and what does it get back?",
+        "hint": "A batch of keyed records to the partition leader, with an acks setting; the answer tells where they landed.",
+        "show": "Produce(topic, [{key, value, headers}], acks, producer_id, sequence) → {partition, base_offset}"
+      }
+    },
+    {
+      "id": "api-fetch",
+      "type": "endpoint",
+      "label": "Read interface defined",
+      "method": "GET",
+      "keywords": ["fetch", "poll", "consume", "offset", "records", "read"],
+      "tips": {
+        "nudge": "A consumer asks for 'more'. More from where?",
+        "hint": "A read by partition and position, which can wait for new data.",
+        "show": "Fetch(topic, partition, offset, max_bytes, max_wait_ms) → record batches + high watermark"
+      }
+    },
+    {
+      "id": "data-log",
+      "type": "entity",
+      "label": "How messages are laid out on disk modelled",
+      "keywords": ["offset", "segment", "partition", "log"],
+      "tips": {
+        "nudge": "What is the cheapest structure to write to at 1 GB/s and read from any position?",
+        "hint": "Think files, appends and a position number.",
+        "show": "partition log: per topic-partition, segment files (base_offset.log) + sparse offset index; records [offset, ts, key, value]."
+      }
+    },
+    {
+      "id": "data-offsets",
+      "type": "entity",
+      "label": "Reader progress modelled",
+      "keywords": ["committed", "consumer group", "consumer_group", "group_id", "group"],
+      "tips": {
+        "nudge": "A consumer restarts. Where does it continue from?",
+        "hint": "Store one number per reader and partition.",
+        "show": "committed offsets: (group, topic, partition) → offset, kept in a compacted internal topic."
+      }
+    },
+    {
+      "id": "part-log",
+      "type": "part",
+      "label": "The core storage structure designed as a part",
+      "keywords": ["log", "append", "segment", "partition", "storage"],
+      "tips": {
+        "nudge": "Before replication and consumers: how is one stream of messages stored and read fast?",
+        "hint": "Add a part for storage: compare database rows, an in-memory queue with acks, and a partitioned append-only log.",
+        "show": "Part 'Partitioned log': key hash → partition; each partition an append-only log of segments + offset index; sequential IO, page cache, zero-copy."
+      }
+    },
+    {
+      "id": "part-replication",
+      "type": "part",
+      "label": "Surviving broker loss designed as a part",
+      "keywords": ["replica", "replication", "leader", "election", "isr", "failover", "quorum"],
+      "tips": {
+        "nudge": "A broker dies. Who has its data, and who takes over writes?",
+        "hint": "Add a part for replication: compare async backup, sync-to-all, a quorum per partition, and leader + in-sync replicas with a controller.",
+        "show": "Part 'Replication': RF 3 across zones, followers pull, acks=all with min ISR 2, Raft controller elects leaders from the ISR with epochs."
+      }
+    },
+    {
+      "id": "part-consumer-groups",
+      "type": "part",
+      "label": "Sharing and tracking reads designed as a part",
+      "keywords": ["consumer group", "consumer", "offset", "rebalanc", "assignment", "subscri"],
+      "tips": {
+        "nudge": "Ten instances of one service read one topic. How do they split it, and how do they resume?",
+        "hint": "Add a part for consumption: compare broker-tracked per-message acks with consumer-pulled committed offsets and partition assignment.",
+        "show": "Part 'Consumer groups': consumers pull; one committed offset per (group, partition) in a compacted topic; a group coordinator assigns partitions."
+      }
+    },
+    {
+      "id": "part-retention",
+      "type": "part",
+      "label": "Bounding disk use designed as a part",
+      "keywords": ["retention", "compaction", "compact", "expire", "delete old", "tiered", "cleanup", "clean up"],
+      "tips": {
+        "nudge": "Nothing is deleted when it's read. So when is anything deleted?",
+        "hint": "Add a part for retention: compare delete-on-consume, per-message TTL, segment deletion, compaction and tiered storage.",
+        "show": "Part 'Retention': delete closed segments by time/size; compact keyed topics to the latest value per key; tier old segments to object storage."
+      }
+    },
+    {
+      "id": "comp-coordination",
+      "type": "component",
+      "label": "Cluster metadata has one source of truth",
+      "kinds": ["coordinator"],
+      "tips": {
+        "nudge": "Two brokers both think they lead partition 7. What prevents that?",
+        "hint": "Something strongly consistent must own leadership and membership.",
+        "show": "A controller quorum (KRaft/Raft, or ZooKeeper/etcd) stores metadata and elects partition leaders with epochs."
+      }
+    },
+    {
+      "id": "edge-replication",
+      "type": "edge",
+      "label": "Data copied between brokers",
+      "from_kinds": ["service"],
+      "to_kinds": ["service"],
+      "label_keywords": ["replic", "fetch", "copy", "sync", "follow", "mirror"],
+      "tips": {
+        "nudge": "Draw where the second and third copies of a message come from.",
+        "hint": "Connect the replica brokers to the leader and label the flow.",
+        "show": "Follower brokers → leader: 'fetch from offset (replicate)'."
+      }
+    },
+    {
+      "id": "dd-delivery-semantics",
+      "type": "decision",
+      "label": "Delivery guarantee decided",
+      "keywords": [
+        "at-least-once",
+        "at least once",
+        "exactly-once",
+        "exactly once",
+        "at-most-once",
+        "at most once",
+        "idempot",
+        "transaction",
+        "duplicate",
+        "dedup"
+      ],
+      "tips": {
+        "nudge": "A consumer crashes after processing a message but before saving its position. What happens next?",
+        "hint": "Compare committing before vs after processing, and what it would take to get exactly-once.",
+        "show": "At-least-once by default + idempotent producer (producer_id + sequence); exactly-once via transactions that write outputs and offsets atomically."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure scenarios walked through",
+      "tips": {
+        "nudge": "A broker holding 1,000 partition leaders loses power. Walk through the next 10 seconds.",
+        "hint": "Cover broker loss, zone loss, slow followers and consumer crashes.",
+        "show": "Controller elects new leaders from the ISR; producers retry idempotently; slow followers leave the ISR; a dead consumer's partitions are reassigned and resume from committed offsets."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Growth plan described",
+      "tips": {
+        "nudge": "Traffic triples. What do you add, and what can't you change easily?",
+        "hint": "Think brokers, partitions (and the key remapping they cause), and retention.",
+        "show": "Add brokers and reassign partitions (throttled); add partitions knowing keys remap; tiered storage for longer retention; separate clusters per domain."
+      }
+    }
+  ]
+}

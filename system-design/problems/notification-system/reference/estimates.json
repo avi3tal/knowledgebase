@@ -4,8 +4,9 @@
     { "name": "notifications_per_day", "formula": "500 * million", "unit": "/day" },
     { "name": "avg_send_rate", "formula": "notifications_per_day / day", "unit": "/s" },
     { "name": "peak_send_rate", "formula": "avg_send_rate * 10", "unit": "/s" },
-    { "name": "sms_per_day", "formula": "20 * million", "unit": "/day" },
-    { "name": "log_storage_30d", "formula": "500 * million * 30 * 500", "unit": "B" },
+    { "name": "push_peak_rate", "formula": "400 * million / day * 10", "unit": "/s" },
+    { "name": "sms_avg_rate", "formula": "20 * million / day", "unit": "/s" },
+    { "name": "log_storage_30d", "formula": "notifications_per_day * 30 * 500", "unit": "B" },
     { "name": "device_table", "formula": "300 * million * 250 / 10**9", "unit": "GB" }
   ]
 }

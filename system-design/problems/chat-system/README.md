@@ -1,9 +1,10 @@
-# Design a chat system
+# Design WhatsApp (chat system)
 
-> Difficulty: **medium** · Topics: chat system, message queues, databases, networking · ~50 min
+> Difficulty: **medium** · Topics: chat system, message queues, networking, databases, sharding · ~50 min
 
-Design the backend of a mobile and web messaging app. People chat one-to-one and in small groups,
-see messages appear while the conversation is open, and find their history on any device.
+Design the backend of a mobile and web messaging app like WhatsApp or Messenger. People chat
+one-to-one and in small groups, see messages appear while the conversation is open, and find their
+history on any device.
 
 ## What the interviewer tells you if you ask
 - **50 million daily active users**; an average user sends about **40 messages a day**.
@@ -18,9 +19,11 @@ see messages appear while the conversation is open, and find their history on an
 - Online indicators and read receipts are welcome but secondary.
 
 ## Your job
-Work through the stages in the console: scope → estimates → API & data → high-level design
-(evolve it: v1 → v2 → v3) → deep dives with trade-offs → wrap-up. Use the checklist on the right
-and ask for tips when stuck: nudge first, then hint, and *show* only as a last resort.
+Work through the console's stages: scope → estimates → API & data → **decompose** into parts
+(connections, ordering, offline delivery, groups…). Solve each part on its own: options, choice and
+a small diagram. Then **reduce** them into one high-level design (v1 → v2 → v3 → v4), followed by
+deep dives and wrap-up. Use the checklist and ask for tips when stuck: nudge first, then hint, and
+*show* only as a last resort.
 
 ## Things worth deciding (no answers here)
 - How does the server get a new message to a phone that is sitting idle with the app open?
@@ -28,3 +31,4 @@ and ask for tips when stuck: nudge first, then hint, and *show* only as a last r
 - What keeps messages in a conversation in the same order on every device, and stops duplicates
   when the network retries?
 - How does a message for a 200-person group get delivered without slowing the sender down?
+- What does a phone that was offline for a day do when it comes back?

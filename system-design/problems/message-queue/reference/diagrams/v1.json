@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "why": "Naive baseline: one broker keeps an in-memory queue backed by a database table and deletes each message when it is acked. Random IO per message caps throughput far below 1M/s (N1), one machine is a single point of failure (N2, N3), and deleted messages can't be replayed or read by a second group (F3, F4).",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Producers", "x": 60, "y": 140 },
+    { "id": "consumer", "kind": "client", "label": "Consumers", "x": 60, "y": 380 },
+    { "id": "leader", "kind": "service", "label": "Single broker (in-memory queue)", "x": 280, "y": 260 },
+    { "id": "db", "kind": "sql", "label": "messages table (insert / delete per ack)", "x": 540, "y": 260 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "leader", "label": "send" },
+    { "from": "consumer", "to": "leader", "label": "poll + ack" },
+    { "from": "leader", "to": "db", "label": "insert / delete per message" }
+  ],
+  "flows": [
+    {
+      "name": "send + consume",
+      "path": ["producer", "leader", "db"]
+    }
+  ]
+}
