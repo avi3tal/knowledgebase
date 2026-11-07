@@ -193,9 +193,12 @@ def test_graph_edges_and_neighbourhood(res: Path) -> None:
     assert refs.neighbourhood("algo", "topic:sliding-window")["counts"]["ref"] == refs.MAX_PER_TOPIC
 
 
-def test_locked_subject_topic_page() -> None:
+def test_locked_subject_topic_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    real = learn.catalog
+    monkeypatch.setattr(learn, "catalog", lambda subject: {**real(subject), "status": "locked"})
     page = learn.topic_page("system-design", "caching")
-    assert page["subject_status"] == "locked" and page["has_lesson"] is False
+    assert page["subject_status"] == "locked" and page["has_lesson"] is True
+    assert "url-shortener" in {p["slug"] for p in page["problems"]}
     assert "scalability-basics" in page["topic"]["prereqs"]
     assert page["graph"]["center"] == "topic:caching"
     with pytest.raises(learn.ProblemError):
