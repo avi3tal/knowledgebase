@@ -528,3 +528,137 @@ button.link {
   overflow-y: hidden;
   padding: 2px 2px 6px;
 }
+
+/* tree / heap */
+svg.tree {
+  overflow: visible;
+}
+.tree .edge {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+.tree-node circle {
+  fill: var(--panel-2);
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  transition:
+    stroke 0.3s,
+    fill 0.3s;
+}
+.tree-node circle.pointed {
+  fill: rgba(122, 162, 255, 0.25);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.tree-node text {
+  fill: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.tree-node .node-pointer {
+  fill: var(--ok);
+  font-size: 11px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.85em;
+  margin-top: 4px;
+}
+.heap-array {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.small-cell {
+  width: 34px;
+  height: 40px;
+}
+
+/* grid / DP table */
+table.dp-grid {
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+table.dp-grid th {
+  color: var(--muted);
+  font-weight: 600;
+  padding: 2px 6px;
+}
+table.dp-grid td {
+  border: 1px solid var(--border);
+  min-width: 28px;
+  height: 26px;
+  text-align: center;
+  background: var(--panel-2);
+  transition: background 0.25s;
+}
+table.dp-grid td.marked {
+  background: rgba(76, 195, 138, 0.22);
+}
+table.dp-grid td.cursor {
+  background: rgba(122, 162, 255, 0.35);
+  outline: 2px solid var(--accent);
+  font-weight: 700;
+}
+
+/* intervals */
+.lane {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+}
+.lane-name {
+  width: 90px;
+  font-size: 0.8em;
+  color: var(--muted);
+}
+.lane-track {
+  position: relative;
+  background: var(--bg);
+  border-radius: 4px;
+}
+.bar {
+  position: absolute;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(122, 162, 255, 0.3);
+  border: 1px solid var(--accent);
+  font-size: 0.72em;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    left 0.35s,
+    width 0.35s;
+}
+.bar.pointed {
+  background: rgba(243, 181, 74, 0.35);
+  border-color: var(--warn);
+}
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75em;
+  color: var(--muted);
+}
+
+/* call stack */
+.callstack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.82em;
+}
+.frame {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  color: var(--muted);
+}
+.frame.top {
+  border-color: var(--accent);
+  color: var(--text);
+}

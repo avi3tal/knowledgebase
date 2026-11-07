@@ -293,3 +293,78 @@ def test_studio_api(studio: str, progress: Path) -> None:
     with pytest.raises(urllib.error.HTTPError) as e:
         urllib.request.urlopen(bad)
     assert e.value.code == 400
+
+
+# ------------------------------------------------------------------ new views (tree/grid/heap/intervals/callstack)
+
+VIEWS_FIXTURE = TESTDATA / "trace_views_fixture.json"
+VIEW_CASES = {
+    "tree": (
+        "max_depth",
+        {"root": [3, 9, 20, None, None, 15, 7]},
+        {"root": "TreeNode"},
+        [
+            {"id": "tree", "type": "tree", "var": "root", "pointers": {"node": "node"}},
+            {"id": "stack", "type": "callstack"},
+            {"id": "vars", "type": "vars", "vars": ["best"]},
+        ],
+    ),
+    "grid": (
+        "lcs_length",
+        {"a": "abc", "b": "ac"},
+        {},
+        [{"id": "dp", "type": "grid", "var": "dp", "cells": {"cur": ["i", "j"]}, "row_labels": "a", "col_labels": "b"}],
+    ),
+    "heap": ("kth_largest", {"nums": [5, 1, 9, 3], "k": 2}, {}, [{"id": "heap", "type": "heap", "var": "heap"}]),
+    "intervals": (
+        "merge",
+        {"intervals": [[1, 3], [8, 10], [2, 6]]},
+        {},
+        [
+            {
+                "id": "iv",
+                "type": "intervals",
+                "lanes": {"input": "intervals", "merged": "merged"},
+                "pointers": {"i": "i"},
+            }
+        ],
+    ),
+}
+
+
+def views_fixture() -> dict:
+    from kb.learn import _typed_kwargs
+
+    out = {}
+    for name, (fn_name, raw, types, view) in VIEW_CASES.items():
+        fn = load_function(TESTDATA / "trace_views_example.py", fn_name)
+        out[name] = capture(fn, _typed_kwargs({"types": types}, raw), view, title=name, display_input=raw)
+    return out
+
+
+def test_views_match_shared_fixture() -> None:
+    assert views_fixture() == json.loads(VIEWS_FIXTURE.read_text())
+
+
+def test_tree_view_and_recursion() -> None:
+    t = views_fixture()["tree"]
+    assert t["result"] == 3
+    depths = [len(s["state"]["stack"]["frames"]) for s in t["steps"]]
+    assert max(depths) >= 4  # max_depth + dfs(3) + dfs(20) + dfs(15)
+    assert t["steps"][0]["state"]["stack"]["frames"][0]["fn"] == "max_depth"
+    visits = [s for s in t["steps"] if s["note"] == "visit node"]
+    tree = visits[0]["state"]["tree"]
+    vals = {n["id"]: n["val"] for n in tree["nodes"]}
+    assert [vals[s["state"]["tree"]["pointers"]["node"]] for s in visits] == [3, 9, 20, 15, 7]
+    assert all(s["state"]["tree"]["nodes"] == tree["nodes"] for s in t["steps"])  # outer root stays visible
+    assert visits[-1]["state"]["vars"]["values"]["best"] == 3
+
+
+def test_grid_heap_intervals_views() -> None:
+    f = views_fixture()
+    last = f["grid"]["steps"][-1]["state"]["dp"]
+    assert last["rows"] == [[0, 0, 0], [0, 1, 1], [0, 1, 1], [0, 1, 2]] and last["row_labels"] == list("abc")
+    assert any(s["state"]["dp"]["cells"]["cur"] == [3, 2] for s in f["grid"]["steps"])
+    assert f["heap"]["result"] == 5 and f["heap"]["steps"][-1]["state"]["heap"]["values"] == [5, 9]
+    lanes = f["intervals"]["steps"][-1]["state"]["iv"]["lanes"]
+    assert lanes["merged"] == [[1, 6], [8, 10]] and lanes["input"] == [[1, 3], [2, 6], [8, 10]]

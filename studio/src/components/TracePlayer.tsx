@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
-import type { ArrayState, LinkedListState, MapState, Trace, VarsState } from "../trace";
+import type {
+  ArrayState,
+  CallStackState,
+  GridState,
+  IntervalsState,
+  LinkedListState,
+  MapState,
+  Trace,
+  TreeState,
+  VarsState,
+} from "../trace";
 import { clampStep, viewId } from "../trace";
+import { CallStackView, GridView, HeapView, IntervalsView, TreeView } from "./StructureViews";
 import { ArrayView, LinkedListView, MapView, VarsView } from "./TraceViews";
 
 const SPEEDS = [1500, 900, 450];
@@ -67,6 +78,16 @@ export function TracePlayer({ trace }: { trace: Trace }) {
             if (!state) return null;
             if (spec.type === "array")
               return <ArrayView key={id} spec={spec} state={state as ArrayState} />;
+            if (spec.type === "tree")
+              return <TreeView key={id} spec={spec} state={state as TreeState} />;
+            if (spec.type === "heap")
+              return <HeapView key={id} spec={spec} state={state as ArrayState} />;
+            if (spec.type === "grid")
+              return <GridView key={id} spec={spec} state={state as GridState} />;
+            if (spec.type === "intervals")
+              return <IntervalsView key={id} spec={spec} state={state as IntervalsState} />;
+            if (spec.type === "callstack")
+              return <CallStackView key={id} spec={spec} state={state as CallStackState} />;
             if (spec.type === "linkedlist")
               return <LinkedListView key={id} spec={spec} state={state as LinkedListState} />;
             if (spec.type === "map")

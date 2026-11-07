@@ -44,15 +44,26 @@ structure and tone.
    - Add a `trace` block to `lesson.json` with `source`, `function`, a small `input` (about
      30–60 steps), `view` and **`checks`** (2–4 input/expected pairs, so the animated code is
      verified correct).
-   - View types: `array` (`var`, `pointers: {label: var}`, `window: [lo_var, hi_var]`), `map`
-     (`var`: a dict or set), `vars` (a list of scalar names) and `linkedlist` (`var`: head,
-     `pointers: {label: var}`; nodes keep stable positions while links and pointers animate).
-     Strings work as arrays.
+   - View types (combine several per trace):
+     - `array` — `var`, `pointers: {label: index_var}`, `window: [lo_var, hi_var]` (strings work too).
+     - `map` — `var`: a dict or set. `vars` — `vars: [names]` for scalars.
+     - `linkedlist` — `var`: head, `pointers: {label: node_var}`; nodes keep stable positions.
+     - `tree` — `var`: root (TreeNode), `pointers: {label: node_var}`, `groups: {label: var}` where
+       the var holds nodes (queue, stack, path, visited; `(node, x)` tuples are fine).
+     - `heap` — `var`: a heapq list, drawn as array + tree.
+     - `grid` — `var`: 2-D list (matrix or DP table), `cells: {label: [row_var, col_var]}`,
+       `marked`: var holding (r, c) pairs, optional `row_labels` / `col_labels` vars (e.g. the two
+       strings of an LCS table, rendered on rows/cols 1..n when the table is (n+1)×(m+1)).
+     - `intervals` — `lanes: {label: var}` (lists of [start, end]), `pointers: {label: index_var}`
+       into the first lane.
+     - `callstack` — no options; shows active frames of the traced function and nested helpers.
+   - Recursion and nested helpers (`def dfs(...)` inside the traced function) are traced; watched
+     vars resolve in the current frame first, then the outer function (e.g. outer `visited`).
    - Typed inputs: `"types": {"head": "ListNode"}` converts JSON input (and `checks` inputs)
      using kb meta types; `"returns": "ListNode"` converts the result back. For cycle demos, use
      `"cycle": {"head": pos}` on the block (or on a check) to link the tail to node `pos`.
-   - If the topic needs a visual that doesn't exist yet (tree, grid, heap,
-     intervals), say so and propose adding a view type: Python `kb/trace.py` snapshot, plus the
+   - If the topic needs a visual that doesn't exist yet (e.g. a general graph drawing), say so
+     and propose adding a view type: Python `kb/trace.py` snapshot, plus the
      TS type in `studio/src/trace.ts`, plus a renderer in `studio/src/components/TraceViews.tsx`,
      plus fixture tests. Don't fake it.
 3. **Quiz (`quiz.json`, 6–10 items):** short problem statements and the question "which pattern?".
