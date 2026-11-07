@@ -33,6 +33,9 @@
 - History lives in `_workspace/progress/*.jsonl` (private). Tests run against an empty `KB_WORKSPACE` and
   `KB_PROGRESS_DIR` (conftest does); fixture attempts live in `tools/tests/testdata/workspace/`.
 - New problems / attempts: the `/new-problem` skill (`.claude/skills/new-problem/SKILL.md`).
+- Study sessions: `kb session new|list|show|start|done|abandon|attempt` (`tools/kb/sessions.py`,
+  deterministic generator; scores derived from runs, never stored). Claude plans go through
+  `kb session new --plan` via the `/session` skill. Tutor feedback on demand: `/review` → `review.md`.
 - Generated files (`solution_test.go`, `kb_types.go`) are rewritten by `kb run`; edit `meta.json` instead.
 - Test fixtures for the tooling live in `tools/tests/testdata/problems/` (Go ignores `testdata` in `./...`).
 - Checks: `make test`, `make lint`. Python dev tools run via `uvx` (pytest, ruff).

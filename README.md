@@ -63,6 +63,25 @@ make studio            # build the UI and serve it on http://127.0.0.1:8765
 - **New lessons:** `/learn algo two-pointers` in Claude Code writes the content once and kb does
   the rest. `/learn feedback` summarises your progress.
 
+## Study sessions
+
+A session is a scoped, targeted set of lessons and problems with a score per problem and for the
+whole session.
+
+```sh
+./kb session new --topics sliding-window,two-pointers --difficulty easy,medium --count 5 --focus weak \
+                 --goal "onsite in 2 weeks"          # deterministic picks from your history
+./kb session list                                     # status, completion, score
+./kb session attempt <id> --item p1 --lang go         # start a problem of the session
+./kb session start|done|abandon <id>
+```
+
+Or open 🎯 **Sessions** in the studio. In Claude Code, `/session` reads your progress and past
+sessions, explains strengths and weak spots, and writes a plan that kb validates and saves.
+`/review <slug>` gives tutor feedback on one attempt (on demand, written to `review.md`).
+Per-problem score: 70 for passing cases, +20 for the target complexity, +10 for passing on the
+first run; re-runs update it.
+
 ## Usage
 
 In Claude Code: `/new-problem algo go sliding-window medium` or `/new-problem algo python "two sum"`.
