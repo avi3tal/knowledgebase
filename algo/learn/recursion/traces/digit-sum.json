@@ -1,0 +1,816 @@
+{
+ "version": 1,
+ "title": "Linear recursion: sum of digits (watch the stack grow, then unwind)",
+ "code": [
+  "def digit_sum(n: int) -> int:",
+  "    if n < 10:",
+  "        return n",
+  "    last = n % 10",
+  "    rest = digit_sum(n // 10)",
+  "    return last + rest"
+ ],
+ "view": [
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "n",
+    "rest"
+   ]
+  }
+ ],
+ "input": {
+  "n": 498765
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498765,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "split off the last digit…",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498765,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49876,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "split off the last digit…",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49876,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 4987,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "split off the last digit…",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 4987,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "split off the last digit…",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "split off the last digit…",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 4,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "base case: a single digit is its own sum — the calls stop going deeper",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 4,
+      "rest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "…and trust the same function to solve the smaller number (a new frame is pushed)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49,
+      "rest": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "on the way back up, each frame adds its own digit to the answer from below",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49,
+      "rest": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "…and trust the same function to solve the smaller number (a new frame is pushed)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498,
+      "rest": 13
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "on the way back up, each frame adds its own digit to the answer from below",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498,
+      "rest": 13
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "…and trust the same function to solve the smaller number (a new frame is pushed)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 4987,
+      "rest": 21
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "on the way back up, each frame adds its own digit to the answer from below",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 4987
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 4987,
+      "rest": 21
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "…and trust the same function to solve the smaller number (a new frame is pushed)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49876,
+      "rest": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "on the way back up, each frame adds its own digit to the answer from below",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      },
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 49876
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 49876,
+      "rest": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "…and trust the same function to solve the smaller number (a new frame is pushed)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498765,
+      "rest": 34
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "on the way back up, each frame adds its own digit to the answer from below",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "digit_sum",
+       "args": {
+        "n": 498765
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "n": 498765,
+      "rest": 34
+     }
+    }
+   }
+  }
+ ],
+ "result": 39
+}

@@ -1,0 +1,645 @@
+{
+ "version": 1,
+ "title": "Max-heap by negation: smash the two heaviest stones",
+ "code": [
+  "def last_stone_weight(stones: list[int]) -> int:",
+  "    heap = [-s for s in stones]",
+  "    heapq.heapify(heap)",
+  "    while len(heap) > 1:",
+  "        first = -heapq.heappop(heap)",
+  "        second = -heapq.heappop(heap)",
+  "        if first != second:",
+  "            heapq.heappush(heap, -(first - second))",
+  "    return -heap[0] if heap else 0"
+ ],
+ "view": [
+  {
+   "id": "heap",
+   "type": "heap",
+   "var": "heap",
+   "label": "heap (stored negated: -8 means 8)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "first",
+    "second"
+   ]
+  }
+ ],
+ "input": {
+  "stones": [
+   2,
+   7,
+   4,
+   1,
+   8,
+   1,
+   5,
+   3,
+   6
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "heapq is a MIN-heap — store negatives so the heaviest is on top",
+   "state": {
+    "heap": {
+     "values": [
+      -2,
+      -7,
+      -4,
+      -1,
+      -8,
+      -1,
+      -5,
+      -3,
+      -6
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "heapify rearranges the list into heap order in O(n)",
+   "state": {
+    "heap": {
+     "values": [
+      -8,
+      -7,
+      -5,
+      -6,
+      -2,
+      -1,
+      -4,
+      -3,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": null,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "pop the heaviest (O(log n)) — negate back to get the weight",
+   "state": {
+    "heap": {
+     "values": [
+      -7,
+      -6,
+      -5,
+      -3,
+      -2,
+      -1,
+      -4,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 8,
+      "second": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "…and the second heaviest",
+   "state": {
+    "heap": {
+     "values": [
+      -6,
+      -3,
+      -5,
+      -1,
+      -2,
+      -1,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 8,
+      "second": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "push the leftover piece; it sifts up to its place",
+   "state": {
+    "heap": {
+     "values": [
+      -6,
+      -3,
+      -5,
+      -1,
+      -2,
+      -1,
+      -4,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 8,
+      "second": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "pop the heaviest (O(log n)) — negate back to get the weight",
+   "state": {
+    "heap": {
+     "values": [
+      -5,
+      -3,
+      -4,
+      -1,
+      -2,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 6,
+      "second": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "…and the second heaviest",
+   "state": {
+    "heap": {
+     "values": [
+      -4,
+      -3,
+      -1,
+      -1,
+      -2,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 6,
+      "second": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "push the leftover piece; it sifts up to its place",
+   "state": {
+    "heap": {
+     "values": [
+      -4,
+      -3,
+      -1,
+      -1,
+      -2,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 6,
+      "second": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "pop the heaviest (O(log n)) — negate back to get the weight",
+   "state": {
+    "heap": {
+     "values": [
+      -3,
+      -2,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 4,
+      "second": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "…and the second heaviest",
+   "state": {
+    "heap": {
+     "values": [
+      -2,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 4,
+      "second": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "push the leftover piece; it sifts up to its place",
+   "state": {
+    "heap": {
+     "values": [
+      -2,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 4,
+      "second": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "pop the heaviest (O(log n)) — negate back to get the weight",
+   "state": {
+    "heap": {
+     "values": [
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 2,
+      "second": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "…and the second heaviest",
+   "state": {
+    "heap": {
+     "values": [
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 2,
+      "second": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "push the leftover piece; it sifts up to its place",
+   "state": {
+    "heap": {
+     "values": [
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 2,
+      "second": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "pop the heaviest (O(log n)) — negate back to get the weight",
+   "state": {
+    "heap": {
+     "values": [
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 1,
+      "second": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "…and the second heaviest",
+   "state": {
+    "heap": {
+     "values": [
+      -1,
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 1,
+      "second": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "pop the heaviest (O(log n)) — negate back to get the weight",
+   "state": {
+    "heap": {
+     "values": [
+      -1,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 1,
+      "second": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "…and the second heaviest",
+   "state": {
+    "heap": {
+     "values": [
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 1,
+      "second": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "heap": {
+     "values": [
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "first": 1,
+      "second": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": 1
+}

@@ -1,0 +1,51 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "stack",
+ "title": "Stack",
+ "blocks": [
+  {"type": "markdown", "src": "01-intro.md"},
+  {
+   "type": "trace",
+   "id": "eval-rpn",
+   "title": "Plain stack: evaluate a postfix (reverse Polish) expression",
+   "source": "examples/eval_rpn.py",
+   "function": "eval_rpn",
+   "input": {"tokens": ["5", "1", "2", "+", "4", "*", "+", "3", "-"]},
+   "view": [
+    {"id": "tokens", "type": "array", "var": "tokens", "pointers": {"i": "i"}},
+    {"id": "stack", "type": "array", "var": "stack", "label": "stack (top = right end)"},
+    {"id": "vars", "type": "vars", "vars": ["tok", "left", "right"]}
+   ],
+   "checks": [
+    {"input": {"tokens": ["5", "1", "2", "+", "4", "*", "+", "3", "-"]}, "expected": 14},
+    {"input": {"tokens": ["2", "1", "+", "3", "*"]}, "expected": 9},
+    {"input": {"tokens": ["4", "13", "5", "/", "+"]}, "expected": 6},
+    {"input": {"tokens": ["7", "-2", "/"]}, "expected": -3}
+   ]
+  },
+  {"type": "markdown", "src": "02-monotonic.md"},
+  {
+   "type": "trace",
+   "id": "next-greater",
+   "title": "Monotonic stack: next greater element to the right",
+   "source": "examples/next_greater.py",
+   "function": "next_greater",
+   "input": {"nums": [2, 7, 3, 5, 4, 6, 8]},
+   "view": [
+    {"id": "nums", "type": "array", "var": "nums", "pointers": {"i": "i", "j": "j"}},
+    {"id": "stack", "type": "array", "var": "stack", "label": "stack of waiting indices (top = right end)"},
+    {"id": "result", "type": "array", "var": "result"}
+   ],
+   "checks": [
+    {"input": {"nums": [2, 7, 3, 5, 4, 6, 8]}, "expected": [7, 8, 5, 6, 6, 8, -1]},
+    {"input": {"nums": [5, 4, 3]}, "expected": [-1, -1, -1]},
+    {"input": {"nums": [1, 3, 2, 4]}, "expected": [3, 4, 4, -1]},
+    {"input": {"nums": []}, "expected": []}
+   ]
+  },
+  {"type": "markdown", "src": "03-recognise.md"},
+  {"type": "quiz", "src": "quiz.json"},
+  {"type": "problems", "slugs": ["valid-parentheses", "decimal-to-binary", "binary-search-tree-iterator", "trapping-rain-water"]}
+ ]
+}

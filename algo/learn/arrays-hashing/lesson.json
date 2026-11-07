@@ -1,0 +1,231 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "arrays-hashing",
+ "title": "Arrays & Hashing",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "longest-consecutive",
+   "title": "Hash set: longest run of consecutive integers",
+   "source": "examples/longest_consecutive.py",
+   "function": "longest_consecutive",
+   "input": {
+    "nums": [
+     100,
+     4,
+     200,
+     1,
+     3,
+     2,
+     101,
+     5
+    ]
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums"
+    },
+    {
+     "id": "seen",
+     "type": "map",
+     "var": "seen",
+     "label": "seen (hash set)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "x",
+      "length",
+      "best"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       100,
+       4,
+       200,
+       1,
+       3,
+       2,
+       101,
+       5
+      ]
+     },
+     "expected": 5
+    },
+    {
+     "input": {
+      "nums": [
+       100,
+       4,
+       200,
+       1,
+       3,
+       2
+      ]
+     },
+     "expected": 4
+    },
+    {
+     "input": {
+      "nums": [
+       0,
+       3,
+       7,
+       2,
+       5,
+       8,
+       4,
+       6,
+       0,
+       1
+      ]
+     },
+     "expected": 9
+    },
+    {
+     "input": {
+      "nums": []
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "nums": [
+       5,
+       5,
+       5
+      ]
+     },
+     "expected": 1
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-counting-prefix.md"
+  },
+  {
+   "type": "trace",
+   "id": "count-subarrays-sum-k",
+   "title": "Prefix sum + hash map: count subarrays with sum k (negatives allowed)",
+   "source": "examples/count_subarrays_sum_k.py",
+   "function": "count_subarrays_sum_k",
+   "input": {
+    "nums": [
+     3,
+     4,
+     -7,
+     1,
+     3,
+     3,
+     1,
+     -4
+    ],
+    "k": 7
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums",
+     "pointers": {
+      "i": "i"
+     }
+    },
+    {
+     "id": "seen",
+     "type": "map",
+     "var": "seen",
+     "label": "seen (prefix sum → times seen)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "prefix",
+      "need",
+      "count"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       3,
+       4,
+       -7,
+       1,
+       3,
+       3,
+       1,
+       -4
+      ],
+      "k": 7
+     },
+     "expected": 4
+    },
+    {
+     "input": {
+      "nums": [
+       1,
+       1,
+       1
+      ],
+      "k": 2
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "nums": [
+       1,
+       -1,
+       0
+      ],
+      "k": 0
+     },
+     "expected": 3
+    },
+    {
+     "input": {
+      "nums": [],
+      "k": 0
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "contains-duplicate",
+    "valid-anagram",
+    "two-sum",
+    "longest-common-prefix",
+    "product-of-array-except-self",
+    "rotate-array"
+   ]
+  }
+ ]
+}

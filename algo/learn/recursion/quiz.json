@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a nested list such as [1, [2, [3, 4]], 5], return the sum of all integers at any depth.",
+   "options": [
+    "recursion",
+    "bfs",
+    "backtracking"
+   ],
+   "answer": "recursion",
+   "why": "The structure is defined in terms of itself: sum(list) = numbers + sum of each sub-list. A direct recursion, with nothing to undo or prune."
+  },
+  {
+   "id": "q2",
+   "prompt": "Count the number of ways to climb n stairs taking 1 or 2 steps at a time, for n up to 10^4.",
+   "options": [
+    "recursion",
+    "fibonacci-numbers",
+    "subsets"
+   ],
+   "answer": "fibonacci-numbers",
+   "why": "ways(n) = ways(n−1) + ways(n−2) recomputes the same subproblems exponentially often. Each answer depends on the previous two → Fibonacci-style DP in O(n)."
+  },
+  {
+   "id": "q3",
+   "prompt": "Place n queens on an n×n board so that no two attack each other; return all placements.",
+   "options": [
+    "recursion",
+    "backtracking",
+    "dynamic-programming"
+   ],
+   "answer": "backtracking",
+   "why": "Choose a column per row, abandon a partial board as soon as it conflicts, and undo the choice → backtracking (recursion plus pruning)."
+  },
+  {
+   "id": "q4",
+   "prompt": "Without any loop, print n, n−1, …, 1 and then 1, 2, …, n (e.g. n = 3 → 3 2 1 1 2 3).",
+   "options": [
+    "recursion",
+    "stack",
+    "two-pointers"
+   ],
+   "answer": "recursion",
+   "why": "Print once on the way down (before the call) and once on the way back up (after it). Those are the two phases of a recursive call, and there is no matching or scanning signal."
+  },
+  {
+   "id": "q5",
+   "prompt": "Return all lowercase strings of length n using only the letters 'a', 'b', 'c'.",
+   "options": [
+    "recursion",
+    "sliding-window",
+    "dynamic-programming"
+   ],
+   "answer": "recursion",
+   "why": "Generate all → three calls per position, depth n, 3^n leaves. Nothing repeats and nothing is pruned, so plain tree recursion. DP would only help if you were counting."
+  },
+  {
+   "id": "q6",
+   "prompt": "Return the values of a binary tree level by level, from top to bottom.",
+   "options": [
+    "recursion",
+    "bfs",
+    "dfs"
+   ],
+   "answer": "bfs",
+   "why": "'Level by level' is arrival order → a queue (BFS). Recursion naturally goes deep first."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given a string of balanced brackets, check that every closing bracket matches the most recent unmatched opening one, for strings up to 10^6 characters.",
+   "options": [
+    "recursion",
+    "stack",
+    "two-pointers"
+   ],
+   "answer": "stack",
+   "why": "Matching the most recent opener is LIFO. Use an explicit stack: recursion on 10^6 nested brackets would exceed the recursion limit."
+  },
+  {
+   "id": "q8",
+   "prompt": "Evaluate an expression given as nested tuples, e.g. ('+', 1, ('*', 2, 3)) → 7, where any operand can itself be such a tuple.",
+   "options": [
+    "recursion",
+    "backtracking",
+    "dynamic-programming"
+   ],
+   "answer": "recursion",
+   "why": "The input is defined in terms of itself: value(expr) = apply op to value(left) and value(right). Each sub-expression is visited once, so there's nothing to cache or undo."
+  }
+ ]
+}

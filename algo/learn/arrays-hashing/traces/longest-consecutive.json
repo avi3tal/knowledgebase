@@ -1,0 +1,1755 @@
+{
+ "version": 1,
+ "title": "Hash set: longest run of consecutive integers",
+ "code": [
+  "def longest_consecutive(nums: list[int]) -> int:",
+  "    seen = set(nums)",
+  "    best = 0",
+  "    for x in nums:",
+  "        if x - 1 in seen:",
+  "            continue",
+  "        length = 1",
+  "        while x + length in seen:",
+  "            length += 1",
+  "        best = max(best, length)",
+  "    return best"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums"
+  },
+  {
+   "id": "seen",
+   "type": "map",
+   "var": "seen",
+   "label": "seen (hash set)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "x",
+    "length",
+    "best"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   100,
+   4,
+   200,
+   1,
+   3,
+   2,
+   101,
+   5
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "one O(n) pass builds the set; membership is now O(1)",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "length": null,
+      "best": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "length": null,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 100,
+      "length": null,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "x is a run start — walk upward while the next number is in the set",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 100,
+      "length": 1,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 100,
+      "length": 2,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "every number is walked at most once overall, so the scan is O(n)",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 100,
+      "length": 2,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "length": 2,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "x-1 exists, so x is not the start of a run — skip it",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "length": 2,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 200,
+      "length": 2,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "x is a run start — walk upward while the next number is in the set",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 200,
+      "length": 1,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "every number is walked at most once overall, so the scan is O(n)",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 200,
+      "length": 1,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 1,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "x is a run start — walk upward while the next number is in the set",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 1,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 2,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 3,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 4,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 5,
+      "best": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "every number is walked at most once overall, so the scan is O(n)",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "x-1 exists, so x is not the start of a run — skip it",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "x-1 exists, so x is not the start of a run — skip it",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 101,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "x-1 exists, so x is not the start of a run — skip it",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 101,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "x-1 exists, so x is not the start of a run — skip it",
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      100,
+      4,
+      200,
+      1,
+      3,
+      2,
+      101,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       1,
+       null
+      ],
+      [
+       2,
+       null
+      ],
+      [
+       3,
+       null
+      ],
+      [
+       4,
+       null
+      ],
+      [
+       5,
+       null
+      ],
+      [
+       100,
+       null
+      ],
+      [
+       101,
+       null
+      ],
+      [
+       200,
+       null
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "length": 5,
+      "best": 5
+     }
+    }
+   }
+  }
+ ],
+ "result": 5
+}

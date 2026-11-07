@@ -1,0 +1,2209 @@
+{
+ "version": 1,
+ "title": "Heap of tuples: always run the shortest job that has arrived",
+ "code": [
+  "def shortest_job_first(jobs: list[list[int]]) -> list[int]:",
+  "    order = sorted(range(len(jobs)), key=lambda j: jobs[j][0])",
+  "    ready: list[tuple[int, int]] = []",
+  "    time, k, done = 0, 0, []",
+  "    while len(done) < len(jobs):",
+  "        while k < len(order) and jobs[order[k]][0] <= time:",
+  "            job = order[k]",
+  "            heapq.heappush(ready, (jobs[job][1], job))",
+  "            k += 1",
+  "        if not ready:",
+  "            time = jobs[order[k]][0]",
+  "            continue",
+  "        duration, job = heapq.heappop(ready)",
+  "        time += duration",
+  "        done.append(job)",
+  "    return done"
+ ],
+ "view": [
+  {
+   "id": "jobs",
+   "type": "array",
+   "var": "jobs",
+   "label": "jobs [arrival, duration]"
+  },
+  {
+   "id": "ready",
+   "type": "heap",
+   "var": "ready",
+   "label": "ready: min-heap of (duration, job id)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "time",
+    "job",
+    "done"
+   ]
+  }
+ ],
+ "input": {
+  "jobs": [
+   [
+    0,
+    4
+   ],
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    3,
+    2
+   ],
+   [
+    10,
+    2
+   ],
+   [
+    11,
+    1
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": "job ids by arrival time",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "min-heap of (duration, job id): ties break on the id",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": null,
+      "job": null,
+      "done": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 0,
+      "job": null,
+      "done": []
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 0,
+      "job": 0,
+      "done": []
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "every job that has arrived joins the heap",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       4,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 0,
+      "job": 0,
+      "done": []
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "the root is the shortest ready job",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 0,
+      "job": 0,
+      "done": []
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 0,
+      "done": []
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "run it to completion; more jobs may have arrived meanwhile",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 0,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 1,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "every job that has arrived joins the heap",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 1,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 2,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "every job that has arrived joins the heap",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       1,
+       2
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 2,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       1,
+       2
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 3,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "every job that has arrived joins the heap",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       1,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       2,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 3,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "the root is the shortest ready job",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 4,
+      "job": 2,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 5,
+      "job": 2,
+      "done": [
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "run it to completion; more jobs may have arrived meanwhile",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 5,
+      "job": 2,
+      "done": [
+       0,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "the root is the shortest ready job",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 5,
+      "job": 3,
+      "done": [
+       0,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 7,
+      "job": 3,
+      "done": [
+       0,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "run it to completion; more jobs may have arrived meanwhile",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       3,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 7,
+      "job": 3,
+      "done": [
+       0,
+       2,
+       3
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "the root is the shortest ready job",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 7,
+      "job": 1,
+      "done": [
+       0,
+       2,
+       3
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 10,
+      "job": 1,
+      "done": [
+       0,
+       2,
+       3
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "run it to completion; more jobs may have arrived meanwhile",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 10,
+      "job": 1,
+      "done": [
+       0,
+       2,
+       3,
+       1
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 10,
+      "job": 4,
+      "done": [
+       0,
+       2,
+       3,
+       1
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "every job that has arrived joins the heap",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       2,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 10,
+      "job": 4,
+      "done": [
+       0,
+       2,
+       3,
+       1
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "the root is the shortest ready job",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 10,
+      "job": 4,
+      "done": [
+       0,
+       2,
+       3,
+       1
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 12,
+      "job": 4,
+      "done": [
+       0,
+       2,
+       3,
+       1
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "run it to completion; more jobs may have arrived meanwhile",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 12,
+      "job": 4,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 12,
+      "job": 5,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "every job that has arrived joins the heap",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [
+      [
+       1,
+       5
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 12,
+      "job": 5,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "the root is the shortest ready job",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 12,
+      "job": 5,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 13,
+      "job": 5,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "run it to completion; more jobs may have arrived meanwhile",
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 13,
+      "job": 5,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4,
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "jobs": {
+     "values": [
+      [
+       0,
+       4
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "ready": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "time": 13,
+      "job": 5,
+      "done": [
+       0,
+       2,
+       3,
+       1,
+       4,
+       5
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  0,
+  2,
+  3,
+  1,
+  4,
+  5
+ ]
+}

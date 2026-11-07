@@ -1,0 +1,1328 @@
+{
+ "version": 1,
+ "title": "Splicing: insertion sort on a linked list",
+ "code": [
+  "def insertion_sort_list(head):",
+  "    dummy = ListNode(0)",
+  "    curr = head",
+  "    while curr is not None:",
+  "        nxt = curr.next",
+  "        prev = dummy",
+  "        while prev.next is not None and prev.next.val < curr.val:",
+  "            prev = prev.next",
+  "        curr.next = prev.next",
+  "        prev.next = curr",
+  "        curr = nxt",
+  "    return dummy.next"
+ ],
+ "view": [
+  {
+   "id": "list",
+   "type": "linkedlist",
+   "var": "dummy",
+   "pointers": {
+    "prev": "prev",
+    "curr": "curr",
+    "next": "nxt"
+   }
+  }
+ ],
+ "input": {
+  "head": [
+   4,
+   2,
+   5,
+   1,
+   3
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "dummy heads the sorted list we build; it starts empty",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": null,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": 1,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "save the rest of the unsorted list before we rewire curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": null,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "splice step 1: curr points at what follows prev",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": null
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "splice step 2: prev points at curr — order matters",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 1,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "move on to the next unsorted node",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 2,
+      "next": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "save the rest of the unsorted list before we rewire curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 2,
+      "next": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "splice step 1: curr points at what follows prev",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 2,
+      "next": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "splice step 2: prev points at curr — order matters",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 2,
+      "next": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "move on to the next unsorted node",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 3,
+      "next": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "save the rest of the unsorted list before we rewire curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 3,
+      "next": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "walk the sorted list to the last node smaller than curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": 3,
+      "next": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "walk the sorted list to the last node smaller than curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 3,
+      "next": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "splice step 1: curr points at what follows prev",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 3,
+      "next": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "splice step 2: prev points at curr — order matters",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 3,
+      "next": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "move on to the next unsorted node",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 4,
+      "next": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "save the rest of the unsorted list before we rewire curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 1,
+      "curr": 4,
+      "next": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 4,
+      "next": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "splice step 1: curr points at what follows prev",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 2
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 4,
+      "next": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "splice step 2: prev points at curr — order matters",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 4,
+      "next": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "move on to the next unsorted node",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 5,
+      "next": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "save the rest of the unsorted list before we rewire curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 0,
+      "curr": 5,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "walk the sorted list to the last node smaller than curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 4,
+      "curr": 5,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "walk the sorted list to the last node smaller than curr",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": 5,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "splice step 1: curr points at what follows prev",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": 5,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "splice step 2: prev points at curr — order matters",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 5
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": 5,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "move on to the next unsorted node",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 5
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": null,
+      "next": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 0,
+       "next": 4
+      },
+      {
+       "id": 1,
+       "val": 4,
+       "next": 3
+      },
+      {
+       "id": 2,
+       "val": 2,
+       "next": 5
+      },
+      {
+       "id": 3,
+       "val": 5,
+       "next": null
+      },
+      {
+       "id": 4,
+       "val": 1,
+       "next": 2
+      },
+      {
+       "id": 5,
+       "val": 3,
+       "next": 1
+      }
+     ],
+     "pointers": {
+      "prev": 2,
+      "curr": null,
+      "next": null
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ]
+}

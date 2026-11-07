@@ -1,0 +1,103 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given an unsorted array, return true if any value appears at least twice.",
+   "options": [
+    "arrays-hashing",
+    "two-pointers",
+    "cyclic-sort"
+   ],
+   "answer": "arrays-hashing",
+   "why": "Unsorted, no value range given, 'have I seen it before?' → one pass with a hash set. Cyclic sort needs values in 1..n; two pointers needs sorted input."
+  },
+  {
+   "id": "q2",
+   "prompt": "A sorted array and a target: return the indices of two numbers that add up to the target, using O(1) extra space.",
+   "options": [
+    "arrays-hashing",
+    "two-pointers",
+    "modified-binary-search"
+   ],
+   "answer": "two-pointers",
+   "why": "Sorted input + O(1) space rules out the hash map; walk one pointer in from each end."
+  },
+  {
+   "id": "q3",
+   "prompt": "Group a list of words so that words made of the same letters (in any order) end up together.",
+   "options": [
+    "arrays-hashing",
+    "sliding-window",
+    "subsets"
+   ],
+   "answer": "arrays-hashing",
+   "why": "'Same letters, any order' → a canonical key (sorted word or a 26-count tuple) in a dict of lists. There is no window and nothing to enumerate."
+  },
+  {
+   "id": "q4",
+   "prompt": "Count the contiguous subarrays whose sum is exactly k. The array may contain negative numbers.",
+   "options": [
+    "arrays-hashing",
+    "sliding-window",
+    "two-pointers"
+   ],
+   "answer": "arrays-hashing",
+   "why": "Negatives break the window's shrink rule. Count earlier prefixes equal to prefix − k with a hash map."
+  },
+  {
+   "id": "q5",
+   "prompt": "Find the length of the shortest contiguous subarray of positive integers whose sum is at least S.",
+   "options": [
+    "arrays-hashing",
+    "sliding-window",
+    "two-heaps"
+   ],
+   "answer": "sliding-window",
+   "why": "All positive + contiguous + 'shortest such that' → dynamic window; no hash map needed because adding always increases the sum."
+  },
+  {
+   "id": "q6",
+   "prompt": "An array holds n numbers from the range 1..n; some appear twice and some are missing. Find all missing numbers in O(n) time and O(1) extra space.",
+   "options": [
+    "arrays-hashing",
+    "cyclic-sort",
+    "bitwise-xor"
+   ],
+   "answer": "cyclic-sort",
+   "why": "Values are exactly 1..n and extra space must be O(1) → put each value at its index instead of using a set."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given an unsorted array, return the length of the longest sequence of consecutive integers (their order in the array doesn't matter) in O(n).",
+   "options": [
+    "arrays-hashing",
+    "sorting",
+    "longest-common-substring"
+   ],
+   "answer": "arrays-hashing",
+   "why": "O(n) forbids sorting; a hash set lets you start counting only at run starts (x − 1 absent)."
+  },
+  {
+   "id": "q8",
+   "prompt": "Return the k values that occur most often in an array.",
+   "options": [
+    "top-k-elements",
+    "two-heaps",
+    "sliding-window"
+   ],
+   "answer": "top-k-elements",
+   "why": "Counting is the first step, but the question is picking the k best by frequency → size-k heap (Top 'K' Elements)."
+  },
+  {
+   "id": "q9",
+   "prompt": "Every number appears twice except one. Find the single one in O(n) time and O(1) extra space.",
+   "options": [
+    "arrays-hashing",
+    "bitwise-xor",
+    "cyclic-sort"
+   ],
+   "answer": "bitwise-xor",
+   "why": "A counter works but uses O(n) space; x ^ x = 0 cancels the pairs in O(1) space."
+  }
+ ]
+}

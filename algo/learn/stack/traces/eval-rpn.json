@@ -1,0 +1,1450 @@
+{
+ "version": 1,
+ "title": "Plain stack: evaluate a postfix (reverse Polish) expression",
+ "code": [
+  "def eval_rpn(tokens: list[str]) -> int:",
+  "    stack: list[int] = []",
+  "    for i in range(len(tokens)):",
+  "        tok = tokens[i]",
+  "        if tok not in {\"+\", \"-\", \"*\", \"/\"}:",
+  "            stack.append(int(tok))",
+  "            continue",
+  "        right = stack.pop()",
+  "        left = stack.pop()",
+  "        if tok == \"+\":",
+  "            stack.append(left + right)",
+  "        elif tok == \"-\":",
+  "            stack.append(left - right)",
+  "        elif tok == \"*\":",
+  "            stack.append(left * right)",
+  "        else:",
+  "            stack.append(int(left / right))",
+  "    return stack[-1]"
+ ],
+ "view": [
+  {
+   "id": "tokens",
+   "type": "array",
+   "var": "tokens",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "stack",
+   "type": "array",
+   "var": "stack",
+   "label": "stack (top = right end)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "tok",
+    "left",
+    "right"
+   ]
+  }
+ ],
+ "input": {
+  "tokens": [
+   "5",
+   "1",
+   "2",
+   "+",
+   "4",
+   "*",
+   "+",
+   "3",
+   "-"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": null,
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": null,
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "5",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "an operand: push it and wait for its operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "5",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "5",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "1",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "an operand: push it and wait for its operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "1",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "1",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "2",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "an operand: push it and wait for its operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "2",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "2",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "an operator: the two most recent operands are on top (right first!)",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": null,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "push the result back — it is an operand for a later operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "4",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "an operand: push it and wait for its operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "4",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "4",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "*",
+      "left": 1,
+      "right": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "an operator: the two most recent operands are on top (right first!)",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "*",
+      "left": 1,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "*",
+      "left": 3,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "push the result back — it is an operand for a later operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      12
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "*",
+      "left": 3,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      12
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "*",
+      "left": 3,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5,
+      12
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 3,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "an operator: the two most recent operands are on top (right first!)",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 3,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "push the result back — it is an operand for a later operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "+",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "3",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "an operand: push it and wait for its operator",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "3",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "3",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "-",
+      "left": 5,
+      "right": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "an operator: the two most recent operands are on top (right first!)",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      17
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "-",
+      "left": 5,
+      "right": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "-",
+      "left": 17,
+      "right": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      14
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "-",
+      "left": 17,
+      "right": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "a well-formed expression leaves exactly one value",
+   "state": {
+    "tokens": {
+     "values": [
+      "5",
+      "1",
+      "2",
+      "+",
+      "4",
+      "*",
+      "+",
+      "3",
+      "-"
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "stack": {
+     "values": [
+      14
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tok": "-",
+      "left": 17,
+      "right": 3
+     }
+    }
+   }
+  }
+ ],
+ "result": 14
+}

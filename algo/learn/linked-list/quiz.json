@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Delete every node from a linked list whose value appears more than once, keeping only values that were unique. The list is sorted.",
+   "options": [
+    "linked-list",
+    "fast-slow-pointers",
+    "in-place-reversal-linked-list"
+   ],
+   "answer": "linked-list",
+   "why": "Deleting runs of nodes, possibly including the head → dummy head + prev/curr unlinking. There are no two speeds and no reversal."
+  },
+  {
+   "id": "q2",
+   "prompt": "Return the middle node of a linked list in a single pass.",
+   "options": [
+    "linked-list",
+    "fast-slow-pointers",
+    "two-pointers"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "'Middle in one pass' → slow moves 1, fast moves 2; when fast reaches the end, slow is in the middle."
+  },
+  {
+   "id": "q3",
+   "prompt": "Rearrange a list so all nodes with value < x come before nodes with value ≥ x, keeping the original relative order within each group.",
+   "options": [
+    "linked-list",
+    "fast-slow-pointers",
+    "merge-intervals"
+   ],
+   "answer": "linked-list",
+   "why": "Stable split into groups → build two lists with two dummy heads and join them. No reversing involved."
+  },
+  {
+   "id": "q4",
+   "prompt": "Reverse the nodes of a linked list k at a time, leaving a final group of fewer than k nodes as it is.",
+   "options": [
+    "linked-list",
+    "in-place-reversal-linked-list",
+    "stack"
+   ],
+   "answer": "in-place-reversal-linked-list",
+   "why": "'Reverse' groups in place → prev/curr/nxt reversal per group. A stack would work but costs O(k) extra space."
+  },
+  {
+   "id": "q5",
+   "prompt": "Two numbers are stored as linked lists of digits in reverse order. Return their sum as a linked list.",
+   "options": [
+    "linked-list",
+    "in-place-reversal-linked-list",
+    "two-pointers"
+   ],
+   "answer": "linked-list",
+   "why": "Walk both lists in lock-step with a carry, building the output behind a dummy. The digits are already least-significant first, so there's no need to reverse."
+  },
+  {
+   "id": "q6",
+   "prompt": "Merge k sorted linked lists into one sorted list.",
+   "options": [
+    "linked-list",
+    "k-way-merge",
+    "merge-intervals"
+   ],
+   "answer": "k-way-merge",
+   "why": "k sorted inputs → a min-heap of the k current heads gives O(N log k). Pairwise merging one after another is O(N·k)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Design a cache with get and put in O(1) that evicts the least recently used key when it's full.",
+   "options": [
+    "linked-list",
+    "heaps",
+    "stack"
+   ],
+   "answer": "linked-list",
+   "why": "O(1) 'move to front' and 'remove the oldest' → a doubly linked list (plus a hash map from key to node). A heap makes each operation O(log n). A stack can't remove from the bottom."
+  },
+  {
+   "id": "q8",
+   "prompt": "Determine whether a linked list contains a cycle, using O(1) extra memory.",
+   "options": [
+    "linked-list",
+    "fast-slow-pointers",
+    "arrays-hashing"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "A visited set works but uses O(n) memory; with O(1) memory, a fast pointer catches up with the slow one inside a cycle."
+  }
+ ]
+}

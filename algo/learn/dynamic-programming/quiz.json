@@ -1,0 +1,103 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "A robot moves only right or down through a grid where some cells are blocked. Count the distinct paths from the top-left to the bottom-right corner.",
+   "options": [
+    "dynamic-programming",
+    "backtracking",
+    "bfs"
+   ],
+   "answer": "dynamic-programming",
+   "why": "We want a count, not a list, and paths to a cell = paths to the cell above + paths to the cell on the left → grid DP. Backtracking would enumerate an exponential number of paths."
+  },
+  {
+   "id": "q2",
+   "prompt": "List every path from the top-left to the bottom-right corner of a grid moving only right or down.",
+   "options": [
+    "dynamic-programming",
+    "backtracking",
+    "bfs"
+   ],
+   "answer": "backtracking",
+   "why": "The output is every path, so it's exponential by nature. A DP table can count them but can't avoid producing each one → build each path and undo the last step."
+  },
+  {
+   "id": "q3",
+   "prompt": "In a grid of 0s and 1s, find the minimum number of steps from S to T moving in four directions, avoiding walls.",
+   "options": [
+    "dynamic-programming",
+    "bfs",
+    "dfs"
+   ],
+   "answer": "bfs",
+   "why": "Four-directional moves allow cycles, so there's no fill order for a table. With unit-cost steps, BFS finds the shortest distance."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given a triangle of numbers, find the minimum sum of a path from the top to the bottom, moving to an adjacent number on the row below at each step.",
+   "options": [
+    "dynamic-programming",
+    "greedy",
+    "dfs"
+   ],
+   "answer": "dynamic-programming",
+   "why": "Greedily taking the smaller neighbour can lead into an expensive region. Each cell's best cost depends on two cells below it → DP, filled from the bottom row up."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given activities with start and end times, select the maximum number of non-overlapping activities.",
+   "options": [
+    "dynamic-programming",
+    "greedy",
+    "knapsack-0-1"
+   ],
+   "answer": "greedy",
+   "why": "There's a provably safe local choice: always take the activity that ends first. Sorting + one pass is enough, so no table is needed."
+  },
+  {
+   "id": "q6",
+   "prompt": "Can the array be split into two subsets with equal sums?",
+   "options": [
+    "knapsack-0-1",
+    "subsets",
+    "greedy"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "Each element is used at most once to reach a target sum (total / 2) → 0/1 Knapsack (a DP over items × sums). Enumerating subsets is exponential, and greedy has no safe choice."
+  },
+  {
+   "id": "q7",
+   "prompt": "Find the area of the largest square containing only 1s in a binary matrix.",
+   "options": [
+    "dynamic-programming",
+    "islands",
+    "bfs"
+   ],
+   "answer": "dynamic-programming",
+   "why": "The largest square that ends at (r, c) is built from the answers of its neighbouring cells → grid DP. Flood fill finds connected regions, not squares."
+  },
+  {
+   "id": "q8",
+   "prompt": "Return the minimum number of insert/delete/replace operations to turn one word into another.",
+   "options": [
+    "longest-common-substring",
+    "palindromic-subsequence",
+    "bfs"
+   ],
+   "answer": "longest-common-substring",
+   "why": "Two different sequences compared prefix by prefix → the two-string 2-D DP family (Longest Common Substring). Palindromic Subsequence is about ranges i..j of a single string."
+  },
+  {
+   "id": "q9",
+   "prompt": "Buy and sell one stock as many times as you like, but after a sale you must wait one day before buying again. Maximise the profit.",
+   "options": [
+    "dynamic-programming",
+    "greedy",
+    "sliding-window"
+   ],
+   "answer": "dynamic-programming",
+   "why": "The cooldown makes today's best choice depend on yesterday's situation (holding, just sold, resting) → DP over (day, state). Without the cooldown, greedily summing every rise would work."
+  }
+ ]
+}

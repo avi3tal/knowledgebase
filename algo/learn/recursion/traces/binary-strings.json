@@ -1,0 +1,1980 @@
+{
+ "version": 1,
+ "title": "Tree recursion: all binary strings of length n",
+ "code": [
+  "def binary_strings(n: int) -> list[str]:",
+  "    out: list[str] = []",
+  "",
+  "    def build(prefix: str) -> None:",
+  "        if len(prefix) == n:",
+  "            out.append(prefix)",
+  "            return",
+  "        build(prefix + \"0\")",
+  "        build(prefix + \"1\")",
+  "",
+  "    build(\"\")",
+  "    return out"
+ ],
+ "view": [
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "out",
+   "type": "array",
+   "var": "out"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "prefix"
+   ]
+  }
+ ],
+ "input": {
+  "n": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "0"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "00"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "000"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "000"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "000"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "000"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "00"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "001"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "001"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "001"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "001"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "00"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "00"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "0"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "01"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "010"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "010"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "010"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "010"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "01"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "011"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "011"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "011"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "011"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "01"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "01"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "0"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "0"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "1"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "10"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "100"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "100"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "100"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "100"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "10"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "101"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "101"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "101"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "101"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "10"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "10"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "1"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "11"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "110"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "110"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "110"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "110"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "branch 1: put a 0 here, recurse on the remaining positions",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "11"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "111"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "111"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "base case: the string is complete — record it and return",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "111"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "111"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "11"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "11"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": "1"
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": "1"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "branch 2: the first branch has fully returned — now try a 1",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      },
+      {
+       "fn": "build",
+       "args": {
+        "prefix": ""
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "two calls per level → 2^n leaves; depth is only n",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "binary_strings",
+       "args": {
+        "n": 3
+       }
+      }
+     ]
+    },
+    "out": {
+     "values": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "prefix": null
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  "000",
+  "001",
+  "010",
+  "011",
+  "100",
+  "101",
+  "110",
+  "111"
+ ]
+}

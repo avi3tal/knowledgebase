@@ -1,0 +1,147 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "recursion",
+ "title": "Recursion",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "digit-sum",
+   "title": "Linear recursion: sum of digits (watch the stack grow, then unwind)",
+   "source": "examples/digit_sum.py",
+   "function": "digit_sum",
+   "input": {
+    "n": 498765
+   },
+   "view": [
+    {
+     "id": "stack",
+     "type": "callstack"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "n",
+      "rest"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "n": 498765
+     },
+     "expected": 39
+    },
+    {
+     "input": {
+      "n": 7
+     },
+     "expected": 7
+    },
+    {
+     "input": {
+      "n": 1000
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "n": 0
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-tree-recursion.md"
+  },
+  {
+   "type": "trace",
+   "id": "binary-strings",
+   "title": "Tree recursion: all binary strings of length n",
+   "source": "examples/binary_strings.py",
+   "function": "binary_strings",
+   "input": {
+    "n": 3
+   },
+   "view": [
+    {
+     "id": "stack",
+     "type": "callstack"
+    },
+    {
+     "id": "out",
+     "type": "array",
+     "var": "out"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "prefix"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "n": 3
+     },
+     "expected": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+     ]
+    },
+    {
+     "input": {
+      "n": 1
+     },
+     "expected": [
+      "0",
+      "1"
+     ]
+    },
+    {
+     "input": {
+      "n": 0
+     },
+     "expected": [
+      ""
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "factorial",
+    "recursive-list-sum",
+    "square-via-recursion",
+    "reverse-array-recursive",
+    "towers-of-hanoi",
+    "permutations"
+   ]
+  }
+ ]
+}

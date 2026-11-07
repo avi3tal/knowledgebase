@@ -1,0 +1,313 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "heaps",
+ "title": "Heaps",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "last-stone",
+   "title": "Max-heap by negation: smash the two heaviest stones",
+   "source": "examples/last_stone.py",
+   "function": "last_stone_weight",
+   "input": {
+    "stones": [
+     2,
+     7,
+     4,
+     1,
+     8,
+     1,
+     5,
+     3,
+     6
+    ]
+   },
+   "view": [
+    {
+     "id": "heap",
+     "type": "heap",
+     "var": "heap",
+     "label": "heap (stored negated: -8 means 8)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "first",
+      "second"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "stones": [
+       2,
+       7,
+       4,
+       1,
+       8,
+       1,
+       5,
+       3,
+       6
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "stones": [
+       2,
+       7,
+       4,
+       1,
+       8,
+       1,
+       5
+      ]
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "stones": [
+       2,
+       7,
+       4,
+       1,
+       8,
+       1
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "stones": [
+       3,
+       3
+      ]
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "stones": [
+       10,
+       4,
+       2,
+       10
+      ]
+     },
+     "expected": 2
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-patterns.md"
+  },
+  {
+   "type": "trace",
+   "id": "shortest-job-first",
+   "title": "Heap of tuples: always run the shortest job that has arrived",
+   "source": "examples/shortest_job_first.py",
+   "function": "shortest_job_first",
+   "input": {
+    "jobs": [
+     [
+      0,
+      4
+     ],
+     [
+      1,
+      3
+     ],
+     [
+      2,
+      1
+     ],
+     [
+      3,
+      2
+     ],
+     [
+      10,
+      2
+     ],
+     [
+      11,
+      1
+     ]
+    ]
+   },
+   "view": [
+    {
+     "id": "jobs",
+     "type": "array",
+     "var": "jobs",
+     "label": "jobs [arrival, duration]"
+    },
+    {
+     "id": "ready",
+     "type": "heap",
+     "var": "ready",
+     "label": "ready: min-heap of (duration, job id)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "time",
+      "job",
+      "done"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "jobs": [
+       [
+        0,
+        4
+       ],
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        1
+       ],
+       [
+        3,
+        2
+       ],
+       [
+        10,
+        2
+       ],
+       [
+        11,
+        1
+       ]
+      ]
+     },
+     "expected": [
+      0,
+      2,
+      3,
+      1,
+      4,
+      5
+     ]
+    },
+    {
+     "input": {
+      "jobs": [
+       [
+        1,
+        2
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        2
+       ],
+       [
+        4,
+        1
+       ]
+      ]
+     },
+     "expected": [
+      0,
+      2,
+      3,
+      1
+     ]
+    },
+    {
+     "input": {
+      "jobs": [
+       [
+        7,
+        10
+       ],
+       [
+        7,
+        12
+       ],
+       [
+        7,
+        5
+       ],
+       [
+        7,
+        4
+       ],
+       [
+        7,
+        2
+       ]
+      ]
+     },
+     "expected": [
+      4,
+      3,
+      2,
+      0,
+      1
+     ]
+    },
+    {
+     "input": {
+      "jobs": [
+       [
+        0,
+        3
+       ],
+       [
+        10,
+        1
+       ]
+      ]
+     },
+     "expected": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "k-largest-elements",
+    "kth-largest-in-stream",
+    "implement-max-heap",
+    "k-closest-points-to-origin",
+    "minimum-meeting-rooms",
+    "merge-k-sorted-lists"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a string of '(', ')', '[', ']', '{', '}', decide whether every bracket is closed in the correct order.",
+   "options": [
+    "stack",
+    "two-pointers",
+    "recursion"
+   ],
+   "answer": "stack",
+   "why": "Nesting: the most recently opened bracket must close first → push openers, pop on closers."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given daily temperatures, return for each day how many days you must wait for a warmer temperature.",
+   "options": [
+    "stack",
+    "sliding-window",
+    "top-k-elements"
+   ],
+   "answer": "stack",
+   "why": "'Next greater to the right' for every element → monotonic decreasing stack of indices, answer = i − j on pop."
+  },
+  {
+   "id": "q3",
+   "prompt": "Return the maximum of every contiguous window of size k as the window slides across the array.",
+   "options": [
+    "stack",
+    "sliding-window",
+    "two-heaps"
+   ],
+   "answer": "sliding-window",
+   "why": "A fixed-size contiguous window with elements leaving from the left → a sliding window with a monotonic deque. A stack can't drop items from the bottom."
+  },
+  {
+   "id": "q4",
+   "prompt": "Repeatedly remove pairs of adjacent equal letters from a string until no such pair remains (e.g. 'abbaca' → 'ca').",
+   "options": [
+    "stack",
+    "two-pointers",
+    "sliding-window"
+   ],
+   "answer": "stack",
+   "why": "A removal can expose a new adjacent pair to its left → compare each char with the top of a stack and pop on a match."
+  },
+  {
+   "id": "q5",
+   "prompt": "Find the minimum number of moves a knight needs to get from one square to another on a chessboard.",
+   "options": [
+    "stack",
+    "bfs",
+    "dfs"
+   ],
+   "answer": "bfs",
+   "why": "Fewest moves with unit cost → expand positions in first-in, first-out order with a queue (BFS). A stack (or DFS) goes deep first and finds a path, not the shortest one."
+  },
+  {
+   "id": "q6",
+   "prompt": "Find the largest rectangle that fits under a histogram of bar heights.",
+   "options": [
+    "stack",
+    "two-pointers",
+    "merge-intervals"
+   ],
+   "answer": "stack",
+   "why": "Each bar's rectangle extends to the previous and next smaller bars → increasing monotonic stack, O(n)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Design a structure that returns the k-th smallest of all numbers seen so far after each insertion.",
+   "options": [
+    "stack",
+    "heaps",
+    "arrays-hashing"
+   ],
+   "answer": "heaps",
+   "why": "'k-th smallest overall' needs order over all elements, not just the latest one → keep a size-k max-heap."
+  },
+  {
+   "id": "q8",
+   "prompt": "Compute the total size of a folder, where a folder contains files (with sizes) and other folders nested to any depth.",
+   "options": [
+    "stack",
+    "recursion",
+    "bfs"
+   ],
+   "answer": "recursion",
+   "why": "The structure is defined in terms of itself: size(folder) = its files + size of each subfolder. Recursion follows that definition directly. A stack or queue could do the same walk, but nothing calls for them here."
+  }
+ ]
+}
