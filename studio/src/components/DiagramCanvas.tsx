@@ -344,6 +344,23 @@ export function DiagramCanvas({
             onPointerMove={onMove}
             onPointerUp={onUp}
             onPointerCancel={() => setGesture(null)}
+            // Handled here, not on the node/edge: pointer capture retargets dblclick to the svg.
+            onDoubleClick={(e) => {
+              if (!editable) return;
+              const hit = hitNode(shown, toWorld(e.clientX, e.clientY));
+              if (hit) setSel({ type: "node", id: hit.id });
+              else if (sel?.type !== "edge") return;
+              // The first click already selected it, so the inspector input exists: focus now
+              // (keys typed right away must land there), select again after the re-render.
+              const focusLabel = () => {
+                labelRef.current?.focus({ preventScroll: true });
+                labelRef.current?.select();
+              };
+              focusLabel();
+              setTimeout(() => {
+                if (document.activeElement !== labelRef.current) focusLabel();
+              }, 0);
+            }}
           >
             <defs>
               <pattern
@@ -414,9 +431,6 @@ export function DiagramCanvas({
                       setSel({ type: "edge", id: key });
                       wrapRef.current?.focus({ preventScroll: true });
                     }}
-                    onDoubleClick={() => {
-                      if (editable) setTimeout(() => labelRef.current?.select(), 0);
-                    }}
                   >
                     <path d={d} className="dg-edge-hit" />
                     <path
@@ -474,11 +488,6 @@ export function DiagramCanvas({
                     transform={`translate(${n.x} ${n.y})`}
                     style={{ ["--kc" as string]: s.color, ["--i" as string]: i }}
                     onPointerDown={(e) => onNodeDown(e, n.id)}
-                    onDoubleClick={() => {
-                      if (!editable) return;
-                      setSel({ type: "node", id: n.id });
-                      setTimeout(() => labelRef.current?.select(), 0);
-                    }}
                   >
                     <g className="dg-node-body">
                       {smell && (
