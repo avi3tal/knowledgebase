@@ -329,3 +329,27 @@ def test_ood_smells() -> None:
     assert "unimplemented-interface" not in rules  # Lot points at it
     d["edges"] = [{"from": "Lot", "to": "Spot"}]
     assert {s["rule"] for s in design.smells(d, {}, "ood")} == {"orphan-class", "unimplemented-interface"}
+
+
+def test_requirement_sections_and_decision_choice() -> None:
+    p = design.load("system-design", "url-shortener")
+    adir = design.new_attempt(p)
+    doc = design.empty_design()
+    doc["scope"]["functional"] = [{"id": "F1", "text": "fast redirects"}]
+    doc["deep_dives"] = [
+        {"id": "D", "title": "ids", "options": [{"name": "hash"}], "choice": "counter", "why": "no collisions"}
+    ]
+    (adir / "design.json").write_text(json.dumps(doc))
+    tips = {"nudge": "n", "hint": "h", "show": "s"}
+    req = {"id": "r", "type": "requirement", "label": "x", "keywords": ["fast"], "tips": tips}
+    dec = {"id": "d", "type": "decision", "label": "x", "keywords": ["ids"], "tips": tips}
+    cases = [
+        (req, True),
+        ({**req, "sections": ["non_functional"]}, False),
+        (dec, True),
+        ({**dec, "choice_keywords": ["counter"]}, True),
+        ({**dec, "choice_keywords": ["hash"]}, False),
+    ]
+    for check, want in cases:
+        p.rubric = {"checks": [check]}
+        assert design.run_checks(p, adir)["checks"][0]["passed"] is want, check

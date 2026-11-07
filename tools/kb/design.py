@@ -590,7 +590,6 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
     kinds = {n.get("id"): n.get("kind") for n in final.get("nodes", [])}
     labels = {n.get("id"): _norm(n.get("label", "")) for n in final.get("nodes", [])}
     scope = design.get("scope", {}) if isinstance(design.get("scope"), dict) else {}
-    scope_text = _norm([x.get("text", "") for k in scope for x in scope.get(k, []) if isinstance(x, dict)])
     sig_names = _signature_names(attempt)
 
     results = []
@@ -599,7 +598,9 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
         passed, detail = False, ""
         t = c["type"]
         if t == "requirement":
-            passed = _hit(scope_text, kw)
+            sections = c.get("sections") or list(scope)
+            text = _norm([x.get("text", "") for k in sections for x in scope.get(k, []) if isinstance(x, dict)])
+            passed = _hit(text, kw)
         elif t == "estimate":
             for row in estimates:
                 if row["value"] is not None and _hit(row["name"].lower(), kw):
@@ -640,7 +641,10 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
             )
         elif t == "decision":
             passed = any(
-                _hit(_norm(dd), kw) and str(dd.get("choice", "")).strip() and str(dd.get("why", "")).strip()
+                _hit(_norm(dd), kw)
+                and str(dd.get("choice", "")).strip()
+                and str(dd.get("why", "")).strip()
+                and (not c.get("choice_keywords") or _hit(str(dd.get("choice", "")).lower(), c["choice_keywords"]))
                 for dd in design.get("deep_dives", [])
             )
         elif t == "wrapup":
@@ -892,6 +896,13 @@ def validate_problem(problem: DesignProblem) -> list[str]:
             not isinstance(c.get(k, []), list) for k in ("from_keywords", "to_keywords", "label_keywords")
         ):
             e.append(f"{where}: from_keywords/to_keywords/label_keywords must be lists")
+        if t == "requirement" and not set(c.get("sections", [])) <= {
+            "functional",
+            "non_functional",
+            "assumptions",
+            "out_of_scope",
+        }:
+            e.append(f"{where}: sections must be scope sections")
         if t == "wrapup" and c.get("key") not in WRAPUP_KEYS:
             e.append(f"{where}: key must be one of {WRAPUP_KEYS}")
         if t == "signature" and not c.get("names"):

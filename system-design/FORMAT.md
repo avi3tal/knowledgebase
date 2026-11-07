@@ -25,13 +25,13 @@ Every check has `id` (kebab), `type`, `label` and `tips: {nudge, hint, show}`.
 
 | type | stage | extra fields | passes when |
 |---|---|---|---|
-| `requirement` | scope | `keywords` | any scope item (functional, non-functional, assumptions, out of scope) contains a keyword |
+| `requirement` | scope | `keywords`, `sections?` | a scope item contains a keyword (only in `sections`, e.g. `["non_functional"]`, if given) |
 | `estimate` | estimates | `keywords`, `unit`, `min`, `max` | a row whose *name* contains a keyword evaluates, converted to `unit`, within [min, max] |
 | `endpoint` | api | `keywords`, `method?` | an api row (same method, if given) contains a keyword |
 | `entity` | api | `keywords` | a data row contains a keyword |
 | `component` | high-level | `kinds`, `keywords?` | the **final** diagram has a node of one of `kinds` (and a label/id keyword, if given) |
 | `edge` | high-level | `from_kinds`, `to_kinds`, `from_keywords?`, `to_keywords?`, `label_keywords?` | the final diagram has an edge from a `from_kinds` node to a `to_kinds` node (whose label/id and edge label match the optional keywords) |
-| `decision` | deep-dives | `keywords` | a deep dive mentions a keyword **and** has a non-empty `choice` and `why` |
+| `decision` | deep-dives | `keywords`, `choice_keywords?` | a deep dive mentions a keyword **and** has a non-empty `choice` and `why` (and the choice itself matches `choice_keywords`, if given) |
 | `wrapup` | wrap-up | `key` ∈ bottlenecks, failures, monitoring, scale, future | that wrap-up answer has ≥ 15 chars |
 | `signature` | signatures | `names` | `signatures.py` / `signatures.go` declares every name: `Name`, `Class.method` (method on that class / Go receiver), or `Class(Base)` (Python base class) |
 
