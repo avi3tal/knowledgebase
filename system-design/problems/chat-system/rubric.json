@@ -1,0 +1,377 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Stateful connection tier + stateless routing: terminate long-lived connections on a dedicated gateway fleet, keep a registry of who is connected where, persist each message once with a per-conversation sequence, and fan out asynchronously to online devices (push for the rest).",
+  "checks": [
+    {
+      "id": "req-send",
+      "type": "requirement",
+      "label": "Core messaging use case captured",
+      "keywords": [
+        "send a message",
+        "send message",
+        "sends a message",
+        "send messages",
+        "one-to-one",
+        "one to one",
+        "1:1",
+        "1-1",
+        "direct message",
+        "private message"
+      ],
+      "tips": {
+        "nudge": "What is the one thing every user does in this app?",
+        "hint": "Write a functional requirement for sending a message to another user.",
+        "show": "F1: A user sends a text message to another user (1:1) and it is delivered to all of the recipient's devices."
+      }
+    },
+    {
+      "id": "req-group",
+      "type": "requirement",
+      "label": "Conversations with more than two people",
+      "keywords": [
+        "group"
+      ],
+      "tips": {
+        "nudge": "The interviewer mentioned a member cap. For what?",
+        "hint": "Add group conversations and their size limit to scope.",
+        "show": "F2: Group chats of up to 200 members; a message to the group reaches every member."
+      }
+    },
+    {
+      "id": "req-offline",
+      "type": "requirement",
+      "label": "What happens when the recipient isn't connected",
+      "keywords": [
+        "offline",
+        "history",
+        "sync",
+        "multiple devices",
+        "multi-device",
+        "any device",
+        "new device",
+        "persist",
+        "not connected"
+      ],
+      "tips": {
+        "nudge": "The recipient's phone is in a drawer. Is the message lost?",
+        "hint": "Capture offline delivery and history across devices.",
+        "show": "F3: Messages are stored for 1 year; offline users get a push notification and catch up on reconnect, on any device."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Delivery speed expectation stated",
+      "keywords": [
+        "latency",
+        "real-time",
+        "real time",
+        "realtime",
+        "instant",
+        "millisecond",
+        "under a second",
+        "< 1 s",
+        "<1s",
+        "sub-second",
+        "subsecond"
+      ],
+      "tips": {
+        "nudge": "What makes chat feel like chat rather than email?",
+        "hint": "State an end-to-end delivery target when both users are online.",
+        "show": "N1: Online-to-online delivery in < 500 ms at p99."
+      }
+    },
+    {
+      "id": "est-message-rate",
+      "type": "estimate",
+      "label": "Message throughput estimated",
+      "keywords": [
+        "message",
+        "msg",
+        "send",
+        "write"
+      ],
+      "unit": "/s",
+      "min": 5000,
+      "max": 500000,
+      "tips": {
+        "nudge": "Start from daily users and messages per user.",
+        "hint": "messages/day ÷ seconds in a day, then apply the peak factor.",
+        "show": "msgs_per_day = 50M × 40 = 2B; avg ≈ 23k /s, peak ≈ 70k /s."
+      }
+    },
+    {
+      "id": "est-connections",
+      "type": "estimate",
+      "label": "Concurrent connections estimated",
+      "keywords": [
+        "connection",
+        "concurrent",
+        "online",
+        "socket"
+      ],
+      "unit": "",
+      "min": 1000000,
+      "max": 100000000,
+      "tips": {
+        "nudge": "How many people hold the app open at the same moment?",
+        "hint": "daily users × the fraction connected at peak.",
+        "show": "concurrent = 50M × 1/5 = 10M open connections at peak."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Storage for the retention period estimated",
+      "keywords": [
+        "storage",
+        "disk",
+        "bytes",
+        "size",
+        "per_year",
+        "yearly"
+      ],
+      "unit": "TB",
+      "min": 20,
+      "max": 2000,
+      "tips": {
+        "nudge": "How many messages pile up in a year, and how big is each?",
+        "hint": "messages/day × 365 × bytes per message (then replication on top).",
+        "show": "2B × 365 × 200 B ≈ 146 TB/year before replication (~440 TB with 3 replicas)."
+      }
+    },
+    {
+      "id": "api-send",
+      "type": "endpoint",
+      "label": "Sending interface defined",
+      "keywords": [
+        "send",
+        "client_msg_id",
+        "client msg id",
+        "post /conversations",
+        "post /messages"
+      ],
+      "tips": {
+        "nudge": "What does the client transmit when the user taps send, and what does it get back?",
+        "hint": "Define the send operation (over the persistent connection or HTTP) with a client-generated id.",
+        "show": "WS frame / POST /conversations/{id}/messages {client_msg_id, text} → ack {message_id, seq, ts}"
+      }
+    },
+    {
+      "id": "api-sync",
+      "type": "endpoint",
+      "label": "Catch-up interface defined",
+      "method": "GET",
+      "keywords": [
+        "message",
+        "history",
+        "conversation",
+        "sync",
+        "cursor",
+        "since",
+        "after"
+      ],
+      "tips": {
+        "nudge": "A phone reconnects after a flight. How does it get what it missed?",
+        "hint": "A GET that pages through a conversation from the last sequence number the device saw.",
+        "show": "GET /conversations/{id}/messages?after_seq=1234&limit=50 → [messages], next cursor"
+      }
+    },
+    {
+      "id": "data-messages",
+      "type": "entity",
+      "label": "Core data model defined",
+      "keywords": [
+        "message",
+        "msg"
+      ],
+      "tips": {
+        "nudge": "What do you store for each message, and how is it found again?",
+        "hint": "Think about the access pattern: 'latest N messages of conversation X'.",
+        "show": "messages(conversation_id PK, seq CK, message_id, sender_id, body, created_at) in a wide-column store."
+      }
+    },
+    {
+      "id": "data-membership",
+      "type": "entity",
+      "label": "Who belongs to which conversation modelled",
+      "keywords": [
+        "member",
+        "participant",
+        "conversation",
+        "channel",
+        "group"
+      ],
+      "tips": {
+        "nudge": "To deliver a group message you need to know who's in the group.",
+        "hint": "Model conversations and their members, plus each member's read position.",
+        "show": "conversation_members(conversation_id, user_id, joined_at, last_read_seq); user_conversations(user_id → conversation ids)."
+      }
+    },
+    {
+      "id": "comp-connection-tier",
+      "type": "component",
+      "label": "Clients receive messages the moment they arrive",
+      "kinds": [
+        "service",
+        "api-gateway"
+      ],
+      "keywords": [
+        "websocket",
+        "web socket",
+        "ws gateway",
+        "connection",
+        "socket",
+        "persistent",
+        "realtime",
+        "real-time"
+      ],
+      "tips": {
+        "nudge": "The server must speak first when a message arrives. What does that need?",
+        "hint": "A fleet of servers whose only job is to hold open connections.",
+        "show": "WebSocket gateway fleet (~50k–100k connections each) behind a load balancer."
+      }
+    },
+    {
+      "id": "comp-registry",
+      "type": "component",
+      "label": "Knowing which server holds a user's connection",
+      "kinds": [
+        "cache",
+        "coordinator",
+        "nosql"
+      ],
+      "keywords": [
+        "presence",
+        "session",
+        "connection",
+        "route",
+        "registry",
+        "online"
+      ],
+      "tips": {
+        "nudge": "Alice is on gateway 17, Bob on gateway 203. How does a message find Bob?",
+        "hint": "Keep a lookup of user/device → gateway that gateways update on connect and disconnect.",
+        "show": "Session registry in Redis: device_id → gateway_id with a heartbeat TTL (doubles as presence)."
+      }
+    },
+    {
+      "id": "comp-store",
+      "type": "component",
+      "label": "Durable message storage at write scale",
+      "kinds": [
+        "nosql",
+        "sql"
+      ],
+      "tips": {
+        "nudge": "Where do 146 TB of messages a year live?",
+        "hint": "A store partitioned by conversation that is good at appends and range reads.",
+        "show": "Wide-column store (Cassandra/HBase-like) partitioned by conversation_id, clustered by seq."
+      }
+    },
+    {
+      "id": "edge-async-fanout",
+      "type": "edge",
+      "label": "Fan-out decoupled from the sender's request",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
+      "tips": {
+        "nudge": "A group message goes to 200 people. Should the sender wait for all of them?",
+        "hint": "Persist, ack the sender, and hand delivery to something asynchronous.",
+        "show": "Chat service → message stream (partitioned by conversation) → fan-out workers → recipients' gateways."
+      }
+    },
+    {
+      "id": "comp-push",
+      "type": "component",
+      "label": "Reaching users with no open connection",
+      "kinds": [
+        "external",
+        "service",
+        "worker"
+      ],
+      "keywords": [
+        "push",
+        "apns",
+        "fcm",
+        "notif"
+      ],
+      "tips": {
+        "nudge": "The app is closed. Who can still wake the phone?",
+        "hint": "Mobile OS vendors run that channel; you call it.",
+        "show": "Push notification service → APNs / FCM for recipients with no live session."
+      }
+    },
+    {
+      "id": "dd-transport",
+      "type": "decision",
+      "label": "Server-to-client delivery mechanism decided",
+      "keywords": [
+        "websocket",
+        "web socket",
+        "long poll",
+        "long-poll",
+        "polling",
+        "server-sent",
+        "mqtt",
+        "persistent connection"
+      ],
+      "tips": {
+        "nudge": "10M clients polling every second is how many requests?",
+        "hint": "Compare short polling, long polling, server-sent events and WebSockets.",
+        "show": "WebSockets: bidirectional, one connection per device, server pushes instantly; long polling as fallback."
+      }
+    },
+    {
+      "id": "dd-ordering",
+      "type": "decision",
+      "label": "Ordering and duplicates handled",
+      "keywords": [
+        "sequence",
+        "ordering",
+        "order",
+        "monotonic",
+        "idempot",
+        "dedup",
+        "exactly once",
+        "at-least-once",
+        "at least once"
+      ],
+      "tips": {
+        "nudge": "Two devices send at the same moment, and the network retries one send. What does each phone show?",
+        "hint": "Who assigns the order, and how are retries recognised?",
+        "show": "Per-conversation sequence assigned on write (one partition owns a conversation); at-least-once delivery with client_msg_id dedup; clients sort by seq."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure scenarios walked through",
+      "tips": {
+        "nudge": "A gateway with 80k connections crashes. What happens next?",
+        "hint": "Cover gateway loss, fan-out worker lag and store unavailability.",
+        "show": "Clients reconnect with backoff+jitter to another gateway and sync from last seq; stream retains messages so workers replay; sender retries are deduped."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Growth plan described",
+      "tips": {
+        "nudge": "Users double and groups grow to 5,000. What changes?",
+        "hint": "Think per tier: connections, routing, storage, fan-out.",
+        "show": "More gateways; shard registry; more stream partitions and store nodes; for huge groups switch to pull-on-open instead of per-member fan-out."
+      }
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "version": 1,
+  "flags": { "needs_lb": true },
+  "pattern": "Accept fast, deliver asynchronously: validate and persist the request, enforce policy (preferences, caps) at one gate, then route into per-class queues drained by workers that own retries, idempotency and the rate limits of slow, unreliable third parties.",
+  "checks": [
+    {
+      "id": "req-channels",
+      "type": "requirement",
+      "label": "Delivery channels captured",
+      "keywords": ["push", "sms", "email", "e-mail", "text message", "channel"],
+      "tips": {
+        "nudge": "How many different ways can you reach a user here?",
+        "hint": "List the channels the platform must support.",
+        "show": "F1: Send notifications by mobile push (iOS/Android), SMS and email."
+      }
+    },
+    {
+      "id": "req-producers",
+      "type": "requirement",
+      "label": "Who asks for notifications, and how",
+      "keywords": ["other services", "internal services", "teams", "producer", "trigger", "event", "campaign", "schedul", "caller"],
+      "tips": {
+        "nudge": "The users of this platform are not end users. Who are they?",
+        "hint": "Describe how internal services and campaigns request a send (now or scheduled).",
+        "show": "F2: Internal services send a notification (to one user, or scheduled to a segment for campaigns) using a template and parameters."
+      }
+    },
+    {
+      "id": "req-preferences",
+      "type": "requirement",
+      "label": "Recipient control over what they receive",
+      "keywords": ["preference", "opt out", "opt-out", "opt in", "opt-in", "unsubscribe", "mute", "settings", "consent"],
+      "tips": {
+        "nudge": "A user turned off marketing email last week. What must happen?",
+        "hint": "Capture per-category / per-channel opt-outs and the frequency cap.",
+        "show": "F3: Users opt out per category and channel; marketing is capped at N per user per day; suppressed sends are recorded."
+      }
+    },
+    {
+      "id": "req-reliability",
+      "type": "requirement",
+      "label": "Delivery guarantee stated",
+      "keywords": ["at-least-once", "at least once", "no loss", "not lost", "never lost", "never be lost", "reliab", "durable", "duplicate"],
+      "tips": {
+        "nudge": "A login code silently disappears. Or arrives three times. Which is worse, and what do you promise?",
+        "hint": "State what happens to an accepted request and how duplicates are treated.",
+        "show": "N1: Accepted notifications are never lost (at-least-once to the provider) and duplicates are suppressed by idempotency key."
+      }
+    },
+    {
+      "id": "req-urgency",
+      "type": "requirement",
+      "label": "Not all messages are equally urgent",
+      "keywords": ["priority", "transactional", "otp", "login code", "urgent", "critical", "within a few seconds", "seconds"],
+      "tips": {
+        "nudge": "Login code vs. weekend sale: same latency expectation?",
+        "hint": "Give each class its own latency target.",
+        "show": "N2: Transactional (OTP, resets) delivered to the provider within ~5 s p99 even during campaigns; marketing may lag minutes."
+      }
+    },
+    {
+      "id": "est-rate",
+      "type": "estimate",
+      "label": "Send throughput estimated",
+      "keywords": ["notif", "send", "rate", "throughput", "peak", "qps"],
+      "unit": "/s",
+      "min": 2000,
+      "max": 200000,
+      "tips": {
+        "nudge": "500M a day is how many per second? And during a campaign?",
+        "hint": "daily total ÷ seconds per day, then × the burst factor.",
+        "show": "500M/day ≈ 5.8k /s average; campaign bursts ×10 ≈ 58k /s."
+      }
+    },
+    {
+      "id": "est-log-storage",
+      "type": "estimate",
+      "label": "Storage for delivery history estimated",
+      "keywords": ["log", "history", "storage", "bytes", "size", "disk"],
+      "unit": "TB",
+      "min": 1,
+      "max": 100,
+      "tips": {
+        "nudge": "Each notification leaves a record. How many, how big, for how long?",
+        "hint": "per day × retention days × bytes per record.",
+        "show": "500M × 30 days × ~500 B ≈ 7.5 TB."
+      }
+    },
+    {
+      "id": "est-devices",
+      "type": "estimate",
+      "label": "Size of the contact/device data estimated",
+      "keywords": ["device", "token", "contact", "address"],
+      "unit": "GB",
+      "min": 5,
+      "max": 2000,
+      "tips": {
+        "nudge": "How much space do 300M device tokens take? Could it all sit in a cache?",
+        "hint": "devices × bytes per row (token ~ 100–200 B plus ids and metadata).",
+        "show": "300M × ~250 B ≈ 75 GB: fits in a modest cache cluster."
+      }
+    },
+    {
+      "id": "api-send",
+      "type": "endpoint",
+      "label": "Interface for producing teams defined",
+      "method": "POST",
+      "keywords": ["notif", "send", "message"],
+      "tips": {
+        "nudge": "What does the orders team call when an order ships?",
+        "hint": "A POST with recipient, template, parameters, category and an idempotency key; respond before delivery happens.",
+        "show": "POST /notifications {user_id, template, params, category, channels?, idempotency_key, send_at?} → 202 {notification_id}"
+      }
+    },
+    {
+      "id": "api-preferences",
+      "type": "endpoint",
+      "label": "Interface for recipient settings defined",
+      "keywords": ["preference", "settings", "subscri", "opt", "device", "token"],
+      "tips": {
+        "nudge": "How does the app register a phone or record an opt-out?",
+        "hint": "Endpoints for device registration and preference updates.",
+        "show": "PUT /users/{id}/preferences {category, channel, enabled}; POST /users/{id}/devices {platform, push_token}"
+      }
+    },
+    {
+      "id": "data-devices",
+      "type": "entity",
+      "label": "Where to reach a user modelled",
+      "keywords": ["device", "token", "phone", "email address", "contact"],
+      "tips": {
+        "nudge": "Push needs something per phone that Apple/Google gave you.",
+        "hint": "Model each user's devices and addresses.",
+        "show": "devices(user_id, device_id, platform, push_token, updated_at); contacts(user_id, email, phone)."
+      }
+    },
+    {
+      "id": "data-log",
+      "type": "entity",
+      "label": "Delivery state tracked",
+      "keywords": ["log", "status", "delivery", "notification_id", "attempt", "state"],
+      "tips": {
+        "nudge": "Teams ask 'did my notification go out?'. Where's the answer?",
+        "hint": "Record each notification and its state transitions.",
+        "show": "notification_log(notification_id, idempotency_key, user_id, channel, status: queued|sent|failed|suppressed, attempts, provider_id, ts) TTL 30d."
+      }
+    },
+    {
+      "id": "comp-policy-store",
+      "type": "component",
+      "label": "Recipient settings checked before sending",
+      "kinds": ["cache", "sql", "nosql"],
+      "keywords": ["pref", "setting", "opt", "consent", "subscri"],
+      "tips": {
+        "nudge": "Where does the platform look up opt-outs on every send?",
+        "hint": "A preferences store, fronted by a cache for the hot path.",
+        "show": "Preferences + devices in SQL, read through a cache by the notification API."
+      }
+    },
+    {
+      "id": "edge-accept-async",
+      "type": "edge",
+      "label": "Callers decoupled from delivery",
+      "from_kinds": ["service"],
+      "to_kinds": ["queue", "stream"],
+      "tips": {
+        "nudge": "Apple takes 2 s to answer. Should the orders service wait?",
+        "hint": "Accept, persist, and put work somewhere durable for later processing.",
+        "show": "Notification API → per-channel queues → channel workers."
+      }
+    },
+    {
+      "id": "edge-provider",
+      "type": "edge",
+      "label": "Hand-off to the outside world drawn",
+      "from_kinds": ["worker", "service"],
+      "to_kinds": ["external"],
+      "tips": {
+        "nudge": "Who actually delivers to the phone or inbox?",
+        "hint": "Show which component talks to each third-party provider.",
+        "show": "Push workers → APNs/FCM, SMS workers → SMS vendor, email workers → email vendor."
+      }
+    },
+    {
+      "id": "dd-retries",
+      "type": "decision",
+      "label": "Provider failures and repeats handled",
+      "keywords": ["retry", "retries", "backoff", "dead letter", "dead-letter", "dlq", "idempot", "dedup"],
+      "tips": {
+        "nudge": "The SMS vendor times out after you sent the request. Did the SMS go out?",
+        "hint": "Decide retry policy and how you avoid duplicates on retry.",
+        "show": "Retry with exponential backoff + jitter via a delay queue, then a dead-letter queue; idempotency key per (notification, channel) sent to the provider and checked in the log."
+      }
+    },
+    {
+      "id": "dd-isolation",
+      "type": "decision",
+      "label": "How different message types share capacity",
+      "keywords": ["priority", "separate queue", "per-channel", "per channel", "transactional", "marketing", "isolation", "bulkhead"],
+      "tips": {
+        "nudge": "A 50M-message campaign is queued. A login code arrives behind it. Then what?",
+        "hint": "Think about separating traffic by urgency and by channel.",
+        "show": "Separate queues (and worker pools) per channel × priority: transactional never waits behind marketing; a slow SMS vendor never blocks push."
+      }
+    },
+    {
+      "id": "dd-throttling",
+      "type": "decision",
+      "label": "Volume limits for users and providers decided",
+      "keywords": ["rate limit", "rate-limit", "throttl", "frequency cap", "per user per day", "quiet hours", "token bucket", "per-user cap", "daily cap", "send rate"],
+      "tips": {
+        "nudge": "Providers throttle you, and users hate spam. Where do you count?",
+        "hint": "Decide per-user caps and per-provider send rates, and where they're enforced.",
+        "show": "Per-user marketing cap checked in the API (counter in Redis); per-provider token buckets in workers so bursts are smoothed instead of rejected."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure scenarios walked through",
+      "tips": {
+        "nudge": "The push provider is down for 20 minutes. Walk through what happens.",
+        "hint": "Cover provider outage, worker crash mid-send and queue backlog.",
+        "show": "Provider down: messages stay queued, retries back off, circuit breaker stops hammering; worker crash: message not acked, redelivered, idempotency key prevents duplicate; expired OTPs dropped after TTL."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How would you notice that login codes are slow before users complain?",
+        "hint": "Metrics per channel and priority, end to end.",
+        "show": "Queue depth and age per channel×priority, accept→sent latency, provider error/throttle rates, DLQ size, suppression rate, SMS spend."
+      }
+    }
+  ]
+}

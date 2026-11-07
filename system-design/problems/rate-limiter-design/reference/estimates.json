@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "active_clients", "formula": "10 * million", "unit": "" },
+    { "name": "peak_requests", "formula": "300 * thousand", "unit": "/s" },
+    { "name": "rules_per_request", "formula": "2", "unit": "" },
+    { "name": "counter_ops", "formula": "peak_requests * rules_per_request", "unit": "/s" },
+    { "name": "counter_memory", "formula": "active_clients * 3 * 100", "unit": "B" },
+    { "name": "redis_primaries", "formula": "counter_ops / (100 * thousand)", "unit": "" },
+    { "name": "redis_nodes", "formula": "redis_primaries * 2", "unit": "" }
+  ]
+}

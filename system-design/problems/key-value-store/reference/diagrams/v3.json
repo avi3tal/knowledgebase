@@ -1,0 +1,31 @@
+{
+  "version": 3,
+  "why": "N1 + N2 + N4: every key is replicated to N=3 nodes in different AZs (the next distinct nodes on the ring); any node can coordinate, writing to W=2 and reading from R=2 with version vectors so concurrent writes become siblings. Gossip tracks membership and failures; when an owner is down a neighbour holds a hint and replays it later (sloppy quorum); read repair and a Merkle-tree anti-entropy worker heal the remaining drift.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Service (ring-aware client library)", "x": 60, "y": 240 },
+    { "id": "coord", "kind": "coordinator", "label": "Request coordinator (any node: N=3, R=2, W=2)", "x": 400, "y": 240 },
+    { "id": "gossip", "kind": "coordinator", "label": "Gossip membership + ring map", "x": 400, "y": 60 },
+    { "id": "nodeA", "kind": "nosql", "label": "Node A (AZ1) replica", "x": 640, "y": 120 },
+    { "id": "nodeB", "kind": "nosql", "label": "Node B (AZ2) replica", "x": 640, "y": 240 },
+    { "id": "nodeC", "kind": "nosql", "label": "Node C (AZ3) replica (down)", "x": 640, "y": 360 },
+    { "id": "nodeD", "kind": "nosql", "label": "Node D (AZ3) holds hints for C", "x": 840, "y": 360 },
+    { "id": "repair", "kind": "worker", "label": "Anti-entropy (Merkle tree compare)", "x": 840, "y": 160 }
+  ],
+  "edges": [
+    { "from": "client", "to": "coord", "label": "get / put (+ context)" },
+    { "from": "coord", "to": "gossip", "label": "ring map, who is up" },
+    { "from": "coord", "to": "nodeA", "label": "replica 1" },
+    { "from": "coord", "to": "nodeB", "label": "replica 2" },
+    { "from": "coord", "to": "nodeC", "label": "replica 3 (times out)" },
+    { "from": "coord", "to": "nodeD", "label": "hinted handoff for C" },
+    { "from": "nodeD", "to": "nodeC", "label": "replay hints when C returns" },
+    { "from": "repair", "to": "nodeA", "label": "compare range hashes" },
+    { "from": "repair", "to": "nodeC", "label": "stream differing keys" },
+    { "from": "nodeA", "to": "gossip", "label": "heartbeat / gossip" },
+    { "from": "nodeB", "to": "gossip", "label": "heartbeat / gossip" }
+  ],
+  "flows": [
+    { "name": "put (W=2)", "path": ["client", "coord", "nodeA"] },
+    { "name": "hinted handoff", "path": ["coord", "nodeD", "nodeC"] }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "notifications_per_day", "formula": "500 * million", "unit": "/day" },
+    { "name": "avg_send_rate", "formula": "notifications_per_day / day", "unit": "/s" },
+    { "name": "peak_send_rate", "formula": "avg_send_rate * 10", "unit": "/s" },
+    { "name": "sms_per_day", "formula": "20 * million", "unit": "/day" },
+    { "name": "log_storage_30d", "formula": "500 * million * 30 * 500", "unit": "B" },
+    { "name": "device_table", "formula": "300 * million * 250 / 10**9", "unit": "GB" }
+  ]
+}

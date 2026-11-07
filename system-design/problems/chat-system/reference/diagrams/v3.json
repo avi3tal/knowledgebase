@@ -1,0 +1,36 @@
+{
+  "version": 3,
+  "why": "N2 + group fan-out: the chat service assigns a per-conversation seq, persists once, acks the sender, and appends to a message stream partitioned by conversation; fan-out workers deliver to online devices via their gateways and hand offline devices to a push service (APNs/FCM). Retries are deduped by client_msg_id; reconnecting clients sync from their last seq.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer (L4, sticky)", "x": 220, "y": 160 },
+    { "id": "gw", "kind": "service", "label": "WebSocket gateways ×200", "x": 400, "y": 160 },
+    { "id": "chat", "kind": "service", "label": "Chat service (assign seq, persist)", "x": 400, "y": 300 },
+    { "id": "stream", "kind": "stream", "label": "Message stream (partition = conversation)", "x": 400, "y": 440 },
+    { "id": "fanout", "kind": "worker", "label": "Fan-out workers", "x": 640, "y": 440 },
+    { "id": "push", "kind": "service", "label": "Push notification service", "x": 640, "y": 560 },
+    { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 860, "y": 560 },
+    { "id": "sessions", "kind": "cache", "label": "Session registry (device → gateway)", "x": 640, "y": 40 },
+    { "id": "msgs", "kind": "nosql", "label": "messages (wide-column, by conversation)", "x": 640, "y": 300 },
+    { "id": "members", "kind": "sql", "label": "conversation_members", "x": 860, "y": 380 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb", "label": "WebSocket" },
+    { "from": "lb", "to": "gw" },
+    { "from": "gw", "to": "sessions", "label": "register on connect / heartbeat" },
+    { "from": "gw", "to": "chat", "label": "send / sync" },
+    { "from": "chat", "to": "msgs", "label": "append (dedup by client_msg_id)" },
+    { "from": "chat", "to": "stream", "label": "publish after persist" },
+    { "from": "stream", "to": "fanout" },
+    { "from": "fanout", "to": "members", "label": "recipients" },
+    { "from": "fanout", "to": "sessions", "label": "where are they?" },
+    { "from": "fanout", "to": "gw", "label": "deliver to online devices" },
+    { "from": "fanout", "to": "push", "label": "offline devices" },
+    { "from": "push", "to": "apns" }
+  ],
+  "flows": [
+    { "name": "send", "path": ["client", "lb", "gw", "chat", "msgs"] },
+    { "name": "deliver", "path": ["chat", "stream", "fanout", "gw"] },
+    { "name": "offline", "path": ["fanout", "push", "apns"] }
+  ]
+}

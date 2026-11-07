@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "put(key, value), get(key), delete(key); keys ≤ 256 B, values ≤ 1 MB (avg ~1 KB)." },
+      { "id": "F2", "text": "Per-request consistency knobs: callers can ask for quorum reads/writes or fastest-possible." },
+      { "id": "F3", "text": "Add or remove servers without downtime." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Highly available: writes are never refused because of node failures or a network partition (AP by default)." },
+      { "id": "N2", "text": "Eventually consistent by default; concurrent writes are surfaced as conflicts, not silently lost; tunable per request." },
+      { "id": "N3", "text": "p99 latency < 10 ms for get and put at 1M reads/s and 200k writes/s." },
+      { "id": "N4", "text": "Durable: data survives the loss of any single node or one availability zone." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "20B keys × ~1.2 KB per entry incl. key and metadata; 4 TB disk per server, kept ≤ 50% full." },
+      { "id": "A2", "text": "One region, 3 AZs; some node fails every week." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Range scans, secondary indexes, multi-key transactions, cross-region replication." }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "PUT",
+      "path": "/kv/{key}",
+      "request": "value, context (opaque version vector from the last get), w?",
+      "response": "200 {context}",
+      "notes": "Context lets the store tell an overwrite from a concurrent write."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/kv/{key}?r=",
+      "request": "",
+      "response": "200 {values[], context} or 404",
+      "notes": "Several values = concurrent siblings; the client merges and writes back with the context."
+    },
+    {
+      "id": "E3",
+      "method": "DELETE",
+      "path": "/kv/{key}",
+      "request": "context",
+      "response": "204",
+      "notes": "Writes a tombstone (garbage-collected after repair windows)."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "record",
+      "fields": "key, value, version vector [(node_id, counter)…], tombstone flag, write timestamp, checksum",
+      "store": "nosql",
+      "why": "Per-node LSM tree (WAL + memtable + SSTables with bloom filters): fast writes, point reads in one or two disk seeks."
+    },
+    {
+      "id": "D2",
+      "name": "ring map",
+      "fields": "virtual node token → physical node, per-node status (up/suspect/down), generation",
+      "store": "nosql",
+      "why": "Small; held in memory on every node and spread by gossip."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Partitioning keys across servers",
+      "options": [
+        { "name": "hash(key) mod N", "pros": "trivial", "cons": "changing N remaps almost every key" },
+        { "name": "range partitioning", "pros": "range scans", "cons": "hot ranges, needs a split/merge manager (not needed: no scans)" },
+        { "name": "consistent hashing with virtual nodes", "pros": "adding a node moves ~1/N of keys, from many peers; vnode count handles uneven hardware", "cons": "ring metadata to keep in sync" }
+      ],
+      "choice": "consistent hashing with ~256 virtual nodes per server",
+      "why": "F3 and 50%/year growth: rebalancing must move little data and spread the streaming load across the cluster.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Replication and quorums",
+      "options": [
+        { "name": "single leader per partition", "pros": "simple strong consistency", "cons": "writes stall during failover (breaks N1)" },
+        { "name": "leaderless, N=3, strict quorum", "pros": "R+W>N gives overlapping reads", "cons": "writes fail if 2 of 3 owners are unreachable" },
+        { "name": "leaderless, N=3, sloppy quorum + hinted handoff", "pros": "writes always find W healthy nodes", "cons": "a read may briefly miss a write held as a hint" }
+      ],
+      "choice": "leaderless, N=3 (one replica per AZ), W=2, R=2 by default with sloppy quorum",
+      "why": "N1 says never refuse a write; N4 needs a copy per AZ. R+W>N gives read-your-writes in the common case; callers can choose W=1/R=1 for speed or R=3 for stronger reads.",
+      "version": 3
+    },
+    {
+      "id": "DD3",
+      "title": "Conflicting concurrent writes",
+      "options": [
+        { "name": "last-write-wins on timestamps", "pros": "simple, one value", "cons": "clock skew silently drops a write (a lost cart item)" },
+        { "name": "version vectors + client merge (siblings)", "pros": "nothing lost; the app decides", "cons": "clients must merge; vectors grow (prune old entries)" },
+        { "name": "CRDT values", "pros": "automatic merge", "cons": "only for supported data types" }
+      ],
+      "choice": "version vectors with siblings returned to the client; LWW as an opt-in per table",
+      "why": "N2 + the cart team's request: detect concurrency instead of guessing; teams that don't care opt into LWW.",
+      "version": 3
+    },
+    {
+      "id": "DD4",
+      "title": "Failure detection and repair",
+      "options": [
+        { "name": "central heartbeat monitor", "pros": "simple view", "cons": "itself a single point of failure" },
+        { "name": "gossip + phi-accrual failure detector", "pros": "decentralised, scales", "cons": "membership converges in seconds, not instantly" }
+      ],
+      "choice": "gossip membership; hinted handoff for short outages, read repair on reads, Merkle-tree anti-entropy for the rest",
+      "why": "Three time scales of drift: minutes (hints replay), per-read (repair on mismatch), long-term (Merkle trees compare ranges and stream only differing keys).",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Hot keys (one partition's three replicas take the load: client-side caching or key salting), compaction I/O spikes on LSM nodes (throttle), rebalancing traffic when adding nodes (rate-limited streaming).",
+    "failures": "Single node down: sloppy quorum + hinted handoff, callers see nothing. AZ cut off: the other two AZs still form W=2/R=2. Silent disk corruption: block checksums + Merkle repair from peers. Permanent node loss: its vnodes are re-replicated from surviving copies.",
+    "monitoring": "p99 get/put latency per node, quorum failures, hint backlog size, read-repair rate, sibling count per key, disk fill, compaction backlog, gossip convergence time.",
+    "scale": "Add servers: they claim vnodes from many peers and stream in parallel, throttled; ring updates gossip out; no downtime. Growth of 50%/year ≈ 20 new nodes a year.",
+    "future": "Cross-region async replication, range scans via an order-preserving partitioner for some tables, tiered storage for cold keys."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "why": "Naive start: one server keeps a hash map in memory with a write-ahead log on disk. Simple and fast, but 72 TB will never fit on a 4 TB machine, 1.2M ops/s is far beyond one box, and when it dies everything is unavailable (breaks N1, N4).",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Service (client)", "x": 60, "y": 200 },
+    { "id": "server", "kind": "service", "label": "KV server (hash map + WAL)", "x": 400, "y": 200 },
+    { "id": "disk", "kind": "nosql", "label": "Local disk (WAL + snapshots)", "x": 640, "y": 200 }
+  ],
+  "edges": [
+    { "from": "client", "to": "server", "label": "get / put" },
+    { "from": "server", "to": "disk", "label": "append WAL" }
+  ],
+  "flows": [{ "name": "put", "path": ["client", "server", "disk"] }]
+}

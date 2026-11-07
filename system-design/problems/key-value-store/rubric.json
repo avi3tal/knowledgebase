@@ -1,0 +1,368 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Leaderless partitioned replication: place keys on a hash ring with virtual nodes, keep N copies, let callers trade consistency for availability with R/W quorums, version values so concurrent writes are detected rather than lost, and heal in the background (hinted handoff, read repair, Merkle-tree anti-entropy) with gossip for membership.",
+  "checks": [
+    {
+      "id": "req-ops",
+      "type": "requirement",
+      "label": "Core operations captured",
+      "keywords": [
+        "put(",
+        "get(",
+        "put/get",
+        "get/put",
+        "put,",
+        "get,",
+        "put and get",
+        "get and put",
+        "delete",
+        "read a value",
+        "write a value",
+        "store a value"
+      ],
+      "tips": {
+        "nudge": "What can a caller do with this store?",
+        "hint": "List the operations and their arguments.",
+        "show": "F1: put(key, value), get(key), delete(key); keys ≤ 256 B, values ≤ 1 MB."
+      }
+    },
+    {
+      "id": "req-availability",
+      "type": "requirement",
+      "label": "Behaviour under failures stated",
+      "keywords": [
+        "availab",
+        "always writable",
+        "never refuse",
+        "partition",
+        "fault toler",
+        "survive",
+        "node failure"
+      ],
+      "tips": {
+        "nudge": "The cart team said something strong about writes.",
+        "hint": "State what must keep working when servers or a zone are unreachable.",
+        "show": "N1: Highly available: writes are accepted during node failures and network partitions (AP by default)."
+      }
+    },
+    {
+      "id": "req-consistency",
+      "type": "requirement",
+      "label": "Consistency expectation stated",
+      "keywords": [
+        "consisten",
+        "eventual",
+        "tunable",
+        "stale",
+        "linearizab",
+        "read-your-writes",
+        "read your writes",
+        "conflict"
+      ],
+      "tips": {
+        "nudge": "After a write, what may a read return? Do all callers need the same answer?",
+        "hint": "Name the default consistency model and the stronger option.",
+        "show": "N2: Eventually consistent by default with conflicts surfaced to the client; tunable per request (quorum reads for stronger guarantees)."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Performance expectation stated",
+      "keywords": [
+        "latency",
+        "millisecond",
+        "p99",
+        "10 ms",
+        "10ms"
+      ],
+      "tips": {
+        "nudge": "The interviewer gave a number for both reads and writes.",
+        "hint": "State a latency target and the load it must hold at.",
+        "show": "N3: p99 < 10 ms for get and put at 1M reads/s + 200k writes/s."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Total stored bytes estimated",
+      "keywords": [
+        "storage",
+        "bytes",
+        "size",
+        "disk",
+        "data",
+        "total"
+      ],
+      "unit": "TB",
+      "min": 20,
+      "max": 500,
+      "tips": {
+        "nudge": "Keys × bytes per entry, and don't forget the copies.",
+        "hint": "raw = 20B × (~1 KB value + key + metadata); then × replication factor.",
+        "show": "raw ≈ 20B × 1.2 KB ≈ 24 TB; × 3 replicas ≈ 72 TB."
+      }
+    },
+    {
+      "id": "est-nodes",
+      "type": "estimate",
+      "label": "Cluster size estimated",
+      "keywords": [
+        "node",
+        "server",
+        "machine",
+        "host"
+      ],
+      "unit": "",
+      "min": 10,
+      "max": 500,
+      "tips": {
+        "nudge": "Each server has 4 TB, and ops wants it half empty.",
+        "hint": "nodes = replicated bytes / (4 TB × 0.5); check throughput per node too.",
+        "show": "72 TB / 2 TB per node ≈ 36 nodes (round up to ~40 for headroom)."
+      }
+    },
+    {
+      "id": "est-node-load",
+      "type": "estimate",
+      "label": "Load on each server estimated",
+      "keywords": [
+        "per_node",
+        "per_server",
+        "node_ops",
+        "node_qps",
+        "per_machine",
+        "load"
+      ],
+      "unit": "/s",
+      "min": 5000,
+      "max": 500000,
+      "tips": {
+        "nudge": "Replication multiplies requests. How many land on each server?",
+        "hint": "(reads × R + writes × N) / nodes.",
+        "show": "(1M × 2 + 200k × 3) / 36 ≈ 72k replica operations/s per node: fine for SSD + memtable."
+      }
+    },
+    {
+      "id": "api-put",
+      "type": "endpoint",
+      "label": "Write interface defined",
+      "keywords": [
+        "put(",
+        "set(",
+        "put /",
+        "post /",
+        "write",
+        "store a value"
+      ],
+      "tips": {
+        "nudge": "What does a caller send to store a value, and what comes back?",
+        "hint": "Think about what the caller must pass back so the store can tell an update from a conflict.",
+        "show": "PUT /kv/{key} {value, context (version vector from the last get), w?} → 200 {context}"
+      }
+    },
+    {
+      "id": "api-get",
+      "type": "endpoint",
+      "label": "Read interface defined",
+      "method": "GET",
+      "keywords": [
+        "key",
+        "/kv",
+        "{k"
+      ],
+      "tips": {
+        "nudge": "Can a read return more than one value?",
+        "hint": "A GET by key that may return several concurrent versions plus a context.",
+        "show": "GET /kv/{key}?r=2 → 200 {values[], context} (several values = siblings to merge) or 404"
+      }
+    },
+    {
+      "id": "data-record",
+      "type": "entity",
+      "label": "Stored record format defined",
+      "keywords": [
+        "version",
+        "vector clock",
+        "version vector",
+        "timestamp",
+        "tombstone"
+      ],
+      "tips": {
+        "nudge": "Key and value are not enough when two replicas disagree.",
+        "hint": "Store what you need to order or detect concurrent writes, and to delete safely.",
+        "show": "record(key, value, version vector [(node, counter)…], tombstone flag, ts) in an LSM tree (memtable + SSTables) per node."
+      }
+    },
+    {
+      "id": "comp-router",
+      "type": "component",
+      "label": "Something sends each request to the right servers",
+      "kinds": [
+        "coordinator",
+        "service"
+      ],
+      "keywords": [
+        "coordinat",
+        "router",
+        "routing",
+        "proxy",
+        "front",
+        "client library",
+        "request"
+      ],
+      "tips": {
+        "nudge": "A client has a key. Which of 40 servers should it talk to?",
+        "hint": "Some component (a node or a smart client) knows the ring and forwards to the owners.",
+        "show": "Request coordinator: any node (or a ring-aware client library) hashes the key and talks to the N replicas."
+      }
+    },
+    {
+      "id": "comp-membership",
+      "type": "component",
+      "label": "Cluster membership tracked",
+      "kinds": [
+        "coordinator",
+        "service",
+        "worker"
+      ],
+      "keywords": [
+        "gossip",
+        "membership",
+        "ring",
+        "cluster",
+        "metadata",
+        "zookeeper",
+        "etcd",
+        "heartbeat"
+      ],
+      "tips": {
+        "nudge": "How does every node learn that a node joined, left or died?",
+        "hint": "Some way to agree on who is in the cluster and who owns which ranges.",
+        "show": "Gossip-based membership + failure detector; each node holds the ring map (seed nodes bootstrap it)."
+      }
+    },
+    {
+      "id": "edge-route-to-replicas",
+      "type": "edge",
+      "label": "Requests reach the servers that own the key",
+      "from_kinds": [
+        "coordinator",
+        "service"
+      ],
+      "to_kinds": [
+        "nosql"
+      ],
+      "tips": {
+        "nudge": "Draw the path from the router to the data.",
+        "hint": "Connect the coordinator to the storage nodes that hold replicas.",
+        "show": "Coordinator → storage nodes A, B, C (the key's preference list)."
+      }
+    },
+    {
+      "id": "dd-partitioning",
+      "type": "decision",
+      "label": "How keys map to servers decided",
+      "keywords": [
+        "consistent hash",
+        "consistent-hash",
+        "hash ring",
+        "ring",
+        "virtual node",
+        "vnode",
+        "range partition",
+        "modulo",
+        "mod n"
+      ],
+      "tips": {
+        "nudge": "With hash(key) mod N, what happens to most keys when N goes from 40 to 41?",
+        "hint": "Compare modulo hashing, range partitioning and consistent hashing.",
+        "show": "Consistent hashing with ~256 virtual nodes per server: adding a server moves ~1/N of keys, spread evenly; heterogeneous servers get more vnodes."
+      }
+    },
+    {
+      "id": "dd-quorum",
+      "type": "decision",
+      "label": "How many copies must answer decided",
+      "keywords": [
+        "quorum",
+        "r + w",
+        "r+w",
+        "w=",
+        "r=",
+        "w =",
+        "r =",
+        "replication factor",
+        "sloppy"
+      ],
+      "tips": {
+        "nudge": "3 copies. A write waits for how many? A read asks how many?",
+        "hint": "Relate N, R and W; what does R + W > N buy you?",
+        "show": "N=3 across AZs, W=2, R=2 by default (R+W>N: reads overlap the latest write); callers may pick W=1 (fast, AP) or R=3. Sloppy quorum keeps writes available in a partition."
+      }
+    },
+    {
+      "id": "dd-conflicts",
+      "type": "decision",
+      "label": "Concurrent writes to one key resolved",
+      "keywords": [
+        "vector clock",
+        "version vector",
+        "last-write-wins",
+        "last write wins",
+        "lww",
+        "conflict",
+        "crdt",
+        "sibling"
+      ],
+      "tips": {
+        "nudge": "Both sides of a split accepted a write to the same cart. What does the next read see?",
+        "hint": "Compare last-write-wins timestamps with version vectors (and CRDTs).",
+        "show": "Version vectors detect concurrent writes; both versions are returned as siblings and the client merges (cart union); LWW is offered for data where losing one write is acceptable."
+      }
+    },
+    {
+      "id": "dd-repair",
+      "type": "decision",
+      "label": "Detecting and healing failed or stale replicas",
+      "keywords": [
+        "gossip",
+        "hinted handoff",
+        "hinted hand-off",
+        "merkle",
+        "anti-entropy",
+        "read repair",
+        "heartbeat",
+        "failure detect"
+      ],
+      "tips": {
+        "nudge": "A node was down 2 hours. How does it get the writes it missed?",
+        "hint": "Name mechanisms for short outages, for reads that see disagreement, and for slow drift.",
+        "show": "Gossip failure detection; hinted handoff (a neighbour keeps writes for the dead node and replays them); read repair on mismatched reads; periodic Merkle-tree comparison per range (anti-entropy)."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure scenarios walked through",
+      "tips": {
+        "nudge": "Walk through: one node dies; one AZ is cut off; a disk silently corrupts data.",
+        "hint": "For each, say what callers see and how the system heals.",
+        "show": "Node down: sloppy quorum + hints, no caller impact. AZ cut off: replicas in other AZs serve quorum ops. Corruption: checksums per block, Merkle repair from peers. Permanent loss: re-replicate its ranges."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Growth plan described",
+      "tips": {
+        "nudge": "Capacity grows 50% a year. What does adding 20 servers look like?",
+        "hint": "How data moves, how fast, and without downtime.",
+        "show": "New nodes take vnodes from many peers in parallel; streaming is throttled; the ring update gossips out; no downtime. Hot keys: client-side caching or key splitting."
+      }
+    }
+  ]
+}

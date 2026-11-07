@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Shared-counter admission control: make the decision at one choke point, keep the state in a fast shared store updated atomically, choose an algorithm whose memory and burst behaviour fit the limit, and decide up front how to degrade when the shared state is unavailable.",
+  "checks": [
+    {
+      "id": "req-enforce",
+      "type": "requirement",
+      "label": "Core enforcement behaviour captured",
+      "keywords": [
+        "limit",
+        "throttl",
+        "reject",
+        "block",
+        "429",
+        "quota",
+        "deny",
+        "too many"
+      ],
+      "tips": {
+        "nudge": "What does the system do with a request from a client that has already used up its allowance?",
+        "hint": "Write a functional requirement: count requests per client and turn away the ones over the limit.",
+        "show": "F1: For every request, decide allow/deny against the client's limit; denied requests get HTTP 429 with a retry hint."
+      }
+    },
+    {
+      "id": "req-rules",
+      "type": "requirement",
+      "label": "Who and what the limits apply to",
+      "keywords": [
+        "rule",
+        "per user",
+        "per-user",
+        "per api key",
+        "api key",
+        "per ip",
+        "per-ip",
+        "endpoint",
+        "configurab",
+        "policy",
+        "policies",
+        "tier"
+      ],
+      "tips": {
+        "nudge": "Is there one limit for everyone? The interviewer listed several.",
+        "hint": "Capture that limits are keyed by user / API key / IP and endpoint, and can change without a deploy.",
+        "show": "F2: Limits are rules (key type, endpoint, limit, window) that operators change at runtime without redeploying."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Cost of the check on every request bounded",
+      "keywords": [
+        "latency",
+        "millisecond",
+        "overhead",
+        "p99",
+        "fast",
+        "5ms",
+        "5 ms"
+      ],
+      "tips": {
+        "nudge": "This code runs on every single API call. What does that imply?",
+        "hint": "State a latency budget for the decision.",
+        "show": "N1: The allow/deny decision adds < 5 ms at p99 to each request."
+      }
+    },
+    {
+      "id": "req-fleet",
+      "type": "requirement",
+      "label": "Counting scope across servers stated",
+      "keywords": [
+        "distributed",
+        "across servers",
+        "across all servers",
+        "across the fleet",
+        "fleet",
+        "global",
+        "shared across",
+        "all instances",
+        "every server",
+        "accurate"
+      ],
+      "tips": {
+        "nudge": "A user's calls are spread over 40 servers. Whose count are we limiting?",
+        "hint": "Say that the limit holds across the whole fleet, and how accurate it must be.",
+        "show": "N2: Limits apply fleet-wide (not per server); small over-admission (a few %) is acceptable."
+      }
+    },
+    {
+      "id": "est-decisions",
+      "type": "estimate",
+      "label": "Decision throughput estimated",
+      "keywords": [
+        "request",
+        "decision",
+        "check",
+        "peak",
+        "rps",
+        "qps"
+      ],
+      "unit": "/s",
+      "min": 100000,
+      "max": 3000000,
+      "tips": {
+        "nudge": "How many requests per second must be judged at peak?",
+        "hint": "Every API request needs one decision, possibly one per matching rule.",
+        "show": "peak_decisions = 300 * thousand ≈ 300k /s (×2 if two rules match each request)."
+      }
+    },
+    {
+      "id": "est-memory",
+      "type": "estimate",
+      "label": "Memory for the counting state estimated",
+      "keywords": [
+        "memory",
+        "ram",
+        "state",
+        "storage",
+        "bytes",
+        "size"
+      ],
+      "unit": "GB",
+      "min": 0.3,
+      "max": 200,
+      "tips": {
+        "nudge": "How many counters exist at once, and how big is each?",
+        "hint": "active clients × rules per client × bytes per counter (key + value + overhead).",
+        "show": "counter_memory = 10 million × 3 rules × ~100 B ≈ 3 GB: fits in RAM on a small cluster."
+      }
+    },
+    {
+      "id": "est-nodes",
+      "type": "estimate",
+      "label": "Size of the counter cluster estimated",
+      "keywords": [
+        "node",
+        "shard",
+        "redis",
+        "counter_cluster",
+        "counter_store",
+        "machine"
+      ],
+      "unit": "",
+      "min": 2,
+      "max": 200,
+      "tips": {
+        "nudge": "One in-memory node handles on the order of 100k simple operations per second.",
+        "hint": "nodes = peak counter operations / ops per node, then add replicas.",
+        "show": "counter_nodes = 600k ops/s / 100k per node = 6 primaries; ×2 with replicas ≈ 12."
+      }
+    },
+    {
+      "id": "api-check",
+      "type": "endpoint",
+      "label": "Decision interface defined",
+      "keywords": [
+        "check",
+        "allow",
+        "acquire",
+        "consume",
+        "ratelimit",
+        "rate-limit",
+        "rate_limit",
+        "throttle",
+        "should"
+      ],
+      "tips": {
+        "nudge": "How does the API server (or gateway) ask for a verdict?",
+        "hint": "Define an internal call that takes the client key and rule and returns allow/deny plus remaining quota.",
+        "show": "POST /v1/ratelimit/check {key, rule_id, cost=1} → {allowed, remaining, reset_at, retry_after}"
+      }
+    },
+    {
+      "id": "api-rejection",
+      "type": "endpoint",
+      "label": "What a throttled caller receives",
+      "keywords": [
+        "429",
+        "retry-after",
+        "retry after",
+        "x-ratelimit",
+        "ratelimit-remaining",
+        "too many"
+      ],
+      "tips": {
+        "nudge": "A client was denied. How does it learn when to try again?",
+        "hint": "Describe the HTTP status and headers on the public API response.",
+        "show": "Any endpoint → 429 Too Many Requests, Retry-After: <s>, X-RateLimit-Limit / -Remaining / -Reset."
+      }
+    },
+    {
+      "id": "data-counters",
+      "type": "entity",
+      "label": "Per-client counting state modelled",
+      "keywords": [
+        "counter",
+        "bucket",
+        "window",
+        "tokens",
+        "count",
+        "timestamp"
+      ],
+      "tips": {
+        "nudge": "What do you need to remember per client to make the next decision?",
+        "hint": "Model the state your algorithm needs, keyed by client + rule.",
+        "show": "bucket:{rule}:{client} → {tokens, last_refill_ms} with a TTL, in an in-memory store."
+      }
+    },
+    {
+      "id": "data-rules",
+      "type": "entity",
+      "label": "Limit configuration modelled",
+      "keywords": [
+        "rule",
+        "policy",
+        "policies",
+        "limit config",
+        "quota"
+      ],
+      "tips": {
+        "nudge": "Where do 100/min and 5,000/hour come from at runtime?",
+        "hint": "Model the limits as data, not code.",
+        "show": "rules(id, match: key_type + endpoint pattern, limit, window_s, burst, mode: open|closed) in SQL."
+      }
+    },
+    {
+      "id": "comp-choke-point",
+      "type": "component",
+      "label": "One place where every request is judged",
+      "kinds": [
+        "api-gateway",
+        "load-balancer"
+      ],
+      "tips": {
+        "nudge": "Should 40 API servers (and every team's service) each implement limiting?",
+        "hint": "Put the check in a layer every request already passes through.",
+        "show": "An API gateway (or middleware in an edge proxy) runs the check before routing to the API servers."
+      }
+    },
+    {
+      "id": "comp-shared-state",
+      "type": "component",
+      "label": "All servers agree on a client's usage",
+      "kinds": [
+        "cache"
+      ],
+      "tips": {
+        "nudge": "Counters in each server's memory disagree. Where should they live instead?",
+        "hint": "A shared in-memory store with atomic operations and TTLs.",
+        "show": "A sharded Redis cluster holding the buckets, keyed by rule + client."
+      }
+    },
+    {
+      "id": "comp-rules-store",
+      "type": "component",
+      "label": "Limits have a source of truth",
+      "kinds": [
+        "sql",
+        "nosql",
+        "coordinator"
+      ],
+      "keywords": [
+        "rule",
+        "polic",
+        "config",
+        "limit"
+      ],
+      "tips": {
+        "nudge": "Operators change limits without a deploy. Where do they write them?",
+        "hint": "A small durable store for rules, read (and cached) by the enforcement layer.",
+        "show": "rules DB (SQL) behind a rules service; gateways cache the rules and refresh every few seconds."
+      }
+    },
+    {
+      "id": "edge-check-state",
+      "type": "edge",
+      "label": "Enforcement point consults the shared state",
+      "from_kinds": [
+        "api-gateway",
+        "service",
+        "load-balancer"
+      ],
+      "to_kinds": [
+        "cache"
+      ],
+      "tips": {
+        "nudge": "Draw how the verdict is computed for one request.",
+        "hint": "Connect the enforcement layer to the counter store.",
+        "show": "Gateway → Redis: run the bucket update atomically, get allowed/remaining back."
+      }
+    },
+    {
+      "id": "dd-algorithm",
+      "type": "decision",
+      "label": "Counting algorithm chosen",
+      "keywords": [
+        "token bucket",
+        "leaky bucket",
+        "fixed window",
+        "sliding window",
+        "sliding log",
+        "gcra",
+        "algorithm"
+      ],
+      "tips": {
+        "nudge": "Counting 'per minute' sounds simple. What happens at 12:00:59 and 12:01:00?",
+        "hint": "Compare fixed window, sliding log, sliding window counter and token bucket on memory and burst behaviour.",
+        "show": "Token bucket: two numbers per key, allows controlled bursts, no boundary spike. Sliding log is exact but stores every timestamp; fixed window doubles bursts at the edge."
+      }
+    },
+    {
+      "id": "dd-atomicity",
+      "type": "decision",
+      "label": "Concurrent updates to one count handled",
+      "keywords": [
+        "race",
+        "atomic",
+        "lua",
+        "incr",
+        "compare-and-set",
+        "compare and set",
+        "transaction",
+        "lock"
+      ],
+      "tips": {
+        "nudge": "Two gateways read tokens=1 at the same time and both allow. Is that okay?",
+        "hint": "Make read-modify-write a single step in the store.",
+        "show": "Run the refill + take as one server-side script (Lua / atomic INCR with EXPIRE) so the store serialises it; no distributed locks."
+      }
+    },
+    {
+      "id": "dd-failure-mode",
+      "type": "decision",
+      "label": "Behaviour when the limiter is unavailable decided",
+      "keywords": [
+        "fail open",
+        "fail-open",
+        "fail closed",
+        "fail-closed",
+        "fallback",
+        "degrade",
+        "limiter is down",
+        "timeout"
+      ],
+      "tips": {
+        "nudge": "The counter store times out. Do you let the request through or not?",
+        "hint": "Weigh product's and security's statements; the answer can differ per rule.",
+        "show": "Fail open by default with a short timeout and a local in-process fallback limit; fail closed for login/sensitive rules."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure scenarios walked through",
+      "tips": {
+        "nudge": "A counter shard dies. What happens to the clients whose keys lived there?",
+        "hint": "Cover store node loss, network partition to the store and a bad rule push.",
+        "show": "Shard loss: replica promotes, counts reset for a moment (acceptable). Timeouts: fail open + local fallback. Bad rule: versioned rules with rollback."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How would you know the limiter is blocking the wrong people, or nobody?",
+        "hint": "List metrics for the decision path and for its effects.",
+        "show": "Decision latency p99, store errors/timeouts, fail-open count, 429 rate per rule and per top client, hot-key detection."
+      }
+    }
+  ]
+}

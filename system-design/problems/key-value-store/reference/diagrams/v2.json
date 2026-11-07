@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "why": "Data and load beyond one machine (A1, N3): a request coordinator hashes the key onto a consistent-hash ring with virtual nodes and forwards to the single owning storage node; adding a node moves only ~1/N of keys. Flaw left: each key lives on exactly one node, so a node failure makes its keys unavailable and a disk loss destroys them (breaks N1, N4).",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Service (client)", "x": 60, "y": 200 },
+    { "id": "coord", "kind": "coordinator", "label": "Request coordinator (hash ring)", "x": 400, "y": 200 },
+    { "id": "nodeA", "kind": "nosql", "label": "Storage node A (LSM)", "x": 640, "y": 80 },
+    { "id": "nodeB", "kind": "nosql", "label": "Storage node B (LSM)", "x": 640, "y": 200 },
+    { "id": "nodeC", "kind": "nosql", "label": "Storage node C (LSM)", "x": 640, "y": 320 }
+  ],
+  "edges": [
+    { "from": "client", "to": "coord", "label": "get / put" },
+    { "from": "coord", "to": "nodeA", "label": "owner of hash(key)" },
+    { "from": "coord", "to": "nodeB" },
+    { "from": "coord", "to": "nodeC" }
+  ],
+  "flows": [{ "name": "put", "path": ["client", "coord", "nodeB"] }]
+}

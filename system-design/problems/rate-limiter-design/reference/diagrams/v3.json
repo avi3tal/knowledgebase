@@ -1,0 +1,33 @@
+{
+  "version": 3,
+  "why": "F2 + N3: limits become data (rules DB behind a rules service, cached in every gateway) so operators change them without a deploy; the gateway tier scales behind a load balancer; Redis is sharded with replicas, and on timeout the gateway fails open to a local limit except for rules marked sensitive. Decisions are streamed to a worker for 429 metrics without touching the hot path.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "API caller", "x": 60, "y": 160 },
+    { "id": "admin", "kind": "client", "label": "Operator console", "x": 60, "y": 360 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 160 },
+    { "id": "gw", "kind": "api-gateway", "label": "API gateways + limiter (rules cached)", "x": 400, "y": 160 },
+    { "id": "rulesvc", "kind": "service", "label": "Rules service", "x": 400, "y": 360 },
+    { "id": "api", "kind": "service", "label": "API servers ×40", "x": 600, "y": 160 },
+    { "id": "buckets", "kind": "cache", "label": "Redis cluster: token buckets (sharded, replicas)", "x": 600, "y": 40 },
+    { "id": "rules", "kind": "sql", "label": "Rules DB (limit config)", "x": 600, "y": 360 },
+    { "id": "decisions", "kind": "stream", "label": "Decision events", "x": 600, "y": 260 },
+    { "id": "metrics", "kind": "worker", "label": "Limiter metrics worker", "x": 800, "y": 260 },
+    { "id": "appdb", "kind": "sql", "label": "App database", "x": 800, "y": 160 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb", "label": "HTTP request" },
+    { "from": "lb", "to": "gw" },
+    { "from": "gw", "to": "buckets", "label": "atomic take (Lua), 2 ms timeout" },
+    { "from": "gw", "to": "rulesvc", "label": "refresh rules every few s" },
+    { "from": "gw", "to": "api", "label": "allowed requests" },
+    { "from": "gw", "to": "decisions", "label": "allow/deny event (async)" },
+    { "from": "decisions", "to": "metrics" },
+    { "from": "admin", "to": "rulesvc", "label": "PUT /admin/rules" },
+    { "from": "rulesvc", "to": "rules" },
+    { "from": "api", "to": "appdb", "label": "business data" }
+  ],
+  "flows": [
+    { "name": "allowed request", "path": ["client", "lb", "gw", "buckets"] },
+    { "name": "rule change", "path": ["admin", "rulesvc", "rules"] }
+  ]
+}

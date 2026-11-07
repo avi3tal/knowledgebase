@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "dau", "formula": "50 * million", "unit": "" },
+    { "name": "msgs_per_day", "formula": "dau * 40", "unit": "/day" },
+    { "name": "avg_msg_rate", "formula": "msgs_per_day / day", "unit": "/s" },
+    { "name": "peak_msg_rate", "formula": "avg_msg_rate * 3", "unit": "/s" },
+    { "name": "concurrent_connections", "formula": "dau / 5", "unit": "" },
+    { "name": "gateways", "formula": "concurrent_connections / (60 * thousand)", "unit": "" },
+    { "name": "storage_per_year", "formula": "msgs_per_day * 365 * 200 / 10**12", "unit": "TB" },
+    { "name": "deliveries_peak", "formula": "peak_msg_rate * (2/3 * 1 + 1/3 * 50)", "unit": "/s" }
+  ]
+}

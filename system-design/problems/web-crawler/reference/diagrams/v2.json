@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "why": "N2 + N3 + F2: split the loop into a durable frontier queue, a pool of async fetcher workers (with a caching DNS resolver) that store raw pages in blob storage, and parser workers that extract links, normalise them and drop already-seen URLs with a Bloom filter before feeding them back. Content hashes skip exact copies. Flaw left: the frontier is a single FIFO, so fetchers still pile onto the same host (N1) and every page is revisited on the same schedule.",
+  "nodes": [
+    { "id": "op", "kind": "client", "label": "Operator (seed URLs)", "x": 60, "y": 200 },
+    { "id": "api", "kind": "service", "label": "Crawl control API", "x": 220, "y": 200 },
+    { "id": "frontier", "kind": "queue", "label": "URL frontier (FIFO)", "x": 400, "y": 200 },
+    { "id": "fetch", "kind": "worker", "label": "Fetchers ×N (async HTTP)", "x": 600, "y": 200 },
+    { "id": "dns", "kind": "cache", "label": "Caching DNS resolver", "x": 800, "y": 60 },
+    { "id": "web", "kind": "external", "label": "Websites", "x": 800, "y": 160 },
+    { "id": "pages", "kind": "blob", "label": "Raw pages (blob, batched files)", "x": 800, "y": 260 },
+    { "id": "parseq", "kind": "queue", "label": "Fetched-page events", "x": 600, "y": 340 },
+    { "id": "parser", "kind": "worker", "label": "Parsers + link extractor", "x": 400, "y": 340 },
+    { "id": "seen", "kind": "cache", "label": "Seen-URL Bloom filter + content hashes", "x": 400, "y": 460 }
+  ],
+  "edges": [
+    { "from": "op", "to": "api", "label": "POST /seeds" },
+    { "from": "api", "to": "frontier" },
+    { "from": "frontier", "to": "fetch" },
+    { "from": "fetch", "to": "dns", "label": "resolve host" },
+    { "from": "fetch", "to": "web", "label": "HTTP GET" },
+    { "from": "fetch", "to": "pages", "label": "store raw HTML" },
+    { "from": "fetch", "to": "parseq" },
+    { "from": "parseq", "to": "parser" },
+    { "from": "parser", "to": "seen", "label": "new URL? new content?" },
+    { "from": "parser", "to": "frontier", "label": "new URLs" }
+  ],
+  "flows": [{ "name": "crawl loop", "path": ["frontier", "fetch", "parseq", "parser", "frontier"] }]
+}

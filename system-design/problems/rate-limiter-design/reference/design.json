@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "For every API request, decide allow or deny against the caller's limits; denied requests are rejected with HTTP 429 and a retry hint." },
+      { "id": "F2", "text": "Limits are rules keyed by user, API key or IP plus endpoint (e.g. 100/min per user, 5,000/hour per API key, strict login limit); operators change them at runtime without a deploy." },
+      { "id": "F3", "text": "Callers can see their remaining quota and reset time in response headers." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Low overhead: the decision adds < 5 ms at p99 latency to each request." },
+      { "id": "N2", "text": "Limits hold across the fleet of ~40 API servers, not per server; a few % over-admission is acceptable." },
+      { "id": "N3", "text": "The limiter must never take the API down with it; sensitive endpoints (login) are the exception." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "10M active clients/day, peak 300k requests/s, ~3 rules can match a client." },
+      { "id": "A2", "text": "~100 bytes per counter including key and store overhead." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Billing for quota, and L3/L4 DDoS protection (handled by the network provider)." }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/v1/ratelimit/check",
+      "request": "key (user/api key/ip), rule_id, cost=1",
+      "response": "{allowed, remaining, reset_at, retry_after}",
+      "notes": "Internal; in practice a library call inside the gateway rather than a network hop."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/any/public/endpoint",
+      "request": "normal request",
+      "response": "200 with X-RateLimit-Limit/-Remaining/-Reset, or 429 Too Many Requests with Retry-After",
+      "notes": "Public contract for throttled callers."
+    },
+    {
+      "id": "E3",
+      "method": "PUT",
+      "path": "/admin/rules/{id}",
+      "request": "match, limit, window_s, burst, failure_mode",
+      "response": "200 {rule, version}",
+      "notes": "Operators change limits without a deploy."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "buckets",
+      "fields": "key = bucket:{rule_id}:{client} → tokens, last_refill_ms; TTL = window",
+      "store": "cache",
+      "why": "Hot, tiny, short-lived counter state; losing it only resets a few counts."
+    },
+    {
+      "id": "D2",
+      "name": "rules",
+      "fields": "id, match (key_type, endpoint pattern), limit, window_s, burst, failure_mode (open|closed), version",
+      "store": "sql",
+      "why": "Small, rarely written, needs auditing and versioned rollback; gateways cache it."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Counting algorithm",
+      "options": [
+        { "name": "fixed window counter", "pros": "one integer per key, trivial", "cons": "a client can send 2× the limit across a window boundary" },
+        { "name": "sliding log", "pros": "exact", "cons": "stores one timestamp per request: memory grows with the limit" },
+        { "name": "sliding window counter", "pros": "smooth, two integers", "cons": "approximate" },
+        { "name": "token bucket", "pros": "two numbers per key, explicit burst size, no boundary spike", "cons": "needs a refill computation per call" }
+      ],
+      "choice": "token bucket",
+      "why": "Fits the ~3 GB memory budget, lets product express 'limit + burst' directly, and the refill is computed lazily from last_refill_ms so no background timers are needed.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Concurrent updates to one bucket",
+      "options": [
+        { "name": "read then write from the gateway", "pros": "simple", "cons": "race: two gateways both see 1 token and both allow" },
+        { "name": "distributed lock per key", "pros": "correct", "cons": "an extra round trip and lock contention on hot keys" },
+        { "name": "server-side atomic script (Lua)", "pros": "one round trip, serialised by the store", "cons": "script must stay tiny" }
+      ],
+      "choice": "server-side atomic script (Lua)",
+      "why": "Refill + take runs atomically inside the shard that owns the key, so N2 holds without locks and N1 costs one round trip (~1 ms).",
+      "version": 2
+    },
+    {
+      "id": "DD3",
+      "title": "When the counter store is slow or down",
+      "options": [
+        { "name": "fail closed", "pros": "no abuse gets through", "cons": "the whole API goes down with the limiter" },
+        { "name": "fail open", "pros": "API stays up", "cons": "no protection while the store is down" },
+        { "name": "fail open with a local fallback limit", "pros": "API stays up with coarse per-server protection", "cons": "limits are approximate during the incident" }
+      ],
+      "choice": "fail open with a local fallback limit; fail closed for rules marked sensitive (login)",
+      "why": "N3: product prefers over-admission to an outage, security needs login protected. A 2 ms timeout triggers the fallback (limit / number of servers, in process).",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "A single hot client key concentrates on one shard (split its bucket across sub-keys or use a local pre-check); the gateway tier itself (scale horizontally behind the LB).",
+    "failures": "Shard loss: replica is promoted and a few counts reset (acceptable). Store timeouts: fail open with a local fallback limit, fail closed for login. Bad rule push: rules are versioned, gateways can roll back.",
+    "monitoring": "Decision latency p99, store errors and timeouts, number of fail-open decisions, 429 rate per rule and per top client, hot-key detection, rules version per gateway.",
+    "scale": "10× traffic: more gateway instances and more Redis shards (keys hash-partitioned); add local in-process token pre-allocation to cut store round trips.",
+    "future": "Per-region limits with async reconciliation, cost-based limits (expensive endpoints cost more tokens), self-serve quota dashboards."
+  }
+}

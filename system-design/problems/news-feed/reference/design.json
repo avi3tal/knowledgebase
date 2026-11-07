@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "A user can publish a post: text plus optional photos/videos." },
+      { "id": "F2", "text": "A user sees a home feed of recent posts from accounts they follow, newest first, paginated 20 at a time (infinite scroll)." },
+      { "id": "F3", "text": "Follow / unfollow accounts." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Feed page latency < 300 ms at p99; read-heavy (~20 feed loads per post)." },
+      { "id": "N2", "text": "Eventually consistent: a new post reaches followers' feeds within ~10 s." },
+      { "id": "N3", "text": "Highly available reads; a slow fan-out must never block publishing." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "200M DAU, 10 feed opens and 0.5 posts per user per day; peak = 2× average." },
+      { "id": "A2", "text": "Average 300 followers; a few thousand accounts have tens of millions." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "ML ranking, ads, comments/likes, search." }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/posts",
+      "request": "text, media_ids[] (uploaded beforehand via a pre-signed URL)",
+      "response": "201 {post_id, created_at}",
+      "notes": "Returns once the post is stored; distribution is asynchronous."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/feed?cursor=&limit=20",
+      "request": "",
+      "response": "{posts[], next_cursor}",
+      "notes": "Cursor = last seen post_id (time-sortable), stable while new posts arrive."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/users/{id}/follow",
+      "request": "",
+      "response": "204",
+      "notes": "DELETE to unfollow."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "posts",
+      "fields": "post_id (PK, time-sortable), author_id, text, media_urls, created_at",
+      "store": "nosql",
+      "why": "Fetched by id in batches; scales horizontally by post_id."
+    },
+    {
+      "id": "D2",
+      "name": "follows",
+      "fields": "follower_id, followee_id, created_at; indexed both directions",
+      "store": "sql",
+      "why": "Graph edges queried as 'followers of X' (fan-out) and 'who X follows' (pull)."
+    },
+    {
+      "id": "D3",
+      "name": "feeds",
+      "fields": "user_id → list of latest ~500 post_ids (trimmed)",
+      "store": "cache",
+      "why": "Precomputed per-user feed: one lookup per feed load."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "When is a feed assembled?",
+      "options": [
+        { "name": "fan-out on read (pull)", "pros": "no write amplification; always fresh", "cons": "each load queries ~300 authors and merges: too slow at 46k/s" },
+        { "name": "fan-out on write (push)", "pros": "a feed load is one cache read", "cons": "write amplification; a 40M-follower post is 40M inserts" },
+        { "name": "hybrid", "pros": "push for most, pull for the few huge accounts", "cons": "two code paths and a merge at read time" }
+      ],
+      "choice": "hybrid: fan-out on write by default",
+      "why": "Reads outnumber posts ~20:1 and N1 needs one cache lookup per page; the push cost (~350k inserts/s) is affordable for ordinary accounts.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Celebrity accounts",
+      "options": [
+        { "name": "fan out to everyone anyway", "pros": "uniform", "cons": "minutes of queue backlog per post; delays everyone else's posts" },
+        { "name": "skip fan-out above a follower threshold; merge at read", "pros": "bounded write cost", "cons": "read path merges a few extra lists" }
+      ],
+      "choice": "skip fan-out for accounts above ~100k followers; merge at read time",
+      "why": "Keeps N2 (10 s) for normal posts during a celebrity post. Followers typically follow only a handful of such accounts, and their recent posts sit in a hot cache, so the merge stays cheap.",
+      "version": 3
+    },
+    {
+      "id": "DD3",
+      "title": "Pagination",
+      "options": [
+        { "name": "offset/limit", "pros": "simple", "cons": "new posts shift pages: duplicates and gaps" },
+        { "name": "cursor on time-sortable post_id", "pros": "stable while the feed changes", "cons": "no random page jumps (not needed)" }
+      ],
+      "choice": "cursor on time-sortable post_id",
+      "why": "Infinite scroll on a feed that changes every second.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Fan-out queue backlog on busy days (scale workers, prioritise recently active users), hot post bodies (replicated post cache), feed cache memory (ids only, trim to 500, skip users inactive for 30 days).",
+    "failures": "Feed cache node lost: rebuild that user's feed on demand by pulling from followees. Fan-out workers down: posts are safe in the store, the queue retains work and feeds catch up late. CDN miss storm: origin shield in front of blob storage.",
+    "monitoring": "Feed p99 latency, cache hit ratio, fan-out queue lag (publish → visible time), worker error rate, CDN hit ratio.",
+    "scale": "Shard the feed cache by user_id, add queue partitions and workers, lower the celebrity threshold, precompute only for active users, multi-region read replicas.",
+    "future": "Ranked feed (candidate generation from this cache + a ranking service), ads injection, notifications for close friends."
+  }
+}

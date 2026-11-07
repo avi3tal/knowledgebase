@@ -1,0 +1,40 @@
+{
+  "version": 3,
+  "why": "N2 under celebrity posts + global media: workers skip fan-out for accounts above ~100k followers; the feed service merges those accounts' recent posts from a hot post cache at read time (hybrid). A post cache also absorbs the hot post bodies. Media is uploaded to blob storage and served via a CDN, so feed responses carry only URLs.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
+    { "id": "cdn", "kind": "cdn", "label": "CDN (photos, video)", "x": 220, "y": 20 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 160 },
+    { "id": "postsvc", "kind": "service", "label": "Post service", "x": 400, "y": 80 },
+    { "id": "feedsvc", "kind": "service", "label": "Feed service (merge celebrity posts)", "x": 400, "y": 260 },
+    { "id": "q", "kind": "queue", "label": "Fan-out queue", "x": 600, "y": 400 },
+    { "id": "fanout", "kind": "worker", "label": "Fan-out workers (skip celebrities)", "x": 800, "y": 400 },
+    { "id": "posts", "kind": "nosql", "label": "posts store", "x": 800, "y": 80 },
+    { "id": "postcache", "kind": "cache", "label": "Post cache (+ celebrity recent posts)", "x": 600, "y": 160 },
+    { "id": "follows", "kind": "sql", "label": "follows graph", "x": 800, "y": 280 },
+    { "id": "feedcache", "kind": "cache", "label": "Feed cache (user → post_ids)", "x": 600, "y": 280 },
+    { "id": "media", "kind": "blob", "label": "Media blob storage", "x": 600, "y": 20 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb" },
+    { "from": "client", "to": "cdn", "label": "GET media URLs" },
+    { "from": "cdn", "to": "media", "label": "origin fetch on miss" },
+    { "from": "lb", "to": "postsvc", "label": "POST /posts" },
+    { "from": "lb", "to": "feedsvc", "label": "GET /feed" },
+    { "from": "postsvc", "to": "posts", "label": "store post" },
+    { "from": "postsvc", "to": "media", "label": "pre-signed upload URL" },
+    { "from": "postsvc", "to": "q", "label": "enqueue fan-out" },
+    { "from": "q", "to": "fanout" },
+    { "from": "fanout", "to": "follows", "label": "followers of author" },
+    { "from": "fanout", "to": "feedcache", "label": "push post_id (normal authors only)" },
+    { "from": "feedsvc", "to": "feedcache", "label": "read post_ids" },
+    { "from": "feedsvc", "to": "follows", "label": "which celebrities do I follow" },
+    { "from": "feedsvc", "to": "postcache", "label": "post bodies + celebrity posts" },
+    { "from": "postcache", "to": "posts", "label": "read-through on miss" }
+  ],
+  "flows": [
+    { "name": "publish", "path": ["client", "lb", "postsvc", "q", "fanout", "feedcache"] },
+    { "name": "read feed", "path": ["client", "lb", "feedsvc", "feedcache"] },
+    { "name": "media", "path": ["client", "cdn", "media"] }
+  ]
+}

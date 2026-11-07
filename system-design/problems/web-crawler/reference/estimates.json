@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "pages_per_month", "formula": "2 * billion", "unit": "/month" },
+    { "name": "fetch_rate", "formula": "pages_per_month / month", "unit": "/s" },
+    { "name": "peak_fetch_rate", "formula": "fetch_rate * 2", "unit": "/s" },
+    { "name": "page_bytes", "formula": "100 * thousand", "unit": "B" },
+    { "name": "content_storage_6mo", "formula": "2 * billion * page_bytes * 6", "unit": "B" },
+    { "name": "bandwidth", "formula": "fetch_rate * page_bytes * 8 / 10**9", "unit": "Gbps" },
+    { "name": "bloom_filter_memory", "formula": "20 * billion * 10 / 8", "unit": "B" }
+  ]
+}

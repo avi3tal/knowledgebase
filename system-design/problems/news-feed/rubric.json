@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Precompute for the many, compute on demand for the few: move work from the hot read path to the write path (fan-out into per-user caches) when reads dominate, and switch strategy for the outliers (huge audiences) whose write-time cost would explode.",
+  "checks": [
+    {
+      "id": "req-publish",
+      "type": "requirement",
+      "label": "Creating content captured",
+      "keywords": [
+        "publish",
+        "create a post",
+        "create post",
+        "creates a post",
+        "share a post",
+        "write a post",
+        "post a",
+        "posts a",
+        "status update",
+        "tweet"
+      ],
+      "tips": {
+        "nudge": "Where does the content in a feed come from?",
+        "hint": "Write a functional requirement for publishing a post.",
+        "show": "F1: A user publishes a post (text plus optional photo/video)."
+      }
+    },
+    {
+      "id": "req-feed",
+      "type": "requirement",
+      "label": "Core read use case captured",
+      "keywords": [
+        "feed",
+        "timeline",
+        "home page",
+        "home screen"
+      ],
+      "tips": {
+        "nudge": "What does a user see when they open the app?",
+        "hint": "Describe what is in it, in what order, and how it pages.",
+        "show": "F2: A user sees recent posts from accounts they follow, newest first, paginated 20 at a time."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Load-time expectation stated",
+      "keywords": [
+        "latency",
+        "millisecond",
+        "300ms",
+        "300 ms",
+        "p99",
+        "fast",
+        "quick"
+      ],
+      "tips": {
+        "nudge": "The interviewer gave you a number for opening the app.",
+        "hint": "State a latency target for loading a feed page.",
+        "show": "N1: Feed page loads in < 300 ms at p99; read-heavy (~20 feed reads per post)."
+      }
+    },
+    {
+      "id": "req-freshness",
+      "type": "requirement",
+      "label": "How quickly new content must appear",
+      "keywords": [
+        "fresh",
+        "eventual",
+        "stale",
+        "staleness",
+        "propagat",
+        "within 10",
+        "10 s",
+        "10s",
+        "delay",
+        "lag"
+      ],
+      "tips": {
+        "nudge": "Must a post appear in every follower's feed the instant it's published?",
+        "hint": "State the consistency you need between publish and feed.",
+        "show": "N2: Eventually consistent: new posts reach followers' feeds within ~10 s."
+      }
+    },
+    {
+      "id": "est-feed-reads",
+      "type": "estimate",
+      "label": "Read throughput estimated",
+      "keywords": [
+        "read",
+        "feed",
+        "view",
+        "open",
+        "load"
+      ],
+      "unit": "/s",
+      "min": 5000,
+      "max": 500000,
+      "tips": {
+        "nudge": "Daily users × feed opens per day.",
+        "hint": "Convert feed opens per day into per-second, then apply the peak factor.",
+        "show": "200M × 10 = 2B feed loads/day ≈ 23k /s average, ~46k /s at peak."
+      }
+    },
+    {
+      "id": "est-post-writes",
+      "type": "estimate",
+      "label": "Write throughput estimated",
+      "keywords": [
+        "post",
+        "write",
+        "publish",
+        "create"
+      ],
+      "unit": "/s",
+      "min": 300,
+      "max": 10000,
+      "tips": {
+        "nudge": "One post every two days per daily user.",
+        "hint": "posts/day ÷ seconds in a day.",
+        "show": "200M × 0.5 = 100M posts/day ≈ 1.2k /s (peak ~2.4k /s)."
+      }
+    },
+    {
+      "id": "est-fanout",
+      "type": "estimate",
+      "label": "Cost of distributing posts estimated",
+      "keywords": [
+        "fanout",
+        "fan_out",
+        "fan-out",
+        "insert",
+        "deliver",
+        "push"
+      ],
+      "unit": "/s",
+      "min": 50000,
+      "max": 5000000,
+      "tips": {
+        "nudge": "If every post were copied into each follower's feed, how many copies per second?",
+        "hint": "post rate × average followers.",
+        "show": "1.2k posts/s × 300 followers ≈ 350k feed inserts /s (before excluding huge accounts)."
+      }
+    },
+    {
+      "id": "api-post",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "/post",
+        "posts",
+        "status",
+        "tweet",
+        "publish"
+      ],
+      "tips": {
+        "nudge": "Which call creates a post?",
+        "hint": "A POST with the text and references to already-uploaded media.",
+        "show": "POST /posts {text, media_ids[]} → 201 {post_id, created_at}"
+      }
+    },
+    {
+      "id": "api-feed",
+      "type": "endpoint",
+      "label": "Read endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "feed",
+        "timeline",
+        "home"
+      ],
+      "tips": {
+        "nudge": "What does the app call on open and on scroll?",
+        "hint": "A paginated GET; think about how the next page is identified when new posts keep arriving.",
+        "show": "GET /feed?cursor=<last post_id/ts>&limit=20 → {posts[], next_cursor} (cursor, not offset)."
+      }
+    },
+    {
+      "id": "data-posts",
+      "type": "entity",
+      "label": "Content data modelled",
+      "keywords": [
+        "post",
+        "tweet",
+        "status"
+      ],
+      "tips": {
+        "nudge": "What do you store for each published item?",
+        "hint": "An entity keyed by a time-sortable id.",
+        "show": "posts(post_id PK (time-sortable), author_id, text, media_urls, created_at) in a NoSQL store."
+      }
+    },
+    {
+      "id": "data-graph",
+      "type": "entity",
+      "label": "Who-follows-whom modelled",
+      "keywords": [
+        "follow",
+        "friend",
+        "graph",
+        "subscri",
+        "connection"
+      ],
+      "tips": {
+        "nudge": "To build a feed you must know whose posts to include.",
+        "hint": "Model the relationship in both directions you'll query it.",
+        "show": "follows(follower_id, followee_id, created_at), indexed both ways (followers-of and following-of)."
+      }
+    },
+    {
+      "id": "comp-feed-cache",
+      "type": "component",
+      "label": "Feed read path can absorb the read load",
+      "kinds": [
+        "cache"
+      ],
+      "tips": {
+        "nudge": "46k feed loads/s, each needing 20 posts from up to hundreds of authors. Where should that come from?",
+        "hint": "Keep something per user in memory that answers a feed request without scanning authors.",
+        "show": "Feed cache (Redis): per-user list of the latest ~500 post ids; plus a post cache for post bodies."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Tens of thousands of requests per second won't fit on one server.",
+        "hint": "Stateless services behind something that distributes requests.",
+        "show": "Clients → load balancer / API gateway → stateless post and feed services."
+      }
+    },
+    {
+      "id": "comp-media",
+      "type": "component",
+      "label": "Heavy media served efficiently worldwide",
+      "kinds": [
+        "cdn",
+        "blob"
+      ],
+      "tips": {
+        "nudge": "Most of the bytes are photos and videos, viewed globally.",
+        "hint": "They shouldn't go through your feed servers.",
+        "show": "Media in blob storage, served via a CDN; posts store only media URLs."
+      }
+    },
+    {
+      "id": "edge-async-distribution",
+      "type": "edge",
+      "label": "Distribution kept off the publishing request",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
+      "tips": {
+        "nudge": "Copying a post to 300 (or 40M) feeds while the author waits?",
+        "hint": "Save the post, return, and hand distribution to something asynchronous.",
+        "show": "Post service → fan-out queue → fan-out workers."
+      }
+    },
+    {
+      "id": "edge-precompute",
+      "type": "edge",
+      "label": "Published posts reach followers' read path",
+      "from_kinds": [
+        "worker"
+      ],
+      "to_kinds": [
+        "cache",
+        "nosql"
+      ],
+      "tips": {
+        "nudge": "Who fills what the feed service reads?",
+        "hint": "Connect the asynchronous consumer to the per-user feed storage.",
+        "show": "Fan-out worker → feed cache: push post_id onto each follower's list (trim to 500)."
+      }
+    },
+    {
+      "id": "dd-fanout",
+      "type": "decision",
+      "label": "When feeds get assembled decided",
+      "keywords": [
+        "fan-out",
+        "fanout",
+        "fan out",
+        "push model",
+        "pull model",
+        "on write",
+        "on read",
+        "write time",
+        "read time",
+        "hybrid",
+        "precompute"
+      ],
+      "tips": {
+        "nudge": "You can pay at publish time or at read time. Reads outnumber posts 20 to 1.",
+        "hint": "Compare fan-out on write (push), fan-out on read (pull) and a mix.",
+        "show": "Fan-out on write for normal accounts (reads become one cache lookup); pull for a few huge accounts; merge at read time (hybrid)."
+      }
+    },
+    {
+      "id": "dd-celebrity",
+      "type": "decision",
+      "label": "Accounts with huge audiences handled",
+      "keywords": [
+        "celebrit",
+        "hot user",
+        "famous",
+        "influencer",
+        "high-follower",
+        "many followers",
+        "million followers",
+        "hot key",
+        "large account"
+      ],
+      "tips": {
+        "nudge": "One post × 40M followers = how many feed writes, how long?",
+        "hint": "Treat accounts above a follower threshold differently.",
+        "show": "Accounts over ~100k followers are not fanned out; their recent posts are cached and merged into followers' feeds at read time."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks and single points of failure named",
+      "tips": {
+        "nudge": "Which part breaks first on a big news day?",
+        "hint": "Walk the write path (fan-out) and the read path (cache) separately.",
+        "show": "Fan-out queue backlog (scale workers, prioritise active users), hot post bodies (replicate post cache), feed cache memory (store ids only, trim, skip inactive users)."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "key": "scale",
+      "label": "Growth plan described",
+      "tips": {
+        "nudge": "Users ×10. Which numbers grow fastest?",
+        "hint": "Fan-out writes grow with users × followers; reads with users.",
+        "show": "Shard feed cache by user, add fan-out workers and queue partitions, lower the celebrity threshold, only precompute feeds for recently active users."
+      }
+    }
+  ]
+}

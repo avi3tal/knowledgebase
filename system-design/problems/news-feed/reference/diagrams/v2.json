@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "why": "N1: move work to the write path. A load balancer fronts separate post and feed services; publishing stores the post and enqueues a fan-out job; workers push the post_id into every follower's feed list in a feed cache, so a feed load is one cache read plus a batched post lookup. Flaw left: a 40M-follower account creates 40M inserts per post and backs up the queue for everyone (N2), and media still flows through the app.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 160 },
+    { "id": "postsvc", "kind": "service", "label": "Post service", "x": 400, "y": 80 },
+    { "id": "feedsvc", "kind": "service", "label": "Feed service", "x": 400, "y": 260 },
+    { "id": "q", "kind": "queue", "label": "Fan-out queue", "x": 600, "y": 380 },
+    { "id": "fanout", "kind": "worker", "label": "Fan-out workers", "x": 800, "y": 380 },
+    { "id": "posts", "kind": "nosql", "label": "posts store", "x": 600, "y": 80 },
+    { "id": "follows", "kind": "sql", "label": "follows graph", "x": 800, "y": 260 },
+    { "id": "feedcache", "kind": "cache", "label": "Feed cache (user → post_ids)", "x": 600, "y": 260 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb" },
+    { "from": "lb", "to": "postsvc", "label": "POST /posts" },
+    { "from": "lb", "to": "feedsvc", "label": "GET /feed" },
+    { "from": "postsvc", "to": "posts", "label": "store post" },
+    { "from": "postsvc", "to": "q", "label": "enqueue fan-out" },
+    { "from": "q", "to": "fanout" },
+    { "from": "fanout", "to": "follows", "label": "followers of author" },
+    { "from": "fanout", "to": "feedcache", "label": "push post_id, trim 500" },
+    { "from": "feedsvc", "to": "feedcache", "label": "read post_ids" },
+    { "from": "feedsvc", "to": "posts", "label": "batch get posts" }
+  ],
+  "flows": [
+    { "name": "publish", "path": ["client", "lb", "postsvc", "q", "fanout", "feedcache"] },
+    { "name": "read feed", "path": ["client", "lb", "feedsvc", "feedcache"] }
+  ]
+}

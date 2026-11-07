@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "why": "N1: replace polling with WebSockets on a dedicated gateway fleet behind a load balancer; a session registry (device → gateway) lets the chat service find the recipient's gateway; messages move to a wide-column store partitioned by conversation to absorb ~70k writes/s and 146 TB/year. Flaw left: the chat service delivers to every group member inline, so a 200-member group slows the sender and a slow gateway stalls the send.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer (L4, sticky)", "x": 220, "y": 160 },
+    { "id": "gw", "kind": "service", "label": "WebSocket gateways ×200", "x": 400, "y": 160 },
+    { "id": "chat", "kind": "service", "label": "Chat service", "x": 400, "y": 300 },
+    { "id": "sessions", "kind": "cache", "label": "Session registry (device → gateway)", "x": 640, "y": 40 },
+    { "id": "msgs", "kind": "nosql", "label": "messages (wide-column, by conversation)", "x": 640, "y": 300 },
+    { "id": "members", "kind": "sql", "label": "conversation_members", "x": 640, "y": 420 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb", "label": "WebSocket" },
+    { "from": "lb", "to": "gw" },
+    { "from": "gw", "to": "sessions", "label": "register on connect" },
+    { "from": "gw", "to": "chat", "label": "send" },
+    { "from": "chat", "to": "msgs", "label": "append" },
+    { "from": "chat", "to": "members", "label": "who is in the chat" },
+    { "from": "chat", "to": "sessions", "label": "lookup recipients" },
+    { "from": "chat", "to": "gw", "label": "deliver (inline)" }
+  ],
+  "flows": [{ "name": "send 1:1", "path": ["client", "lb", "gw", "chat", "msgs"] }]
+}

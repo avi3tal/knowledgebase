@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "why": "Naive start: product services call one notification service that looks up the device and calls Apple/Google, the SMS vendor or the email vendor synchronously. A slow provider blocks the caller, a provider blip loses the message (no retry, breaks N1), and a campaign blast competes with login codes for the same threads (breaks N2).",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Product services", "x": 60, "y": 200 },
+    { "id": "notif", "kind": "service", "label": "Notification service (sync)", "x": 400, "y": 200 },
+    { "id": "db", "kind": "sql", "label": "devices + preferences", "x": 640, "y": 60 },
+    { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 860, "y": 160 },
+    { "id": "sms", "kind": "external", "label": "SMS vendor", "x": 860, "y": 260 },
+    { "id": "email", "kind": "external", "label": "Email vendor", "x": 860, "y": 360 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "notif", "label": "send (waits)" },
+    { "from": "notif", "to": "db", "label": "lookup devices, prefs" },
+    { "from": "notif", "to": "apns" },
+    { "from": "notif", "to": "sms" },
+    { "from": "notif", "to": "email" }
+  ],
+  "flows": [{ "name": "send", "path": ["producer", "notif", "apns"] }]
+}

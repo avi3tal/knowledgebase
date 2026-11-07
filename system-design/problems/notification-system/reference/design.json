@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Deliver notifications by mobile push (iOS/Android), SMS and email." },
+      { "id": "F2", "text": "Internal services send a notification to a user from a template + params, now or scheduled; campaigns target a segment." },
+      { "id": "F3", "text": "Users opt out per category and channel; marketing is capped at a few per user per day; suppressed sends are recorded." },
+      { "id": "F4", "text": "Producers can look up the status of a notification (queued, sent, failed, suppressed) for 30 days." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Accepted notifications are never lost (at-least-once to the provider); duplicates suppressed by idempotency key." },
+      { "id": "N2", "text": "Transactional messages (OTP, password reset) handed to the provider within ~5 s p99, even during campaigns; marketing may lag minutes." },
+      { "id": "N3", "text": "One slow or failing provider must not affect the other channels." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "500M notifications/day (400M push, 80M email, 20M SMS); campaign bursts ×10." },
+      { "id": "A2", "text": "300M devices; ~500 B per log record; ~250 B per device row." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Template authoring UI, audience segmentation engine, in-app inbox." }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/notifications",
+      "request": "user_id | segment_id, template, params, category, priority, channels?, idempotency_key, send_at?",
+      "response": "202 {notification_id}",
+      "notes": "Returns after persisting; delivery is asynchronous."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/notifications/{id}",
+      "request": "",
+      "response": "{status per channel, attempts, timestamps}",
+      "notes": "For producing teams and support."
+    },
+    {
+      "id": "E3",
+      "method": "PUT",
+      "path": "/users/{id}/preferences",
+      "request": "category, channel, enabled",
+      "response": "200",
+      "notes": "Plus POST /users/{id}/devices {platform, push_token} from the app."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "devices + contacts",
+      "fields": "devices(user_id, device_id, platform, push_token, updated_at); contacts(user_id, email, phone)",
+      "store": "sql",
+      "why": "~75 GB, relational, cached on the hot path."
+    },
+    {
+      "id": "D2",
+      "name": "preferences",
+      "fields": "user_id, category, channel, enabled, updated_at",
+      "store": "sql",
+      "why": "Read on every send (through a cache), written rarely."
+    },
+    {
+      "id": "D3",
+      "name": "notification_log",
+      "fields": "notification_id, idempotency_key, user_id, channel, priority, status (queued|sent|failed|suppressed), attempts, provider_msg_id, ts; TTL 30 days",
+      "store": "nosql",
+      "why": "~6k writes/s average with bursts, simple key lookups, TTL expiry: ~7.5 TB."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Retries and duplicates",
+      "options": [
+        { "name": "no retry", "pros": "never duplicates", "cons": "provider blips lose OTPs (breaks N1)" },
+        { "name": "immediate retry loop in the worker", "pros": "simple", "cons": "hammers a struggling provider, blocks the worker" },
+        { "name": "delay queue with exponential backoff + DLQ, idempotency keys", "pros": "survives outages, bounded load", "cons": "more moving parts" }
+      ],
+      "choice": "delay queue with exponential backoff + jitter, then a dead-letter queue; idempotency key per (notification, channel)",
+      "why": "N1: at-least-once. The log records sent/attempts and the key is passed to providers that support it, so a redelivered message after a worker crash is detected and skipped. OTPs carry a TTL and are dropped once expired.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "Isolating traffic classes",
+      "options": [
+        { "name": "one shared queue", "pros": "simple", "cons": "a campaign backlog delays login codes; a slow SMS vendor blocks push" },
+        { "name": "queues per channel", "pros": "N3 holds", "cons": "OTPs still wait behind marketing in the same channel" },
+        { "name": "queues per channel × priority with dedicated workers", "pros": "N2 and N3 both hold", "cons": "more queues to operate" }
+      ],
+      "choice": "queues per channel × priority with dedicated worker pools",
+      "why": "Transactional queues are small and always drained first by their own workers; marketing is fed in by a scheduler at a controlled rate.",
+      "version": 3
+    },
+    {
+      "id": "DD3",
+      "title": "Rate limiting users and providers",
+      "options": [
+        { "name": "let providers reject excess", "pros": "no work", "cons": "429s become retries; user caps not enforced" },
+        { "name": "per-user frequency cap in the API + per-provider token buckets in workers", "pros": "users protected, provider limits respected smoothly", "cons": "shared counter store" }
+      ],
+      "choice": "per-user frequency cap in the API + per-provider token buckets in workers (Redis)",
+      "why": "Caps are a product rule, enforced once at the gate; provider send rates are an operational limit, enforced where the sending happens.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Campaign fan-out from segment to users (scheduler pages through the segment at a set rate), the preferences lookup per send (cache), provider throughput (token buckets, multiple vendors for SMS/email).",
+    "failures": "Provider outage: messages stay queued, backoff + circuit breaker, failover to a secondary SMS/email vendor. Worker crash mid-send: message redelivered, idempotency check prevents a duplicate. Expired OTPs dropped. Poison messages go to the DLQ.",
+    "monitoring": "Queue depth and oldest-message age per channel × priority, accept → sent latency (p99 for transactional), provider error and throttle rates, DLQ size, suppression rate, SMS spend per day.",
+    "scale": "10×: add queue partitions and workers per channel, shard the log, more vendors for SMS/email, regional deployments near providers.",
+    "future": "Delivery/open tracking via provider webhooks, smart send-time, digesting (batch several notifications into one), in-app inbox."
+  }
+}

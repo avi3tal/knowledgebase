@@ -1,0 +1,43 @@
+{
+  "version": 3,
+  "why": "N1 + F3: the frontier becomes priority front queues feeding per-host back queues; a politeness scheduler hands each host to one fetcher at most once per second (or its robots.txt crawl-delay, cached per host). URL metadata records last fetch and content hash so a recrawl scheduler re-enqueues pages by importance × staleness with an adaptive interval, and SimHash fingerprints catch near-duplicate content.",
+  "nodes": [
+    { "id": "op", "kind": "client", "label": "Operator (seeds, host policies)", "x": 60, "y": 200 },
+    { "id": "api", "kind": "service", "label": "Crawl control API", "x": 220, "y": 200 },
+    { "id": "prio", "kind": "queue", "label": "Frontier: priority front queues", "x": 400, "y": 80 },
+    { "id": "polite", "kind": "scheduler", "label": "Politeness scheduler (per-host back queues, ready-time heap)", "x": 400, "y": 200 },
+    { "id": "fetch", "kind": "worker", "label": "Fetchers ×N (async HTTP, leases)", "x": 600, "y": 200 },
+    { "id": "dns", "kind": "cache", "label": "Caching DNS resolver", "x": 800, "y": 40 },
+    { "id": "robots", "kind": "cache", "label": "robots.txt cache", "x": 800, "y": 120 },
+    { "id": "web", "kind": "external", "label": "Websites", "x": 800, "y": 200 },
+    { "id": "pages", "kind": "blob", "label": "Raw pages (blob, batched files)", "x": 800, "y": 300 },
+    { "id": "parseq", "kind": "queue", "label": "Fetched-page events", "x": 600, "y": 360 },
+    { "id": "parser", "kind": "worker", "label": "Parsers + link extractor", "x": 600, "y": 480 },
+    { "id": "seen", "kind": "cache", "label": "Seen-URL Bloom filter", "x": 800, "y": 420 },
+    { "id": "fingerprints", "kind": "nosql", "label": "Content fingerprints (hash + SimHash)", "x": 800, "y": 520 },
+    { "id": "urlmeta", "kind": "nosql", "label": "url_meta (last fetch, next due, priority)", "x": 400, "y": 600 },
+    { "id": "recrawl", "kind": "scheduler", "label": "Recrawl scheduler (adaptive interval)", "x": 220, "y": 480 }
+  ],
+  "edges": [
+    { "from": "op", "to": "api", "label": "POST /seeds, PUT host policy" },
+    { "from": "api", "to": "prio" },
+    { "from": "prio", "to": "polite" },
+    { "from": "polite", "to": "fetch", "label": "one host → one fetcher, ≤1 req/s" },
+    { "from": "fetch", "to": "dns", "label": "resolve host" },
+    { "from": "fetch", "to": "robots", "label": "allowed? crawl-delay?" },
+    { "from": "fetch", "to": "web", "label": "HTTP GET (timeouts)" },
+    { "from": "fetch", "to": "pages", "label": "store raw HTML" },
+    { "from": "fetch", "to": "parseq" },
+    { "from": "parseq", "to": "parser" },
+    { "from": "parser", "to": "seen", "label": "new URL?" },
+    { "from": "parser", "to": "fingerprints", "label": "duplicate content?" },
+    { "from": "parser", "to": "urlmeta", "label": "last fetch, content hash" },
+    { "from": "parser", "to": "prio", "label": "new URLs (scored)" },
+    { "from": "recrawl", "to": "urlmeta", "label": "due pages" },
+    { "from": "recrawl", "to": "prio", "label": "re-enqueue" }
+  ],
+  "flows": [
+    { "name": "crawl loop", "path": ["prio", "polite", "fetch", "parseq", "parser", "prio"] },
+    { "name": "recrawl", "path": ["recrawl", "urlmeta"] }
+  ]
+}

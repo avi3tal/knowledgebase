@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "why": "Decouple callers from providers (N3) and stop losing messages (N1): a load-balanced notification API validates, checks preferences (cached), writes the log and returns 202; work goes into one durable queue per channel, drained by channel workers. A slow SMS vendor now only backs up the SMS queue. Flaw left: OTPs queue behind campaign messages in the same channel (N2), failed sends are just dropped after one retry, and nothing caps marketing per user.",
+  "nodes": [
+    { "id": "producer", "kind": "client", "label": "Product services", "x": 60, "y": 200 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 200 },
+    { "id": "api", "kind": "service", "label": "Notification API (validate, prefs, log)", "x": 400, "y": 200 },
+    { "id": "prefcache", "kind": "cache", "label": "Prefs + devices cache", "x": 600, "y": 40 },
+    { "id": "prefdb", "kind": "sql", "label": "preferences, devices, contacts", "x": 800, "y": 40 },
+    { "id": "log", "kind": "nosql", "label": "notification_log (TTL 30d)", "x": 800, "y": 440 },
+    { "id": "queues", "kind": "queue", "label": "Queues per channel (push / SMS / email)", "x": 600, "y": 240 },
+    { "id": "workers", "kind": "worker", "label": "Channel workers", "x": 800, "y": 240 },
+    { "id": "apns", "kind": "external", "label": "APNs / FCM", "x": 1000, "y": 140 },
+    { "id": "sms", "kind": "external", "label": "SMS vendor", "x": 1000, "y": 240 },
+    { "id": "email", "kind": "external", "label": "Email vendor", "x": 1000, "y": 340 }
+  ],
+  "edges": [
+    { "from": "producer", "to": "lb", "label": "POST /notifications" },
+    { "from": "lb", "to": "api" },
+    { "from": "api", "to": "prefcache", "label": "opted in? devices?" },
+    { "from": "prefcache", "to": "prefdb", "label": "read-through" },
+    { "from": "api", "to": "log", "label": "status = queued" },
+    { "from": "api", "to": "queues", "label": "enqueue per channel" },
+    { "from": "queues", "to": "workers" },
+    { "from": "workers", "to": "apns" },
+    { "from": "workers", "to": "sms" },
+    { "from": "workers", "to": "email" },
+    { "from": "workers", "to": "log", "label": "status = sent / failed" }
+  ],
+  "flows": [{ "name": "send", "path": ["producer", "lb", "api", "queues", "workers", "apns"] }]
+}

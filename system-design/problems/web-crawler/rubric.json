@@ -1,0 +1,371 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Self-feeding work pipeline with external politeness: a prioritised frontier feeds per-target queues that enforce rate limits on systems you don't own, stateless workers do the I/O, outputs land in cheap bulk storage, and compact probabilistic sets stop the loop from redoing work.",
+  "checks": [
+    {
+      "id": "req-crawl",
+      "type": "requirement",
+      "label": "Core use case captured",
+      "keywords": [
+        "crawl",
+        "download",
+        "fetch"
+      ],
+      "tips": {
+        "nudge": "What does this system do, start to finish, for one URL?",
+        "hint": "Describe the loop: take a URL, get the page, find new URLs.",
+        "show": "F1: Starting from seed URLs, fetch HTML pages, store them, extract links and add new URLs to crawl."
+      }
+    },
+    {
+      "id": "req-politeness",
+      "type": "requirement",
+      "label": "Obligations toward the sites being visited",
+      "keywords": [
+        "polite",
+        "robots",
+        "per host",
+        "per-host",
+        "per domain",
+        "per-domain",
+        "overload",
+        "overwhelm",
+        "once per second"
+      ],
+      "tips": {
+        "nudge": "Site owners complained about something specific.",
+        "hint": "Capture the per-host rate and the rules sites publish.",
+        "show": "N1: Polite: ≤ 1 request/s per host and obey robots.txt (allow/disallow, crawl-delay)."
+      }
+    },
+    {
+      "id": "req-dedup",
+      "type": "requirement",
+      "label": "Repeated work avoided",
+      "keywords": [
+        "duplicate",
+        "dedup",
+        "same content",
+        "already seen",
+        "seen before",
+        "only once",
+        "near-copies",
+        "near-duplicate"
+      ],
+      "tips": {
+        "nudge": "A third of pages are copies, and links point to the same URL millions of times.",
+        "hint": "Say what must not be fetched or stored twice.",
+        "show": "F2: Each URL is fetched once per crawl cycle; pages with duplicate content are detected and not stored/indexed twice."
+      }
+    },
+    {
+      "id": "est-fetch-rate",
+      "type": "estimate",
+      "label": "Fetch throughput estimated",
+      "keywords": [
+        "fetch",
+        "page",
+        "crawl",
+        "download",
+        "rate"
+      ],
+      "unit": "/s",
+      "min": 300,
+      "max": 10000,
+      "tips": {
+        "nudge": "2B pages a month is how many per second?",
+        "hint": "pages per month ÷ seconds per month, then a peak factor.",
+        "show": "2B / 2.6M s ≈ 770 pages/s; plan for ~1,500/s peak."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Storage for retained content estimated",
+      "keywords": [
+        "storage",
+        "bytes",
+        "size",
+        "disk",
+        "content"
+      ],
+      "unit": "TB",
+      "min": 200,
+      "max": 10000,
+      "tips": {
+        "nudge": "Pages per month × size × months kept.",
+        "hint": "Decide whether duplicates are stored; compression helps but estimate raw first.",
+        "show": "2B × 100 KB × 6 months ≈ 1.2 PB (≈ 800 TB after dropping duplicates; less compressed)."
+      }
+    },
+    {
+      "id": "est-bandwidth",
+      "type": "estimate",
+      "label": "Network bandwidth estimated",
+      "keywords": [
+        "bandwidth",
+        "network",
+        "ingress",
+        "throughput",
+        "bps",
+        "traffic"
+      ],
+      "unit": "Gbps",
+      "min": 0.2,
+      "max": 20,
+      "tips": {
+        "nudge": "Pages per second × bytes per page.",
+        "hint": "Convert to bits per second.",
+        "show": "770 pages/s × 100 KB ≈ 77 MB/s ≈ 0.6 Gbps average, ~1.2 Gbps peak."
+      }
+    },
+    {
+      "id": "api-seeds",
+      "type": "endpoint",
+      "label": "How crawl work gets in",
+      "keywords": [
+        "seed",
+        "url",
+        "crawl",
+        "job"
+      ],
+      "tips": {
+        "nudge": "The crawler is internal. Who tells it where to start, or to recrawl a site now?",
+        "hint": "Define a small control API for seeds and per-host policies.",
+        "show": "POST /seeds {urls[], priority} → 202; PUT /hosts/{host}/policy {max_rps, enabled}"
+      }
+    },
+    {
+      "id": "data-frontier",
+      "type": "entity",
+      "label": "Work still to do modelled",
+      "keywords": [
+        "frontier",
+        "to crawl",
+        "next_crawl",
+        "next fetch",
+        "next_fetch",
+        "url queue",
+        "url_queue",
+        "priority"
+      ],
+      "tips": {
+        "nudge": "What does the crawler know about every URL it hasn't fetched yet, or must refetch?",
+        "hint": "Model the URL record that decides when it's fetched next.",
+        "show": "url_meta(url_hash PK, url, host, priority, last_fetched, next_fetch_at, content_hash, status) + the frontier queues."
+      }
+    },
+    {
+      "id": "data-pages",
+      "type": "entity",
+      "label": "Fetched content modelled",
+      "keywords": [
+        "page",
+        "document",
+        "content",
+        "html"
+      ],
+      "tips": {
+        "nudge": "What exactly does the indexing team read?",
+        "hint": "Raw content plus enough metadata to find and reprocess it.",
+        "show": "pages: blob key = url_hash/fetch_time → compressed HTML + headers; batched into large files (WARC-style)."
+      }
+    },
+    {
+      "id": "comp-frontier",
+      "type": "component",
+      "label": "Something orders and paces the work",
+      "kinds": [
+        "queue",
+        "stream",
+        "scheduler"
+      ],
+      "tips": {
+        "nudge": "Thousands of fetchers need to know what to fetch next. Who tells them?",
+        "hint": "A durable structure of URLs waiting, with a policy on what comes out next.",
+        "show": "URL frontier: priority queues in front, per-host queues behind, a scheduler releasing each host at most 1/s."
+      }
+    },
+    {
+      "id": "comp-content-store",
+      "type": "component",
+      "label": "Storage for petabytes of raw content",
+      "kinds": [
+        "blob",
+        "nosql"
+      ],
+      "tips": {
+        "nudge": "1.2 PB of write-once, read-in-bulk data. Which kind of store?",
+        "hint": "Cheap, durable, large objects; append and batch reads.",
+        "show": "Object/blob storage (S3/HDFS-like), pages batched into large files."
+      }
+    },
+    {
+      "id": "comp-dns",
+      "type": "component",
+      "label": "Per-fetch overheads besides the download kept cheap",
+      "kinds": [
+        "dns",
+        "cache",
+        "service"
+      ],
+      "keywords": [
+        "dns",
+        "resolv"
+      ],
+      "tips": {
+        "nudge": "Before every fetch you must turn a hostname into an IP. How slow can that be?",
+        "hint": "Standard resolvers are slow and synchronous at this rate.",
+        "show": "A local caching DNS resolver per fetcher cluster (TTL-respecting), resolving asynchronously."
+      }
+    },
+    {
+      "id": "comp-seen",
+      "type": "component",
+      "label": "Fast membership test for what's been seen",
+      "kinds": [
+        "cache",
+        "nosql",
+        "sql",
+        "service"
+      ],
+      "keywords": [
+        "seen",
+        "dedup",
+        "bloom",
+        "fingerprint",
+        "visited",
+        "hash"
+      ],
+      "tips": {
+        "nudge": "Every extracted link: 'have we got this URL already?' out of 20 billion.",
+        "hint": "A compact set in memory that can say 'definitely new' quickly.",
+        "show": "Seen-URL Bloom filter (~25 GB for 20B URLs at 1% false positives) + content fingerprint store."
+      }
+    },
+    {
+      "id": "edge-fetch-web",
+      "type": "edge",
+      "label": "Workers reach the outside web",
+      "from_kinds": [
+        "worker",
+        "service"
+      ],
+      "to_kinds": [
+        "external"
+      ],
+      "tips": {
+        "nudge": "Where do pages actually come from in your diagram?",
+        "hint": "Draw the internet as an external node and connect the component that downloads.",
+        "show": "Fetcher workers → websites (HTTP GET with timeouts)."
+      }
+    },
+    {
+      "id": "edge-feedback",
+      "type": "edge",
+      "label": "Discovered links feed back into the work",
+      "from_kinds": [
+        "worker",
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream",
+        "scheduler"
+      ],
+      "tips": {
+        "nudge": "The crawler finds most of its URLs itself. How do they get back in?",
+        "hint": "Close the loop from link extraction to the frontier.",
+        "show": "Parser → seen filter → frontier priority queues (only new URLs)."
+      }
+    },
+    {
+      "id": "dd-politeness",
+      "type": "decision",
+      "label": "Per-site pacing mechanism decided",
+      "keywords": [
+        "per-host queue",
+        "per host queue",
+        "host queue",
+        "back queue",
+        "politeness",
+        "crawl-delay",
+        "robots",
+        "per-domain",
+        "per host"
+      ],
+      "tips": {
+        "nudge": "A single FIFO of URLs is full of links to the same big site. What happens to that site?",
+        "hint": "Group URLs by host so one host is only fetched by one worker at a time, with a delay.",
+        "show": "Priority front queues → per-host back queues; a heap of 'host ready at time t' hands each host to one fetcher at ≤1 req/s (or robots crawl-delay); robots.txt cached per host."
+      }
+    },
+    {
+      "id": "dd-dedup",
+      "type": "decision",
+      "label": "Detecting repeats cheaply decided",
+      "keywords": [
+        "bloom",
+        "fingerprint",
+        "simhash",
+        "minhash",
+        "checksum",
+        "content hash",
+        "md5",
+        "sha-1",
+        "sha-256",
+        "sha256",
+        "normaliz",
+        "normalis",
+        "canonical"
+      ],
+      "tips": {
+        "nudge": "Exact hash set of 20B URLs ≈ how much memory? And copies with one changed byte?",
+        "hint": "Separate URL-level dedup from content-level dedup.",
+        "show": "Normalise URLs (strip tracking params, lowercase host) then check a Bloom filter; content: exact hash for copies, SimHash for near-duplicates."
+      }
+    },
+    {
+      "id": "dd-priority",
+      "type": "decision",
+      "label": "What gets crawled first and how often",
+      "keywords": [
+        "pagerank",
+        "importance",
+        "recrawl",
+        "re-crawl",
+        "freshness",
+        "change rate",
+        "prioriti"
+      ],
+      "tips": {
+        "nudge": "News changes hourly, most pages rarely. Should every page be refetched on the same schedule?",
+        "hint": "Decide what feeds the priority of a URL and its revisit interval.",
+        "show": "Priority = importance (link-based score, domain quality) × staleness; revisit interval adapts to observed change rate (halve when changed, double when not)."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks named",
+      "tips": {
+        "nudge": "Which component saturates first as you add fetchers?",
+        "hint": "Look at DNS, the frontier, the seen-filter and politeness itself.",
+        "show": "DNS (cache), the frontier (shard by host hash), the Bloom filter (partition by URL hash), and politeness: big sites cap throughput, so crawl many hosts in parallel."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure scenarios walked through",
+      "tips": {
+        "nudge": "A fetcher crashes holding 200 URLs. A site returns 503 for an hour. A trap generates infinite URLs.",
+        "hint": "Cover worker loss, unhealthy hosts, traps and frontier durability.",
+        "show": "Leases on dequeued URLs (redelivered if not acked); per-host backoff on 5xx/timeouts; max depth/URL length/pages per host against traps; frontier persisted to disk with checkpoints."
+      }
+    }
+  ]
+}

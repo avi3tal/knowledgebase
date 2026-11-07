@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      { "id": "F1", "text": "Starting from seed URLs, crawl the web: fetch HTML pages, store them, extract links and add new URLs to the frontier." },
+      { "id": "F2", "text": "Avoid duplicate work: each URL is fetched once per cycle; pages whose content duplicates an earlier page are not stored or indexed twice." },
+      { "id": "F3", "text": "Recrawl pages to keep them fresh, more often for pages that change often." },
+      { "id": "F4", "text": "Expose stored pages to the indexing team for 6 months." }
+    ],
+    "non_functional": [
+      { "id": "N1", "text": "Polite: at most 1 request/s per host and obey robots.txt (disallow rules, crawl-delay)." },
+      { "id": "N2", "text": "Throughput: 2B pages per month, scaling horizontally by adding fetchers." },
+      { "id": "N3", "text": "Robust against crawler traps, slow servers and malformed HTML; no lost work when a machine dies." }
+    ],
+    "assumptions": [
+      { "id": "A1", "text": "~100 KB per HTML page; ~1/3 of fetched pages are copies or near-copies." },
+      { "id": "A2", "text": "~20B distinct URLs discovered over time." }
+    ],
+    "out_of_scope": [
+      { "id": "O1", "text": "Images/video, JavaScript rendering, building the search index itself." }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/seeds",
+      "request": "urls[], priority",
+      "response": "202 {accepted}",
+      "notes": "Internal control API; also used to force a recrawl."
+    },
+    {
+      "id": "E2",
+      "method": "PUT",
+      "path": "/hosts/{host}/policy",
+      "request": "max_rps, enabled",
+      "response": "200",
+      "notes": "Lets operators slow down or block a host after a complaint."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "url_meta",
+      "fields": "url_hash (PK), url, host, priority, last_fetched, next_fetch_at, content_hash, status, depth",
+      "store": "nosql",
+      "why": "Billions of rows, point lookups and updates by url_hash; drives recrawl (next_fetch_at)."
+    },
+    {
+      "id": "D2",
+      "name": "frontier",
+      "fields": "front queues by priority → back queues per host; heap of (host, ready_at)",
+      "store": "queue",
+      "why": "Ordering and politeness live in the queue structure; persisted to disk with checkpoints."
+    },
+    {
+      "id": "D3",
+      "name": "pages",
+      "fields": "blob key url_hash/fetch_time → compressed HTML + response headers, batched into large files",
+      "store": "blob",
+      "why": "Write-once, read in bulk by indexing: ~1.2 PB raw for 6 months."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Politeness at scale",
+      "options": [
+        { "name": "one global FIFO", "pros": "simple", "cons": "links cluster by site: hundreds of fetchers hit one host at once" },
+        { "name": "sleep between requests in each fetcher", "pros": "easy", "cons": "doesn't stop two fetchers hitting the same host" },
+        { "name": "per-host back queues + ready-time heap", "pros": "one host is served by one fetcher at a time with an enforced delay", "cons": "more frontier machinery; must shard by host" }
+      ],
+      "choice": "priority front queues feeding per-host back queues, released by a scheduler heap (host ready at t)",
+      "why": "N1 and N2 together: politeness is enforced structurally, and throughput comes from crawling many hosts in parallel. robots.txt is fetched once per host and cached with its crawl-delay.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "Detecting repeats",
+      "options": [
+        { "name": "exact hash set of URLs in a DB", "pros": "exact", "cons": "~1 TB of keys, a DB lookup per extracted link" },
+        { "name": "Bloom filter over normalised URLs", "pros": "~25 GB for 20B URLs at 1% false positives, in memory", "cons": "1% of new URLs skipped (acceptable)" },
+        { "name": "content hash + SimHash fingerprints", "pros": "catches exact and near-duplicate pages", "cons": "near-duplicate lookup needs bit-band indexing" }
+      ],
+      "choice": "URL normalisation + Bloom filter for URLs; exact hash and SimHash fingerprints for content",
+      "why": "F2: URL dedup prevents refetching (most of the volume); content dedup stops the 1/3 of copies being stored and indexed.",
+      "version": 2
+    },
+    {
+      "id": "DD3",
+      "title": "Priority and recrawl",
+      "options": [
+        { "name": "BFS order, fixed revisit interval", "pros": "simple", "cons": "wastes budget on static pages, news goes stale" },
+        { "name": "importance × staleness priority, adaptive interval", "pros": "budget follows value and change rate", "cons": "needs scores and history" }
+      ],
+      "choice": "importance × staleness priority with adaptive revisit interval",
+      "why": "F3: halve a URL's interval when its content hash changed, double it (to a cap) when it didn't; importance from link-based score and domain quality.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "DNS resolution (local caching resolvers), the frontier (sharded by host hash so each host lives on one shard), the Bloom filter (partitioned by URL hash), and politeness itself: a few huge sites cap throughput, so breadth across hosts matters.",
+    "failures": "Fetcher crash: URLs are leased from the frontier and redelivered if not acked. Unhealthy host (5xx/timeouts): per-host exponential backoff. Traps: max depth, max URL length, page budget per host. Frontier shard loss: rebuilt from checkpoint + url_meta.",
+    "monitoring": "Pages/s fetched, error and timeout rate by host, frontier size and age, duplicate rate, robots.txt denials, DNS latency, bandwidth.",
+    "scale": "Add fetchers and frontier shards; place fetcher clusters in several regions close to the hosts they crawl (host-hash affinity).",
+    "future": "JavaScript rendering for dynamic sites, sitemaps and change feeds (push instead of poll), spam/link-farm detection."
+  }
+}

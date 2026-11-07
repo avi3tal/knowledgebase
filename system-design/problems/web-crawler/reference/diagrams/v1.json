@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "why": "Naive start: one crawler process keeps a BFS queue in memory, fetches, parses and writes pages to a database. It works for a few thousand pages, but ~770 pages/s with ~1 s per fetch needs about a thousand fetches in flight (N2), the in-memory queue is lost on crash (N3), BFS order hammers whichever site it is in the middle of (breaks N1), and a SQL DB can't hold 1.2 PB.",
+  "nodes": [
+    { "id": "op", "kind": "client", "label": "Operator (seed URLs)", "x": 60, "y": 200 },
+    { "id": "crawler", "kind": "service", "label": "Crawler process (in-memory BFS queue)", "x": 400, "y": 200 },
+    { "id": "web", "kind": "external", "label": "Websites", "x": 640, "y": 80 },
+    { "id": "db", "kind": "sql", "label": "pages DB", "x": 640, "y": 300 }
+  ],
+  "edges": [
+    { "from": "op", "to": "crawler", "label": "seeds" },
+    { "from": "crawler", "to": "web", "label": "HTTP GET" },
+    { "from": "crawler", "to": "db", "label": "store page" }
+  ],
+  "flows": [{ "name": "crawl", "path": ["op", "crawler", "web"] }]
+}
