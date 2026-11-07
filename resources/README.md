@@ -30,6 +30,8 @@ studio, the 🗺️ Knowledge map, topic pages, and "Go deeper" on lessons.
 | ByteByteGo patterns repo | supplementary | – | – | Free, commented reference code (brute force → optimal, DP ladders). Licence CC BY-NC-ND, so we only link to it. |
 | Coding Interview University | skip | skip | skip | Mostly dated link lists. Its useful structure (fundamentals order, study method, implement-the-API exercises) is folded into ROADMAP.md. |
 | LeetCode solutions PDF (local) | skip | – | – | Copied statements plus code-only solutions, no explanations, unclear provenance. |
+| 20+ Coding Patterns PDF (local) | skip | – | – | A DesignGurus promo deck with one slide per pattern (a usage cue and 2–3 sample names) and no teaching. It is our catalog's pattern list and a subset of the free DesignGurus cheat sheet. |
+| Must Do 500 list (Varyani, local CSV) | tag-only | – | – | A ranked list of 500 LeetCode links with tags and difficulty, with no teaching or solutions. Useful as a backlog for new problems and as an origin tag. |
 
 **Borrowed ideas** (described in our own words, no assets copied), queued for the studio:
 - Algo:

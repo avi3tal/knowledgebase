@@ -242,12 +242,16 @@ def for_topic(subject: str, topic: str, limit: int = MAX_PER_TOPIC) -> list[dict
 
 
 def for_problem(slug: str, limit: int = MAX_PER_TOPIC) -> list[dict[str, Any]]:
-    """Refs explaining one of our problems: they contain solutions, so they're flagged as spoilers."""
+    """Refs explaining one of our problems: they usually contain solutions, so they're flagged as spoilers
+    (except `tag-only` sources such as question lists, which only name the problem)."""
     index, titles = source_index(), title_index()
     hits = [
         r for r in load_refs() if match_problem(r.get("problem_title"), titles) == slug and _verdict(r, index) != "skip"
     ]
-    return [{**_public(r, index), "spoiler": True} for r in sorted(hits, key=lambda r: _rank(r, index))[:limit]]
+    return [
+        {**_public(r, index), "spoiler": _verdict(r, index) != "tag-only"}
+        for r in sorted(hits, key=lambda r: _rank(r, index))[:limit]
+    ]
 
 
 # ------------------------------------------------------------------ knowledge graph
