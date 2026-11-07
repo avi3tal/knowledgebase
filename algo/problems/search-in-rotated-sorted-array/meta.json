@@ -1,0 +1,39 @@
+{
+  "title": "Search In Rotated Sorted Array",
+  "slug": "search-in-rotated-sorted-array",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": [
+    "modified-binary-search"
+  ],
+  "sources": [
+    {
+      "name": "leetcode",
+      "url": "https://leetcode.com/problems/search-in-rotated-sorted-array/"
+    }
+  ],
+  "kind": "function",
+  "function": "search",
+  "params": [
+    {
+      "name": "nums",
+      "type": "int[]"
+    },
+    {
+      "name": "target",
+      "type": "int"
+    }
+  ],
+  "returns": "int",
+  "comparator": "exact",
+  "expected_complexity": {
+    "time": "O(log n)",
+    "space": "O(1)"
+  },
+  "bench": {
+    "args": {
+      "nums": "(lambda a, k: a[k:] + a[:k])(sorted_int_array(n, 0, 10**15), n // 3)",
+      "target": "10**16"
+    }
+  }
+}

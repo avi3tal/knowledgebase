@@ -1,0 +1,521 @@
+{
+ "version": 1,
+ "title": "Lower bound — ceiling of a key in a sorted array",
+ "code": [
+  "def search_ceiling(nums: list[int], key: int) -> int:",
+  "    if not nums or key > nums[-1]:",
+  "        return -1",
+  "    lo, hi = 0, len(nums) - 1",
+  "    while lo <= hi:",
+  "        mid = lo + (hi - lo) // 2",
+  "        if nums[mid] < key:",
+  "            lo = mid + 1",
+  "        elif nums[mid] > key:",
+  "            hi = mid - 1",
+  "        else:",
+  "            return mid",
+  "    return lo"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "lo": "lo",
+    "mid": "mid",
+    "hi": "hi"
+   },
+   "window": [
+    "lo",
+    "hi"
+   ]
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "lo",
+    "hi",
+    "mid"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   1,
+   3,
+   8,
+   10,
+   15,
+   20,
+   25,
+   31,
+   40,
+   44,
+   52,
+   60,
+   71,
+   85,
+   90
+  ],
+  "key": 26
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": null,
+      "hi": null,
+      "mid": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": null,
+      "hi": 14
+     },
+     "window": [
+      0,
+      14
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 0,
+      "hi": 14,
+      "mid": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "look at the middle of the live range [lo, hi]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 7,
+      "hi": 14
+     },
+     "window": [
+      0,
+      14
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 0,
+      "hi": 14,
+      "mid": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "nums[mid] is a candidate ceiling, but a smaller one may sit to its left",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 7,
+      "hi": 6
+     },
+     "window": [
+      0,
+      6
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 0,
+      "hi": 6,
+      "mid": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "look at the middle of the live range [lo, hi]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 3,
+      "hi": 6
+     },
+     "window": [
+      0,
+      6
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 0,
+      "hi": 6,
+      "mid": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[mid] is too small, and so is everything left of it — drop the left half",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 4,
+      "mid": 3,
+      "hi": 6
+     },
+     "window": [
+      4,
+      6
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 4,
+      "hi": 6,
+      "mid": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "look at the middle of the live range [lo, hi]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 4,
+      "mid": 5,
+      "hi": 6
+     },
+     "window": [
+      4,
+      6
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 4,
+      "hi": 6,
+      "mid": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[mid] is too small, and so is everything left of it — drop the left half",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 5,
+      "hi": 6
+     },
+     "window": [
+      6,
+      6
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 6,
+      "hi": 6,
+      "mid": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "look at the middle of the live range [lo, hi]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 6,
+      "hi": 6
+     },
+     "window": [
+      6,
+      6
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 6,
+      "hi": 6,
+      "mid": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[mid] is too small, and so is everything left of it — drop the left half",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 7,
+      "mid": 6,
+      "hi": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 7,
+      "hi": 6,
+      "mid": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "lo crossed hi — lo is the first index whose value is bigger than key",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      8,
+      10,
+      15,
+      20,
+      25,
+      31,
+      40,
+      44,
+      52,
+      60,
+      71,
+      85,
+      90
+     ],
+     "pointers": {
+      "lo": 7,
+      "mid": 6,
+      "hi": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 26,
+      "lo": 7,
+      "hi": 6,
+      "mid": 6
+     }
+    }
+   }
+  }
+ ],
+ "result": 7
+}

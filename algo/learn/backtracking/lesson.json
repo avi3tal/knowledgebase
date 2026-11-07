@@ -1,0 +1,197 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "backtracking",
+ "title": "Backtracking",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "combination-sum-iii",
+   "title": "Choose / explore / un-choose — k digits that add up to n",
+   "source": "examples/combination_sum3.py",
+   "function": "combination_sum3",
+   "input": {
+    "k": 3,
+    "n": 8
+   },
+   "view": [
+    {
+     "id": "stack",
+     "type": "callstack"
+    },
+    {
+     "id": "path",
+     "type": "array",
+     "var": "path"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "digit",
+      "remaining",
+      "result"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "k": 3,
+      "n": 8
+     },
+     "expected": [
+      [
+       1,
+       2,
+       5
+      ],
+      [
+       1,
+       3,
+       4
+      ]
+     ]
+    },
+    {
+     "input": {
+      "k": 3,
+      "n": 9
+     },
+     "expected": [
+      [
+       1,
+       2,
+       6
+      ],
+      [
+       1,
+       3,
+       5
+      ],
+      [
+       2,
+       3,
+       4
+      ]
+     ]
+    },
+    {
+     "input": {
+      "k": 4,
+      "n": 1
+     },
+     "expected": []
+    },
+    {
+     "input": {
+      "k": 2,
+      "n": 5
+     },
+     "expected": [
+      [
+       1,
+       4
+      ],
+      [
+       2,
+       3
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-constraints.md"
+  },
+  {
+   "type": "trace",
+   "id": "n-queens",
+   "title": "Backtracking on a board — place 4 queens",
+   "source": "examples/n_queens.py",
+   "function": "first_n_queens",
+   "input": {
+    "n": 4
+   },
+   "view": [
+    {
+     "id": "board",
+     "type": "grid",
+     "var": "board",
+     "cells": {
+      "try": [
+       "row",
+       "col"
+      ]
+     }
+    },
+    {
+     "id": "stack",
+     "type": "callstack"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "n": 4
+     },
+     "expected": [
+      ".Q..",
+      "...Q",
+      "Q...",
+      "..Q."
+     ]
+    },
+    {
+     "input": {
+      "n": 1
+     },
+     "expected": [
+      "Q"
+     ]
+    },
+    {
+     "input": {
+      "n": 3
+     },
+     "expected": []
+    },
+    {
+     "input": {
+      "n": 5
+     },
+     "expected": [
+      "Q....",
+      "..Q..",
+      "....Q",
+      ".Q...",
+      "...Q."
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "permutations",
+    "permutations-of-string",
+    "combination-sum",
+    "word-search",
+    "sudoku-solver"
+   ]
+  }
+ ]
+}

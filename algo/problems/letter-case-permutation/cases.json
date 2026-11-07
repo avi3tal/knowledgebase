@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"s": "a1b2"}, "expected": ["A1B2", "A1b2", "a1B2", "a1b2"]},
+  {"name": "example 2", "args": {"s": "3z4"}, "expected": ["3Z4", "3z4"]},
+  {"name": "digits only", "args": {"s": "12345"}, "expected": ["12345"]},
+  {"name": "single letter", "args": {"s": "C"}, "expected": ["C", "c"]},
+  {"name": "single digit", "args": {"s": "0"}, "expected": ["0"]},
+  {"name": "mixed case input", "args": {"s": "aB"}, "expected": ["AB", "Ab", "aB", "ab"]},
+  {"name": "letters only", "args": {"s": "abc"}, "expected": ["ABC", "ABc", "AbC", "Abc", "aBC", "aBc", "abC", "abc"]},
+  {"name": "longer", "args": {"s": "x9Y8z"}, "expected": ["X9Y8Z", "X9Y8z", "X9y8Z", "X9y8z", "x9Y8Z", "x9Y8z", "x9y8Z", "x9y8z"]}
+]

@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a list of distinct tags, return every possible set of tags (including the empty set).",
+   "options": [
+    "subsets",
+    "backtracking",
+    "arrays-hashing"
+   ],
+   "answer": "subsets",
+   "why": "Every combination is an answer and nothing is ever ruled out → BFS subsets from the empty set. Backtracking is for when constraints kill branches early; here there's nothing to prune."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given an array that may contain repeated numbers, return all subsets without listing the same subset twice.",
+   "options": [
+    "subsets",
+    "knapsack-0-1",
+    "backtracking"
+   ],
+   "answer": "subsets",
+   "why": "All subsets + duplicates in the input → sort, then extend only the subsets created in the previous step. Knapsack would only count or optimise, not list them."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given a string of letters and digits, return every string you get by switching any of the letters between lowercase and uppercase.",
+   "options": [
+    "subsets",
+    "backtracking",
+    "strings"
+   ],
+   "answer": "subsets",
+   "why": "Each letter is an independent two-way choice and every combination is valid → subsets: each letter doubles the list of strings."
+  },
+  {
+   "id": "q4",
+   "prompt": "Can an array of positive integers (n ≤ 200, values ≤ 100) be split into two groups with equal sums?",
+   "options": [
+    "knapsack-0-1",
+    "subsets",
+    "backtracking"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "Only a yes/no about some subset, and n is too big for 2ⁿ → 0/1 knapsack DP over (item, sum). Listing subsets would be exponential."
+  },
+  {
+   "id": "q5",
+   "prompt": "Return every combination of the given distinct numbers (each usable many times) that adds up to a target.",
+   "options": [
+    "backtracking",
+    "subsets",
+    "unbounded-knapsack"
+   ],
+   "answer": "backtracking",
+   "why": "List combinations that must satisfy a constraint (the sum) → backtracking: abandon a partial combination as soon as it overshoots. Unbounded knapsack would only count them."
+  },
+  {
+   "id": "q6",
+   "prompt": "Count the contiguous subarrays of positive integers whose product is less than k.",
+   "options": [
+    "sliding-window",
+    "subsets",
+    "two-pointers"
+   ],
+   "answer": "sliding-window",
+   "why": "Contiguous + a running constraint (product < k) → dynamic sliding window. A subarray isn't an arbitrary subset."
+  },
+  {
+   "id": "q7",
+   "prompt": "Return every subsequence of a short string (length ≤ 12), duplicates allowed.",
+   "options": [
+    "subsets",
+    "longest-common-substring",
+    "sliding-window"
+   ],
+   "answer": "subsets",
+   "why": "List all subsequences = all subsets of positions → subsets. The DP patterns are for the longest/count of subsequences, and sliding window needs contiguity."
+  }
+ ]
+}

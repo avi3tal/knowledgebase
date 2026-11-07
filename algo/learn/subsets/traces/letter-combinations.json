@@ -1,0 +1,857 @@
+{
+ "version": 1,
+ "title": "k choices per position — letter combinations of a phone number",
+ "code": [
+  "def letter_combinations(digits: str) -> list[str]:",
+  "    if not digits:",
+  "        return []",
+  "    combos = [\"\"]",
+  "    for digit in digits:",
+  "        letters = KEYPAD[digit]",
+  "        next_level = []",
+  "        for prefix in combos:",
+  "            for letter in letters:",
+  "                next_level.append(prefix + letter)",
+  "        combos = next_level",
+  "    return combos"
+ ],
+ "view": [
+  {
+   "id": "combos",
+   "type": "array",
+   "var": "combos"
+  },
+  {
+   "id": "next",
+   "type": "array",
+   "var": "next_level"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "digit",
+    "letters",
+    "prefix"
+   ]
+  }
+ ],
+ "input": {
+  "digits": "23"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": null,
+      "letters": null,
+      "prefix": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "level 0 — one empty prefix",
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": null,
+      "letters": null,
+      "prefix": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": null,
+      "prefix": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "next digit — every prefix branches once per letter",
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": "abc",
+      "prefix": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": "abc",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": "abc",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": "abc",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      ""
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": "abc",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the new level replaces the old one",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "2",
+      "letters": "abc",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "abc",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "next digit — every prefix branches once per letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "clone the prefix and extend it with one letter",
+   "state": {
+    "combos": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce",
+      "cf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the new level replaces the old one",
+   "state": {
+    "combos": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce",
+      "cf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce",
+      "cf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "combos": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce",
+      "cf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "next": {
+     "values": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce",
+      "cf"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "digit": "3",
+      "letters": "def",
+      "prefix": "c"
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  "ad",
+  "ae",
+  "af",
+  "bd",
+  "be",
+  "bf",
+  "cd",
+  "ce",
+  "cf"
+ ]
+}

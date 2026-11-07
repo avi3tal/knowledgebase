@@ -1,0 +1,1542 @@
+{
+ "version": 1,
+ "title": "Boundary search — first and last position of a target",
+ "code": [
+  "def search_range(nums: list[int], target: int) -> list[int]:",
+  "    def boundary(find_first: bool) -> int:",
+  "        found = -1",
+  "        lo, hi = 0, len(nums) - 1",
+  "        while lo <= hi:",
+  "            mid = lo + (hi - lo) // 2",
+  "            if nums[mid] < target:",
+  "                lo = mid + 1",
+  "            elif nums[mid] > target:",
+  "                hi = mid - 1",
+  "            else:",
+  "                found = mid",
+  "                if find_first:",
+  "                    hi = mid - 1",
+  "                else:",
+  "                    lo = mid + 1",
+  "        return found",
+  "",
+  "    first = boundary(True)",
+  "    last = boundary(False)",
+  "    return [first, last]"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "lo": "lo",
+    "mid": "mid",
+    "hi": "hi"
+   },
+   "window": [
+    "lo",
+    "hi"
+   ]
+  },
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "found",
+    "first",
+    "last"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   1,
+   2,
+   5,
+   5,
+   5,
+   5,
+   5,
+   7,
+   8,
+   8,
+   10
+  ],
+  "target": 5
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": null,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": -1,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": null,
+      "hi": 10
+     },
+     "window": [
+      0,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": -1,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 10
+     },
+     "window": [
+      0,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": -1,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a hit — remember it, but keep searching for an earlier / later one",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 10
+     },
+     "window": [
+      0,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 4
+     },
+     "window": [
+      0,
+      4
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 2,
+      "hi": 4
+     },
+     "window": [
+      0,
+      4
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a hit — remember it, but keep searching for an earlier / later one",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 2,
+      "hi": 4
+     },
+     "window": [
+      0,
+      4
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 2,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 2,
+      "hi": 1
+     },
+     "window": [
+      0,
+      1
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 2,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 0,
+      "hi": 1
+     },
+     "window": [
+      0,
+      1
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 2,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "too small — the target can only be to the right",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 1,
+      "mid": 0,
+      "hi": 1
+     },
+     "window": [
+      1,
+      1
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 2,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 1,
+      "mid": 1,
+      "hi": 1
+     },
+     "window": [
+      1,
+      1
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 2,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "too small — the target can only be to the right",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 2,
+      "mid": 1,
+      "hi": 1
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": true
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 2,
+      "first": null,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "first occurrence found — now search again for the last one",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": null,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": -1,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": null,
+      "hi": 10
+     },
+     "window": [
+      0,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": -1,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 10
+     },
+     "window": [
+      0,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": -1,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a hit — remember it, but keep searching for an earlier / later one",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 10
+     },
+     "window": [
+      0,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 5,
+      "hi": 10
+     },
+     "window": [
+      6,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 8,
+      "hi": 10
+     },
+     "window": [
+      6,
+      10
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "too big — the target can only be to the left",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 8,
+      "hi": 7
+     },
+     "window": [
+      6,
+      7
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 6,
+      "hi": 7
+     },
+     "window": [
+      6,
+      7
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 5,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a hit — remember it, but keep searching for an earlier / later one",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 6,
+      "hi": 7
+     },
+     "window": [
+      6,
+      7
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 6,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 7,
+      "mid": 6,
+      "hi": 7
+     },
+     "window": [
+      7,
+      7
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 6,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 7,
+      "mid": 7,
+      "hi": 7
+     },
+     "window": [
+      7,
+      7
+     ]
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 6,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "too big — the target can only be to the left",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": 7,
+      "mid": 7,
+      "hi": 6
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      },
+      {
+       "fn": "boundary",
+       "args": {
+        "find_first": false
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": 6,
+      "first": 2,
+      "last": null
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": null,
+      "first": 2,
+      "last": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      5,
+      5,
+      5,
+      5,
+      5,
+      7,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "search_range",
+       "args": {
+        "nums": "[1, 2, 5, 5, 5, 5, 5, 7, 8, 8...",
+        "target": 5
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "found": null,
+      "first": 2,
+      "last": 6
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  2,
+  6
+ ]
+}

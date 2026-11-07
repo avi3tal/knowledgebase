@@ -1,0 +1,1139 @@
+{
+ "version": 1,
+ "title": "BFS subsets — the sum of every subset",
+ "code": [
+  "def subset_sums(nums: list[int]) -> list[int]:",
+  "    sums = [0]",
+  "    for num in nums:",
+  "        size = len(sums)",
+  "        for i in range(size):",
+  "            sums.append(sums[i] + num)",
+  "    return sums"
+ ],
+ "view": [
+  {
+   "id": "sums",
+   "type": "array",
+   "var": "sums",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "num",
+    "size"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   1,
+   2,
+   3,
+   5
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "start from the empty subset — its sum is 0",
+   "state": {
+    "sums": {
+     "values": [
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": null,
+      "size": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 1,
+      "size": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "freeze the current level — only these subsets get num added",
+   "state": {
+    "sums": {
+     "values": [
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 1,
+      "size": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 1,
+      "size": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 1,
+      "size": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 2,
+      "size": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "freeze the current level — only these subsets get num added",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 2,
+      "size": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 2,
+      "size": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 2,
+      "size": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 2,
+      "size": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "freeze the current level — only these subsets get num added",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 3,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "freeze the current level — only these subsets get num added",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9,
+      10
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9,
+      10
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "clone subset i and add num — the copy goes to the end, the old one stays",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9,
+      10,
+      11
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "2^n subsets, one sum each",
+   "state": {
+    "sums": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9,
+      10,
+      11
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "num": 5,
+      "size": 8
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  0,
+  1,
+  2,
+  3,
+  3,
+  4,
+  5,
+  6,
+  5,
+  6,
+  7,
+  8,
+  8,
+  9,
+  10,
+  11
+ ]
+}

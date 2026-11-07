@@ -1,0 +1,12 @@
+[
+  {"name": "example 1", "args": {"board": ["ABCE", "SFCS", "ADEE"], "word": "ABCCED"}, "expected": true},
+  {"name": "example 2", "args": {"board": ["ABCE", "SFCS", "ADEE"], "word": "SEE"}, "expected": true},
+  {"name": "example 3 reuse needed", "args": {"board": ["ABCE", "SFCS", "ADEE"], "word": "ABCB"}, "expected": false},
+  {"name": "single cell hit", "args": {"board": ["A"], "word": "A"}, "expected": true},
+  {"name": "single cell miss", "args": {"board": ["A"], "word": "B"}, "expected": false},
+  {"name": "word longer than board", "args": {"board": ["AB"], "word": "ABA"}, "expected": false},
+  {"name": "snake path", "args": {"board": ["AB", "CD"], "word": "ABDC"}, "expected": true},
+  {"name": "diagonal not allowed", "args": {"board": ["AB", "CD"], "word": "AD"}, "expected": false},
+  {"name": "backtrack out of dead end", "args": {"board": ["AAAA", "AAAB", "AAAA"], "word": "AAAAAAB"}, "expected": true},
+  {"name": "all same letters, too long", "args": {"board": ["AA", "AA"], "word": "AAAAA"}, "expected": false}
+]

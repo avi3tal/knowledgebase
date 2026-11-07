@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a sorted array and a key, return the index of the smallest element that is greater than or equal to the key.",
+   "options": [
+    "modified-binary-search",
+    "two-pointers",
+    "sliding-window"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Sorted + a single position next to a value (the ceiling) → binary search, and return lo when the range empties. Two pointers is for pairs."
+  },
+  {
+   "id": "q2",
+   "prompt": "An ascending array of distinct numbers was rotated at an unknown index. Find a target in O(log n).",
+   "options": [
+    "modified-binary-search",
+    "two-pointers",
+    "cyclic-sort"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Sorted in pieces + O(log n) → modified binary search: one half around mid is always sorted, so range-check that half."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given a sorted array and a target, find two numbers that add up to the target.",
+   "options": [
+    "two-pointers",
+    "modified-binary-search",
+    "arrays-hashing"
+   ],
+   "answer": "two-pointers",
+   "why": "A pair in a sorted array → opposite-end pointers, O(n). Binary searching a partner for each element is O(n log n)."
+  },
+  {
+   "id": "q4",
+   "prompt": "Return the k numbers closest to x from an unsorted array.",
+   "options": [
+    "top-k-elements",
+    "modified-binary-search",
+    "sliding-window"
+   ],
+   "answer": "top-k-elements",
+   "why": "Unsorted + 'k closest' → a size-k heap keyed by distance. Binary search needs sorted input (with a sorted array, binary search + a window would work)."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given a non-negative integer x up to 2³¹ − 1, return the floor of its square root without using a sqrt function.",
+   "options": [
+    "modified-binary-search",
+    "math",
+    "two-pointers"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Find the largest m with m·m ≤ x, and the test is monotonic in m → binary search on the answer range [0, x]."
+  },
+  {
+   "id": "q6",
+   "prompt": "An array strictly increases and then strictly decreases. Find its maximum in O(log n).",
+   "options": [
+    "modified-binary-search",
+    "two-pointers",
+    "two-heaps"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Bitonic + O(log n) → compare nums[mid] with nums[mid+1] to tell which side of the peak you're on, and use the lo < hi form."
+  },
+  {
+   "id": "q7",
+   "prompt": "An array of n numbers holds values from 1 to n with exactly one missing and one repeated. Find both in O(n) time and O(1) extra space.",
+   "options": [
+    "cyclic-sort",
+    "modified-binary-search",
+    "arrays-hashing"
+   ],
+   "answer": "cyclic-sort",
+   "why": "Values in 1..n + unsorted + O(1) space → cyclic sort places each value at its index and reveals the mismatch. Sorting first to binary search costs O(n log n)."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given k sorted lists, find the smallest range that includes at least one number from each list.",
+   "options": [
+    "k-way-merge",
+    "modified-binary-search",
+    "merge-intervals"
+   ],
+   "answer": "k-way-merge",
+   "why": "Several sorted lists processed together → a min-heap of the current head of each list (k-way merge), tracking the current max."
+  }
+ ]
+}

@@ -1,0 +1,223 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "subsets",
+ "title": "Subsets",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "subset-sums",
+   "title": "BFS subsets — the sum of every subset",
+   "source": "examples/subset_sums.py",
+   "function": "subset_sums",
+   "input": {
+    "nums": [
+     1,
+     2,
+     3,
+     5
+    ]
+   },
+   "view": [
+    {
+     "id": "sums",
+     "type": "array",
+     "var": "sums",
+     "pointers": {
+      "i": "i"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "num",
+      "size"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       1,
+       2,
+       3,
+       5
+      ]
+     },
+     "expected": [
+      0,
+      1,
+      2,
+      3,
+      3,
+      4,
+      5,
+      6,
+      5,
+      6,
+      7,
+      8,
+      8,
+      9,
+      10,
+      11
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       2,
+       2
+      ]
+     },
+     "expected": [
+      0,
+      2,
+      2,
+      4
+     ]
+    },
+    {
+     "input": {
+      "nums": []
+     },
+     "expected": [
+      0
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       4,
+       -1,
+       3
+      ]
+     },
+     "expected": [
+      0,
+      4,
+      -1,
+      3,
+      3,
+      7,
+      2,
+      6
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "letter-combinations",
+   "title": "k choices per position — letter combinations of a phone number",
+   "source": "examples/letter_combinations.py",
+   "function": "letter_combinations",
+   "input": {
+    "digits": "23"
+   },
+   "view": [
+    {
+     "id": "combos",
+     "type": "array",
+     "var": "combos"
+    },
+    {
+     "id": "next",
+     "type": "array",
+     "var": "next_level"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "digit",
+      "letters",
+      "prefix"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "digits": "23"
+     },
+     "expected": [
+      "ad",
+      "ae",
+      "af",
+      "bd",
+      "be",
+      "bf",
+      "cd",
+      "ce",
+      "cf"
+     ]
+    },
+    {
+     "input": {
+      "digits": "7"
+     },
+     "expected": [
+      "p",
+      "q",
+      "r",
+      "s"
+     ]
+    },
+    {
+     "input": {
+      "digits": ""
+     },
+     "expected": []
+    },
+    {
+     "input": {
+      "digits": "92"
+     },
+     "expected": [
+      "wa",
+      "wb",
+      "wc",
+      "xa",
+      "xb",
+      "xc",
+      "ya",
+      "yb",
+      "yc",
+      "za",
+      "zb",
+      "zc"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "subsets",
+    "letter-case-permutation",
+    "subsets-ii",
+    "generate-parentheses",
+    "unique-generalized-abbreviations"
+   ]
+  }
+ ]
+}

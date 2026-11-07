@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Place n queens on an n×n chessboard so that no two attack each other, and return every such board.",
+   "options": [
+    "backtracking",
+    "subsets",
+    "islands"
+   ],
+   "answer": "backtracking",
+   "why": "Each placement must fit with the queens already placed, and most partial boards die early → backtracking with column and diagonal sets. Subsets would generate every placement, valid or not."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given a grid of letters and a word, decide whether the word can be traced through adjacent cells without using a cell twice.",
+   "options": [
+    "backtracking",
+    "islands",
+    "bfs"
+   ],
+   "answer": "backtracking",
+   "why": "'Not twice' applies per path, so the used-mark is undone when you return → backtracking. Islands/BFS visit each cell once for good, which would block other paths."
+  },
+  {
+   "id": "q3",
+   "prompt": "Count the number of ways to make an amount from unlimited coins of given denominations (amount ≤ 5000).",
+   "options": [
+    "unbounded-knapsack",
+    "backtracking",
+    "subsets"
+   ],
+   "answer": "unbounded-knapsack",
+   "why": "Only a count, with overlapping subproblems and a large amount → unbounded knapsack DP. Backtracking would enumerate every way one by one."
+  },
+  {
+   "id": "q4",
+   "prompt": "Split a string into pieces so that every piece is a palindrome, and return every possible split.",
+   "options": [
+    "backtracking",
+    "palindromic-subsequence",
+    "subsets"
+   ],
+   "answer": "backtracking",
+   "why": "Return all splits where each cut must produce a palindrome → backtracking: choose the next piece, recurse only if it's a palindrome. The DP pattern answers 'minimum cuts', not 'list them all'."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given distinct numbers, return all of their subsets.",
+   "options": [
+    "subsets",
+    "backtracking",
+    "knapsack-0-1"
+   ],
+   "answer": "subsets",
+   "why": "Every combination is valid and nothing is pruned → BFS subsets from the empty set. Backtracking pays off when constraints reject partial answers."
+  },
+  {
+   "id": "q6",
+   "prompt": "Fill the empty cells of a 9×9 Sudoku so every row, column and 3×3 box has the digits 1–9.",
+   "options": [
+    "backtracking",
+    "islands",
+    "subsets"
+   ],
+   "answer": "backtracking",
+   "why": "Each digit must agree with digits placed earlier, and a dead end means undoing choices → constraint backtracking with row/column/box sets. It's a grid, but nothing is flood-filled."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given up to 100 numbers, can you pick some of them (each at most once) that add up exactly to S ≤ 10⁴?",
+   "options": [
+    "knapsack-0-1",
+    "backtracking",
+    "subsets"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "Yes/no over subsets with n = 100 (2¹⁰⁰ subsets) and a small sum → 0/1 knapsack DP over (item, sum)."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given a string of digits, return every way to insert three dots to make a valid IPv4 address.",
+   "options": [
+    "backtracking",
+    "subsets",
+    "strings"
+   ],
+   "answer": "backtracking",
+   "why": "Choose each octet in turn and abandon it when it's > 255 or has a leading zero → backtracking with pruning."
+  }
+ ]
+}
