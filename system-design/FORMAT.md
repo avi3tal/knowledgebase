@@ -20,7 +20,7 @@ vitest both read it, so regenerate it when the shape changes.
 Every check has `id` (kebab), `type`, `label` and `tips: {nudge, hint, show}`.
 - **Labels are shown before submit, so they must not give the answer away.** Write "Read path can
   absorb the read load", not "Add a Redis cache".
-- **Keywords** are case-insensitive substrings. Be generous with synonyms and spellings; tips cover
+- **Keywords** are case-insensitive substrings of field *values* (never the JSON key names). Be generous with synonyms and spellings; tips cover
   the gaps.
 
 | type | stage | extra fields | passes when |
@@ -30,10 +30,10 @@ Every check has `id` (kebab), `type`, `label` and `tips: {nudge, hint, show}`.
 | `endpoint` | api | `keywords`, `method?` | an api row (same method, if given) contains a keyword |
 | `entity` | api | `keywords` | a data row contains a keyword |
 | `component` | high-level | `kinds`, `keywords?` | the **final** diagram has a node of one of `kinds` (and a label/id keyword, if given) |
-| `edge` | high-level | `from_kinds`, `to_kinds` | the final diagram has an edge from a `from_kinds` node to a `to_kinds` node |
+| `edge` | high-level | `from_kinds`, `to_kinds`, `from_keywords?`, `to_keywords?`, `label_keywords?` | the final diagram has an edge from a `from_kinds` node to a `to_kinds` node (whose label/id and edge label match the optional keywords) |
 | `decision` | deep-dives | `keywords` | a deep dive mentions a keyword **and** has a non-empty `choice` and `why` |
 | `wrapup` | wrap-up | `key` ∈ bottlenecks, failures, monitoring, scale, future | that wrap-up answer has ≥ 15 chars |
-| `signature` | signatures | `names` | `signatures.py` (classes/defs) or `signatures.go` (types/funcs) declares every name |
+| `signature` | signatures | `names` | `signatures.py` / `signatures.go` declares every name: `Name`, `Class.method` (method on that class / Go receiver), or `Class(Base)` (Python base class) |
 
 Aim for 12–20 checks per system design problem, covering every stage. OOD problems lean on
 `component` (class kinds), `edge` and `signature`.
@@ -43,7 +43,7 @@ Aim for 12–20 checks per system design problem, covering every stage. OOD prob
 ## Palettes (node `kind`)
 - **system-design:** client, dns, cdn, load-balancer, api-gateway, service, worker, scheduler, cache,
   sql, nosql, blob, search, queue, stream, coordinator, external
-- **ood:** actor, class, abstract, interface, enum
+- **ood:** actor, class, abstract, interface, enum (stages: scope, api, high-level, deep-dives, wrap-up, signatures; `estimates.json` optional)
 
 ## Attempt: `<workspace>/attempts/<subject>/<slug>/<YYYY-MM-DD>_design_<label>/`
 
@@ -69,8 +69,9 @@ Aim for 12–20 checks per system design problem, covering every stage. OOD prob
 ```
 Also present: `signatures.py` (signatures only), `notes.md`, and `submitted.json` once submitted.
 
-## Smells (system-design, every version; only the final version's smells count against you)
-`client-to-store`, `orphan-node`, `queue-no-consumer`, `unreachable` (a service, gateway or load
+## Smells (every version; only the final version's smells count against you)
+**OOD:** `orphan-class` (no relationships; enums exempt), `unimplemented-interface` (an interface/abstract that no class/abstract points to).
+**System design:** `client-to-store`, `orphan-node`, `queue-no-consumer`, `unreachable` (a service, gateway or load
 balancer not reachable from a client), `single-store-read-heavy` (flag), `no-load-balancer` (flag).
 
 ## Check result (`DesignCheck` in `studio/src/api.ts`)

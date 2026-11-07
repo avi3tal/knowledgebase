@@ -50,6 +50,13 @@ class TraceError(Exception):
     pass
 
 
+def _set_order(x: object) -> tuple[int, float, str]:
+    """Numbers in numeric order (so 1, 2, 3, 100 reads as a run), everything else by repr after them."""
+    if isinstance(x, (int, float)) and not isinstance(x, bool):
+        return (0, float(x), "")
+    return (1, 0.0, repr(x))
+
+
 def _finite(value: Any) -> Any:
     """Replace inf/nan (invalid JSON for browsers) with readable strings."""
     if isinstance(value, float) and not math.isfinite(value):
@@ -295,7 +302,7 @@ def snapshot(
             if isinstance(raw, dict):
                 entries = [[k, v] for k, v in raw.items()]
             elif isinstance(raw, (set, frozenset)):
-                entries = [[k, None] for k in sorted(raw, key=repr)]
+                entries = [[k, None] for k in sorted(raw, key=_set_order)]
             else:
                 entries = []
             state[vid] = {"entries": entries}

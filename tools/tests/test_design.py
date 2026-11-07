@@ -255,7 +255,7 @@ def test_design_api_end_to_end() -> None:
         big = {"file": "signatures", "content": "x" * 100_000}
         assert _call(f"{base}/{name}/save", big)[0] == 422
         status, rows = _call(f"http://127.0.0.1:{httpd.server_address[1]}/api/problems/system-design")
-        assert status == 200 and rows[0]["slug"] == "url-shortener"
+        assert status == 200 and "url-shortener" in {r["slug"] for r in rows}
     finally:
         httpd.shutdown()
 
@@ -274,3 +274,58 @@ def test_cli_sd_and_run_on_design_attempts(problem: design.DesignProblem, capsys
     assert len(history.runs()) == 1  # kb run records (like algo runs); --no-log doesn't
     assert main(["sd", "submit", "url-shortener", adir.name]) == 0
     assert (adir / "submitted.json").exists()
+
+
+def test_matching_uses_values_not_keys_and_targeted_edges() -> None:
+    assert "request" not in design._norm({"request": "", "path": "/x"})  # noqa: SLF001
+    p = design.load("system-design", "url-shortener")
+    adir = design.new_attempt(p)
+    v1 = {
+        "version": 1,
+        "why": "",
+        "nodes": [
+            {"id": "svc", "kind": "service", "label": "Redirect"},
+            {"id": "q", "kind": "queue", "label": "clicks"},
+        ],
+        "edges": [{"from": "svc", "to": "q", "label": "emit"}],
+    }
+    (adir / "diagrams" / "v1.json").write_text(json.dumps(v1))
+    edge = {"id": "e", "type": "edge", "label": "x", "from_kinds": ["service"], "to_kinds": ["queue"], "tips": {}}
+    cases = [
+        ({}, True),
+        ({"to_keywords": ["click"]}, True),
+        ({"to_keywords": ["audit"]}, False),
+        ({"label_keywords": ["emit"]}, True),
+        ({"from_keywords": ["shorten"]}, False),
+    ]
+    for extra, want in cases:
+        p.rubric = {"checks": [{**edge, **extra}]}
+        assert design.run_checks(p, adir)["checks"][0]["passed"] is want, extra
+
+
+def test_signature_names_are_qualified(tmp_path: Path) -> None:
+    (tmp_path / "signatures.py").write_text(
+        "class Cache:\n    def get(self, k): ...\nclass LRUCache(Cache):\n    def put(self, k, v): ...\n"
+    )
+    names = design._signature_names(tmp_path)  # noqa: SLF001
+    assert {"cache", "cache.get", "lrucache(cache)", "lrucache.put"} <= names and "lrucache.get" not in names
+    (tmp_path / "signatures.go").write_text("type Lot struct{}\nfunc (l *Lot) Park(v int) error { return nil }\n")
+    assert "lot.park" in design._signature_names(tmp_path)  # noqa: SLF001
+
+
+def test_ood_smells() -> None:
+    d = {
+        "version": 1,
+        "nodes": [
+            {"id": "Pricing", "kind": "interface"},
+            {"id": "Lot", "kind": "class"},
+            {"id": "Spot", "kind": "class"},
+            {"id": "Size", "kind": "enum"},
+        ],
+        "edges": [{"from": "Lot", "to": "Pricing", "label": "uses"}],
+    }
+    rules = {s["rule"]: s["nodes"] for s in design.smells(d, {}, "ood")}
+    assert rules["orphan-class"] == ["Spot"]
+    assert "unimplemented-interface" not in rules  # Lot points at it
+    d["edges"] = [{"from": "Lot", "to": "Spot"}]
+    assert {s["rule"] for s in design.smells(d, {}, "ood")} == {"orphan-class", "unimplemented-interface"}

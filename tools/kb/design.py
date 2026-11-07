@@ -79,6 +79,8 @@ SMELL_RULES = {
     "unreachable": "A component can't be reached from any client.",
     "single-store-read-heavy": "Read-heavy requirement, but one data store and no cache serve every read.",
     "no-load-balancer": "Clients hit services directly: no load balancer for horizontal scaling.",
+    "orphan-class": "A class/interface has no relationships: is it part of the design?",
+    "unimplemented-interface": "An interface/abstract type nothing implements or extends.",
 }
 FLAG_RULES = {"read_heavy": "single-store-read-heavy", "needs_lb": "no-load-balancer"}
 MAX_VERSIONS = 20
@@ -317,6 +319,8 @@ def diff(prev: dict[str, Any] | None, cur: dict[str, Any]) -> dict[str, list[str
 
 def smells(d: dict[str, Any], flags: dict[str, Any], subject: str) -> list[dict[str, Any]]:
     """Structural problems in one diagram version (deterministic)."""
+    if subject == "ood":
+        return _ood_smells(d)
     if subject != "system-design":
         return []
     nodes = {n["id"]: n for n in d.get("nodes", []) if isinstance(n, dict) and "id" in n}
@@ -357,6 +361,39 @@ def smells(d: dict[str, Any], flags: dict[str, Any], subject: str) -> list[dict[
         direct = [e["to"] for e in edges if kind[e["from"]] in ENTRY_KINDS and kind[e["to"]] == "service"]
         if direct and not any(k in {"load-balancer", "api-gateway"} for k in kind.values()):
             add("no-load-balancer", direct)
+    return out
+
+
+def _ood_smells(d: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes = {n["id"]: n for n in d.get("nodes", []) if isinstance(n, dict) and "id" in n}
+    edges = [e for e in d.get("edges", []) if e.get("from") in nodes and e.get("to") in nodes]
+    out: list[dict[str, Any]] = []
+    touched = {e["from"] for e in edges} | {e["to"] for e in edges}
+    lonely = [i for i, n in nodes.items() if i not in touched and n.get("kind") != "enum"]
+    if lonely and len(nodes) > 1:
+        out.append(
+            {
+                "rule": "orphan-class",
+                "message": SMELL_RULES["orphan-class"],
+                "nodes": sorted(lonely),
+                "version": d.get("version"),
+            }
+        )
+    abstract = [i for i, n in nodes.items() if n.get("kind") in {"interface", "abstract"}]
+    unimpl = [
+        i
+        for i in abstract
+        if not any(e["to"] == i and nodes[e["from"]].get("kind") in {"class", "abstract"} for e in edges)
+    ]
+    if unimpl:
+        out.append(
+            {
+                "rule": "unimplemented-interface",
+                "message": SMELL_RULES["unimplemented-interface"],
+                "nodes": sorted(unimpl),
+                "version": d.get("version"),
+            }
+        )
     return out
 
 
@@ -483,8 +520,17 @@ def delete_diagram(subject: str, slug: str, attempt: str, version: int) -> None:
 # ------------------------------------------------------------------ checks
 
 
+def _values(x: Any) -> list[str]:
+    """Leaf string/number values of a JSON value (never its key names)."""
+    if isinstance(x, dict):
+        return [v for item in x.values() for v in _values(item)]
+    if isinstance(x, list):
+        return [v for item in x for v in _values(item)]
+    return [] if x is None else [str(x)]
+
+
 def _norm(s: Any) -> str:
-    return re.sub(r"\s+", " ", json.dumps(s, ensure_ascii=False) if not isinstance(s, str) else s).lower()
+    return re.sub(r"\s+", " ", " ".join(_values(s)) if not isinstance(s, str) else s).lower()
 
 
 def _hit(text: str, keywords: list[str]) -> bool:
@@ -492,13 +538,25 @@ def _hit(text: str, keywords: list[str]) -> bool:
 
 
 def _signature_names(attempt: Path) -> set[str]:
+    """Declared names, lower-cased: `name`, `class.method`, and `class(base)` for each base class."""
     names: set[str] = set()
     py = attempt / "signatures.py"
     if py.exists():
         try:
-            for node in ast.walk(ast.parse(py.read_text())):
-                if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            tree = ast.parse(py.read_text())
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     names.add(node.name.lower())
+                elif isinstance(node, ast.ClassDef):
+                    cls = node.name.lower()
+                    names.add(cls)
+                    for base in node.bases:
+                        base_name = base.id if isinstance(base, ast.Name) else getattr(base, "attr", None)
+                        if base_name:
+                            names.add(f"{cls}({base_name.lower()})")
+                    for item in node.body:
+                        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            names.add(f"{cls}.{item.name.lower()}")
         except SyntaxError:
             pass
     go = attempt / "signatures.go"
@@ -506,6 +564,8 @@ def _signature_names(attempt: Path) -> set[str]:
         text = go.read_text()
         names |= {m.lower() for m in re.findall(r"\btype\s+([A-Za-z_]\w*)", text)}
         names |= {m.lower() for m in re.findall(r"\bfunc\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)", text)}
+        for recv, meth in re.findall(r"\bfunc\s+\(\s*\w+\s+\*?([A-Za-z_]\w*)\s*\)\s*([A-Za-z_]\w*)", text):
+            names.add(f"{recv.lower()}.{meth.lower()}")
     return names
 
 
@@ -566,8 +626,16 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
                 for i, k in kinds.items()
             )
         elif t == "edge":
+
+            def node_hit(node_id: Any, words: list[str]) -> bool:
+                return not words or _hit(labels.get(node_id, "") + " " + str(node_id).lower(), words)
+
             passed = any(
-                kinds.get(e.get("from")) in c["from_kinds"] and kinds.get(e.get("to")) in c["to_kinds"]
+                kinds.get(e.get("from")) in c["from_kinds"]
+                and kinds.get(e.get("to")) in c["to_kinds"]
+                and node_hit(e.get("from"), c.get("from_keywords", []))
+                and node_hit(e.get("to"), c.get("to_keywords", []))
+                and (not c.get("label_keywords") or _hit(str(e.get("label", "")).lower(), c["label_keywords"]))
                 for e in final.get("edges", [])
             )
         elif t == "decision":
@@ -704,7 +772,7 @@ def public_problem(problem: DesignProblem) -> dict[str, Any]:
         "readme": (problem.dir / "README.md").read_text(),
         "readme_path": f"{problem.subject}/problems/{problem.slug}/README.md",
         "palette": PALETTES[problem.subject],
-        "stages": STAGES if problem.subject == "system-design" else ["scope", "api", "high-level", "signatures"],
+        "stages": STAGES if problem.subject == "system-design" else [s for s in STAGES if s != "estimates"],
         "wrapup_keys": WRAPUP_KEYS,
         "units": sorted(UNITS),
         "constants": CONSTANTS,
@@ -725,7 +793,11 @@ def reference(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
         "pattern": problem.rubric.get("pattern", ""),
         "diagrams": diagram_versions(ref),
         "design": json.loads((ref / "design.json").read_text()),
-        "estimates": evaluate_estimates(json.loads((ref / "estimates.json").read_text()).get("rows", [])),
+        "estimates": evaluate_estimates(
+            json.loads((ref / "estimates.json").read_text()).get("rows", [])
+            if (ref / "estimates.json").exists()
+            else []
+        ),
         "tips": {c["id"]: c["tips"]["show"] for c in problem.rubric.get("checks", [])},
     }
 
@@ -816,6 +888,10 @@ def validate_problem(problem: DesignProblem) -> list[str]:
             or not c.get("to_kinds")
         ):
             e.append(f"{where}: from_kinds/to_kinds must come from the {subject} palette")
+        if t == "edge" and any(
+            not isinstance(c.get(k, []), list) for k in ("from_keywords", "to_keywords", "label_keywords")
+        ):
+            e.append(f"{where}: from_keywords/to_keywords/label_keywords must be lists")
         if t == "wrapup" and c.get("key") not in WRAPUP_KEYS:
             e.append(f"{where}: key must be one of {WRAPUP_KEYS}")
         if t == "signature" and not c.get("names"):
