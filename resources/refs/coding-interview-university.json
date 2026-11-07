@@ -1,0 +1,352 @@
+{
+ "version": 1,
+ "source": "coding-interview-university",
+ "researched": "2026-11-07",
+ "agent": "research-repo",
+ "coverage": "John Washam's self-study CS curriculum in one long README (CC BY-SA 4.0): study method, language choice, books, then a checkbox list of topics: Big-O, data structures, trees, sorting, graphs, recursion/DP, design patterns, OS and networking, plus optional system design and advanced topics. Each section is mostly links to university lectures and articles, sometimes with an implement-it checklist. No problems or own explanations. All free; many links are 2009-2016 era.",
+ "refs": [
+  {
+   "id": "arrays",
+   "title": "Data Structures: Arrays",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#arrays",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "summary": "Lecture videos on static and dynamic arrays, then a build-it-yourself checklist for a resizable vector with amortised-cost notes. Good fundamentals drill; no interview problems.",
+   "quality": 3
+  },
+  {
+   "id": "hash-table",
+   "title": "Data Structures: Hash table",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#hash-table",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "summary": "Chaining and open-addressing lectures (MIT), PyCon talks on dict internals, and an implement-with-linear-probing checklist. Theory-first, not pattern-oriented.",
+   "quality": 3
+  },
+  {
+   "id": "linked-lists",
+   "title": "Data Structures: Linked Lists",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#linked-lists",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "linked-list"
+   ],
+   "summary": "Intro videos plus a long implement-every-operation checklist (push/pop front/back, insert, reverse, remove value). Solid way to build linked-list fluency before pattern problems.",
+   "quality": 3
+  },
+  {
+   "id": "stack",
+   "title": "Data Structures: Stack",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#stack",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "stack"
+   ],
+   "summary": "One short review video and a note that a stack is trivial to build on an array; thin section. The Queue section next to it is similar.",
+   "quality": 2
+  },
+  {
+   "id": "binary-search",
+   "title": "Binary search",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#binary-search",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "modified-binary-search"
+   ],
+   "summary": "A few videos, a TopCoder article and a link to a reusable binary-search template, plus implement iterative and recursive search. No rotated-array or search-on-answer practice.",
+   "quality": 2
+  },
+  {
+   "id": "bitwise",
+   "title": "Bitwise operations",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#bitwise-operations",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "bit-manipulation",
+    "bitwise-xor"
+   ],
+   "summary": "Reading list on bit operators and bit hacks, two's complement, counting set bits, swap and absolute-value tricks; links the repo's bits cheat sheet.",
+   "quality": 3
+  },
+  {
+   "id": "bits-cheatsheet",
+   "title": "Bits cheat sheet (PDF)",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/extras/cheat%20sheets/bits-cheat-sheet.pdf",
+   "kind": "cheatsheet",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "bit-manipulation"
+   ],
+   "summary": "Repo-hosted one-page table of powers of two with max/min signed and unsigned int values per bit width. Narrow: a number-range reference, not bit tricks.",
+   "quality": 2
+  },
+  {
+   "id": "trees-intro",
+   "title": "Trees intro and traversals",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#trees---intro",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "bfs",
+    "dfs"
+   ],
+   "summary": "Tree basics, BFS/DFS and pre/in/post-order traversal videos with notes on time and space per traversal. Concept only, no problem practice.",
+   "quality": 3
+  },
+  {
+   "id": "heap",
+   "title": "Heap / Priority Queue / Binary Heap",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#heap--priority-queue--binary-heap",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "heaps"
+   ],
+   "summary": "Heap lectures plus a checklist to implement a max-heap with sift up/down, heapify and heap sort.",
+   "quality": 3
+  },
+  {
+   "id": "sorting",
+   "title": "Sorting",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#sorting",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "sorting"
+   ],
+   "summary": "Long section: stability, which sorts suit lists vs arrays, Sedgewick/Berkeley lectures, implement merge sort and quicksort, optional radix/counting sort. One of the denser sections.",
+   "quality": 3
+  },
+  {
+   "id": "graphs",
+   "title": "Graphs",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#graphs",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "bfs",
+    "dfs",
+    "topological-sort"
+   ],
+   "summary": "Graph representations, BFS/DFS, Dijkstra, MST, SCC lectures, and an implement list incl. cycle check, topological sort, connected components, bipartite check.",
+   "quality": 3
+  },
+  {
+   "id": "recursion",
+   "title": "Recursion (and backtracking blueprint)",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#recursion",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "recursion",
+    "backtracking"
+   ],
+   "summary": "Stanford recursion/backtracking lectures, tail recursion, and links to a general backtracking template discussion for subsets/permutations/combination sum.",
+   "quality": 3
+  },
+  {
+   "id": "dynamic-programming",
+   "title": "Dynamic Programming",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#dynamic-programming",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "dynamic-programming"
+   ],
+   "summary": "Skiena and Simonson DP lectures plus Coursera clips; no pattern breakdown. Its claim that DP rarely appears in interviews is dated.",
+   "quality": 2
+  },
+  {
+   "id": "combinatorics",
+   "title": "Combinatorics & Probability",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#combinatorics-n-choose-k--probability",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "math"
+   ],
+   "summary": "Short list of factorial/permutation/combination and probability videos (Khan Academy).",
+   "quality": 2
+  },
+  {
+   "id": "strings",
+   "title": "String searching & manipulations",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#string-searching--manipulations",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "strings"
+   ],
+   "summary": "Substring search lectures: brute force, KMP, Boyer-Moore, Rabin-Karp, suffix arrays.",
+   "quality": 3
+  },
+  {
+   "id": "tries",
+   "title": "Tries",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#tries",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "strings"
+   ],
+   "summary": "Trie lectures (R-way, ternary) and articles; read-only, author says don't implement. We have no tries topic.",
+   "quality": 2
+  },
+  {
+   "id": "threads",
+   "title": "Processes and Threads",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#processes-and-threads",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "multi-threaded"
+   ],
+   "summary": "OS concurrency checklist: processes vs threads, locks, mutexes, semaphores, monitors, deadlock, context switching, plus C++ and Python concurrency talks. Background, not interview problems.",
+   "quality": 3
+  },
+  {
+   "id": "caches-lru",
+   "title": "Caches (LRU)",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#caches",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "design"
+   ],
+   "summary": "Three videos on LRU cache design incl. a LeetCode 146 walkthrough, plus CPU cache lectures.",
+   "quality": 2,
+   "problem_title": "LRU Cache"
+  },
+  {
+   "id": "big-o-cheatsheet",
+   "title": "Big-O cheat sheet (PDF)",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/extras/cheat%20sheets/big-o-cheatsheet.pdf",
+   "kind": "cheatsheet",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "sorting"
+   ],
+   "summary": "Repo copy of the bigocheatsheet.com chart: operation costs for common data structures and best/average/worst for array sorting algorithms. Quick pre-interview review.",
+   "quality": 3
+  },
+  {
+   "id": "design-patterns",
+   "title": "Design patterns",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#design-patterns",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "ood",
+   "topics": [
+    "creational-patterns",
+    "structural-patterns",
+    "behavioral-patterns",
+    "uml-basics"
+   ],
+   "summary": "Checklist of 17 patterns to learn, mostly GoF (strategy, adapter, observer, etc.), a UML review video, a video series and a Head First recommendation. List only, no worked designs.",
+   "quality": 2
+  },
+  {
+   "id": "sd-section",
+   "title": "System Design, Scalability, Data Handling",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#system-design-scalability-data-handling",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "sd-framework",
+    "scalability-basics",
+    "back-of-envelope",
+    "cap-consistency",
+    "consistent-hashing",
+    "sharding",
+    "unique-id-generation",
+    "key-value-store",
+    "url-shortener"
+   ],
+   "summary": "Optional section: a 3-step interview flow (scope, estimate, abstract design), long reading list of mostly 2009-2016 posts (CAP, consistent hashing, sharding, Raft) and 6 practice prompts. Starts you at the System Design Primer.",
+   "quality": 2
+  },
+  {
+   "id": "sd-cheatsheet",
+   "title": "System design cheat sheet (PDF)",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/extras/cheat%20sheets/system-design.pdf",
+   "kind": "cheatsheet",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "sd-framework"
+   ],
+   "summary": "One-page PDF of the same 3-step design flow as the README (scope and use cases, estimate load and storage, layered abstract design). Useful printable checklist.",
+   "quality": 2
+  },
+  {
+   "id": "networking",
+   "title": "Networking",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#networking",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "networking-basics"
+   ],
+   "summary": "Videos on TCP vs UDP, OSI model, HTTP, HTTP/2, TLS, sockets and CIDR.",
+   "quality": 3
+  },
+  {
+   "id": "messaging",
+   "title": "Messaging, Serialization, and Queueing Systems",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#messaging-serialization-and-queueing-systems",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "message-queues",
+    "api-design"
+   ],
+   "summary": "Link list of tools: Thrift, Protocol Buffers, gRPC, Redis, SQS/SNS, RabbitMQ, Celery, ZeroMQ, Kafka, Avro. Product homepages, no comparison.",
+   "quality": 2
+  },
+  {
+   "id": "security",
+   "title": "Computer Security",
+   "url": "https://github.com/jwasham/coding-interview-university/blob/main/README.md#computer-security",
+   "kind": "course-module",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "security-auth"
+   ],
+   "summary": "MIT security lecture playlist (threat models, web security, network security). Broad security, not auth design.",
+   "quality": 2
+  }
+ ]
+}

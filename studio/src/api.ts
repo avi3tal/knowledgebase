@@ -29,6 +29,7 @@ export interface Resource {
   source: string;
   source_name: string;
   verdict: string;
+  spoiler?: boolean;
 }
 
 export interface GraphNode {

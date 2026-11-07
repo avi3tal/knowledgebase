@@ -48,6 +48,11 @@ def source_index(reg: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]
     return out
 
 
+def verdict_for(source: dict[str, Any], subject: str | None) -> str:
+    """A source's verdict for one subject (subject_verdicts overrides the overall verdict)."""
+    return (source.get("subject_verdicts") or {}).get(subject or "", source.get("verdict", "unreviewed"))
+
+
 def resolves(name: str, index: dict[str, dict[str, Any]]) -> bool:
     return name in index or name.startswith("interview:")
 
@@ -66,8 +71,8 @@ def title_index(problems: Path | None = None) -> dict[str, str]:
     return out
 
 
-def match_problem(title: str | None, index: dict[str, str]) -> str | None:
-    return index.get(_norm(title)) if title else None
+def match_problem(title: Any, index: dict[str, str]) -> str | None:
+    return index.get(_norm(title)) if isinstance(title, str) and title else None
 
 
 def load_refs() -> list[dict[str, Any]]:
@@ -104,6 +109,9 @@ def validate_registry() -> list[str]:
             errors.append(f"{where}: verdict must be one of {sorted(VERDICTS)}")
         if s.get("verdict") in {"core", "supplementary", "skip"} and not s.get("reason"):
             errors.append(f"{where}: a {s['verdict']} verdict needs a reason")
+        for subj, v in (s.get("subject_verdicts") or {}).items():
+            if v not in VERDICTS:
+                errors.append(f"{where}: subject_verdicts.{subj} must be one of {sorted(VERDICTS)}")
         if not (s.get("url") or s.get("path")):
             errors.append(f"{where}: needs url or path")
         if "aff=" in str(s.get("url", "")) or "utm_" in str(s.get("url", "")):
@@ -155,6 +163,8 @@ def validate_refs_file(path: Path) -> list[str]:
             bad = [t for t in r.get("topics", []) if t not in topics[subject]]
             if bad:
                 errors.append(f"{where}: unknown {subject} topics {bad}")
+        if "problem_title" in r and not isinstance(r["problem_title"], str):
+            errors.append(f"{where}: problem_title must be a string (the problem's common name)")
         if not r.get("topics") and not r.get("problem_title"):
             errors.append(f"{where}: needs topics and/or problem_title")
         summary = str(r.get("summary", ""))
@@ -175,9 +185,26 @@ def validate_all() -> dict[str, list[str]]:
 # ------------------------------------------------------------------ lookups for lessons / problems
 
 
-def _rank(ref: dict[str, Any], index: dict[str, dict[str, Any]]) -> tuple[int, int, str]:
-    verdict = index.get(ref["source"], {}).get("verdict", "unreviewed")
-    return (VERDICT_RANK.get(verdict, 5), -int(ref.get("quality", 0)), ref.get("title", ""))
+def _verdict(ref: dict[str, Any], index: dict[str, dict[str, Any]]) -> str:
+    return verdict_for(index.get(ref["source"], {}), ref.get("subject"))
+
+
+KIND_RANK = {"lesson": 0, "visual": 0, "article": 0, "problem-solution": 0, "diagram": 1, "video": 1, "cheatsheet": 1}
+
+
+def _rank(ref: dict[str, Any], index: dict[str, dict[str, Any]]) -> tuple[int, int, int, int, str]:
+    """Focus first (a ref about 1-2 topics beats a broad chapter / case study / course outline),
+    then source verdict (core before supplementary), then kind (teaching material first), then quality."""
+    verdict = _verdict(ref, index)
+    n_topics = len(ref.get("topics", []))
+    focus = 0 if n_topics <= 2 else 1 if n_topics <= 4 else 2
+    return (
+        focus,
+        VERDICT_RANK.get(verdict, 5),
+        KIND_RANK.get(ref.get("kind", ""), 2),
+        -int(ref.get("quality", 0)),
+        ref.get("title", ""),
+    )
 
 
 def _public(ref: dict[str, Any], index: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -193,30 +220,34 @@ def _public(ref: dict[str, Any], index: dict[str, dict[str, Any]]) -> dict[str, 
         "quality": ref["quality"],
         "source": ref["source"],
         "source_name": src.get("name", ref["source"]),
-        "verdict": src.get("verdict", "unreviewed"),
+        "verdict": _verdict(ref, index),
     }
 
 
 def for_topic(subject: str, topic: str, limit: int = MAX_PER_TOPIC) -> list[dict[str, Any]]:
+    """Top refs for a topic. Refs about one of OUR practice problems are excluded here (they would
+    spoil it) and shown on that problem's page instead."""
     index = source_index()
+    pdir = ROOT / subject / "problems"
+    titles = title_index(pdir) if pdir.is_dir() else {}
     hits = [
         r
         for r in load_refs()
         if r.get("subject") == subject
         and topic in r.get("topics", [])
-        and index.get(r["source"], {}).get("verdict") != "skip"
+        and _verdict(r, index) != "skip"
+        and match_problem(r.get("problem_title"), titles) is None
     ]
     return [_public(r, index) for r in sorted(hits, key=lambda r: _rank(r, index))[:limit]]
 
 
 def for_problem(slug: str, limit: int = MAX_PER_TOPIC) -> list[dict[str, Any]]:
+    """Refs explaining one of our problems: they contain solutions, so they're flagged as spoilers."""
     index, titles = source_index(), title_index()
     hits = [
-        r
-        for r in load_refs()
-        if match_problem(r.get("problem_title"), titles) == slug and index.get(r["source"], {}).get("verdict") != "skip"
+        r for r in load_refs() if match_problem(r.get("problem_title"), titles) == slug and _verdict(r, index) != "skip"
     ]
-    return [_public(r, index) for r in sorted(hits, key=lambda r: _rank(r, index))[:limit]]
+    return [{**_public(r, index), "spoiler": True} for r in sorted(hits, key=lambda r: _rank(r, index))[:limit]]
 
 
 # ------------------------------------------------------------------ knowledge graph
@@ -262,14 +293,19 @@ def graph(subject: str) -> dict[str, Any]:
 
     titles = title_index(pdir) if pdir.is_dir() else {}
     for r in load_refs():
-        if r.get("subject") != subject or index.get(r["source"], {}).get("verdict") == "skip":
+        if r.get("subject") != subject or _verdict(r, index) == "skip":
             continue
         rid = f"ref:{r['source']}:{r['id']}"
         node(
             rid, type="ref", label=r["title"], kind=r["kind"], access=r["access"], url=r.get("url"), page=r.get("page")
         )
         src = index.get(r["source"], {})
-        node(f"source:{r['source']}", type="source", label=src.get("name", r["source"]), verdict=src.get("verdict"))
+        node(
+            f"source:{r['source']}",
+            type="source",
+            label=src.get("name", r["source"]),
+            verdict=verdict_for(src, subject),
+        )
         edges.append({"from": rid, "to": f"source:{r['source']}", "type": "from"})
         for t in r.get("topics", []):
             edges.append({"from": rid, "to": f"topic:{t}", "type": "covers"})

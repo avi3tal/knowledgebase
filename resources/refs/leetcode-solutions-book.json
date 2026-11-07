@@ -1,0 +1,810 @@
+{
+ "version": 1,
+ "source": "leetcode-solutions-book",
+ "researched": "2026-11-07",
+ "agent": "research-book",
+ "coverage": "Unofficial ~220-page compilation (credited 'LeetCode, Internet') of about 150 LeetCode problems in 11 chapters (Linked List, Trees, Graphs, Heaps, Arrays, Strings, Bit Manipulation, Maths, Matrix, Design). Each entry is the LeetCode statement, its URL and one accepted Python 2-style solution; no explanations, diagrams or complexity analysis. Several TOC entries have no body pages. Local PDF only; licensing unclear.",
+ "refs": [
+  {
+   "id": "ch-linked-list",
+   "title": "Linked List chapter",
+   "page": 8,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "linked-list",
+    "in-place-reversal-linked-list",
+    "fast-slow-pointers"
+   ],
+   "summary": "12 classic list problems (cycle, reverse, merge, palindrome, dedupe, nth-from-end); statement plus Python solution each, no commentary.",
+   "quality": 2
+  },
+  {
+   "id": "ch-trees",
+   "title": "Trees chapter",
+   "page": 31,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "bfs",
+    "recursion"
+   ],
+   "summary": "~38 binary tree and BST problems (traversals, LCA, path sums, construct, serialize); the broadest chapter, still code-only.",
+   "quality": 2
+  },
+  {
+   "id": "ch-graphs",
+   "title": "Graphs chapter",
+   "page": 110,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "topological-sort",
+    "dfs",
+    "bfs",
+    "islands"
+   ],
+   "summary": "5 graph problems (components, course schedule I/II, valid tree, islands); solutions build a verbose adjacency-list Graph class each time.",
+   "quality": 2
+  },
+  {
+   "id": "ch-heaps",
+   "title": "Heaps chapter",
+   "page": 131,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "heaps",
+    "k-way-merge",
+    "top-k-elements"
+   ],
+   "summary": "Only 2 problems (merge k lists, kth largest); thin coverage of heap patterns.",
+   "quality": 2
+  },
+  {
+   "id": "ch-arrays",
+   "title": "Arrays chapter",
+   "page": 134,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing",
+    "two-pointers"
+   ],
+   "summary": "~32 array problems mixing hashing, two pointers (2Sum/3Sum family, container, trapping water) and prefix tricks; code-only.",
+   "quality": 2
+  },
+  {
+   "id": "ch-strings",
+   "title": "Strings chapter",
+   "page": 186,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "strings",
+    "stack"
+   ],
+   "summary": "6 easy string problems (anagram, palindrome, parentheses, isomorphic); short Python solutions.",
+   "quality": 2
+  },
+  {
+   "id": "ch-bit-manipulation",
+   "title": "Bit Manipulation chapter",
+   "page": 195,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "bit-manipulation",
+    "bitwise-xor"
+   ],
+   "summary": "Only Sum of Two Integers and Single Number are actually present; the II/III entries in the TOC have no pages.",
+   "quality": 2
+  },
+  {
+   "id": "ch-maths",
+   "title": "Maths chapter",
+   "page": 197,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "math",
+    "subsets"
+   ],
+   "summary": "Number problems (reverse integer, pow, power of three, nim) plus Subsets I/II misfiled here; many TOC entries are missing from the body.",
+   "quality": 2
+  },
+  {
+   "id": "ch-matrix",
+   "title": "Matrix chapter",
+   "page": 212,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing",
+    "modified-binary-search"
+   ],
+   "summary": "6 grid problems: rotate image, set zeroes, search a 2D matrix I/II, spiral matrix I/II.",
+   "quality": 2
+  },
+  {
+   "id": "ch-design",
+   "title": "Design chapter",
+   "page": 224,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "design"
+   ],
+   "summary": "Single problem: LRU Cache.",
+   "quality": 2
+  },
+  {
+   "id": "p-reverse-linked-list",
+   "title": "Reverse Linked List",
+   "page": 10,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "in-place-reversal-linked-list",
+    "linked-list"
+   ],
+   "problem_title": "Reverse Linked List",
+   "summary": "Iterative pointer reversal. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-merge-two-sorted-lists",
+   "title": "Merge Two Sorted Lists",
+   "page": 12,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "linked-list",
+    "two-pointers"
+   ],
+   "problem_title": "Merge Two Sorted Lists",
+   "summary": "Dummy-head merge of two sorted lists. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-palindrome-linked-list",
+   "title": "Palindrome Linked List",
+   "page": 19,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "fast-slow-pointers",
+    "in-place-reversal-linked-list"
+   ],
+   "problem_title": "Palindrome Linked List",
+   "summary": "Palindrome check on a singly linked list. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-remove-duplicates-from-sorted-list",
+   "title": "Remove Duplicates from Sorted List",
+   "page": 24,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "linked-list"
+   ],
+   "problem_title": "Remove Duplicates from Sorted List",
+   "summary": "Single pass skipping equal neighbours. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-remove-the-k-th-node-from-the-end",
+   "title": "Remove the K-th Node From the End",
+   "page": 29,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "fast-slow-pointers",
+    "linked-list"
+   ],
+   "problem_title": "Remove the K-th Node From the End",
+   "summary": "Book title: Remove Nth Node from End of List. Gap-pointer removal. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-binary-tree-preorder-traversal",
+   "title": "Binary Tree Preorder Traversal",
+   "page": 34,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs"
+   ],
+   "problem_title": "Binary Tree Preorder Traversal",
+   "summary": "Preorder traversal of a binary tree. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-binary-search-tree-iterator",
+   "title": "Binary Search Tree Iterator",
+   "page": 36,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "stack",
+    "design"
+   ],
+   "problem_title": "Binary Search Tree Iterator",
+   "summary": "Book title: BST Iterator. Stack-based in-order iterator. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-binary-tree-inorder-traversal",
+   "title": "Binary Tree Inorder Traversal",
+   "page": 38,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "stack"
+   ],
+   "problem_title": "Binary Tree Inorder Traversal",
+   "summary": "In-order traversal of a binary tree. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-binary-tree-postorder-traversal",
+   "title": "Binary Tree Postorder Traversal",
+   "page": 47,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "stack"
+   ],
+   "problem_title": "Binary Tree Postorder Traversal",
+   "summary": "Post-order traversal of a binary tree. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-maximum-depth-of-binary-tree",
+   "title": "Maximum Depth of Binary Tree",
+   "page": 49,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "recursion"
+   ],
+   "problem_title": "Maximum Depth of Binary Tree",
+   "summary": "Recursive height computation. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-invert-binary-tree",
+   "title": "Invert Binary Tree",
+   "page": 50,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "recursion"
+   ],
+   "problem_title": "Invert Binary Tree",
+   "summary": "Recursive child swap. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-same-tree",
+   "title": "Same Tree",
+   "page": 52,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "recursion"
+   ],
+   "problem_title": "Same Tree",
+   "summary": "Recursive structural and value comparison. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-path-sum",
+   "title": "Path Sum",
+   "page": 63,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs"
+   ],
+   "problem_title": "Path Sum",
+   "summary": "Root-to-leaf target sum check. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-level-order-traversal",
+   "title": "Level Order Traversal",
+   "page": 67,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "bfs"
+   ],
+   "problem_title": "Level Order Traversal",
+   "summary": "Book title: Binary Tree Level Order Traversal. Queue-based, returns levels as lists (ours is flat). Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-minimum-depth-of-binary-tree",
+   "title": "Minimum Depth of Binary Tree",
+   "page": 71,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "bfs",
+    "dfs"
+   ],
+   "problem_title": "Minimum Depth of Binary Tree",
+   "summary": "Shallowest leaf depth. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-binary-tree-right-side-view",
+   "title": "Binary Tree Right Side View",
+   "page": 92,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "bfs"
+   ],
+   "problem_title": "Binary Tree Right Side View",
+   "summary": "Last node per level. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-binary-tree-zigzag-level-order-traversal",
+   "title": "Binary Tree Zigzag Level Order Traversal",
+   "page": 96,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "bfs"
+   ],
+   "problem_title": "Binary Tree Zigzag Level Order Traversal",
+   "summary": "Level order with alternating direction. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-count-univalue-subtrees",
+   "title": "Count Univalue Subtrees",
+   "page": 108,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dfs"
+   ],
+   "problem_title": "Count Univalue Subtrees",
+   "summary": "Post-order count of single-value subtrees. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-course-schedule",
+   "title": "Course Schedule",
+   "page": 114,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "topological-sort"
+   ],
+   "problem_title": "Course Schedule",
+   "summary": "Cycle detection on the prerequisite graph via a hand-rolled Graph/Vertex class; long. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-course-schedule-ii",
+   "title": "Course Schedule II",
+   "page": 124,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "topological-sort"
+   ],
+   "problem_title": "Course Schedule II",
+   "summary": "Book title: Course Schedule 2. Ordering via the same verbose Graph class. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-merge-k-sorted-lists",
+   "title": "Merge k Sorted Lists",
+   "page": 131,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "k-way-merge",
+    "heaps"
+   ],
+   "problem_title": "Merge k Sorted Lists",
+   "summary": "Book title: Merge K Sorted Linked Lists. Heap-based merge. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-contains-duplicate",
+   "title": "Contains Duplicate",
+   "page": 138,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "problem_title": "Contains Duplicate",
+   "summary": "Set-based duplicate check. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-rotate-array",
+   "title": "Rotate Array",
+   "page": 139,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "problem_title": "Rotate Array",
+   "summary": "Rotate an array right by k. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-3sum",
+   "title": "3Sum",
+   "page": 146,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "two-pointers"
+   ],
+   "problem_title": "3Sum",
+   "summary": "Book title: 3 Sum. Sort then two-pointer scan. Neighbouring pages cover 3Sum Smaller (141) and 3Sum Closest (143). Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-two-sum",
+   "title": "Two Sum",
+   "page": 148,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "problem_title": "Two Sum",
+   "summary": "Hash map of seen values. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-plus-one",
+   "title": "Plus One",
+   "page": 149,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "math",
+    "arrays-hashing"
+   ],
+   "problem_title": "Plus One",
+   "summary": "Digit-array increment with carry. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-contains-duplicate-ii",
+   "title": "Contains Duplicate II",
+   "page": 155,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing",
+    "sliding-window"
+   ],
+   "problem_title": "Contains Duplicate II",
+   "summary": "Duplicate within distance k via last-index map. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-merge-two-sorted-arrays",
+   "title": "Merge Two Sorted Arrays",
+   "page": 168,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "two-pointers"
+   ],
+   "problem_title": "Merge Two Sorted Arrays",
+   "summary": "Book title: Merge Sorted Arrays (LeetCode 88). In-place merge into the first array. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-container-with-most-water",
+   "title": "Container With Most Water",
+   "page": 173,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "two-pointers",
+    "greedy"
+   ],
+   "problem_title": "Container With Most Water",
+   "summary": "Two pointers moving the shorter wall. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-product-of-array-except-self",
+   "title": "Product of Array Except Self",
+   "page": 174,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "problem_title": "Product of Array Except Self",
+   "summary": "Prefix/suffix products without division. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-trapping-rain-water",
+   "title": "Trapping Rain Water",
+   "page": 175,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "two-pointers",
+    "arrays-hashing"
+   ],
+   "problem_title": "Trapping Rain Water",
+   "summary": "Precomputed max-to-the-right array plus running left max; O(n) extra space, no two-pointer variant. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-maximum-subarray",
+   "title": "Maximum Subarray",
+   "page": 177,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dynamic-programming",
+    "greedy"
+   ],
+   "problem_title": "Maximum Subarray",
+   "summary": "Kadane-style running sum. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-find-minimum-in-rotated-sorted-array",
+   "title": "Find Minimum in Rotated Sorted Array",
+   "page": 180,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "modified-binary-search"
+   ],
+   "problem_title": "Find Minimum in Rotated Sorted Array",
+   "summary": "Minimum of a rotated sorted array. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-pascal-s-triangle",
+   "title": "Pascal's Triangle",
+   "page": 181,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dynamic-programming",
+    "arrays-hashing"
+   ],
+   "problem_title": "Pascal's Triangle",
+   "summary": "Row-by-row construction. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-pascal-triangle-row",
+   "title": "Pascal Triangle Row",
+   "page": 183,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "dynamic-programming",
+    "math"
+   ],
+   "problem_title": "Pascal Triangle Row",
+   "summary": "Book title: Pascal's Triangle II. Single k-th row. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-missing-number",
+   "title": "Missing Number",
+   "page": 185,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "cyclic-sort",
+    "bitwise-xor",
+    "math"
+   ],
+   "problem_title": "Missing Number",
+   "summary": "Missing value in 0..n. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-valid-anagram",
+   "title": "Valid Anagram",
+   "page": 186,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "strings",
+    "arrays-hashing"
+   ],
+   "problem_title": "Valid Anagram",
+   "summary": "Character-count comparison. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-valid-palindrome",
+   "title": "Valid Palindrome",
+   "page": 187,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "two-pointers",
+    "strings"
+   ],
+   "problem_title": "Valid Palindrome",
+   "summary": "Alphanumeric palindrome check. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-valid-parentheses",
+   "title": "Valid Parentheses",
+   "page": 190,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "stack",
+    "strings"
+   ],
+   "problem_title": "Valid Parentheses",
+   "summary": "Stack of open brackets. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-reverse-integer",
+   "title": "Reverse Integer",
+   "page": 197,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "math"
+   ],
+   "problem_title": "Reverse Integer",
+   "summary": "Digit reversal with overflow check. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-palindrome-number",
+   "title": "Palindrome Number",
+   "page": 199,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "math"
+   ],
+   "problem_title": "Palindrome Number",
+   "summary": "Numeric palindrome check. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-implement-power-function",
+   "title": "Implement Power Function",
+   "page": 201,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "math",
+    "bit-manipulation"
+   ],
+   "problem_title": "Implement Power Function",
+   "summary": "Book title: Pow(x,n). Fast exponentiation. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-subsets",
+   "title": "Subsets",
+   "page": 202,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "subsets",
+    "backtracking"
+   ],
+   "problem_title": "Subsets",
+   "summary": "Power set generation (filed under Maths). Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-subsets-ii",
+   "title": "Subsets II",
+   "page": 204,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "subsets",
+    "backtracking"
+   ],
+   "problem_title": "Subsets II",
+   "summary": "Power set with duplicates (filed under Maths). Statement, LeetCode link and Python code only.",
+   "quality": 2
+  },
+  {
+   "id": "p-lru-cache",
+   "title": "LRU Cache",
+   "page": 225,
+   "kind": "problem-solution",
+   "access": "local",
+   "subject": "algo",
+   "topics": [
+    "design"
+   ],
+   "problem_title": "LRU Cache",
+   "summary": "Hash map plus ordering structure for an LRU cache. Statement, LeetCode link and Python code only.",
+   "quality": 2
+  }
+ ]
+}

@@ -29,6 +29,14 @@ export function ResourceList({
             )}
             <span className={`tag access-${r.access}`}>{ACCESS_LABEL[r.access]}</span>
             {r.verdict === "core" && <span className="tag core">core</span>}
+            {r.spoiler && (
+              <span
+                className="tag warn"
+                title="Shows a full solution — open it after your own attempt"
+              >
+                solution inside
+              </span>
+            )}
             <div className="small muted">{r.summary}</div>
           </li>
         ))}

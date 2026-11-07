@@ -1,0 +1,486 @@
+{
+ "version": 1,
+ "source": "bytebytego",
+ "researched": "2026-11-07",
+ "agent": "research-web",
+ "coverage": "ByteByteGo (Alex Xu) hosts four book-based courses: System Design Interview vols 1+2 (31 chapters), Object-Oriented Design Interview (14), GenAI System Design Interview (11) and Coding Interview Patterns (19 chapters, ~100 problems). Every SD chapter follows the same 4-step frame (scope, high-level design, deep dive, wrap-up) with dense block and sequence diagrams. Some chapters render in full for logged-out visitors. Others return only a title shell, so they are likely gated (marked paid). Chapters we didn't open are also marked paid, and their summaries say access wasn't checked.",
+ "refs": [
+  {
+   "id": "sdi-course",
+   "title": "System Design Interview (vol 1 + 2) course",
+   "url": "https://bytebytego.com/courses/system-design-interview",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "system-design",
+   "topics": [
+    "sd-framework"
+   ],
+   "summary": "Public table of contents for the 31-chapter course: foundations (scaling, estimation, framework) and then about 25 case studies. Some chapters are readable without login; others look gated.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-framework",
+   "title": "A Framework For System Design Interviews",
+   "url": "https://bytebytego.com/courses/system-design-interview/a-framework-for-system-design-interviews",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "sd-framework"
+   ],
+   "summary": "Time-boxed 4-step method (scope, high-level design plus buy-in, deep dive, wrap-up) with a do/don't list. It stresses writing assumptions down, sanity-checking with estimates and naming bottlenecks at the end.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-scale-zero-to-millions",
+   "title": "Scale From Zero To Millions Of Users",
+   "url": "https://bytebytego.com/courses/system-design-interview/scale-from-zero-to-millions-of-users",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "scalability-basics",
+    "load-balancing",
+    "caching",
+    "cdn",
+    "replication",
+    "sharding"
+   ],
+   "summary": "Grows one server step by step: split tiers, add a load balancer, DB replicas, cache, CDN, stateless web tier, multiple data centers, queues, metrics and sharding. The clearest model of incremental design evolution.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-back-of-envelope",
+   "title": "Back-of-the-envelope Estimation",
+   "url": "https://bytebytego.com/courses/system-design-interview/back-of-the-envelope-estimation",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "back-of-envelope",
+    "latency-throughput"
+   ],
+   "summary": "Powers-of-two and latency reference tables, a table of availability nines, and a worked QPS and storage estimate for a Twitter-like service, with tips on rounding and labelling units.",
+   "quality": 4
+  },
+  {
+   "id": "sdi-rate-limiter",
+   "title": "Design A Rate Limiter",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-rate-limiter",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "rate-limiting",
+    "rate-limiter-design"
+   ],
+   "summary": "Compares five throttling algorithms (token bucket, leaky bucket, fixed window, sliding log, sliding counter). Then moves from one middleware with a shared counter store to a distributed setup with race and sync fixes.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-consistent-hashing",
+   "title": "Design Consistent Hashing",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-consistent-hashing",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "consistent-hashing"
+   ],
+   "summary": "Explains why modulo hashing breaks when servers change, then covers the hash ring, virtual nodes for balance, and which keys move when nodes are added or removed. Diagram-heavy.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-key-value-store",
+   "title": "Design A Key-value Store",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-key-value-store",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "key-value-store",
+    "cap-consistency",
+    "replication"
+   ],
+   "summary": "A Dynamo-style walkthrough: CAP trade-offs, partitioning on a ring, replication, quorum tuning, vector clocks, failure detection and repair, and the read and write paths.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-unique-id",
+   "title": "Design A Unique ID Generator In Distributed Systems",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-unique-id-generator-in-distributed-systems",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "unique-id-generation"
+   ],
+   "summary": "Chapter on distributed ID generation (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-url-shortener",
+   "title": "Design A URL Shortener",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-url-shortener",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "url-shortener"
+   ],
+   "summary": "Textbook 4-step case: traffic and storage estimates, two REST endpoints, a single-table data model, a hash-plus-collision vs base-62 trade-off table, and redirect caching.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-web-crawler",
+   "title": "Design A Web Crawler",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-web-crawler",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "web-crawler"
+   ],
+   "summary": "Web crawler chapter (listed in the TOC). We didn't open it, so access wasn't checked. Treat it as possibly gated.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-notification-system",
+   "title": "Design A Notification System",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-notification-system",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "notification-system"
+   ],
+   "summary": "Notification system chapter (listed in the TOC). We didn't open it, so access wasn't checked. Treat it as possibly gated.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-news-feed",
+   "title": "Design A News Feed System",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-news-feed-system",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "news-feed",
+    "caching"
+   ],
+   "summary": "Splits the problem into a publish flow and a read flow, each with its own endpoint. Weighs fan-out on write against fan-out on read and settles on a hybrid that treats high-follower accounts separately.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-chat-system",
+   "title": "Design A Chat System",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-chat-system",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "chat-system",
+    "networking-basics"
+   ],
+   "summary": "Compares polling, long polling and WebSocket. Moves from one server to stateless and stateful services, chooses a KV store for history, refines message IDs and presence via heartbeats, and covers small-group fan-out.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-search-autocomplete",
+   "title": "Design A Search Autocomplete System",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-a-search-autocomplete-system",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "search-autocomplete"
+   ],
+   "summary": "Typeahead or autocomplete chapter (listed in the TOC). We didn't open it, so access wasn't checked. Treat it as possibly gated.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-youtube",
+   "title": "Design YouTube",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-youtube",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "video-streaming",
+    "blob-storage",
+    "cdn"
+   ],
+   "summary": "Covers the video upload and streaming flows, a transcoding pipeline, cost and speed optimizations such as CDN placement for popular content, and error handling along the pipeline.",
+   "quality": 4
+  },
+  {
+   "id": "sdi-google-drive",
+   "title": "Design Google Drive",
+   "url": "https://bytebytego.com/courses/system-design-interview/design-google-drive",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "file-sync"
+   ],
+   "summary": "File storage and sync chapter (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-proximity-service",
+   "title": "Proximity Service",
+   "url": "https://bytebytego.com/courses/system-design-interview/proximity-service",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "proximity-service"
+   ],
+   "summary": "Nearby-places chapter from volume 2 (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-distributed-message-queue",
+   "title": "Distributed Message Queue",
+   "url": "https://bytebytego.com/courses/system-design-interview/distributed-message-queue",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "message-queues"
+   ],
+   "summary": "Volume 2 chapter on building a Kafka-like queue (listed in the TOC). We didn't open it, so access wasn't checked.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-metrics-monitoring",
+   "title": "Metrics Monitoring and Alerting System",
+   "url": "https://bytebytego.com/courses/system-design-interview/metrics-monitoring-and-alerting-system",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "observability"
+   ],
+   "summary": "Volume 2 chapter on a metrics and alerting platform (listed in the TOC). We didn't open it, so access wasn't checked.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-hotel-reservation",
+   "title": "Hotel Reservation System",
+   "url": "https://bytebytego.com/courses/system-design-interview/hotel-reservation-system",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "api-design",
+    "databases-sql-nosql"
+   ],
+   "summary": "Volume 2 case with non-functional requirements, estimates, REST APIs and a schema in step 2. It then revises the data model and tackles double-booking and concurrency, scaling and cross-service consistency.",
+   "quality": 5
+  },
+  {
+   "id": "sdi-s3-object-storage",
+   "title": "S3-like Object Storage",
+   "url": "https://bytebytego.com/courses/system-design-interview/s3-like-object-storage",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "blob-storage"
+   ],
+   "summary": "Volume 2 chapter on object storage internals (listed in the TOC). We didn't open it, so access wasn't checked.",
+   "quality": 3
+  },
+  {
+   "id": "sdi-payment-system",
+   "title": "Payment System",
+   "url": "https://bytebytego.com/courses/system-design-interview/payment-system",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "payment-system"
+   ],
+   "summary": "Volume 2 payment chapter (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "genai-course",
+   "title": "GenAI System Design Interview course",
+   "url": "https://bytebytego.com/courses/genai-system-design-interview",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "system-design",
+   "topics": [
+    "genai-foundations"
+   ],
+   "summary": "Public table of contents for 11 chapters: an intro, then case studies on text (smart compose, translation, chatbot, RAG), vision (captioning) and generation (faces, high-res images, text-to-image, headshots, video).",
+   "quality": 4
+  },
+  {
+   "id": "genai-intro",
+   "title": "GenAI SD: Introduction and Overview",
+   "url": "https://bytebytego.com/courses/genai-system-design-interview/introduction-and-overview",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "genai-foundations"
+   ],
+   "summary": "Long overview of the GenAI landscape and a 7-step ML interview frame: requirements, ML task framing, data, model, evaluation, overall system, then deploy and monitor.",
+   "quality": 4
+  },
+  {
+   "id": "genai-rag",
+   "title": "GenAI SD: Retrieval-Augmented Generation",
+   "url": "https://bytebytego.com/courses/genai-system-design-interview/retrieval-augmented-generation",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "rag-system"
+   ],
+   "summary": "RAG case study (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "ood-course",
+   "title": "Object-Oriented Design Interview course",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "ood",
+   "topics": [
+    "ood-framework"
+   ],
+   "summary": "Public table of contents for 14 chapters: what OOD interviews are, a framework, OOP basics, and 11 case studies (parking lot, movie tickets, file search, vending, elevator, grocery, games, locker, ATM, restaurant).",
+   "quality": 4
+  },
+  {
+   "id": "ood-framework",
+   "title": "A Framework for the OOD Interview",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview/a-framework-for-the-ood-interview",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "ood",
+   "topics": [
+    "ood-framework",
+    "uml-basics"
+   ],
+   "summary": "Time-boxed 4 steps: clarify requirements, find core objects by walking a use case (nouns become classes, verbs become methods), draw a class diagram and code it, then deep dive on edge cases and extensions.",
+   "quality": 5
+  },
+  {
+   "id": "ood-oop-fundamentals",
+   "title": "OOP Fundamentals",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview/oop-fundamentals",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "oop-basics"
+   ],
+   "summary": "OOP primer chapter (listed in the TOC). We didn't open it, so access wasn't checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-parking-lot",
+   "title": "Design a Parking Lot",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview/design-a-parking-lot",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "ood",
+   "topics": [
+    "parking-lot",
+    "behavioral-patterns",
+    "structural-patterns",
+    "solid"
+   ],
+   "summary": "Walks the full framework with per-component and complete UML class diagrams and Java classes. Uses Strategy for pricing, a Facade entry point and an open-closed deep dive.",
+   "quality": 5
+  },
+  {
+   "id": "ood-vending-machine",
+   "title": "Design a Vending Machine",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview/design-a-vending-machine",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "vending-machine"
+   ],
+   "summary": "Vending machine case (listed in the TOC). We didn't open it, so access wasn't checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-elevator",
+   "title": "Design an Elevator System",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview/design-an-elevator-system",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "elevator-system"
+   ],
+   "summary": "Elevator case (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "ood-atm",
+   "title": "Design an ATM System",
+   "url": "https://bytebytego.com/courses/object-oriented-design-interview/design-an-automated-teller-machine-atm",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "atm"
+   ],
+   "summary": "ATM case (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
+   "quality": 3
+  },
+  {
+   "id": "cp-course",
+   "title": "Coding Interview Patterns course",
+   "url": "https://bytebytego.com/courses/coding-patterns",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "algo",
+   "topics": [
+    "two-pointers",
+    "arrays-hashing",
+    "linked-list",
+    "fast-slow-pointers",
+    "sliding-window",
+    "modified-binary-search",
+    "stack",
+    "heaps",
+    "merge-intervals",
+    "bfs",
+    "dfs",
+    "topological-sort",
+    "backtracking",
+    "dynamic-programming",
+    "greedy",
+    "sorting",
+    "bit-manipulation",
+    "math"
+   ],
+   "summary": "Online version of the Coding Interview Patterns book: 19 pattern chapters, each an intro lesson plus worked problems that go from brute force to optimal, with many diagrams. Prefix sums, trees and tries are also covered.",
+   "quality": 4
+  },
+  {
+   "id": "cp-two-pointers-intro",
+   "title": "Introduction to Two Pointers",
+   "url": "https://bytebytego.com/courses/coding-patterns/two-pointers/introduction-to-two-pointers",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "two-pointers"
+   ],
+   "summary": "Builds intuition for two-index scans and names three traversal shapes (inward, same-direction, staged). Lists signals for spotting the pattern, then six worked problems.",
+   "quality": 4
+  }
+ ]
+}

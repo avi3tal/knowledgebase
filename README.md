@@ -9,7 +9,7 @@ predefined cases with a runtime/complexity estimate.
 The top level is organised by **type** (only `algo` for now; `system-design`, `k8s` later).
 
 ```
-resources/            ROADMAP.md, links.md (practice platforms = source tags)
+resources/            sources.json (registry + verdicts), refs/ (curated references), README.md, ROADMAP.md
 progress/             runs.jsonl, quiz.jsonl — your practice history (input to kb feedback)
 studio/               React + TS learning studio (served by `kb studio`)
 algo/

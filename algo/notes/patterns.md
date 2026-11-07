@@ -84,4 +84,4 @@ remove() -> O(1)
 Example of questions for HashMap
 1. Two Sum
 
-See also: [resources/links.md](../../resources/links.md)
+See also: [resources/README.md](../../resources/README.md) (curated external resources).

@@ -4,4 +4,4 @@ BFS / DFS are the foundation for most graph questions (and for Dijkstra, Bellman
 Typical complexity: O(V + E) time and space.
 
 Reference implementations: [algo/ds/graph/python](../ds/graph/python).
-Links: see [resources/links.md](../../resources/links.md#learning-material).
+Go deeper: the [Graphs / BFS / DFS topic pages](../learn/bfs/01-intro.md) and curated sources in [resources/README.md](../../resources/README.md).

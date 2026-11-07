@@ -92,7 +92,7 @@ whole courses, and say plainly when a source duplicates another or is weak.
 | `id` | kebab-case, unique within the file |
 | `url` / `page` | `url` for web and GitHub (deep link, no `?aff=` or `utm_`); `page` (int) for books |
 | `kind` | `lesson`, `visual`, `article`, `problem-solution`, `course-module`, `diagram`, `video` or `cheatsheet` |
-| `access` | `free`, `trial`, `paid` or `local` |
+| `access` | what you get **at that link without logging in**: `free` (full content readable), `trial` (preview or outline of a paid course, e.g. a course landing or outline page), `paid` (gated), `local` (book on disk) |
 | `topics` | catalog ids for `subject`; can be empty only if `problem_title` is set |
 | `quality` | 1 = weak, 3 = solid, 5 = best-in-class for this topic |
 

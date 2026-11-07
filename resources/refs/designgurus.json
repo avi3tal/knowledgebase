@@ -1,0 +1,940 @@
+{
+ "version": 1,
+ "source": "designgurus",
+ "researched": "2026-11-07",
+ "agent": "research-web",
+ "coverage": "Grokking the Coding Interview (DesignGurus, by Arslan Ahmad) is the long-form version of the patterns PDF our algo catalog was seeded from. The public outline has 49 chapters and 671 lessons: a warmup, 41 pattern chapters (each with a pattern intro, then easy/medium/hard problems and 'Problem Challenges'), a free cheat sheet and three 'Test Your Knowledge' problem sets. The former 'Advanced Coding Patterns' course URL now serves this same course, so its chapters (Counting, Monotonic Queue, Mo's, Segment Tree and others) are merged in. Text-only teaching with a diagram per pattern, a template, recognition cues and an in-browser 'Try it yourself' editor. Free without login: the cheat sheet and the Two Pointers, Fast & Slow, Sliding Window and Island intros. Other intros we sampled show a few paragraphs and then an Enroll wall. Problem pages show the statement and editor; the solution is on a separate page we didn't check. The sister courses Grokking the System Design Interview (82 lessons) and Grokking the Object Oriented Design Interview (49 lessons) work the same way: a few lessons are free (SD step-by-step guide, URL shortener, OOD parking lot) and the rest show a teaser. Refs we didn't open are marked paid and say so.",
+ "refs": [
+  {
+   "id": "gci-course",
+   "title": "Grokking the Coding Interview: Patterns for Coding Questions (course outline)",
+   "url": "https://www.designgurus.io/course/grokking-the-coding-interview",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "algo",
+   "topics": [
+    "two-pointers",
+    "sliding-window",
+    "fast-slow-pointers",
+    "merge-intervals",
+    "cyclic-sort",
+    "in-place-reversal-linked-list",
+    "bfs",
+    "dfs",
+    "islands",
+    "two-heaps",
+    "subsets",
+    "modified-binary-search",
+    "bitwise-xor",
+    "top-k-elements",
+    "k-way-merge",
+    "knapsack-0-1",
+    "fibonacci-numbers",
+    "palindromic-subsequence",
+    "topological-sort",
+    "backtracking",
+    "multi-threaded"
+   ],
+   "summary": "Public table of contents for 49 chapters (41 patterns, about 670 lessons). It is the canonical long-form source for our pattern taxonomy and good for checking our coverage. Most lessons need enrollment.",
+   "quality": 4
+  },
+  {
+   "id": "gci-cheat-sheet",
+   "title": "DSA Patterns Cheat Sheet: All 41 Coding Interview Patterns",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/coding-patterns-a-cheat-sheet",
+   "kind": "cheatsheet",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "two-pointers",
+    "sliding-window",
+    "fast-slow-pointers",
+    "merge-intervals",
+    "cyclic-sort",
+    "in-place-reversal-linked-list",
+    "bfs",
+    "dfs",
+    "islands",
+    "two-heaps",
+    "subsets",
+    "modified-binary-search",
+    "bitwise-xor",
+    "top-k-elements",
+    "k-way-merge",
+    "knapsack-0-1",
+    "fibonacci-numbers",
+    "palindromic-subsequence",
+    "topological-sort",
+    "backtracking",
+    "multi-threaded",
+    "greedy",
+    "stack"
+   ],
+   "summary": "Free one-page revision of all 41 patterns, with when-to-use cues for each and an FAQ. It's the best free entry point to the course and handy for spaced review or a 'which pattern?' drill.",
+   "quality": 4
+  },
+  {
+   "id": "two-pointers-intro",
+   "title": "Introduction to Two Pointers Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-two-pointers-pattern",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "two-pointers"
+   ],
+   "summary": "Full free lesson. It goes from brute-force O(N^2) pair search to converging pointers on a sorted array, then gives a template, variants, common mistakes and a comparison with sliding window and fast/slow pointers.",
+   "quality": 4
+  },
+  {
+   "id": "fast-slow-intro",
+   "title": "Introduction to Fast & Slow Pointers Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-fast-slow-pointers-pattern",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "fast-slow-pointers",
+    "linked-list"
+   ],
+   "summary": "Full free lesson on hare-and-tortoise pointers for cycle detection and finding the midpoint in O(1) space, with a template, variants and pitfalls, and a comparison with related pointer patterns.",
+   "quality": 4
+  },
+  {
+   "id": "sliding-window-intro",
+   "title": "Introduction to Sliding Window Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-sliding-window-pattern",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "sliding-window"
+   ],
+   "summary": "Full free lesson. It uses a moving-window diagram to take a fixed-size subarray average from O(N*K) to O(N) with a running sum, then gives a general pseudocode template, recognition cues and practice grouped by window type.",
+   "quality": 4
+  },
+  {
+   "id": "island-intro",
+   "title": "Introduction to Island Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-island-pattern",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "algo",
+   "topics": [
+    "islands",
+    "dfs",
+    "bfs"
+   ],
+   "summary": "Full free lesson that treats a 2D grid as an implicit graph and uses DFS or BFS flood fill to count, measure or repaint connected regions.",
+   "quality": 4
+  },
+  {
+   "id": "merge-intervals-intro",
+   "title": "Introduction to Merge Intervals Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-merge-intervals-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "merge-intervals"
+   ],
+   "summary": "Free teaser motivates merging with overlapping meetings and why pairwise checks are quadratic. The rest (overlap cases, sort-then-sweep) is behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "cyclic-sort-intro",
+   "title": "Introduction to Cyclic Sort Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-cyclic-sort-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "cyclic-sort"
+   ],
+   "summary": "Teaser covers the core idea that values 1..N each belong at index v-1, so you can place them by swapping without comparisons. The full walkthrough is behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "inplace-reversal-intro",
+   "title": "Introduction to In-place Reversal of a Linked List Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-inplace-reversal-of-a-linked-list-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "in-place-reversal-linked-list",
+    "linked-list"
+   ],
+   "summary": "Pattern intro for reversing list segments with prev/current/next pointers, followed by sublist and every-k-group problems. Access not checked; marked paid.",
+   "quality": 3
+  },
+  {
+   "id": "stack-intro",
+   "title": "Introduction to Stack (data structure + pattern)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-stack",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "stack"
+   ],
+   "summary": "The chapter starts from fundamentals (implementing a stack, built-in stacks per language, applications) and then moves to pattern problems such as balanced parentheses and simplify path. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "monotonic-stack-intro",
+   "title": "Introduction to Monotonic Stack",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-monotonic-stack",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "stack"
+   ],
+   "summary": "A separate chapter on increasing and decreasing stacks for next-greater, daily temperatures, remove-k-digits and subarray-minimum sums. Our catalog folds this into stack. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "hash-map-intro",
+   "title": "Introduction to Hash Map Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-hash-map-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "summary": "Preceded by lessons on how hash tables work (collisions, resizing, per-language APIs), then frequency-count problems such as ransom note and first unique character. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "tree-bfs-intro",
+   "title": "Introduction to Tree Level Order Traversal Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-tree-breadth-first-search-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "bfs"
+   ],
+   "summary": "Teaser shows queue-based level-by-level traversal. The full chapter is the biggest in the course (about 29 lessons: zigzag, level averages, right view, siblings). Behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "tree-dfs-intro",
+   "title": "Introduction to Tree Depth First Search Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-tree-depth-first-search-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "dfs",
+    "recursion"
+   ],
+   "summary": "Recursive root-to-leaf path patterns (path sum, all paths, path numbers, diameter, max path sum). Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "graph-bfs-traversal",
+   "title": "Graph Traversal - Breadth First Search (BFS)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/graph-traversal-breadth-first-search-bfs",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "bfs"
+   ],
+   "summary": "Part of a Graphs chapter that first teaches graph types and adjacency representations, then BFS/DFS, then problems such as provinces, safe states and bus routes. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "graph-dfs-traversal",
+   "title": "Graph Traversal - Depth First Search (DFS)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/graph-traversal-depth-first-searchdfs",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "dfs"
+   ],
+   "summary": "DFS on explicit graphs (adjacency lists, visited set, recursive vs iterative), from the Graphs fundamentals chapter. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "two-heaps-intro",
+   "title": "Introduction to Two Heaps Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-two-heaps-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "two-heaps",
+    "heaps"
+   ],
+   "summary": "Teaser explains why a max-heap for the lower half plus a min-heap for the upper half gives the running median without re-sorting. The rest is behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "subsets-intro",
+   "title": "Introduction to Subsets Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-subsets-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "subsets",
+    "backtracking"
+   ],
+   "summary": "BFS-style subset building, extended to duplicates, permutations, case permutations, parentheses and unique BSTs. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "binary-search-intro",
+   "title": "Introduction to Modified Binary Search Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-modified-binary-search-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "modified-binary-search"
+   ],
+   "summary": "Binary search variants: order-agnostic, ceiling, next letter, range, infinite array, bitonic and rotated arrays. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "xor-intro",
+   "title": "Introduction to Bitwise XOR Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-bitwise-xor-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "bitwise-xor",
+    "bit-manipulation"
+   ],
+   "summary": "XOR properties for finding single or missing numbers and complements, a short chapter of about 5 problems. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "top-k-intro",
+   "title": "Introduction to Top 'K' Elements Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-top-k-elements-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "top-k-elements",
+    "heaps"
+   ],
+   "summary": "Teaser shows keeping a size-K min-heap and evicting its smallest when a larger value arrives. The full chapter (about 29 lessons, including task scheduling and frequency stack) is behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "k-way-merge-intro",
+   "title": "Introduction to K-way Merge Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-kway-merge-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "k-way-merge",
+    "heaps"
+   ],
+   "summary": "Heap of list heads for merging K sorted inputs, the Kth smallest in a sorted matrix and the smallest range. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "greedy-intro",
+   "title": "Introduction to Greedy Algorithm",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-greedy-algorithm",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "greedy"
+   ],
+   "summary": "Greedy-choice chapter with pair chains, minimum parentheses additions, remove duplicate letters and largest palindromic number. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "what-is-dp",
+   "title": "What is Dynamic Programming?",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/what-is-dynamic-programming",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "dynamic-programming"
+   ],
+   "summary": "DP primer that opens the three DP chapters (0/1 knapsack, Fibonacci, palindromic subsequence). Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "knapsack-intro",
+   "title": "Introduction to 0/1 Knapsack Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-01-knapsack-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "knapsack-0-1",
+    "dynamic-programming"
+   ],
+   "summary": "Teaser shows a small item set where greedy-by-ratio fails, which motivates the take-or-skip decision per item at each capacity. Subset sum, partition and target sum follow behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "fibonacci-intro",
+   "title": "Introduction to Fibonacci Numbers Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-fibonacci-numbers-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "fibonacci-numbers",
+    "dynamic-programming"
+   ],
+   "summary": "Recurrences built on the previous one or two states: staircase, number factors, min jumps (with fee) and house thief. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "palindromic-subseq-intro",
+   "title": "Introduction to Palindromic Subsequence Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-palindromic-subsequence-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "palindromic-subsequence",
+    "dynamic-programming"
+   ],
+   "summary": "Interval DP over string ends: longest palindromic subsequence and substring, counting, minimum deletions and palindrome partitioning. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "backtracking-intro",
+   "title": "Introduction to Backtracking Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-backtracking-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "backtracking",
+    "recursion"
+   ],
+   "summary": "Choose-explore-undo search with combination sum, word search, factor combinations and sudoku solver. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "topo-sort-intro",
+   "title": "Introduction to Topological Sort",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-topological-sort",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "topological-sort"
+   ],
+   "summary": "Teaser uses course prerequisites: a node is ready once its in-degree drops to zero. Task scheduling (all orders), alien dictionary and minimum height trees are behind enrollment.",
+   "quality": 3
+  },
+  {
+   "id": "multithreaded-intro",
+   "title": "Introduction to Multi-threaded Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-multithreaded-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "multi-threaded"
+   ],
+   "summary": "Short chapter (about 7 lessons) that applies concurrency to tree problems (same tree, invert tree, BST iterator). One of few sources for this pattern. Access not checked.",
+   "quality": 2
+  },
+  {
+   "id": "linear-sorting-intro",
+   "title": "Introduction to Linear Sorting Algorithms",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-to-linear-sorting-algorithms",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "sorting"
+   ],
+   "summary": "Counting, radix and bucket sort with lessons for each, then relative-sort and height-checker problems. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "prefix-sum-intro",
+   "title": "Introduction Prefix Sum Pattern",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/introduction-prefix-sum-pattern",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "arrays-hashing"
+   ],
+   "summary": "Prefix sums plus a hash of seen sums for subarray-sum-equals-K, divisible-by-K and binary subarray counts. We have no prefix-sum topic, so it's mapped to arrays-hashing. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-pair-with-target-sum",
+   "title": "Pair with Target Sum (easy)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/pair-with-target-sum-easy",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "two-pointers"
+   ],
+   "problem_title": "Two Sum II - Input Array Is Sorted",
+   "summary": "Statement and in-browser editor are public. The worked solution is on a separate 'Solution' page that we didn't check.",
+   "quality": 3
+  },
+  {
+   "id": "p-smallest-subarray-greater-sum",
+   "title": "Smallest Subarray With a Greater Sum (easy)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/smallest-subarray-with-a-greater-sum-easy",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "sliding-window"
+   ],
+   "problem_title": "Minimum Size Subarray Sum",
+   "summary": "First variable-size window problem in the course. Statement, examples and editor are public; the solution page is separate.",
+   "quality": 3
+  },
+  {
+   "id": "p-minimum-meeting-rooms",
+   "title": "Problem Challenge 1: Minimum Meeting Rooms (hard)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/problem-challenge-1-minimum-meeting-rooms-hard",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "merge-intervals",
+    "heaps"
+   ],
+   "problem_title": "Meeting Rooms II",
+   "summary": "Intervals chapter challenge that combines sorting by start with a min-heap of end times. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-employee-free-time",
+   "title": "Problem Challenge 3: Employee Free Time (hard)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/problem-challenge-3-employee-free-time-hard",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "merge-intervals",
+    "k-way-merge"
+   ],
+   "problem_title": "Employee Free Time",
+   "summary": "Hard intervals capstone (merging several sorted schedules). It's a premium problem on LeetCode too. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-median-number-stream",
+   "title": "Find the Median of a Number Stream (medium)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/find-the-median-of-a-number-stream-medium",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "two-heaps"
+   ],
+   "problem_title": "Find Median from Data Stream",
+   "summary": "Canonical two-heaps problem and the anchor of that chapter. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-sliding-window-median",
+   "title": "Sliding Window Median (hard)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/sliding-window-median-hard",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "two-heaps",
+    "sliding-window"
+   ],
+   "problem_title": "Sliding Window Median",
+   "summary": "Two heaps with removals as the window slides, a good stretch problem that combines two patterns. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-maximize-capital",
+   "title": "Maximize Capital (hard)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/maximize-capital-hard",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "two-heaps",
+    "greedy"
+   ],
+   "problem_title": "IPO",
+   "summary": "Min-heap by capital feeds a max-heap by profit, an unusual non-median use of two heaps. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-merge-k-sorted-lists",
+   "title": "Merge K Sorted Lists (medium)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/merge-k-sorted-lists-medium",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "k-way-merge"
+   ],
+   "problem_title": "Merge k Sorted Lists",
+   "summary": "Entry problem of the K-way merge chapter (heap of list heads). Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "p-alien-dictionary",
+   "title": "Alien Dictionary (hard)",
+   "url": "https://www.designgurus.io/course-play/grokking-the-coding-interview/doc/alien-dictionary-hard",
+   "kind": "problem-solution",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "topological-sort"
+   ],
+   "problem_title": "Alien Dictionary",
+   "summary": "Builds ordering edges from adjacent words, then topologically sorts them. It's the hardest graph-modeling step in the chapter. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "dp-course",
+   "title": "Grokking Dynamic Programming Patterns for Coding Interviews",
+   "url": "https://www.designgurus.io/course/grokking-dynamic-programming",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "algo",
+   "topics": [
+    "dynamic-programming",
+    "knapsack-0-1",
+    "unbounded-knapsack",
+    "fibonacci-numbers",
+    "palindromic-subsequence",
+    "longest-common-substring"
+   ],
+   "summary": "Separate paid course of 73 lessons in five DP pattern chapters: 0/1 knapsack, unbounded knapsack, Fibonacci, palindromic subsequence and longest common substring (26 lessons). The only DesignGurus home for two of our seeded patterns.",
+   "quality": 3
+  },
+  {
+   "id": "dp-unbounded-knapsack",
+   "title": "Unbounded Knapsack (Grokking DP, Pattern 2)",
+   "url": "https://www.designgurus.io/course-play/grokking-dynamic-programming/doc/unbounded-knapsack",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "unbounded-knapsack",
+    "dynamic-programming"
+   ],
+   "summary": "First lesson of the 10-lesson unbounded knapsack chapter in the DP course. This pattern is not in the main coding-interview course. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "dp-longest-common-substring",
+   "title": "Longest Common Substring (Grokking DP, Pattern 5)",
+   "url": "https://www.designgurus.io/course-play/grokking-dynamic-programming/doc/longest-common-substring",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "algo",
+   "topics": [
+    "longest-common-substring",
+    "dynamic-programming"
+   ],
+   "summary": "First lesson of the 26-lesson LCS-family chapter (substring, subsequence and related string-alignment DPs) in the DP course. It's absent from the main course. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "sd-course",
+   "title": "Grokking the System Design Interview (course outline)",
+   "url": "https://www.designgurus.io/course/grokking-the-system-design-interview",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "system-design",
+   "topics": [
+    "sd-framework",
+    "url-shortener",
+    "rate-limiter-design",
+    "web-crawler",
+    "news-feed",
+    "chat-system",
+    "file-sync",
+    "video-streaming",
+    "search-autocomplete",
+    "proximity-service"
+   ],
+   "summary": "Public outline of 82 lessons in four parts: interview approach, about 23 trade-off lessons (X vs Y), 15 classic case studies each with a quiz, and a glossary of distributed-systems basics. Most lessons are gated.",
+   "quality": 4
+  },
+  {
+   "id": "sd-step-by-step",
+   "title": "System Design Interviews - A step by step guide",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/system-design-interviews-a-step-by-step-guide",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "sd-framework"
+   ],
+   "summary": "Full free lesson with a seven-step interview framework: requirements, estimation, API, data model, high-level design, deep dives, bottlenecks. It says to spend most of the time in the middle steps.",
+   "quality": 4
+  },
+  {
+   "id": "sd-back-of-envelope",
+   "title": "What are Back-of-the-Envelope Estimations?",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/what-are-backoftheenvelope-estimations",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "back-of-envelope"
+   ],
+   "summary": "Estimation primer in the course's opening chapter. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "sd-url-shortener",
+   "title": "Designing a URL Shortening Service like TinyURL",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-a-url-shortening-service-like-tinyurl",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "system-design",
+   "topics": [
+    "url-shortener",
+    "unique-id-generation"
+   ],
+   "summary": "Full free case study covering requirements, scale estimates, API, schema, key generation, redirects, analytics and failure handling, plus a recent 'where AI fits' section.",
+   "quality": 4
+  },
+  {
+   "id": "sd-rate-limiter",
+   "title": "Designing an API Rate Limiter",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-an-api-rate-limiter",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "rate-limiter-design",
+    "rate-limiting"
+   ],
+   "summary": "Classic rate-limiter case study. The trade-off chapter also has a token bucket vs leaky bucket lesson. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "sd-dropbox",
+   "title": "Designing Dropbox",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-dropbox",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "file-sync",
+    "blob-storage"
+   ],
+   "summary": "File storage and sync case study. Logged-out visitors only see its first line.",
+   "quality": 3
+  },
+  {
+   "id": "sd-typeahead",
+   "title": "Designing Typeahead Suggestion",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-typeahead-suggestion",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "search-autocomplete"
+   ],
+   "summary": "Autocomplete case study (trie-based suggestions) followed by a quiz. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "sd-newsfeed",
+   "title": "Designing Facebook's Newsfeed",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-facebooks-newsfeed",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "news-feed"
+   ],
+   "summary": "News feed case study. The trade-off chapter's push vs pull lesson pairs with it. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "sd-consistent-hashing",
+   "title": "Consistent Hashing",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/consistent-hashing-new",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "consistent-hashing",
+    "sharding"
+   ],
+   "summary": "Glossary lesson. The free teaser contrasts hash mod N with a ring that moves only a small share of keys when nodes change. The rest is gated.",
+   "quality": 3
+  },
+  {
+   "id": "sd-cap",
+   "title": "CAP Theorem",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/cap-theorem",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "cap-consistency"
+   ],
+   "summary": "Glossary lesson, with separate lessons on PACELC, quorum and strong vs eventual consistency nearby. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "sd-caching-strategies",
+   "title": "Cache-Aside vs Read-Through, Write-Through vs Write-Back",
+   "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/readthrough-vs-writethrough-cache",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "system-design",
+   "topics": [
+    "caching"
+   ],
+   "summary": "Trade-off lesson comparing cache read and write policies. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-course",
+   "title": "Grokking the Object Oriented Design Interview (course outline)",
+   "url": "https://www.designgurus.io/course/grokking-the-object-oriented-design-interview",
+   "kind": "course-module",
+   "access": "trial",
+   "subject": "ood",
+   "topics": [
+    "ood-framework",
+    "uml-basics",
+    "parking-lot",
+    "library-system",
+    "atm",
+    "elevator-system",
+    "vending-machine",
+    "chess-game",
+    "lru-cache-ood"
+   ],
+   "summary": "Public outline of 49 lessons: OO and UML basics, a method chapter (requirements, finding classes, relationships, SOLID, patterns), 22 case studies with code in several languages, and assessments.",
+   "quality": 4
+  },
+  {
+   "id": "ood-parking-lot",
+   "title": "Design a Parking Lot",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/design-a-parking-lot",
+   "kind": "lesson",
+   "access": "free",
+   "subject": "ood",
+   "topics": [
+    "parking-lot"
+   ],
+   "summary": "Full free case study that builds the design in five stages (vehicles and spots, lot, tickets, payment, entry and exit panels) and ends with a class diagram.",
+   "quality": 4
+  },
+  {
+   "id": "ood-uml",
+   "title": "What is UML?",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/what-is-uml",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "uml-basics"
+   ],
+   "summary": "Opens a UML sequence: use case, class, activity and sequence diagram lessons. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-oo-basics",
+   "title": "Object-Oriented Basics",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/objectoriented-basics",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "oop-basics"
+   ],
+   "summary": "OOP primer (encapsulation, abstraction, inheritance, polymorphism) before OO analysis and design. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-how-interview-runs",
+   "title": "How the Interview Runs",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/how-the-interview-runs",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "ood-framework"
+   ],
+   "summary": "Start of the newer method chapter: requirements from a one-liner, finding classes, choosing relationships. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-solid",
+   "title": "Keeping the Design Honest with SOLID",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/keeping-the-design-honest-with-solid",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "solid"
+   ],
+   "summary": "Applies SOLID as a review checklist on interview designs. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-design-patterns",
+   "title": "The Design Patterns That Come Up in This Round",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/the-design-patterns-that-come-up-in-this-round",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "creational-patterns",
+    "structural-patterns",
+    "behavioral-patterns"
+   ],
+   "summary": "Interview-focused selection of GoF patterns (the ones that actually come up in LLD rounds) rather than a full catalog. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-elevator",
+   "title": "Design an Elevator System",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/design-an-elevator-system",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "elevator-system"
+   ],
+   "summary": "Elevator case study from the everyday-objects group. Access not checked.",
+   "quality": 3
+  },
+  {
+   "id": "ood-inmemory-cache",
+   "title": "Design an In-Memory Cache",
+   "url": "https://www.designgurus.io/course-play/grokking-the-object-oriented-design-interview/doc/design-an-inmemory-cache",
+   "kind": "lesson",
+   "access": "paid",
+   "subject": "ood",
+   "topics": [
+    "lru-cache-ood"
+   ],
+   "summary": "Newer case study on a cache component with eviction policies, part of the pattern-driven components group. Access not checked.",
+   "quality": 3
+  }
+ ]
+}

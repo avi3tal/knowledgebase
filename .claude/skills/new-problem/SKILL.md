@@ -28,7 +28,7 @@ Pattern tags are kebab-case and reused across problems — check existing ones w
 `sliding-window`, `stack`, `monotonic-stack`, `binary-search`, `linked-list`, `fast-slow-pointers`,
 `tree-dfs`, `tree-bfs`, `trie`, `heap`, `backtracking`, `graph-bfs`, `graph-dfs`, `union-find`,
 `topological-sort`, `dp-1d`, `dp-2d`, `greedy`, `intervals`, `bit-manipulation`, `math`, `sorting`, `design`.
-Source names come from `resources/links.md` (`leetcode`, `neetcode`, `interviewbit`, `interview:<company>`…).
+Source names must exist in `resources/sources.json` (id or alias; `interview:<company>` is always allowed) — `kb validate` checks it.
 
 ## 3. Write the content (you author these three files)
 

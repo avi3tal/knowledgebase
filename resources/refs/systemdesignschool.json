@@ -1,0 +1,301 @@
+{
+  "version": 1,
+  "source": "systemdesignschool",
+  "researched": "2026-11-07",
+  "agent": "research-web",
+  "coverage": "System design site (partner of AlgoMonster) with about 41 problems, including 6 AI/LLM ones, a free primer, and pattern / technology / fundamentals / domain-knowledge pages. Newer solution pages share one numbered structure: problem, key concepts, requirements, estimation, API, data model, high-level design built up step by step, deep dives with Bad/Good/Great tabs, variants, transferable pattern, 30-second review, quiz, sources. Most have embedded simulators or calculators. Older pages (e.g. URL shortener) are plain text with collapsed sections. Solution and primer text was readable without login. A separate AI-interviewer practice mode per problem scores five stages; saved progress needs sign-in and the course is sold via /pricing.",
+  "refs": [
+    {
+      "id": "sds-primer",
+      "title": "System design primer",
+      "url": "https://systemdesignschool.io/primer",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "sd-framework",
+        "scalability-basics",
+        "caching",
+        "message-queues",
+        "cap-consistency"
+      ],
+      "summary": "Long primer: level expectations, core scaling problems, a single 'master template' architecture, and an interview method that turns verbs into use cases, nouns into entities and adjectives into constraints, worked on Twitter.",
+      "quality": 4
+    },
+    {
+      "id": "sds-chatapp-solution",
+      "title": "Chat app (WhatsApp/Messenger) solution",
+      "url": "https://systemdesignschool.io/problems/chatapp/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "chat-system",
+        "networking-basics",
+        "back-of-envelope"
+      ],
+      "summary": "Builds the design from one server to the full delivery path; deep dives on delivery and dedup, per-chat ordering, group fan-out and presence. Live estimation panel and a heartbeat/presence simulator.",
+      "quality": 5
+    },
+    {
+      "id": "sds-chatapp-practice",
+      "title": "Chat app: AI mock interview practice",
+      "url": "https://systemdesignschool.io/problems/chatapp",
+      "kind": "course-module",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "chat-system",
+        "sd-framework"
+      ],
+      "summary": "AI interviewer runs five short stages (scoping, high-level, end-to-end trace, scaling, capacity) in any order and scores each against a rubric; best score per stage saved when signed in.",
+      "quality": 4
+    },
+    {
+      "id": "sds-rate-limiter-solution",
+      "title": "Distributed rate limiter solution",
+      "url": "https://systemdesignschool.io/problems/rate-limiter/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "rate-limiter-design",
+        "rate-limiting"
+      ],
+      "summary": "All five classic algorithms with an animated simulator (tune limit, window and arrival rate) and an over-allowance calculator; Bad/Good/Great deep dives on distributed counting.",
+      "quality": 5
+    },
+    {
+      "id": "sds-news-feed-solution",
+      "title": "News feed solution",
+      "url": "https://systemdesignschool.io/problems/news-feed/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "news-feed",
+        "caching"
+      ],
+      "summary": "Push vs pull fan-out with a follower-threshold slider for the hybrid, celebrity hot-key handling via replicated cache and request coalescing, and a latency budget funnel.",
+      "quality": 5
+    },
+    {
+      "id": "sds-kv-store-solution",
+      "title": "Distributed key-value store solution",
+      "url": "https://systemdesignschool.io/problems/distributed-kv-store/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "key-value-store",
+        "replication",
+        "cap-consistency",
+        "sharding"
+      ],
+      "summary": "Dynamo-style store: interactive R/W/N quorum widget, why quorum is not linearisable, LWW vs vector clocks vs CRDTs, hinted handoff for short outages and Merkle anti-entropy for drift.",
+      "quality": 5
+    },
+    {
+      "id": "sds-youtube-solution",
+      "title": "YouTube solution",
+      "url": "https://systemdesignschool.io/problems/youtube/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "video-streaming",
+        "cdn",
+        "blob-storage"
+      ],
+      "summary": "Deep dives on the transcode pipeline, adaptive bitrate and CDN delivery, and egress cost with storage tiers; codec/ladder explorer, rebuffering simulator and egress calculator.",
+      "quality": 5
+    },
+    {
+      "id": "sds-payment-solution",
+      "title": "Payment system solution",
+      "url": "https://systemdesignschool.io/problems/payment-system/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "payment-system"
+      ],
+      "summary": "Idempotency and the 'in-doubt' outcome when the provider times out, double-entry ledger, sagas plus reconciliation; stepper that replays a capture timeout.",
+      "quality": 4
+    },
+    {
+      "id": "sds-typeahead-solution",
+      "title": "Typeahead / autocomplete solution",
+      "url": "https://systemdesignschool.io/problems/typeahead/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "search-autocomplete"
+      ],
+      "summary": "Ranked trie with top-k per node built offline and swapped atomically, debouncing and hot-prefix caching for latency, skew-aware sharding, and a real-time trending layer for freshness.",
+      "quality": 4
+    },
+    {
+      "id": "sds-rag-solution",
+      "title": "RAG system solution",
+      "url": "https://systemdesignschool.io/problems/rag/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "rag-system",
+        "genai-foundations"
+      ],
+      "summary": "Deep dives on the ANN index, retrieval quality (chunking, hybrid search, re-ranking, eval) and freshness; HNSW walk visualiser, filtered-search comparison and rank-fusion demo.",
+      "quality": 5
+    },
+    {
+      "id": "sds-url-shortener-solution",
+      "title": "URL shortener solution",
+      "url": "https://systemdesignschool.io/problems/url-shortener/solution",
+      "kind": "article",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "url-shortener",
+        "unique-id-generation"
+      ],
+      "summary": "Older-format page: requirements, data model, API, high-level design, ID generation and encoding options, staff-level topics and a level-expectations table. Several option bodies collapsed or empty.",
+      "quality": 3
+    },
+    {
+      "id": "sds-web-crawler-solution",
+      "title": "Web crawler solution",
+      "url": "https://systemdesignschool.io/problems/web-crawler/solution",
+      "kind": "article",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "web-crawler"
+      ],
+      "summary": "Web crawler case study from the problem list (linked; not opened, so format and depth unverified; access not checked).",
+      "quality": 2
+    },
+    {
+      "id": "sds-dropbox-solution",
+      "title": "Dropbox solution",
+      "url": "https://systemdesignschool.io/problems/dropbox/solution",
+      "kind": "article",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "file-sync",
+        "blob-storage"
+      ],
+      "summary": "File storage and sync case study from the problem list (linked; not opened, so format and depth unverified; access not checked).",
+      "quality": 2
+    },
+    {
+      "id": "sds-yelp-solution",
+      "title": "Yelp solution",
+      "url": "https://systemdesignschool.io/problems/yelp/solution",
+      "kind": "article",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "proximity-service"
+      ],
+      "summary": "Nearby-places case study from the problem list; pairs with the geospatial search domain page (linked; not opened; access not checked).",
+      "quality": 2
+    },
+    {
+      "id": "sds-chatgpt-solution",
+      "title": "ChatGPT solution",
+      "url": "https://systemdesignschool.io/problems/chatgpt/solution",
+      "kind": "article",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "llm-serving",
+        "genai-foundations"
+      ],
+      "summary": "AI system design case study for a chat LLM product (linked from the AI section; not opened; access not checked).",
+      "quality": 2
+    },
+    {
+      "id": "sds-real-time-transport",
+      "title": "Pattern: real-time transport",
+      "url": "https://systemdesignschool.io/patterns/real-time-transport",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "networking-basics"
+      ],
+      "summary": "Long-polling vs SSE vs WebSockets compared by direction and overhead, then why persistent connections need a connection registry and pub/sub backplane. Checkpoint question and Bad/Good/Great tabs.",
+      "quality": 4
+    },
+    {
+      "id": "sds-consistent-hashing",
+      "title": "Consistent hashing",
+      "url": "https://systemdesignschool.io/fundamentals/consistent-hashing",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "consistent-hashing"
+      ],
+      "summary": "Ring placement, clockwise lookup and virtual nodes, with a server-removal example showing that only neighbours move. Static diagrams; adequate but not standout.",
+      "quality": 3
+    },
+    {
+      "id": "sds-resource-estimator",
+      "title": "Resource estimator (QPS calculator)",
+      "url": "https://systemdesignschool.io/resource-estimator",
+      "kind": "visual",
+      "access": "free",
+      "subject": "system-design",
+      "topics": [
+        "back-of-envelope"
+      ],
+      "summary": "Enter DAU, read:write ratio, writes per user, payload size and retention; get read/write RPS and storage per day and in total. Handy calibration tool for estimation drills.",
+      "quality": 3
+    },
+    {
+      "id": "sds-cap-pacelc",
+      "title": "CAP and PACELC",
+      "url": "https://systemdesignschool.io/domain-knowledge/distributed-database-cap-and-pacelc-theorem",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "cap-consistency"
+      ],
+      "summary": "Domain-knowledge page on CAP and PACELC, linked from the primer (not opened; access not checked).",
+      "quality": 2
+    },
+    {
+      "id": "sds-inverted-index",
+      "title": "Inverted index fundamentals",
+      "url": "https://systemdesignschool.io/domain-knowledge/inverted-index-fundamentals",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "search-indexing"
+      ],
+      "summary": "Domain-knowledge page on inverted indexes, linked from the primer (not opened; access not checked).",
+      "quality": 2
+    },
+    {
+      "id": "sds-database-scaling",
+      "title": "Database scaling",
+      "url": "https://systemdesignschool.io/fundamentals/database-scaling",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "system-design",
+      "topics": [
+        "sharding",
+        "replication"
+      ],
+      "summary": "Fundamentals track page on scaling databases, linked from the primer (not opened; access not checked).",
+      "quality": 2
+    }
+  ]
+}

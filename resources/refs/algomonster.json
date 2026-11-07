@@ -1,0 +1,349 @@
+{
+  "version": 1,
+  "source": "algomonster",
+  "researched": "2026-11-07",
+  "agent": "research-web",
+  "coverage": "Paid pattern-first interview course (freemium). Public parts: pattern-intro lessons (binary search, heap, backtracking, topological sort, DP intro) with step-through slides, templates in up to 10 languages and an in-browser test runner; free cheatsheets mapping problem keywords to algorithms and input size to complexity; a pattern-priority page; LeetCode editorials (liteproblems/<n>) that walk an algorithm-selection flowchart to the pattern. Locked (Go Pro): most family maps, decision rules, knapsack and interval lessons, the interactive flowchart and probably templates. Also an LLD/OOD course whose intro and parking-lot case study opened without a paywall (other lessons not checked); system design is outsourced to systemdesignschool.io. Many pages did not render content through fetch.",
+  "refs": [
+    {
+      "id": "am-flowchart",
+      "title": "Algorithm selection flowchart",
+      "url": "https://algo.monster/flowchart",
+      "kind": "visual",
+      "access": "paid",
+      "subject": "algo",
+      "topics": [
+        "k-way-merge",
+        "heaps",
+        "bfs",
+        "dfs"
+      ],
+      "summary": "Pro-listed interactive decision tree that leads from yes/no questions about the input to a pattern. Canvas did not render via fetch; editorials replay its steps (graph? sorted? linked list? then heap).",
+      "quality": 4
+    },
+    {
+      "id": "am-keyword-to-algo",
+      "title": "Keyword to algorithm cheatsheet",
+      "url": "https://algo.monster/problems/keyword_to_algo",
+      "kind": "cheatsheet",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "top-k-elements",
+        "modified-binary-search",
+        "sliding-window",
+        "dynamic-programming",
+        "backtracking",
+        "bfs",
+        "dfs",
+        "stack"
+      ],
+      "summary": "Table of problem-statement cues (top k, how many ways, substring, prefix, shortest path, permutations) each mapped to a likely technique with a one-line reason. Free and compact.",
+      "quality": 4
+    },
+    {
+      "id": "am-runtime-summary",
+      "title": "Input size to complexity cheatsheet",
+      "url": "https://algo.monster/problems/runtime_summary",
+      "kind": "cheatsheet",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "backtracking",
+        "modified-binary-search",
+        "sorting",
+        "top-k-elements"
+      ],
+      "summary": "Works backwards from constraint size: for each complexity class it gives the rough max n that fits a time limit and the algorithms that usually produce it, plus a note on amortised cost.",
+      "quality": 4
+    },
+    {
+      "id": "am-pattern-priority",
+      "title": "Which patterns to study first",
+      "url": "https://algo.monster/problems/stats",
+      "kind": "article",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dfs",
+        "bfs",
+        "two-pointers",
+        "heaps",
+        "dynamic-programming",
+        "greedy"
+      ],
+      "summary": "Ranks patterns by return on study time from the site's interview data: DFS/BFS/two pointers first, heaps underrated, DP and greedy lower priority, tries and union-find last.",
+      "quality": 3
+    },
+    {
+      "id": "am-templates",
+      "title": "Pattern code templates",
+      "url": "https://algo.monster/templates",
+      "kind": "cheatsheet",
+      "access": "trial",
+      "subject": "algo",
+      "topics": [
+        "sliding-window",
+        "two-pointers",
+        "bfs",
+        "dfs",
+        "backtracking",
+        "topological-sort",
+        "merge-intervals",
+        "modified-binary-search",
+        "stack"
+      ],
+      "summary": "Index of about 20 reusable skeletons (window fixed/longest/shortest, two-pointer directions, tree/graph/grid BFS-DFS, mono stack, prefix sum, union-find, trie). Access not checked.",
+      "quality": 3
+    },
+    {
+      "id": "am-binary-search-intro",
+      "title": "Binary search intro",
+      "url": "https://algo.monster/problems/binary_search_intro",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "modified-binary-search"
+      ],
+      "summary": "Slide-by-slide walkthrough of halving the search space, safe midpoint and loop bounds, with a runnable test box and an 'explain it in your own words' prompt. Leads into a 'first true' boundary family.",
+      "quality": 4
+    },
+    {
+      "id": "am-two-pointers-decision-rule",
+      "title": "Two pointers decision rule",
+      "url": "https://algo.monster/problems/two_pointers_decision_rule",
+      "kind": "lesson",
+      "access": "paid",
+      "subject": "algo",
+      "topics": [
+        "two-pointers",
+        "sliding-window",
+        "fast-slow-pointers"
+      ],
+      "summary": "Locked lesson that, per the outline, chooses between same-direction, opposite-direction, window and fast/slow variants. Only the title and outline are public. Quality unverified (locked).",
+      "quality": 2
+    },
+    {
+      "id": "am-sliding-window-family",
+      "title": "Sliding window family map",
+      "url": "https://algo.monster/problems/sliding_window_family_map",
+      "kind": "lesson",
+      "access": "paid",
+      "subject": "algo",
+      "topics": [
+        "sliding-window"
+      ],
+      "summary": "Locked overview grouping window problems into fixed, longest and shortest families; the public outline is a good taxonomy even without the body. Quality unverified (locked).",
+      "quality": 2
+    },
+    {
+      "id": "am-heap-intro",
+      "title": "Heap / priority queue intro",
+      "url": "https://algo.monster/problems/heap_intro",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "heaps",
+        "top-k-elements"
+      ],
+      "summary": "Triage analogy for priority queues, diagrams of sift-up/sift-down on the array layout, built-in heap APIs in several languages, and a first practice problem.",
+      "quality": 4
+    },
+    {
+      "id": "am-backtracking",
+      "title": "Backtracking template",
+      "url": "https://algo.monster/problems/backtracking",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "backtracking",
+        "subsets"
+      ],
+      "summary": "Frames backtracking as DFS over a state-space tree you draw first, then gives one template with choose/undo and the cost analysis. Pruning and extra state come in later lessons.",
+      "quality": 4
+    },
+    {
+      "id": "am-topo-intro",
+      "title": "Topological sort intro (Kahn's algorithm)",
+      "url": "https://algo.monster/problems/topo_intro",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "topological-sort"
+      ],
+      "summary": "In-degree based ordering explained with a 10-step slide sequence, related to BFS, with cycle detection and code in four languages.",
+      "quality": 4
+    },
+    {
+      "id": "am-dp-intro",
+      "title": "Dynamic programming intro",
+      "url": "https://algo.monster/problems/dynamic_programming_intro",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dynamic-programming",
+        "fibonacci-numbers"
+      ],
+      "summary": "Fibonacci used to contrast memoised top-down with bottom-up tables; recipe for state, base case, recurrence; ends with a catalogue of DP shapes (grid, knapsack, interval, two-sequence) and their cues.",
+      "quality": 4
+    },
+    {
+      "id": "am-knapsack-intro",
+      "title": "Knapsack DP intro",
+      "url": "https://algo.monster/problems/dp_knapsack_intro",
+      "kind": "lesson",
+      "access": "paid",
+      "subject": "algo",
+      "topics": [
+        "knapsack-0-1",
+        "unbounded-knapsack"
+      ],
+      "summary": "Locked. Outline splits knapsack into weight-only, 0/1, unbounded and bounded sections with Partition Equal Subset Sum, Target Sum and Coin Change as practice. Quality unverified (locked).",
+      "quality": 2
+    },
+    {
+      "id": "am-interval-intro",
+      "title": "Intervals pattern intro",
+      "url": "https://algo.monster/problems/interval_pattern_intro",
+      "kind": "lesson",
+      "access": "paid",
+      "subject": "algo",
+      "topics": [
+        "merge-intervals"
+      ],
+      "summary": "Locked. Outline covers merge, insert, meeting rooms I/II, non-overlapping intervals, balloon arrows and partition labels. Quality unverified (locked).",
+      "quality": 2
+    },
+    {
+      "id": "am-merge-k-sorted-lists",
+      "title": "Merge k Sorted Lists editorial",
+      "url": "https://algo.monster/liteproblems/23",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "k-way-merge"
+      ],
+      "problem_title": "Merge k Sorted Lists",
+      "summary": "Editorial that first walks the selection flowchart step by step to justify a heap, then intuition, example trace, pitfalls and complexity; includes a stepping state visualiser.",
+      "quality": 4
+    },
+    {
+      "id": "am-lld-course",
+      "title": "Low-level design course",
+      "url": "https://algo.monster/courses/lld/lld_what_is_lld",
+      "kind": "course-module",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "ood-framework",
+        "oop-basics",
+        "solid",
+        "uml-basics",
+        "creational-patterns",
+        "structural-patterns",
+        "behavioral-patterns"
+      ],
+      "summary": "Full LLD track: 6-step delivery method, OOP and UML with an exercise per lesson, SOLID plus DRY/KISS/YAGNI, 14 GoF patterns, a concurrency module, then 15 case studies. Paid status per lesson not shown.",
+      "quality": 4
+    },
+    {
+      "id": "am-lld-patterns",
+      "title": "LLD design patterns overview",
+      "url": "https://algo.monster/courses/lld/lld_patterns_overview",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "creational-patterns",
+        "structural-patterns",
+        "behavioral-patterns"
+      ],
+      "summary": "Entry to the patterns module (factory, builder, singleton, adapter, decorator, facade, proxy, strategy, observer, state, command and others), each followed by an exercise. Seen in outline only. Access not checked.",
+      "quality": 3
+    },
+    {
+      "id": "am-lld-parking-lot",
+      "title": "LLD case study: parking lot",
+      "url": "https://algo.monster/courses/lld/lld_parking_lot",
+      "kind": "lesson",
+      "access": "free",
+      "subject": "ood",
+      "topics": [
+        "parking-lot"
+      ],
+      "summary": "Requirements, entities, class diagram, a try-it exercise, code walkthrough in six languages, then thread safety (locks vs CAS), extensions and a quiz. Stresses tell-don't-ask over pattern-dropping.",
+      "quality": 4
+    },
+    {
+      "id": "am-lld-elevator",
+      "title": "LLD case study: elevator system",
+      "url": "https://algo.monster/courses/lld/lld_elevator_system",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "elevator-system"
+      ],
+      "summary": "Medium case study in the same LLD case-study format as parking lot (seen in outline; not opened; access not checked).",
+      "quality": 3
+    },
+    {
+      "id": "am-lld-vending-machine",
+      "title": "LLD case study: vending machine",
+      "url": "https://algo.monster/courses/lld/lld_vending_machine",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "vending-machine"
+      ],
+      "summary": "Medium case study in the LLD case-study format, a natural fit for the state pattern (seen in outline; not opened; access not checked).",
+      "quality": 3
+    },
+    {
+      "id": "am-lld-atm",
+      "title": "LLD case study: ATM",
+      "url": "https://algo.monster/courses/lld/lld_atm",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "atm"
+      ],
+      "summary": "Medium case study in the LLD case-study format (seen in outline; not opened; access not checked).",
+      "quality": 3
+    },
+    {
+      "id": "am-lld-chess",
+      "title": "LLD case study: chess",
+      "url": "https://algo.monster/courses/lld/lld_chess",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "chess-game"
+      ],
+      "summary": "Hard case study in the LLD case-study format (seen in outline; not opened; access not checked).",
+      "quality": 3
+    },
+    {
+      "id": "am-lld-lru-cache",
+      "title": "LLD case study: LRU cache",
+      "url": "https://algo.monster/courses/lld/lld_lru_cache",
+      "kind": "lesson",
+      "access": "trial",
+      "subject": "ood",
+      "topics": [
+        "lru-cache-ood"
+      ],
+      "summary": "Easy case study treating LRU cache as an object design exercise (seen in outline; not opened; access not checked).",
+      "quality": 3
+    }
+  ]
+}

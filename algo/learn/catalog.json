@@ -27,7 +27,8 @@
         "arrays-hashing"
       ],
       "related": [
-        "two-pointers"
+        "two-pointers",
+        "prefix-sum"
       ],
       "status": "open"
     },
@@ -54,7 +55,8 @@
       "related": [
         "backtracking",
         "bfs",
-        "dfs"
+        "dfs",
+        "union-find"
       ],
       "status": "open"
     },
@@ -214,7 +216,8 @@
       "related": [
         "dfs",
         "topological-sort",
-        "islands"
+        "islands",
+        "trees"
       ],
       "status": "open"
     },
@@ -244,7 +247,8 @@
       "related": [
         "bfs",
         "backtracking",
-        "islands"
+        "islands",
+        "trees"
       ],
       "status": "open"
     },
@@ -538,7 +542,8 @@
         "dfs"
       ],
       "related": [
-        "bfs"
+        "bfs",
+        "union-find"
       ],
       "status": "open"
     },
@@ -751,6 +756,89 @@
       "aliases": [],
       "prereqs": [],
       "related": [],
+      "status": "open"
+    },
+    {
+      "id": "trees",
+      "name": "Trees & BSTs",
+      "kind": "fundamental",
+      "usage": "Binary trees, BST invariants, traversals, LCA, serialisation.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "recursion"
+      ],
+      "related": [
+        "dfs",
+        "bfs"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "trie",
+      "name": "Trie",
+      "kind": "fundamental",
+      "usage": "Prefix trees for word lookup, autocomplete and word search.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "trees",
+        "strings"
+      ],
+      "related": [],
+      "status": "open"
+    },
+    {
+      "id": "union-find",
+      "name": "Union Find",
+      "kind": "fundamental",
+      "usage": "Disjoint sets with path compression / union by rank: connectivity, components, cycles.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "arrays-hashing"
+      ],
+      "related": [
+        "islands",
+        "topological-sort",
+        "shortest-paths"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "shortest-paths",
+      "name": "Shortest Paths & MST",
+      "kind": "fundamental",
+      "usage": "Dijkstra, Bellman-Ford, Prim, Kruskal on weighted graphs.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "bfs",
+        "heaps"
+      ],
+      "related": [
+        "union-find"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "prefix-sum",
+      "name": "Prefix Sums",
+      "kind": "fundamental",
+      "usage": "Precomputed running sums for O(1) range queries and subarray-sum-equals-k.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "arrays-hashing"
+      ],
+      "related": [
+        "sliding-window"
+      ],
       "status": "open"
     }
   ]

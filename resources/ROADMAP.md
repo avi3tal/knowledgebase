@@ -35,5 +35,15 @@ Most important is to be able to reproduce those answers a week later.
 1. https://www.youtube.com/watch?v=HWRZRfmrxRc (also updated version https://www.youtube.com/watch?v=CHzha4Fxlg0)
 2. https://roadmap.sh/ - provide roadmap for learning and becoming anything we wish for in the Tech industry
 
+### Other links (formerly resources/links.md)
+- Top 6 coding interview concepts: https://www.youtube.com/watch?v=ft0owvS5tQA
+- NeetCode playlists: https://www.youtube.com/@NeetCode/playlists
+- GeeksForGeeks fundamentals of algorithms: http://www.geeksforgeeks.org/fundamentals-of-algorithms/
 
-
+## How this repo implements the roadmap
+Order and method borrowed from Coding Interview University and the Tech Interview Handbook study plans:
+1. **Fundamentals first** (complexity → arrays/hashing → linked lists → stacks/queues → trees → heaps → sorting/searching → graphs → recursion → DP). These are the `fundamental` topics in `algo/learn/catalog.json`; follow the "learn first" edges on each topic page.
+2. **Then the 23 patterns**, in catalog order. For each: lesson → quiz → easy → hard practice.
+3. **Implement the data structure yourself** before using the library version (`algo/ds/`).
+4. **Re-solve on a schedule.** `./kb feedback` tracks spaced review dates; don't just read solutions.
+5. **Then system design / OOD** (locked subjects; the topic maps and resources are already in the studio).

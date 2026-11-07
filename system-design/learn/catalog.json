@@ -79,7 +79,9 @@
       "prereqs": [
         "replication"
       ],
-      "related": []
+      "related": [
+        "consensus-coordination"
+      ]
     },
     {
       "id": "networking-basics",
@@ -546,7 +548,9 @@
         "message-queues",
         "databases-sql-nosql"
       ],
-      "related": []
+      "related": [
+        "distributed-transactions"
+      ]
     },
     {
       "id": "genai-foundations",
@@ -594,6 +598,70 @@
         "load-balancing"
       ],
       "related": []
+    },
+    {
+      "id": "probabilistic-structures",
+      "name": "Probabilistic data structures",
+      "kind": "concept",
+      "usage": "Bloom filters, HyperLogLog, count-min sketch: approximate answers in tiny memory.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "caching"
+      ],
+      "related": [],
+      "group": "building-blocks",
+      "status": "locked"
+    },
+    {
+      "id": "consensus-coordination",
+      "name": "Consensus and coordination",
+      "kind": "concept",
+      "usage": "Leader election, Raft/Paxos, ZooKeeper-style coordination, clocks.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "replication"
+      ],
+      "related": [
+        "cap-consistency"
+      ],
+      "group": "building-blocks",
+      "status": "locked"
+    },
+    {
+      "id": "distributed-transactions",
+      "name": "Distributed transactions",
+      "kind": "concept",
+      "usage": "2PC, sagas, the outbox pattern, idempotency across services.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "microservices"
+      ],
+      "related": [
+        "payment-system"
+      ],
+      "group": "building-blocks",
+      "status": "locked"
+    },
+    {
+      "id": "stream-processing",
+      "name": "Batch and stream processing",
+      "kind": "concept",
+      "usage": "MapReduce/Spark vs streaming (Kafka/Flink), CDC, lambda vs kappa.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "message-queues"
+      ],
+      "related": [],
+      "group": "building-blocks",
+      "status": "locked"
     }
   ]
 }

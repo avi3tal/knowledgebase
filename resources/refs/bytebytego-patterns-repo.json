@@ -1,0 +1,813 @@
+{
+  "version": 1,
+  "source": "bytebytego-patterns-repo",
+  "researched": "2026-11-07",
+  "agent": "research-repo",
+  "coverage": "Code companion to ByteByteGo's 'Coding Interview Patterns' book (Xu and Gunawardane): 19 chapter folders and 101 problems, each a commented solution file, often with brute-force or alternative versions. No problem statements or prose; explanations and diagrams are in the paid book. Python3, C++ and Kotlin cover all 19 chapters, Java 18, C# 11, TypeScript 5, Rust 3, Go 2 (Two Pointers, Hash Maps), Swift 1. Licensed CC BY-NC-ND 4.0: link only.",
+  "refs": [
+    {
+      "id": "ch01-two-pointers",
+      "title": "Ch 1: Two Pointers (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Two%20Pointers",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-pointers"
+      ],
+      "summary": "Python solutions for the book's two-pointer chapter: inward-moving pairs, triplets, palindrome check, zero shifting; brute-force variants kept next to optimal ones for contrast.",
+      "quality": 3
+    },
+    {
+      "id": "ch02-hash-maps-sets",
+      "title": "Ch 2: Hash Maps and Sets (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Hash%20Maps%20and%20Sets",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "arrays-hashing"
+      ],
+      "summary": "Hash map/set chapter: unsorted pair sum, consecutive-number chains, sudoku validity, zero striping; one- vs two-pass versions shown side by side.",
+      "quality": 3
+    },
+    {
+      "id": "ch03-linked-lists",
+      "title": "Ch 3: Linked Lists (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Linked%20Lists",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "linked-list",
+        "in-place-reversal-linked-list"
+      ],
+      "summary": "Linked-list chapter: iterative and recursive reversal, kth-from-end removal, intersection, LRU cache, multilevel flatten, palindrome list.",
+      "quality": 3
+    },
+    {
+      "id": "ch04-fast-slow",
+      "title": "Ch 4: Fast and Slow Pointers (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Fast%20and%20Slow%20Pointers",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "fast-slow-pointers"
+      ],
+      "summary": "Cycle detection (naive set vs Floyd), list midpoint and happy number; small chapter but the naive/optimal pair is useful to compare.",
+      "quality": 3
+    },
+    {
+      "id": "ch05-sliding-windows",
+      "title": "Ch 5: Sliding Windows (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Sliding%20Windows",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "sliding-window"
+      ],
+      "summary": "Fixed window (substring anagrams) and dynamic windows (unique-char substring, uniform substring after k replacements), with an optimised second pass.",
+      "quality": 3
+    },
+    {
+      "id": "ch06-binary-search",
+      "title": "Ch 6: Binary Search (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Binary%20Search",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "modified-binary-search"
+      ],
+      "summary": "Broad binary-search chapter: insertion index, first/last occurrence, rotated array, 2D matrix, local maxima, search-on-answer (cutting wood), weighted random pick, median of two arrays.",
+      "quality": 4
+    },
+    {
+      "id": "ch07-stacks",
+      "title": "Ch 7: Stacks (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Stacks",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "stack"
+      ],
+      "summary": "Stack chapter incl. monotonic stack (next larger to the right), sliding-window maximums with a deque, expression evaluation and queue-from-stacks.",
+      "quality": 3
+    },
+    {
+      "id": "ch08-heaps",
+      "title": "Ch 8: Heaps (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Heaps",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "heaps",
+        "top-k-elements",
+        "two-heaps",
+        "k-way-merge"
+      ],
+      "summary": "Heap chapter spanning three of our patterns: k-most-frequent (min- vs max-heap versions), streaming median with two heaps, merging k sorted lists, sorting a k-sorted array.",
+      "quality": 4
+    },
+    {
+      "id": "ch09-intervals",
+      "title": "Ch 9: Intervals (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Intervals",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "merge-intervals"
+      ],
+      "summary": "Merge overlapping intervals, intersections of two interval lists, and max concurrent overlap via a start/end sweep.",
+      "quality": 3
+    },
+    {
+      "id": "ch10-prefix-sums",
+      "title": "Ch 10: Prefix Sums (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Prefix%20Sums",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "arrays-hashing"
+      ],
+      "summary": "Prefix-sum chapter (we have no prefix-sum topic): range sums, count of subarrays summing to k with a hash map, product-except-self.",
+      "quality": 3
+    },
+    {
+      "id": "ch11-trees",
+      "title": "Ch 11: Trees (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Trees",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dfs",
+        "bfs"
+      ],
+      "summary": "Largest chapter: invert, balance/BST validation, LCA, max path sum, right-side view, widest level, columns, build from traversals, serialize/deserialize; DFS and BFS throughout.",
+      "quality": 4
+    },
+    {
+      "id": "ch12-tries",
+      "title": "Ch 12: Tries (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Tries",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "strings",
+        "design"
+      ],
+      "summary": "Trie chapter: implement a trie, wildcard search, and word search on a board with a trie; no matching topic in our catalog.",
+      "quality": 3
+    },
+    {
+      "id": "ch13-graphs",
+      "title": "Ch 13: Graphs (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Graphs",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "bfs",
+        "dfs",
+        "islands",
+        "topological-sort"
+      ],
+      "summary": "Graph chapter: islands, multi-source BFS (matrix infection), deep copy, bipartite check, prerequisites (topo sort), union-find, Dijkstra, Kruskal-style MST, word ladder.",
+      "quality": 4
+    },
+    {
+      "id": "ch14-backtracking",
+      "title": "Ch 14: Backtracking (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Backtracking",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "backtracking",
+        "subsets"
+      ],
+      "summary": "Backtracking chapter: permutations, subsets, combination sum, phone-keypad combinations and N-Queens.",
+      "quality": 3
+    },
+    {
+      "id": "ch15-dp",
+      "title": "Ch 15: Dynamic Programming (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Dynamic%20Programming",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dynamic-programming",
+        "fibonacci-numbers",
+        "knapsack-0-1",
+        "unbounded-knapsack",
+        "longest-common-substring",
+        "palindromic-subsequence"
+      ],
+      "summary": "DP chapter with top-down, bottom-up and space-optimised versions of the same problem: stairs, coin change, house robber, 0/1 knapsack, LCS, longest palindrome, grid paths, max square.",
+      "quality": 4
+    },
+    {
+      "id": "ch16-greedy",
+      "title": "Ch 16: Greedy (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Greedy",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "greedy"
+      ],
+      "summary": "Short greedy chapter: jump to the end, gas stations, candies.",
+      "quality": 3
+    },
+    {
+      "id": "ch17-sort-search",
+      "title": "Ch 17: Sort and Search (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Sort%20and%20Search",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "sorting"
+      ],
+      "summary": "Sorting chapter: quicksort (plain and randomised), counting sort, merge sort on a list, Dutch national flag, kth largest via heap vs quickselect.",
+      "quality": 3
+    },
+    {
+      "id": "ch18-bit-manipulation",
+      "title": "Ch 18: Bit Manipulation (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Bit%20Manipulation",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "bit-manipulation",
+        "bitwise-xor"
+      ],
+      "summary": "Hamming weights (plain and DP), lonely integer via XOR, swapping odd and even bits with masks.",
+      "quality": 3
+    },
+    {
+      "id": "ch19-math-geometry",
+      "title": "Ch 19: Math and Geometry (solutions)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/tree/main/python3/Math%20and%20Geometry",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "math"
+      ],
+      "summary": "Spiral matrix, reversing a 32-bit integer, max collinear points, Josephus (recursive and closed form), triangle numbers.",
+      "quality": 3
+    },
+    {
+      "id": "knapsack-file",
+      "title": "0/1 Knapsack (solution)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/knapsack.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "knapsack-0-1"
+      ],
+      "summary": "Classic 0/1 knapsack table solution; a space-optimised one-row version sits beside it. The only knapsack-family file besides coin change.",
+      "quality": 3
+    },
+    {
+      "id": "lcs-file",
+      "title": "Longest Common Subsequence (solution)",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/longest_common_subsequence.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "longest-common-substring"
+      ],
+      "summary": "2D DP table for LCS with a space-optimised variant alongside. Subsequence, not substring, but it is the core table pattern of our LCS topic.",
+      "quality": 3
+    },
+    {
+      "id": "p-pair-sum-unsorted",
+      "title": "Pair Sum - Unsorted",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Hash%20Maps%20and%20Sets/pair_sum_unsorted.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "arrays-hashing"
+      ],
+      "problem_title": "Two Sum",
+      "summary": "One-pass hash-map version; a two-pass variant sits next to it in the folder.",
+      "quality": 3
+    },
+    {
+      "id": "p-pair-sum-sorted",
+      "title": "Pair Sum - Sorted",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Two%20Pointers/pair_sum_sorted.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-pointers"
+      ],
+      "problem_title": "Pair With Target Sum",
+      "summary": "Inward two pointers on a sorted array, with a brute-force file alongside for contrast.",
+      "quality": 3
+    },
+    {
+      "id": "p-triplet-sum",
+      "title": "Triplet Sum",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Two%20Pointers/triplet_sum.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-pointers"
+      ],
+      "problem_title": "3Sum",
+      "summary": "Sort, fix one element, then pair-sum on the rest while skipping duplicates.",
+      "quality": 3
+    },
+    {
+      "id": "p-is-palindrome-valid",
+      "title": "Is Palindrome Valid",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Two%20Pointers/is_palindrome_valid.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-pointers"
+      ],
+      "problem_title": "Valid Palindrome",
+      "summary": "Two pointers that skip non-alphanumeric characters.",
+      "quality": 3
+    },
+    {
+      "id": "p-largest-container",
+      "title": "Largest Container",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Two%20Pointers/largest_container.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-pointers",
+        "greedy"
+      ],
+      "problem_title": "Container With Most Water",
+      "summary": "Move the shorter wall inward; brute-force file included.",
+      "quality": 3
+    },
+    {
+      "id": "p-linked-list-reversal",
+      "title": "Linked List Reversal",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Linked%20Lists/linked_list_reversal.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "in-place-reversal-linked-list"
+      ],
+      "problem_title": "Reverse Linked List",
+      "summary": "Iterative reversal; a recursive version is in the same folder.",
+      "quality": 3
+    },
+    {
+      "id": "p-remove-kth-last",
+      "title": "Remove the Kth Last Node",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Linked%20Lists/remove_kth_last_node.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "fast-slow-pointers",
+        "linked-list"
+      ],
+      "problem_title": "Remove the K-th Node From the End",
+      "summary": "Leader/trailer pointers k apart with a dummy head.",
+      "quality": 3
+    },
+    {
+      "id": "p-lru-cache",
+      "title": "LRU Cache",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Linked%20Lists/lru_cache.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "design",
+        "linked-list"
+      ],
+      "problem_title": "LRU Cache",
+      "summary": "Hash map plus doubly linked list with move-to-front.",
+      "quality": 3
+    },
+    {
+      "id": "p-palindromic-linked-list",
+      "title": "Palindromic Linked List",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Linked%20Lists/palindromic_linked_list.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "fast-slow-pointers",
+        "in-place-reversal-linked-list"
+      ],
+      "problem_title": "Palindrome Linked List",
+      "summary": "Find the middle, reverse the second half, compare.",
+      "quality": 3
+    },
+    {
+      "id": "p-linked-list-midpoint",
+      "title": "Linked List Midpoint",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Fast%20and%20Slow%20Pointers/linked_list_midpoint.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "fast-slow-pointers"
+      ],
+      "problem_title": "Middle of the Linked List",
+      "summary": "Classic fast/slow midpoint.",
+      "quality": 3
+    },
+    {
+      "id": "p-unique-chars-substring",
+      "title": "Longest Substring With Unique Characters",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Sliding%20Windows/longest_substring_with_unique_chars_optimized.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "sliding-window"
+      ],
+      "problem_title": "Longest Substring Without Repeating Characters",
+      "summary": "Optimised version jumps the left edge using last-seen indexes; set-based version alongside.",
+      "quality": 3
+    },
+    {
+      "id": "p-uniform-substring",
+      "title": "Longest Uniform Substring After Replacements",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Sliding%20Windows/longest_uniform_substring_after_replacements.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "sliding-window"
+      ],
+      "problem_title": "Longest Repeating Character Replacement",
+      "summary": "Expanding/sliding window tracking the highest character frequency.",
+      "quality": 3
+    },
+    {
+      "id": "p-rotated-array",
+      "title": "Find the Target in a Rotated Sorted Array",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Binary%20Search/find_the_target_in_a_rotated_sorted_array.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "modified-binary-search"
+      ],
+      "problem_title": "Search In Rotated Sorted Array",
+      "summary": "Decide which half is sorted, then narrow.",
+      "quality": 3
+    },
+    {
+      "id": "p-median-two-arrays",
+      "title": "Find the Median From Two Sorted Arrays",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Binary%20Search/find_the_median_from_two_sorted_arrays.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "modified-binary-search"
+      ],
+      "problem_title": "Median of Two Sorted Arrays",
+      "summary": "Partition-based binary search on the smaller array.",
+      "quality": 3
+    },
+    {
+      "id": "p-valid-parenthesis",
+      "title": "Valid Parenthesis Expression",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Stacks/valid_parenthesis_expression.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "stack"
+      ],
+      "problem_title": "Valid Parentheses",
+      "summary": "Stack with a closing-to-opening bracket map.",
+      "quality": 3
+    },
+    {
+      "id": "p-combine-sorted-lists",
+      "title": "Combine Sorted Linked Lists",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Heaps/combine_sorted_linked_lists.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "k-way-merge",
+        "heaps"
+      ],
+      "problem_title": "Merge k Sorted Lists",
+      "summary": "Min-heap of list heads with a dummy output node.",
+      "quality": 3
+    },
+    {
+      "id": "p-median-stream",
+      "title": "Median of an Integer Stream",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Heaps/median_of_an_integer_stream.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-heaps"
+      ],
+      "problem_title": "Find Median from Data Stream",
+      "summary": "Max-heap/min-heap halves kept balanced.",
+      "quality": 3
+    },
+    {
+      "id": "p-merge-intervals",
+      "title": "Merge Overlapping Intervals",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Intervals/merge_overlapping_intervals.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "merge-intervals"
+      ],
+      "problem_title": "Merge Intervals",
+      "summary": "Sort by start and fold into the last merged interval.",
+      "quality": 3
+    },
+    {
+      "id": "p-interval-overlaps",
+      "title": "Identify All Interval Overlaps",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Intervals/identify_all_interval_overlaps.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "merge-intervals",
+        "two-pointers"
+      ],
+      "problem_title": "Interval List Intersections",
+      "summary": "Two pointers over two interval lists, advancing whichever ends first.",
+      "quality": 3
+    },
+    {
+      "id": "p-largest-overlap",
+      "title": "Largest Overlap of Intervals",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Intervals/largest_overlap_of_intervals.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "merge-intervals"
+      ],
+      "problem_title": "Minimum Meeting Rooms",
+      "summary": "Max concurrent intervals via a sorted start/end sweep, which is the same question as meeting rooms; ends sort before starts on ties.",
+      "quality": 3
+    },
+    {
+      "id": "p-product-except-self",
+      "title": "Product Array Without Current Element",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Prefix%20Sums/product_array_without_current_element.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "arrays-hashing"
+      ],
+      "problem_title": "Product of Array Except Self",
+      "summary": "Left and right running products, no division.",
+      "quality": 3
+    },
+    {
+      "id": "p-invert-tree",
+      "title": "Invert Binary Tree",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Trees/invert_binary_tree_recursive.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dfs"
+      ],
+      "problem_title": "Invert Binary Tree",
+      "summary": "Recursive swap; an iterative stack version is in the same folder.",
+      "quality": 3
+    },
+    {
+      "id": "p-rightmost-nodes",
+      "title": "Rightmost Nodes of a Binary Tree",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Trees/rightmost_nodes_of_a_binary_tree.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "bfs"
+      ],
+      "problem_title": "Binary Tree Right Side View",
+      "summary": "Level-order BFS keeping the last node per level.",
+      "quality": 3
+    },
+    {
+      "id": "p-prerequisites",
+      "title": "Prerequisites",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Graphs/prerequisites.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "topological-sort"
+      ],
+      "problem_title": "Course Schedule",
+      "summary": "Kahn's algorithm with in-degrees; checks every course gets visited.",
+      "quality": 3
+    },
+    {
+      "id": "p-matrix-infection",
+      "title": "Matrix Infection",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Graphs/matrix_infection.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "bfs",
+        "islands"
+      ],
+      "problem_title": "Rotting Oranges",
+      "summary": "Multi-source BFS counting levels as minutes.",
+      "quality": 3
+    },
+    {
+      "id": "p-find-all-subsets",
+      "title": "Find All Subsets",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Backtracking/find_all_subsets.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "subsets",
+        "backtracking"
+      ],
+      "problem_title": "Subsets",
+      "summary": "Include/exclude recursion over each element.",
+      "quality": 3
+    },
+    {
+      "id": "p-find-all-permutations",
+      "title": "Find All Permutations",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Backtracking/find_all_permutations.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "backtracking"
+      ],
+      "problem_title": "Permutations",
+      "summary": "Backtracking with a used-set.",
+      "quality": 3
+    },
+    {
+      "id": "p-combinations-sum-k",
+      "title": "Combinations of a Sum",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Backtracking/combinations_of_sum_k.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "backtracking"
+      ],
+      "problem_title": "Combination Sum",
+      "summary": "DFS with a start index so elements can repeat but combinations don't.",
+      "quality": 3
+    },
+    {
+      "id": "p-min-coin-combination",
+      "title": "Minimum Coin Combination",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/min_coin_combination_bottom_up.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "unbounded-knapsack",
+        "dynamic-programming"
+      ],
+      "problem_title": "Coin Change",
+      "summary": "Bottom-up table; a memoised top-down file is next to it.",
+      "quality": 3
+    },
+    {
+      "id": "p-neighborhood-burglary",
+      "title": "Neighborhood Burglary",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/neighborhood_burglary_optimized.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "fibonacci-numbers"
+      ],
+      "problem_title": "House Robber",
+      "summary": "Take-or-skip recurrence reduced to two variables.",
+      "quality": 3
+    },
+    {
+      "id": "p-max-subarray",
+      "title": "Maximum Subarray Sum",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/maximum_subarray_sum.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dynamic-programming",
+        "greedy"
+      ],
+      "problem_title": "Maximum Subarray",
+      "summary": "Kadane-style running sum in O(1) space; DP-table and space-optimised DP versions sit alongside to show the link to DP.",
+      "quality": 3
+    },
+    {
+      "id": "p-longest-palindrome",
+      "title": "Longest Palindrome in a String",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/longest_palindrome_in_a_string_expanding.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "palindromic-subsequence"
+      ],
+      "problem_title": "Longest Palindromic Substring",
+      "summary": "Expand-around-center; a DP-table version is the other file.",
+      "quality": 3
+    },
+    {
+      "id": "p-largest-square",
+      "title": "Largest Square in a Matrix",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Dynamic%20Programming/largest_square_in_a_matrix_optimized.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "dynamic-programming"
+      ],
+      "problem_title": "Maximal Square",
+      "summary": "min-of-three-neighbours recurrence with a single row of state.",
+      "quality": 3
+    },
+    {
+      "id": "p-dutch-flag",
+      "title": "Dutch National Flag",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Sort%20and%20Search/dutch_national_flag.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "two-pointers",
+        "sorting"
+      ],
+      "problem_title": "Sort Colors",
+      "summary": "Three-pointer one-pass partition.",
+      "quality": 3
+    },
+    {
+      "id": "p-sort-array",
+      "title": "Sort Array",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Sort%20and%20Search/sort_array_quicksort_optimized.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "sorting"
+      ],
+      "problem_title": "Sort an Array",
+      "summary": "Randomised-pivot quicksort; plain quicksort and counting sort are sibling files.",
+      "quality": 3
+    },
+    {
+      "id": "p-reverse-32bit",
+      "title": "Reverse 32-Bit Integer",
+      "url": "https://github.com/ByteByteGoHq/coding-interview-patterns/blob/main/python3/Math%20and%20Geometry/reverse_32_bit_integer.py",
+      "kind": "problem-solution",
+      "access": "free",
+      "subject": "algo",
+      "topics": [
+        "math"
+      ],
+      "problem_title": "Reverse Integer",
+      "summary": "Digit-by-digit reversal with overflow checks before each step.",
+      "quality": 3
+    }
+  ]
+}

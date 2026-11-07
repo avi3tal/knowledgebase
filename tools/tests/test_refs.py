@@ -119,6 +119,7 @@ def test_lookups_rank_core_first_and_hide_skipped(res: Path) -> None:
     reg = json.loads((res / "sources.json").read_text())
     verdicts = {"algomaster": "supplementary", "bytebytego": "core", "algomonster": "skip"}
     for s in reg["sources"]:
+        s.pop("subject_verdicts", None)
         if s["id"] in verdicts:
             s["verdict"], s["reason"] = verdicts[s["id"]], "test"
     (res / "sources.json").write_text(json.dumps(reg))
@@ -133,6 +134,45 @@ def test_lookups_rank_core_first_and_hide_skipped(res: Path) -> None:
     got = refs.for_topic("algo", "sliding-window")
     assert [r["source"] for r in got] == ["bytebytego", "algomaster"]  # core first, skip hidden
     assert [r["source"] for r in refs.for_problem("two-sum")] == ["designgurus"]
+    assert refs.for_problem("two-sum")[0]["spoiler"] is True
+
+
+def test_refs_about_our_problems_stay_off_lesson_pages(res: Path) -> None:
+    ours = {**GOOD_REF, "id": "anim", "url": "https://x.dev/a", "problem_title": "Minimum Window Substring"}
+    other = {**GOOD_REF, "id": "anim2", "url": "https://x.dev/b", "problem_title": "Some Problem We Lack"}
+    write_refs(res, "algomaster", [ours, other])
+    assert [r["id"] for r in refs.for_topic("algo", "sliding-window")] == ["anim2"]
+    assert [r["id"] for r in refs.for_problem("minimum-window-substring")] == ["anim"]
+
+
+def test_focused_refs_beat_broad_ones(res: Path) -> None:
+    broad = {
+        **GOOD_REF,
+        "id": "course",
+        "url": "https://x.dev/course",
+        "kind": "course-module",
+        "quality": 5,
+        "topics": ["sliding-window", "two-pointers", "bfs", "dfs", "heaps"],
+    }
+    focused = {**GOOD_REF, "quality": 3}
+    write_refs(res, "algomaster", [broad, focused])
+    assert [r["id"] for r in refs.for_topic("algo", "sliding-window")] == ["sw-lesson", "course"]
+
+
+def test_subject_verdict_overrides(res: Path) -> None:
+    reg = json.loads((res / "sources.json").read_text())
+    for s in reg["sources"]:
+        if s["id"] == "algomaster":
+            s.update(verdict="core", reason="t", subject_verdicts={"system-design": "skip"})
+    (res / "sources.json").write_text(json.dumps(reg))
+    sd = {**GOOD_REF, "id": "ch", "url": "https://x.dev/ch", "subject": "system-design", "topics": ["caching"]}
+    write_refs(res, "algomaster", [GOOD_REF, sd])
+    assert [r["verdict"] for r in refs.for_topic("algo", "sliding-window")] == ["core"]
+    assert refs.for_topic("system-design", "caching") == []
+    assert not any(n["id"].startswith("ref:") for n in refs.graph("system-design")["nodes"])
+    reg["sources"][0]["subject_verdicts"] = {"algo": "great"}
+    (res / "sources.json").write_text(json.dumps(reg))
+    assert any("subject_verdicts" in e for e in refs.validate_registry())
 
 
 def test_graph_edges_and_neighbourhood(res: Path) -> None:
