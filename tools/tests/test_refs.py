@@ -188,6 +188,9 @@ def test_graph_edges_and_neighbourhood(res: Path) -> None:
     near = refs.neighbourhood("algo", "topic:sliding-window")
     assert near["counts"]["topic"] >= 3 and near["counts"]["ref"] == 1
     assert refs.graph("algo") == g  # deterministic
+    many = [{**GOOD_REF, "id": f"r{i}", "url": f"https://x.dev/{i}"} for i in range(8)]
+    write_refs(res, "algomaster", many)
+    assert refs.neighbourhood("algo", "topic:sliding-window")["counts"]["ref"] == refs.MAX_PER_TOPIC
 
 
 def test_locked_subject_topic_page() -> None:

@@ -325,6 +325,9 @@ def neighbourhood(subject: str, center: str) -> dict[str, Any]:
     for e in g["edges"]:
         if center in (e["from"], e["to"]):
             near |= {e["from"], e["to"]}
+    if center.startswith("topic:"):  # keep the picture focused: only the curated top refs
+        keep = {f"ref:{r['source']}:{r['id']}" for r in for_topic(subject, center.split(":", 1)[1])}
+        near = {n for n in near if not n.startswith("ref:") or n in keep}
     nodes = [n for n in g["nodes"] if n["id"] in near]
     edges = [e for e in g["edges"] if e["from"] in near and e["to"] in near]
     groups: dict[str, int] = defaultdict(int)
