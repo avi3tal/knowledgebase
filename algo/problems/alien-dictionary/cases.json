@@ -1,0 +1,12 @@
+[
+  {"name": "example", "args": {"words": ["wrt", "wrf", "er", "ett", "rftt"]}, "expected": ["wertf"]},
+  {"name": "example two letters", "args": {"words": ["z", "x"]}, "expected": ["zx"]},
+  {"name": "example cycle", "args": {"words": ["z", "x", "z"]}, "expected": [""]},
+  {"name": "prefix after longer word is invalid", "args": {"words": ["abc", "ab"]}, "expected": [""]},
+  {"name": "prefix before longer word is fine", "args": {"words": ["ab", "abc"]}, "expected": ["abc", "acb", "bac", "bca", "cab", "cba"]},
+  {"name": "single word", "args": {"words": ["cab"]}, "expected": ["abc", "acb", "bac", "bca", "cab", "cba"]},
+  {"name": "duplicate words", "args": {"words": ["ba", "ba", "ac"]}, "expected": ["bac", "bca", "cba"]},
+  {"name": "only first difference counts", "args": {"words": ["ac", "bd", "be"]}, "expected": ["abcde", "abdce", "abdec", "acbde", "acdbe", "acdeb", "adbce", "adbec", "adcbe", "adceb", "adebc", "adecb", "cabde", "cadbe", "cadeb", "cdabe", "cdaeb", "cdeab", "dabce", "dabec", "dacbe", "daceb", "daebc", "daecb", "dcabe", "dcaeb", "dceab", "deabc", "deacb", "decab"]},
+  {"name": "contradictory pairs", "args": {"words": ["ca", "cb", "ba", "bb", "ab"]}, "expected": [""]},
+  {"name": "letters with no constraints", "args": {"words": ["x", "x", "yz"]}, "expected": ["xyz", "xzy", "zxy"]}
+]

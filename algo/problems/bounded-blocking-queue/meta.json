@@ -1,0 +1,22 @@
+{
+  "title": "Design Bounded Blocking Queue",
+  "slug": "bounded-blocking-queue",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["multi-threaded", "design"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/design-bounded-blocking-queue/"}],
+  "kind": "design",
+  "class": "BoundedBlockingQueue",
+  "constructor": {
+    "params": [
+      {"name": "capacity", "type": "int"}
+    ]
+  },
+  "methods": [
+    {"name": "enqueue", "params": [{"name": "element", "type": "int"}], "returns": "void"},
+    {"name": "dequeue", "params": [], "returns": "int"},
+    {"name": "size", "params": [], "returns": "int"}
+  ],
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(1)", "space": "O(capacity)"}
+}

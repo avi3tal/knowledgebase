@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "id": "q1",
+      "prompt": "Return the length of the longest subsequence of s that reads the same forwards and backwards.",
+      "options": ["palindromic-subsequence", "longest-common-substring", "two-pointers"],
+      "answer": "palindromic-subsequence",
+      "why": "One string, palindrome, subsequence (skipping allowed), optimise → interval DP on s[i..j] with the 'drop an end' max."
+    },
+    {
+      "id": "q2",
+      "prompt": "Given a string, decide whether it is a palindrome, ignoring case and non-alphanumeric characters.",
+      "options": ["palindromic-subsequence", "two-pointers", "sliding-window"],
+      "answer": "two-pointers",
+      "why": "A yes/no check of the whole string, nothing to optimise → compare the ends and move inward. O(n), no table."
+    },
+    {
+      "id": "q3",
+      "prompt": "What is the minimum number of characters you must delete from s so that the rest is a palindrome?",
+      "options": ["palindromic-subsequence", "greedy", "longest-common-substring"],
+      "answer": "palindromic-subsequence",
+      "why": "What you keep must be a palindromic subsequence, so deletions = n − LPS. Interval DP over s[i..j]."
+    },
+    {
+      "id": "q4",
+      "prompt": "Return the minimum number of single-character edits (insert, delete, replace) that turn word1 into word2.",
+      "options": ["palindromic-subsequence", "longest-common-substring", "backtracking"],
+      "answer": "longest-common-substring",
+      "why": "Two different strings compared to each other → 2-D DP over a prefix pair (i in word1, j in word2), not one interval of one string."
+    },
+    {
+      "id": "q5",
+      "prompt": "Split s into pieces that are all palindromes, using as few cuts as possible. Return the number of cuts.",
+      "options": ["palindromic-subsequence", "backtracking", "greedy"],
+      "answer": "palindromic-subsequence",
+      "why": "A minimum, not a list → precompute which s[i..j] are palindromes (interval DP), then a 1-D DP over prefixes. Backtracking would be exponential."
+    },
+    {
+      "id": "q6",
+      "prompt": "Return every possible way to split s into substrings that are all palindromes.",
+      "options": ["palindromic-subsequence", "backtracking", "subsets"],
+      "answer": "backtracking",
+      "why": "'Return every' → the output itself is exponential, so you must enumerate choices of the next piece and undo them. A DP table can only prune."
+    },
+    {
+      "id": "q7",
+      "prompt": "Count how many substrings of s are palindromes (substrings at different positions count separately).",
+      "options": ["palindromic-subsequence", "sliding-window", "arrays-hashing"],
+      "answer": "palindromic-subsequence",
+      "why": "Palindromic substrings are decided by their ends and their inside → boolean interval table (or expand around centres). A window can't keep 'is a palindrome' up to date as it slides."
+    },
+    {
+      "id": "q8",
+      "prompt": "Find the length of the longest substring of s with no repeating characters.",
+      "options": ["palindromic-subsequence", "sliding-window", "longest-common-substring"],
+      "answer": "sliding-window",
+      "why": "Contiguous, single string, and the condition (no repeats) can be maintained incrementally → dynamic sliding window. Nothing about palindromes or two strings."
+    }
+  ]
+}

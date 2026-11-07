@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "id": "q1",
+      "prompt": "There are n courses and a list of pairs [a, b] meaning b must be taken before a. Can you finish all courses?",
+      "options": [
+        "topological-sort",
+        "backtracking",
+        "islands"
+      ],
+      "answer": "topological-sort",
+      "why": "Prerequisites = directed dependency edges; 'can you finish' = 'is there no cycle' → Kahn's, and check that every node was taken."
+    },
+    {
+      "id": "q2",
+      "prompt": "Given a beginWord, an endWord and a word list, return the length of the shortest transformation sequence that changes one letter at a time.",
+      "options": [
+        "topological-sort",
+        "bfs",
+        "dfs"
+      ],
+      "answer": "bfs",
+      "why": "Fewest steps between two states in an unweighted graph → plain BFS from the start. There are no dependencies to respect, so there are no in-degrees."
+    },
+    {
+      "id": "q3",
+      "prompt": "Given a list of words sorted in an unknown alphabet, return an order of the letters consistent with that sorting.",
+      "options": [
+        "topological-sort",
+        "sorting",
+        "arrays-hashing"
+      ],
+      "answer": "topological-sort",
+      "why": "Adjacent words reveal 'letter x comes before letter y' → infer the precedence edges, then topologically sort the letters."
+    },
+    {
+      "id": "q4",
+      "prompt": "Tasks are letters; equal tasks must be at least k slots apart. Return the minimum number of slots to run them all.",
+      "options": [
+        "topological-sort",
+        "top-k-elements",
+        "merge-intervals"
+      ],
+      "answer": "top-k-elements",
+      "why": "The constraint is spacing between equal tasks, not 'A before B' → always schedule the most frequent remaining task (max-heap / counting)."
+    },
+    {
+      "id": "q5",
+      "prompt": "Given n packages and 'x depends on y' pairs, return an installation order in which every package comes after its dependencies, or [] if impossible.",
+      "options": [
+        "topological-sort",
+        "sorting",
+        "backtracking"
+      ],
+      "answer": "topological-sort",
+      "why": "Return an order that respects dependencies, or detect that a cycle makes it impossible → topological sort (Kahn's, or DFS reverse post-order)."
+    },
+    {
+      "id": "q6",
+      "prompt": "Count the number of islands in a 2-D grid of '1' (land) and '0' (water).",
+      "options": [
+        "topological-sort",
+        "islands",
+        "merge-intervals"
+      ],
+      "answer": "islands",
+      "why": "Undirected connectivity on a grid, with no direction and no order → flood fill each unvisited land cell (Islands pattern)."
+    },
+    {
+      "id": "q7",
+      "prompt": "An undirected tree has n nodes. Return every node that, chosen as the root, gives the tree its minimum height.",
+      "options": [
+        "topological-sort",
+        "islands",
+        "backtracking"
+      ],
+      "answer": "topological-sort",
+      "why": "Kahn-style peeling with degree instead of in-degree: remove the leaves layer by layer, and the last one or two nodes are the centres. That's O(n), compared with a BFS from every node."
+    },
+    {
+      "id": "q8",
+      "prompt": "Given meeting time ranges, find the minimum number of rooms needed so no two overlapping meetings share a room.",
+      "options": [
+        "topological-sort",
+        "merge-intervals",
+        "two-heaps"
+      ],
+      "answer": "merge-intervals",
+      "why": "The order comes from start and end times (sort plus a min-heap of end times), not from dependency edges → Merge Intervals."
+    }
+  ]
+}

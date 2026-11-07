@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "id": "q1",
+      "prompt": "Return the length of the longest string that is a subsequence of both text1 and text2.",
+      "options": ["longest-common-substring", "palindromic-subsequence", "sliding-window"],
+      "answer": "longest-common-substring",
+      "why": "Two strings aligned against each other, skipping allowed → 2-D DP over the prefix pair (i, j)."
+    },
+    {
+      "id": "q2",
+      "prompt": "Return the minimum number of insertions, deletions and replacements that turn word1 into word2.",
+      "options": ["longest-common-substring", "greedy", "bfs"],
+      "answer": "longest-common-substring",
+      "why": "'Transform a into b' with per-operation costs → min-cost table over (i in word1, j in word2). Each operation is one neighbouring cell."
+    },
+    {
+      "id": "q3",
+      "prompt": "Return the length of the longest subsequence of a single string that reads the same forwards and backwards.",
+      "options": ["longest-common-substring", "palindromic-subsequence", "two-pointers"],
+      "answer": "palindromic-subsequence",
+      "why": "One string and a palindrome → interval DP on s[i..j], filled by length. Not a prefix pair of two different strings."
+    },
+    {
+      "id": "q4",
+      "prompt": "Given an integer array, find the maximum sum of a strictly increasing subsequence.",
+      "options": ["longest-common-substring", "knapsack-0-1", "top-k-elements"],
+      "answer": "longest-common-substring",
+      "why": "One sequence against itself: best subsequence ending at i, looking back at every j < i that can precede it (the PDF files it under this pattern). No capacity, so it isn't knapsack."
+    },
+    {
+      "id": "q5",
+      "prompt": "Find the length of the longest substring of s that contains no repeating characters.",
+      "options": ["longest-common-substring", "sliding-window", "arrays-hashing"],
+      "answer": "sliding-window",
+      "why": "One string, contiguous, and a condition you can maintain as the window moves → dynamic sliding window. There's no second string to align."
+    },
+    {
+      "id": "q6",
+      "prompt": "Given two strings, return the length of the longest substring (contiguous) that appears in both.",
+      "options": ["longest-common-substring", "sliding-window", "two-pointers"],
+      "answer": "longest-common-substring",
+      "why": "Two strings + contiguous → prefix-pair table where a cell is the common run ending at (i, j). A mismatch resets it to 0, and the answer is the max cell."
+    },
+    {
+      "id": "q7",
+      "prompt": "Can the array be split into two subsets with equal sums?",
+      "options": ["longest-common-substring", "knapsack-0-1", "subsets"],
+      "answer": "knapsack-0-1",
+      "why": "Pick-or-skip each item to hit a target sum (a capacity) → 0/1 Knapsack. The second DP index is a sum, not a position in another sequence."
+    },
+    {
+      "id": "q8",
+      "prompt": "Given two sorted arrays, return the elements that appear in both.",
+      "options": ["longest-common-substring", "two-pointers", "modified-binary-search"],
+      "answer": "two-pointers",
+      "why": "Sorted inputs, and you only ever advance → one pointer per array, O(n + m). No prefix pair is ever revisited, so no table is needed."
+    }
+  ]
+}

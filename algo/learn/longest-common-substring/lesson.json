@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "subject": "algo",
+  "topic": "longest-common-substring",
+  "title": "Longest Common Substring",
+  "blocks": [
+    {"type": "markdown", "src": "01-intro.md"},
+    {
+      "type": "trace",
+      "id": "lcs-table",
+      "title": "2-D DP over two strings — longest common subsequence",
+      "source": "examples/longest_common_subsequence.py",
+      "function": "longest_common_subsequence",
+      "input": {"a": "abcbd", "b": "bdcb"},
+      "view": [
+        {"id": "dp", "type": "grid", "var": "dp", "label": "dp[i][j] = LCS of a[:i] and b[:j]", "cells": {"cur": ["i", "j"]}, "row_labels": "a", "col_labels": "b"},
+        {"id": "vars", "type": "vars", "vars": ["i", "j"]}
+      ],
+      "checks": [
+        {"input": {"a": "abcbd", "b": "bdcb"}, "expected": 3},
+        {"input": {"a": "abcde", "b": "ace"}, "expected": 3},
+        {"input": {"a": "abc", "b": "def"}, "expected": 0},
+        {"input": {"a": "", "b": "abc"}, "expected": 0}
+      ]
+    },
+    {"type": "markdown", "src": "02-variants.md"},
+    {"type": "markdown", "src": "03-recognise.md"},
+    {"type": "quiz", "src": "quiz.json"},
+    {"type": "problems", "slugs": ["longest-common-substring", "longest-increasing-subsequence", "maximum-sum-increasing-subsequence", "edit-distance"]}
+  ]
+}

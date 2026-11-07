@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "subject": "algo",
+  "topic": "multi-threaded",
+  "title": "Multi-threaded",
+  "blocks": [
+    {"type": "markdown", "src": "01-intro.md"},
+    {
+      "type": "trace",
+      "id": "fork-join-sequential",
+      "title": "Fork–join, traced sequentially — sum of a binary tree (where the parallel split goes)",
+      "source": "examples/tree_sum.py",
+      "function": "tree_sum",
+      "input": {"root": [5, 3, 8, 1, 4, null, 9]},
+      "types": {"root": "TreeNode"},
+      "view": [
+        {"id": "tree", "type": "tree", "var": "root", "pointers": {"node": "node"}},
+        {"id": "stack", "type": "callstack"},
+        {"id": "vars", "type": "vars", "vars": ["left", "right"]}
+      ],
+      "checks": [
+        {"input": {"root": [5, 3, 8, 1, 4, null, 9]}, "expected": 30},
+        {"input": {"root": []}, "expected": 0},
+        {"input": {"root": [1, -2, 3]}, "expected": 2},
+        {"input": {"root": [7]}, "expected": 7}
+      ]
+    },
+    {"type": "markdown", "src": "02-sync.md"},
+    {"type": "markdown", "src": "03-recognise.md"},
+    {"type": "quiz", "src": "quiz.json"},
+    {"type": "problems", "slugs": ["invert-binary-tree", "same-tree", "binary-search-tree-iterator", "bounded-blocking-queue"]}
+  ]
+}

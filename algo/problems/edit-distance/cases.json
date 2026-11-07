@@ -1,0 +1,13 @@
+[
+  {"name": "example horse ros", "args": {"word1": "horse", "word2": "ros"}, "expected": 3},
+  {"name": "example intention execution", "args": {"word1": "intention", "word2": "execution"}, "expected": 5},
+  {"name": "both empty", "args": {"word1": "", "word2": ""}, "expected": 0},
+  {"name": "first empty", "args": {"word1": "", "word2": "abc"}, "expected": 3},
+  {"name": "second empty", "args": {"word1": "abcd", "word2": ""}, "expected": 4},
+  {"name": "equal", "args": {"word1": "same", "word2": "same"}, "expected": 0},
+  {"name": "one replace", "args": {"word1": "cat", "word2": "cut"}, "expected": 1},
+  {"name": "one insert", "args": {"word1": "cat", "word2": "cast"}, "expected": 1},
+  {"name": "completely different", "args": {"word1": "abc", "word2": "xyz"}, "expected": 3},
+  {"name": "swap needs two", "args": {"word1": "ab", "word2": "ba"}, "expected": 2},
+  {"name": "longer tricky", "args": {"word1": "sunday", "word2": "saturday"}, "expected": 3}
+]

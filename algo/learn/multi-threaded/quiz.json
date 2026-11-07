@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "id": "q1",
+      "prompt": "Fetch 500 URLs (each request spends ~200 ms waiting on the network) and return the total number of bytes downloaded.",
+      "options": [
+        "multi-threaded",
+        "bfs",
+        "k-way-merge"
+      ],
+      "answer": "multi-threaded",
+      "why": "Independent, I/O-bound pieces → a thread pool overlaps the waiting. The GIL is released during I/O, so threads work in Python too."
+    },
+    {
+      "id": "q2",
+      "prompt": "Count the nodes of a binary tree with about 100 nodes.",
+      "options": [
+        "multi-threaded",
+        "dfs",
+        "k-way-merge"
+      ],
+      "answer": "dfs",
+      "why": "The subtrees are independent, but the work per node is tiny: thread start-up and joins would cost more than the whole traversal. Use a plain recursive DFS."
+    },
+    {
+      "id": "q3",
+      "prompt": "Follow-up: two binary trees have millions of nodes each and you have 16 cores. Decide whether they are identical as fast as possible.",
+      "options": [
+        "multi-threaded",
+        "dfs",
+        "bfs"
+      ],
+      "answer": "multi-threaded",
+      "why": "Comparing (left, left) and (right, right) are independent, large sub-tasks → fork–join down to a cutoff depth, then sequential DFS. In Python use processes, or Go goroutines, for this CPU-bound work."
+    },
+    {
+      "id": "q4",
+      "prompt": "Merge k sorted log files into one sorted output stream.",
+      "options": [
+        "multi-threaded",
+        "k-way-merge",
+        "top-k-elements"
+      ],
+      "answer": "k-way-merge",
+      "why": "The hard part is the global order → a min-heap over the k heads. Reading files in parallel doesn't produce the merged order."
+    },
+    {
+      "id": "q5",
+      "prompt": "Design a fixed-capacity queue shared by producer and consumer threads: enqueue blocks while it is full, dequeue blocks while it is empty.",
+      "options": [
+        "multi-threaded",
+        "sliding-window",
+        "heaps"
+      ],
+      "answer": "multi-threaded",
+      "why": "'Blocks while full/empty' across threads → a lock plus a condition variable (or a semaphore pair), with the condition re-checked in a while loop."
+    },
+    {
+      "id": "q6",
+      "prompt": "Implement an iterator over a BST whose next() should almost never wait, because the caller does heavy work between calls.",
+      "options": [
+        "multi-threaded",
+        "modified-binary-search",
+        "k-way-merge"
+      ],
+      "answer": "multi-threaded",
+      "why": "Prefetch: a background thread walks the tree in order and fills a bounded blocking queue, while next() just dequeues. The overlap only pays off because the caller is slow between calls."
+    },
+    {
+      "id": "q7",
+      "prompt": "Return the minimum number of moves for a knight to reach a target square on an empty chessboard.",
+      "options": [
+        "multi-threaded",
+        "bfs",
+        "dfs"
+      ],
+      "answer": "bfs",
+      "why": "Shortest path in an unweighted graph → BFS. Each level depends on the previous one, so parallelism can't replace the algorithm."
+    },
+    {
+      "id": "q8",
+      "prompt": "Return the k most frequent words in a 2 GB text file.",
+      "options": [
+        "multi-threaded",
+        "top-k-elements",
+        "two-heaps"
+      ],
+      "answer": "top-k-elements",
+      "why": "The core is 'k most frequent' → count, then a size-k heap. You could count chunks in parallel, but the selection pattern is Top 'K' Elements."
+    }
+  ]
+}

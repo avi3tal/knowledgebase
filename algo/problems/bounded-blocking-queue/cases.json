@@ -1,0 +1,9 @@
+[
+  {"name": "fifo order", "ctor": [3], "ops": ["enqueue", "enqueue", "enqueue", "dequeue", "dequeue", "dequeue"], "op_args": [[1], [2], [3], [], [], []], "expected": [null, null, null, 1, 2, 3]},
+  {"name": "size tracks contents", "ctor": [2], "ops": ["size", "enqueue", "size", "enqueue", "size", "dequeue", "size", "dequeue", "size"], "op_args": [[], [5], [], [6], [], [], [], [], []], "expected": [0, null, 1, null, 2, 5, 1, 6, 0]},
+  {"name": "fill to capacity then drain", "ctor": [2], "ops": ["enqueue", "enqueue", "size", "dequeue", "enqueue", "size", "dequeue", "dequeue", "size"], "op_args": [[1], [2], [], [], [3], [], [], [], []], "expected": [null, null, 2, 1, null, 2, 2, 3, 0]},
+  {"name": "capacity one", "ctor": [1], "ops": ["enqueue", "dequeue", "enqueue", "dequeue", "size"], "op_args": [[7], [], [8], [], []], "expected": [null, 7, null, 8, 0]},
+  {"name": "wrap around many times", "ctor": [2], "ops": ["enqueue", "enqueue", "dequeue", "enqueue", "dequeue", "enqueue", "dequeue", "dequeue"], "op_args": [[1], [2], [], [3], [], [4], [], []], "expected": [null, null, 1, null, 2, null, 3, 4]},
+  {"name": "negatives and zero", "ctor": [3], "ops": ["enqueue", "enqueue", "enqueue", "dequeue", "dequeue", "size", "dequeue"], "op_args": [[0], [-1], [-2], [], [], [], []], "expected": [null, null, null, 0, -1, 1, -2]},
+  {"name": "duplicates", "ctor": [4], "ops": ["enqueue", "enqueue", "enqueue", "size", "dequeue", "dequeue", "dequeue"], "op_args": [[9], [9], [9], [], [], [], []], "expected": [null, null, null, 3, 9, 9, 9]}
+]

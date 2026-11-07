@@ -1,0 +1,12 @@
+[
+  {"name": "example two courses", "args": {"numCourses": 2, "prerequisites": [[1, 0]]}, "expected": [[0, 1]]},
+  {"name": "example diamond", "args": {"numCourses": 4, "prerequisites": [[1, 0], [2, 0], [3, 1], [3, 2]]}, "expected": [[0, 1, 2, 3], [0, 2, 1, 3]]},
+  {"name": "single course", "args": {"numCourses": 1, "prerequisites": []}, "expected": [[0]]},
+  {"name": "cycle", "args": {"numCourses": 2, "prerequisites": [[1, 0], [0, 1]]}, "expected": [[]]},
+  {"name": "no prerequisites", "args": {"numCourses": 3, "prerequisites": []}, "expected": [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]},
+  {"name": "chain reversed labels", "args": {"numCourses": 4, "prerequisites": [[0, 1], [1, 2], [2, 3]]}, "expected": [[3, 2, 1, 0]]},
+  {"name": "self loop", "args": {"numCourses": 2, "prerequisites": [[0, 0]]}, "expected": [[]]},
+  {"name": "two components", "args": {"numCourses": 4, "prerequisites": [[1, 0], [3, 2]]}, "expected": [[0, 1, 2, 3], [0, 2, 1, 3], [0, 2, 3, 1], [2, 0, 1, 3], [2, 0, 3, 1], [2, 3, 0, 1]]},
+  {"name": "cycle among later nodes", "args": {"numCourses": 5, "prerequisites": [[1, 0], [2, 1], [3, 2], [1, 3], [4, 0]]}, "expected": [[]]},
+  {"name": "larger DAG", "args": {"numCourses": 6, "prerequisites": [[2, 0], [2, 1], [3, 2], [4, 2], [5, 3], [5, 4], [4, 1]]}, "expected": [[0, 1, 2, 3, 4, 5], [0, 1, 2, 4, 3, 5], [1, 0, 2, 3, 4, 5], [1, 0, 2, 4, 3, 5]]}
+]

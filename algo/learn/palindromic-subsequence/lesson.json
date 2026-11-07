@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "subject": "algo",
+  "topic": "palindromic-subsequence",
+  "title": "Palindromic Subsequence",
+  "blocks": [
+    {"type": "markdown", "src": "01-intro.md"},
+    {
+      "type": "trace",
+      "id": "lps-interval-dp",
+      "title": "Interval DP — longest palindromic subsequence, filled diagonal by diagonal",
+      "source": "examples/longest_palindromic_subsequence.py",
+      "function": "longest_palindromic_subsequence",
+      "input": {"s": "abbca"},
+      "view": [
+        {"id": "dp", "type": "grid", "var": "dp", "label": "dp[i][j] = LPS of s[i..j]", "cells": {"cur": ["i", "j"]}, "row_labels": "s", "col_labels": "s"},
+        {"id": "vars", "type": "vars", "vars": ["length", "i", "j"]}
+      ],
+      "checks": [
+        {"input": {"s": "abbca"}, "expected": 4},
+        {"input": {"s": "abdbca"}, "expected": 5},
+        {"input": {"s": "cddpd"}, "expected": 3},
+        {"input": {"s": "pqr"}, "expected": 1},
+        {"input": {"s": ""}, "expected": 0}
+      ]
+    },
+    {"type": "markdown", "src": "02-variants.md"},
+    {"type": "markdown", "src": "03-recognise.md"},
+    {"type": "quiz", "src": "quiz.json"},
+    {"type": "problems", "slugs": ["palindromic-substrings-count", "longest-palindromic-substring", "minimum-insertions-to-make-palindrome", "palindrome-partitioning-min-cuts"]}
+  ]
+}

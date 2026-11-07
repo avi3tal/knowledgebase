@@ -1,0 +1,18 @@
+{
+  "title": "Course Schedule",
+  "slug": "course-schedule",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["topological-sort"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/course-schedule/"}],
+  "kind": "function",
+  "function": "canFinish",
+  "params": [
+    {"name": "numCourses", "type": "int"},
+    {"name": "prerequisites", "type": "int[][]"}
+  ],
+  "returns": "bool",
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(n)", "space": "O(n)"},
+  "bench": {"args": {"numCourses": "n", "prerequisites": "int_matrix(n, 2, 0, n - 1)"}, "min_n": 256, "max_n": 65536}
+}

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "subject": "algo",
+  "topic": "topological-sort",
+  "title": "Topological Sort",
+  "blocks": [
+    {"type": "markdown", "src": "01-intro.md"},
+    {
+      "type": "trace",
+      "id": "kahn-semesters",
+      "title": "Kahn's algorithm, level by level — minimum number of semesters",
+      "source": "examples/min_semesters.py",
+      "function": "min_semesters",
+      "input": {"n": 6, "edges": [[0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [4, 5]]},
+      "view": [
+        {"id": "graph", "type": "map", "var": "graph", "label": "graph (course → courses it unlocks)"},
+        {"id": "in_degree", "type": "map", "var": "in_degree", "label": "in_degree (course → prerequisites left)"},
+        {"id": "queue", "type": "array", "var": "queue", "label": "queue (ready now)"},
+        {"id": "order", "type": "array", "var": "order", "label": "order (topological order so far)"},
+        {"id": "vars", "type": "vars", "vars": ["semesters", "node", "nxt"]}
+      ],
+      "checks": [
+        {"input": {"n": 6, "edges": [[0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [4, 5]]}, "expected": 4},
+        {"input": {"n": 3, "edges": [[0, 1], [1, 2], [2, 0]]}, "expected": -1},
+        {"input": {"n": 4, "edges": []}, "expected": 1},
+        {"input": {"n": 5, "edges": [[0, 1], [0, 2], [0, 3], [3, 4], [2, 4]]}, "expected": 3}
+      ]
+    },
+    {"type": "markdown", "src": "02-variants.md"},
+    {
+      "type": "trace",
+      "id": "dfs-post-order",
+      "title": "DFS variant — reverse post-order, with cycle detection",
+      "source": "examples/dfs_order.py",
+      "function": "dfs_topological_order",
+      "input": {"n": 5, "edges": [[0, 1], [0, 2], [1, 3], [2, 3], [4, 2]]},
+      "view": [
+        {"id": "stack", "type": "callstack"},
+        {"id": "state", "type": "map", "var": "state", "label": "state (node → active / done)"},
+        {"id": "finished", "type": "array", "var": "finished", "label": "finished (post-order)"},
+        {"id": "vars", "type": "vars", "vars": ["node", "nxt", "has_cycle"]}
+      ],
+      "checks": [
+        {"input": {"n": 5, "edges": [[0, 1], [0, 2], [1, 3], [2, 3], [4, 2]]}, "expected": [4, 0, 2, 1, 3]},
+        {"input": {"n": 3, "edges": [[0, 1], [1, 2], [2, 1]]}, "expected": []},
+        {"input": {"n": 3, "edges": []}, "expected": [2, 1, 0]},
+        {"input": {"n": 4, "edges": [[3, 2], [2, 1], [1, 0]]}, "expected": [3, 2, 1, 0]}
+      ]
+    },
+    {"type": "markdown", "src": "03-recognise.md"},
+    {"type": "quiz", "src": "quiz.json"},
+    {"type": "problems", "slugs": ["course-schedule", "course-schedule-ii", "minimum-height-trees", "alien-dictionary"]}
+  ]
+}

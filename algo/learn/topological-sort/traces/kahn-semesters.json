@@ -1,0 +1,5048 @@
+{
+ "version": 1,
+ "title": "Kahn's algorithm, level by level — minimum number of semesters",
+ "code": [
+  "def min_semesters(n: int, edges: list[list[int]]) -> int:",
+  "    graph: dict[int, list[int]] = {v: [] for v in range(n)}",
+  "    in_degree: dict[int, int] = {v: 0 for v in range(n)}",
+  "    for u, v in edges:",
+  "        graph[u].append(v)",
+  "        in_degree[v] += 1",
+  "    queue = deque(v for v in range(n) if in_degree[v] == 0)",
+  "    order: list[int] = []",
+  "    semesters = 0",
+  "    while queue:",
+  "        semesters += 1",
+  "        for _ in range(len(queue)):",
+  "            node = queue.popleft()",
+  "            order.append(node)",
+  "            for nxt in graph[node]:",
+  "                in_degree[nxt] -= 1",
+  "                if in_degree[nxt] == 0:",
+  "                    queue.append(nxt)",
+  "    if len(order) < n:",
+  "        return -1",
+  "    return semesters"
+ ],
+ "view": [
+  {
+   "id": "graph",
+   "type": "map",
+   "var": "graph",
+   "label": "graph (course → courses it unlocks)"
+  },
+  {
+   "id": "in_degree",
+   "type": "map",
+   "var": "in_degree",
+   "label": "in_degree (course → prerequisites left)"
+  },
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue",
+   "label": "queue (ready now)"
+  },
+  {
+   "id": "order",
+   "type": "array",
+   "var": "order",
+   "label": "order (topological order so far)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "semesters",
+    "node",
+    "nxt"
+   ]
+  }
+ ],
+ "input": {
+  "n": 6,
+  "edges": [
+   [
+    0,
+    2
+   ],
+   [
+    1,
+    2
+   ],
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    4
+   ],
+   [
+    3,
+    4
+   ],
+   [
+    4,
+    5
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": []
+    },
+    "in_degree": {
+     "entries": []
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       []
+      ],
+      [
+       1,
+       []
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": []
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       []
+      ],
+      [
+       1,
+       []
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "build the adjacency list — u unlocks v",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       []
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "v has one more prerequisite",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       []
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "build the adjacency list — u unlocks v",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2
+       ]
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "v has one more prerequisite",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2
+       ]
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "build the adjacency list — u unlocks v",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "v has one more prerequisite",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       []
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "build the adjacency list — u unlocks v",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "v has one more prerequisite",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       []
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "build the adjacency list — u unlocks v",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "v has one more prerequisite",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       []
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "build the adjacency list — u unlocks v",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "v has one more prerequisite",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "sources — no prerequisites at all",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": null,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 0,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "everything in the queue right now can be taken this semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": null,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 0,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "take the course — it joins the topological order",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 0,
+      "nxt": null
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 0,
+      "nxt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "one prerequisite of nxt is done",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 0,
+      "nxt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "take the course — it joins the topological order",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "one prerequisite of nxt is done",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "all prerequisites done — nxt is ready next semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "one prerequisite of nxt is done",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "all prerequisites done — nxt is ready next semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 1,
+      "node": 1,
+      "nxt": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "everything in the queue right now can be taken this semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 1,
+      "nxt": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 2,
+      "nxt": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "take the course — it joins the topological order",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 2,
+      "nxt": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       2
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 2,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "one prerequisite of nxt is done",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 2,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 3,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "take the course — it joins the topological order",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 3,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "one prerequisite of nxt is done",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 3,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "all prerequisites done — nxt is ready next semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 2,
+      "node": 3,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "everything in the queue right now can be taken this semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 3,
+      "node": 3,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 3,
+      "node": 4,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "take the course — it joins the topological order",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 3,
+      "node": 4,
+      "nxt": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 3,
+      "node": 4,
+      "nxt": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "one prerequisite of nxt is done",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 3,
+      "node": 4,
+      "nxt": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "all prerequisites done — nxt is ready next semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 3,
+      "node": 4,
+      "nxt": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "everything in the queue right now can be taken this semester",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 4,
+      "node": 4,
+      "nxt": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 4,
+      "node": 5,
+      "nxt": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "take the course — it joins the topological order",
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 4,
+      "node": 5,
+      "nxt": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "graph": {
+     "entries": [
+      [
+       0,
+       [
+        2
+       ]
+      ],
+      [
+       1,
+       [
+        2,
+        3
+       ]
+      ],
+      [
+       2,
+       [
+        4
+       ]
+      ],
+      [
+       3,
+       [
+        4
+       ]
+      ],
+      [
+       4,
+       [
+        5
+       ]
+      ],
+      [
+       5,
+       []
+      ]
+     ]
+    },
+    "in_degree": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       5,
+       0
+      ]
+     ]
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "order": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "semesters": 4,
+      "node": 5,
+      "nxt": 5
+     }
+    }
+   }
+  }
+ ],
+ "result": 4
+}

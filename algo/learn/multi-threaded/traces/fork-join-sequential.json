@@ -1,0 +1,2760 @@
+{
+ "version": 1,
+ "title": "Fork–join, traced sequentially — sum of a binary tree (where the parallel split goes)",
+ "code": [
+  "def tree_sum(root) -> int:",
+  "    def total(node) -> int:",
+  "        if node is None:",
+  "            return 0",
+  "        left = total(node.left)",
+  "        right = total(node.right)",
+  "        return node.val + left + right",
+  "",
+  "    return total(root)"
+ ],
+ "view": [
+  {
+   "id": "tree",
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "node": "node"
+   }
+  },
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "left",
+    "right"
+   ]
+  }
+ ],
+ "input": {
+  "root": [
+   5,
+   3,
+   8,
+   1,
+   4,
+   null,
+   9
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(1)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(1)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "left subtree — shares nothing with the right one, so it could run in parallel",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(1)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(1)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "right subtree — independent work; a pool would compute it at the same time",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(1)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "join point — combine both halves (a concurrent version waits here)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(1)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "left subtree — shares nothing with the right one, so it could run in parallel",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 1,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "left subtree — shares nothing with the right one, so it could run in parallel",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "right subtree — independent work; a pool would compute it at the same time",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "join point — combine both halves (a concurrent version waits here)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "right subtree — independent work; a pool would compute it at the same time",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 1,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "join point — combine both halves (a concurrent version waits here)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 1,
+      "right": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "left subtree — shares nothing with the right one, so it could run in parallel",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 8,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "left subtree — shares nothing with the right one, so it could run in parallel",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "left subtree — shares nothing with the right one, so it could run in parallel",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "right subtree — independent work; a pool would compute it at the same time",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "join point — combine both halves (a concurrent version waits here)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "right subtree — independent work; a pool would compute it at the same time",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "join point — combine both halves (a concurrent version waits here)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(8)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "right subtree — independent work; a pool would compute it at the same time",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 8,
+      "right": 17
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "join point — combine both halves (a concurrent version waits here)",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      },
+      {
+       "fn": "total",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 8,
+      "right": 17
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "whole tree done",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 5,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 3,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 8,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 4,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 9,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "tree_sum",
+       "args": {
+        "root": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null
+     }
+    }
+   }
+  }
+ ],
+ "result": 30
+}

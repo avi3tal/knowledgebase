@@ -1,0 +1,9 @@
+[
+  {"name": "example", "ctor": [[7, 3, 15, null, null, 9, 20]], "ops": ["next", "next", "hasNext", "next", "hasNext", "next", "hasNext", "next", "hasNext"], "op_args": [[], [], [], [], [], [], [], [], []], "expected": [3, 7, true, 9, true, 15, true, 20, false]},
+  {"name": "single node", "ctor": [[1]], "ops": ["hasNext", "next", "hasNext"], "op_args": [[], [], []], "expected": [true, 1, false]},
+  {"name": "left chain", "ctor": [[3, 2, null, 1]], "ops": ["next", "next", "next", "hasNext"], "op_args": [[], [], [], []], "expected": [1, 2, 3, false]},
+  {"name": "right chain", "ctor": [[1, null, 2, null, 3]], "ops": ["hasNext", "next", "hasNext", "next", "hasNext", "next", "hasNext"], "op_args": [[], [], [], [], [], [], []], "expected": [true, 1, true, 2, true, 3, false]},
+  {"name": "hasNext is idempotent", "ctor": [[2, 1, 3]], "ops": ["hasNext", "hasNext", "hasNext", "next", "next", "hasNext", "hasNext", "next", "hasNext"], "op_args": [[], [], [], [], [], [], [], [], []], "expected": [true, true, true, 1, 2, true, true, 3, false]},
+  {"name": "negatives", "ctor": [[0, -5, 5, -8, -2, 3, 8]], "ops": ["next", "next", "next", "next", "next", "next", "next", "hasNext"], "op_args": [[], [], [], [], [], [], [], []], "expected": [-8, -5, -2, 0, 3, 5, 8, false]},
+  {"name": "zig-zag", "ctor": [[10, 4, null, null, 7, 6, 8]], "ops": ["next", "hasNext", "next", "next", "next", "hasNext", "next", "hasNext"], "op_args": [[], [], [], [], [], [], [], []], "expected": [4, true, 6, 7, 8, true, 10, false]}
+]

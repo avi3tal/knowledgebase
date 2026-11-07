@@ -1,0 +1,13 @@
+[
+  {"name": "example possible", "args": {"numCourses": 2, "prerequisites": [[1, 0]]}, "expected": true},
+  {"name": "example cycle", "args": {"numCourses": 2, "prerequisites": [[1, 0], [0, 1]]}, "expected": false},
+  {"name": "single course", "args": {"numCourses": 1, "prerequisites": []}, "expected": true},
+  {"name": "no prerequisites", "args": {"numCourses": 3, "prerequisites": []}, "expected": true},
+  {"name": "self loop", "args": {"numCourses": 3, "prerequisites": [[1, 1]]}, "expected": false},
+  {"name": "chain", "args": {"numCourses": 5, "prerequisites": [[1, 0], [2, 1], [3, 2], [4, 3]]}, "expected": true},
+  {"name": "diamond", "args": {"numCourses": 4, "prerequisites": [[1, 0], [2, 0], [3, 1], [3, 2]]}, "expected": true},
+  {"name": "cycle in one component", "args": {"numCourses": 6, "prerequisites": [[1, 0], [2, 1], [4, 3], [5, 4], [3, 5]]}, "expected": false},
+  {"name": "duplicate edge", "args": {"numCourses": 3, "prerequisites": [[1, 0], [1, 0], [2, 1]]}, "expected": true},
+  {"name": "long cycle through all", "args": {"numCourses": 7, "prerequisites": [[1, 0], [2, 1], [3, 2], [4, 3], [5, 4], [6, 5], [0, 6]]}, "expected": false},
+  {"name": "larger DAG", "args": {"numCourses": 8, "prerequisites": [[1, 0], [2, 0], [3, 1], [3, 2], [4, 3], [5, 3], [6, 4], [6, 5], [7, 6], [7, 0]]}, "expected": true}
+]
