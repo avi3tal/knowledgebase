@@ -2,22 +2,52 @@
   "version": 1,
   "scope": {
     "functional": [
-      { "id": "F1", "text": "Starting from seed URLs, crawl the web: fetch HTML pages, store them, extract links and add new URLs to the frontier." },
-      { "id": "F2", "text": "Avoid duplicate work: each URL is fetched once per cycle; pages whose content duplicates an earlier page are not stored or indexed twice." },
-      { "id": "F3", "text": "Recrawl pages to keep them fresh, more often for pages that change often." },
-      { "id": "F4", "text": "Expose stored pages to the indexing team for 6 months." }
+      {
+        "id": "F1",
+        "text": "Starting from seed URLs, crawl the web: fetch HTML pages, store them, extract links and add new URLs to the frontier."
+      },
+      {
+        "id": "F2",
+        "text": "Avoid duplicate work: each URL is fetched once per cycle; pages whose content duplicates an earlier page are not stored or indexed twice."
+      },
+      {
+        "id": "F3",
+        "text": "Recrawl pages to keep them fresh, more often for pages that change often."
+      },
+      {
+        "id": "F4",
+        "text": "Expose stored pages to the indexing team for 6 months."
+      }
     ],
     "non_functional": [
-      { "id": "N1", "text": "Polite: at most 1 request/s per host and obey robots.txt (disallow rules, crawl-delay)." },
-      { "id": "N2", "text": "Throughput: 2B pages per month, scaling horizontally by adding fetchers." },
-      { "id": "N3", "text": "Robust against crawler traps, slow servers and malformed HTML; no lost work when a machine dies." }
+      {
+        "id": "N1",
+        "text": "Polite: at most 1 request/s per host and obey robots.txt (disallow rules, crawl-delay)."
+      },
+      {
+        "id": "N2",
+        "text": "Throughput: 2B pages per month, scaling horizontally by adding fetchers."
+      },
+      {
+        "id": "N3",
+        "text": "Robust against crawler traps, slow servers and malformed HTML; no lost work when a machine dies."
+      }
     ],
     "assumptions": [
-      { "id": "A1", "text": "~100 KB per HTML page; ~1/3 of fetched pages are copies or near-copies." },
-      { "id": "A2", "text": "~20B distinct URLs discovered over time." }
+      {
+        "id": "A1",
+        "text": "~100 KB per HTML page; ~1/3 of fetched pages are copies or near-copies."
+      },
+      {
+        "id": "A2",
+        "text": "~20B distinct URLs discovered over time."
+      }
     ],
     "out_of_scope": [
-      { "id": "O1", "text": "Images/video, JavaScript rendering, building the search index itself." }
+      {
+        "id": "O1",
+        "text": "Images/video, JavaScript rendering, building the search index itself."
+      }
     ]
   },
   "api": [
@@ -61,40 +91,470 @@
       "why": "Write-once, read in bulk by indexing: ~1.2 PB raw for 6 months."
     }
   ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "URL frontier: politeness and priority",
+      "covers": [
+        "F1",
+        "N1",
+        "N2"
+      ],
+      "problem": "Decide which URL is fetched next so that important pages go first, no host sees more than 1 request/s (or its robots.txt crawl-delay), and thousands of fetchers still stay busy.",
+      "options": [
+        {
+          "name": "one global FIFO",
+          "pros": "simple",
+          "cons": "links cluster by site: hundreds of fetchers hit one host at once; no notion of importance"
+        },
+        {
+          "name": "FIFO + each fetcher sleeps between requests",
+          "pros": "easy",
+          "cons": "doesn't stop two fetchers hitting the same host; idle fetchers"
+        },
+        {
+          "name": "priority front queues → per-host back queues + ready-time heap",
+          "pros": "importance decides what enters; one host is served by one fetcher at a time with an enforced delay",
+          "cons": "more frontier machinery; must shard by host"
+        }
+      ],
+      "choice": "priority front queues feeding per-host back queues, released by a politeness scheduler (heap of host → ready_at); robots.txt cached per host",
+      "why": "N1 is enforced by structure, not by fetcher discipline: a host is only handed out when its ready_at has passed. N2 comes from breadth: ~1,500 pages/s at ≤ 1/s per host means at least 1,500 hosts in flight, which per-host queues give naturally.",
+      "technologies": [
+        "kafka",
+        "redis"
+      ],
+      "patterns": [
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "frontier",
+            "kind": "queue",
+            "label": "Frontier: priority front queues",
+            "x": 360,
+            "y": 160
+          },
+          {
+            "id": "polite",
+            "kind": "scheduler",
+            "label": "Politeness scheduler (per-host back queues, ready-time heap)",
+            "x": 520,
+            "y": 160
+          },
+          {
+            "id": "fetch",
+            "kind": "worker",
+            "label": "Fetchers ×N (async HTTP, leases)",
+            "x": 690,
+            "y": 160
+          },
+          {
+            "id": "robots",
+            "kind": "cache",
+            "label": "robots.txt cache",
+            "x": 780,
+            "y": 40
+          }
+        ],
+        "edges": [
+          {
+            "from": "frontier",
+            "to": "polite",
+            "label": "by priority"
+          },
+          {
+            "from": "polite",
+            "to": "fetch",
+            "label": "one host → one fetcher, ≤1 req/s"
+          },
+          {
+            "from": "fetch",
+            "to": "robots",
+            "label": "allowed? crawl-delay?"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Fetchers and DNS",
+      "covers": [
+        "F1",
+        "N2",
+        "N3"
+      ],
+      "problem": "Download ~770 pages/s (peak ~1,500) when each fetch takes ~1 s and some servers hang, without losing URLs when a fetcher dies.",
+      "options": [
+        {
+          "name": "thread per fetch, OS resolver",
+          "pros": "simple code",
+          "cons": "~1,500 threads per box, and the blocking system resolver becomes the bottleneck"
+        },
+        {
+          "name": "async I/O fetchers + local caching DNS resolver",
+          "pros": "thousands of fetches in flight per box; DNS answered from memory",
+          "cons": "async code; must respect DNS TTLs"
+        },
+        {
+          "name": "headless browser per page",
+          "pros": "renders JavaScript",
+          "cons": "10–100× the cost per page; out of scope (O1)"
+        }
+      ],
+      "choice": "async HTTP fetchers that lease URLs from the frontier, with a caching DNS resolver per fetcher cluster and strict timeouts",
+      "why": "≈ 1,500 concurrent fetches fit on a handful of async workers; DNS lookups (often 10–200 ms) are cached per host, and leases make a crashed fetcher's URLs reappear (N3).",
+      "technologies": [],
+      "patterns": [
+        "retries-dlq"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "fetch",
+            "kind": "worker",
+            "label": "Fetchers ×N (async HTTP, leases)",
+            "x": 690,
+            "y": 160
+          },
+          {
+            "id": "dns",
+            "kind": "cache",
+            "label": "Caching DNS resolver",
+            "x": 600,
+            "y": 40
+          },
+          {
+            "id": "web",
+            "kind": "external",
+            "label": "Websites",
+            "x": 860,
+            "y": 160
+          }
+        ],
+        "edges": [
+          {
+            "from": "fetch",
+            "to": "dns",
+            "label": "resolve host"
+          },
+          {
+            "from": "fetch",
+            "to": "web",
+            "label": "HTTP GET (timeouts)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Dedup: seen URLs and duplicate content",
+      "covers": [
+        "F2"
+      ],
+      "problem": "Answer 'have we seen this URL?' for every extracted link out of 20B URLs, and 'is this page a copy?' for the 1/3 of pages that are copies or near-copies.",
+      "options": [
+        {
+          "name": "exact URL hash set in a database",
+          "pros": "exact",
+          "cons": "~1 TB of keys and a DB lookup for every extracted link"
+        },
+        {
+          "name": "Bloom filter over normalised URLs",
+          "pros": "~25 GB for 20B URLs at 1% false positives, in memory",
+          "cons": "1% of new URLs are wrongly skipped (acceptable)"
+        },
+        {
+          "name": "content hash + SimHash fingerprints",
+          "pros": "catches exact and near-duplicate pages",
+          "cons": "near-duplicate lookup needs bit-band indexing"
+        }
+      ],
+      "choice": "URL normalisation + Bloom filter for seen URLs; exact content hash and SimHash fingerprints for duplicate content",
+      "why": "URL dedup stops refetching, which is most of the volume (each URL is linked many times). Content dedup keeps the 1/3 of copies out of storage and the index. A Bloom filter's false positive only skips a new URL, which is a cheap mistake.",
+      "technologies": [
+        "redis",
+        "cassandra"
+      ],
+      "patterns": [
+        "chunking-dedup"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "parser",
+            "kind": "worker",
+            "label": "Parsers + link extractor",
+            "x": 500,
+            "y": 300
+          },
+          {
+            "id": "seen",
+            "kind": "cache",
+            "label": "Seen-URL Bloom filter",
+            "x": 420,
+            "y": 440
+          },
+          {
+            "id": "fingerprints",
+            "kind": "nosql",
+            "label": "Content fingerprints (hash + SimHash)",
+            "x": 620,
+            "y": 440
+          }
+        ],
+        "edges": [
+          {
+            "from": "parser",
+            "to": "seen",
+            "label": "new URL?"
+          },
+          {
+            "from": "parser",
+            "to": "fingerprints",
+            "label": "duplicate content?"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Parsing and content storage",
+      "covers": [
+        "F1",
+        "F4"
+      ],
+      "problem": "Store ~1.2 PB of raw HTML for 6 months where indexing can reprocess it, and extract links without slowing the fetchers.",
+      "options": [
+        {
+          "name": "pages as rows in a database",
+          "pros": "queryable",
+          "cons": "petabytes of blobs in a DB is expensive and slow"
+        },
+        {
+          "name": "one object per page in blob storage",
+          "pros": "simple keys",
+          "cons": "billions of tiny objects: per-request cost and slow bulk reads"
+        },
+        {
+          "name": "batch pages into large append-only files (WARC-style) in blob storage; parse from an event queue",
+          "pros": "cheap, sequential bulk reads for indexing; parsing scales separately",
+          "cons": "need an index (url_hash → file, offset)"
+        }
+      ],
+      "choice": "fetchers append pages to large batched files in blob storage and publish a fetched-page event; parser workers consume it",
+      "why": "1.2 PB written once and read in bulk is exactly what object storage is for, and batching avoids billions of small objects. A queue between fetch and parse lets each side scale and absorbs bursts.",
+      "technologies": [
+        "object-storage",
+        "kafka"
+      ],
+      "patterns": [
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "fetch",
+            "kind": "worker",
+            "label": "Fetchers ×N (async HTTP, leases)",
+            "x": 690,
+            "y": 160
+          },
+          {
+            "id": "pages",
+            "kind": "blob",
+            "label": "Raw pages (blob, batched WARC files)",
+            "x": 860,
+            "y": 300
+          },
+          {
+            "id": "parseq",
+            "kind": "queue",
+            "label": "Fetched-page events",
+            "x": 680,
+            "y": 300
+          },
+          {
+            "id": "parser",
+            "kind": "worker",
+            "label": "Parsers + link extractor",
+            "x": 500,
+            "y": 300
+          },
+          {
+            "id": "frontier",
+            "kind": "queue",
+            "label": "Frontier: priority front queues",
+            "x": 360,
+            "y": 160
+          }
+        ],
+        "edges": [
+          {
+            "from": "fetch",
+            "to": "pages",
+            "label": "append raw HTML"
+          },
+          {
+            "from": "fetch",
+            "to": "parseq",
+            "label": "page fetched"
+          },
+          {
+            "from": "parseq",
+            "to": "parser"
+          },
+          {
+            "from": "parser",
+            "to": "frontier",
+            "label": "new URLs (scored)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P5",
+      "title": "Recrawl scheduling and freshness",
+      "covers": [
+        "F3"
+      ],
+      "problem": "Spend a fixed fetch budget so news pages are refreshed hourly while static pages are visited rarely.",
+      "options": [
+        {
+          "name": "BFS order, fixed revisit interval",
+          "pros": "simple",
+          "cons": "wastes budget on static pages; news goes stale"
+        },
+        {
+          "name": "importance × staleness priority with an adaptive interval per URL",
+          "pros": "the budget follows value and change rate",
+          "cons": "needs per-URL history and scores"
+        },
+        {
+          "name": "sitemaps / change feeds only",
+          "pros": "exact change signals",
+          "cons": "most sites don't publish them"
+        }
+      ],
+      "choice": "importance × staleness priority with an adaptive revisit interval stored in url_meta; a recrawl scheduler re-enqueues due URLs",
+      "why": "Halve a URL's interval when its content hash changed and double it (up to a cap) when it didn't. Hourly news and monthly blogs then converge to their own rates without hand tuning.",
+      "technologies": [
+        "cassandra"
+      ],
+      "patterns": [],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "parser",
+            "kind": "worker",
+            "label": "Parsers + link extractor",
+            "x": 500,
+            "y": 300
+          },
+          {
+            "id": "urlmeta",
+            "kind": "nosql",
+            "label": "url_meta (last fetch, next due, priority)",
+            "x": 300,
+            "y": 340
+          },
+          {
+            "id": "recrawl",
+            "kind": "scheduler",
+            "label": "Recrawl scheduler (adaptive interval)",
+            "x": 80,
+            "y": 400
+          },
+          {
+            "id": "frontier",
+            "kind": "queue",
+            "label": "Frontier: priority front queues",
+            "x": 360,
+            "y": 160
+          }
+        ],
+        "edges": [
+          {
+            "from": "parser",
+            "to": "urlmeta",
+            "label": "last fetch, content hash"
+          },
+          {
+            "from": "recrawl",
+            "to": "urlmeta",
+            "label": "scan due pages"
+          },
+          {
+            "from": "recrawl",
+            "to": "frontier",
+            "label": "re-enqueue"
+          }
+        ]
+      }
+    }
+  ],
   "deep_dives": [
     {
       "id": "DD1",
-      "title": "Politeness at scale",
+      "title": "Crawler traps",
       "options": [
-        { "name": "one global FIFO", "pros": "simple", "cons": "links cluster by site: hundreds of fetchers hit one host at once" },
-        { "name": "sleep between requests in each fetcher", "pros": "easy", "cons": "doesn't stop two fetchers hitting the same host" },
-        { "name": "per-host back queues + ready-time heap", "pros": "one host is served by one fetcher at a time with an enforced delay", "cons": "more frontier machinery; must shard by host" }
+        {
+          "name": "trust the link graph",
+          "pros": "nothing to build",
+          "cons": "an infinite calendar or session-id URL space eats the whole budget of one host"
+        },
+        {
+          "name": "limits: max depth, max URL length, page budget per host",
+          "pros": "cheap, catches most traps",
+          "cons": "can cut off legitimately deep sites"
+        },
+        {
+          "name": "detect repeating URL patterns / near-duplicate content per host",
+          "pros": "catches generated pages",
+          "cons": "heuristics need tuning"
+        }
       ],
-      "choice": "priority front queues feeding per-host back queues, released by a scheduler heap (host ready at t)",
-      "why": "N1 and N2 together: politeness is enforced structurally, and throughput comes from crawling many hosts in parallel. robots.txt is fetched once per host and cached with its crawl-delay.",
-      "version": 3
+      "choice": "hard limits (depth, URL length, pages per host per cycle) plus near-duplicate rate per host as a trap signal",
+      "why": "N3: traps are unbounded URL spaces; a per-host budget caps the damage of any single one, and a host whose new pages are mostly SimHash-duplicates is demoted.",
+      "version": 4
     },
     {
       "id": "DD2",
-      "title": "Detecting repeats",
+      "title": "Fetcher crash mid-batch",
       "options": [
-        { "name": "exact hash set of URLs in a DB", "pros": "exact", "cons": "~1 TB of keys, a DB lookup per extracted link" },
-        { "name": "Bloom filter over normalised URLs", "pros": "~25 GB for 20B URLs at 1% false positives, in memory", "cons": "1% of new URLs skipped (acceptable)" },
-        { "name": "content hash + SimHash fingerprints", "pros": "catches exact and near-duplicate pages", "cons": "near-duplicate lookup needs bit-band indexing" }
+        {
+          "name": "delete URLs from the frontier when handed out",
+          "pros": "simple",
+          "cons": "a crash loses them for the whole cycle"
+        },
+        {
+          "name": "lease with timeout, ack after the page is stored",
+          "pros": "at-least-once; nothing is lost",
+          "cons": "a page can be fetched twice after a crash (content dedup absorbs it)"
+        }
       ],
-      "choice": "URL normalisation + Bloom filter for URLs; exact hash and SimHash fingerprints for content",
-      "why": "F2: URL dedup prevents refetching (most of the volume); content dedup stops the 1/3 of copies being stored and indexed.",
+      "choice": "lease with timeout, ack after the page is stored",
+      "why": "N3: losing work silently is worse than an occasional duplicate fetch, and P3 already drops duplicate content.",
       "version": 2
     },
     {
       "id": "DD3",
-      "title": "Priority and recrawl",
+      "title": "Finding near-duplicates fast",
       "options": [
-        { "name": "BFS order, fixed revisit interval", "pros": "simple", "cons": "wastes budget on static pages, news goes stale" },
-        { "name": "importance × staleness priority, adaptive interval", "pros": "budget follows value and change rate", "cons": "needs scores and history" }
+        {
+          "name": "compare SimHash against every stored fingerprint",
+          "pros": "exact Hamming distance",
+          "cons": "billions of comparisons per page"
+        },
+        {
+          "name": "split the 64-bit SimHash into bands and index each band",
+          "pros": "only pages sharing a band are compared",
+          "cons": "4–8× the index size"
+        }
       ],
-      "choice": "importance × staleness priority with adaptive revisit interval",
-      "why": "F3: halve a URL's interval when its content hash changed, double it (to a cap) when it didn't; importance from link-based score and domain quality.",
+      "choice": "banded SimHash index: 4 bands of 16 bits, compare candidates by Hamming distance ≤ 3",
+      "why": "Two pages within distance 3 must share at least one identical band, so the band lookup finds every candidate cheaply.",
       "version": 3
     }
   ],

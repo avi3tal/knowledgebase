@@ -142,7 +142,8 @@
         "redis",
         "counter_cluster",
         "counter_store",
-        "machine"
+        "machine",
+        "primaries"
       ],
       "unit": "",
       "min": 2,
@@ -224,7 +225,85 @@
       "tips": {
         "nudge": "Where do 100/min and 5,000/hour come from at runtime?",
         "hint": "Model the limits as data, not code.",
-        "show": "rules(id, match: key_type + endpoint pattern, limit, window_s, burst, mode: open|closed) in SQL."
+        "show": "rules(id, match: key_type + endpoint pattern, limit, window_s, burst, failure_mode: open|closed, version) in SQL."
+      }
+    },
+    {
+      "id": "part-algorithm",
+      "type": "part",
+      "label": "Counting method designed as its own part",
+      "keywords": [
+        "algorithm",
+        "token bucket",
+        "leaky bucket",
+        "fixed window",
+        "sliding window",
+        "sliding log",
+        "gcra",
+        "counting"
+      ],
+      "tips": {
+        "nudge": "Counting 'per minute' sounds simple. What happens at 12:00:59 and 12:01:00?",
+        "hint": "Add a part that compares fixed window, sliding log, sliding window counter and token bucket on memory and burst behaviour.",
+        "show": "Part 'Counting algorithm': token bucket, two numbers per key, explicit burst, lazy refill; fixed window doubles bursts at the boundary, sliding log stores every timestamp."
+      }
+    },
+    {
+      "id": "part-counter-store",
+      "type": "part",
+      "label": "Shared counting state designed as its own part",
+      "keywords": [
+        "counter store",
+        "shared counter",
+        "shared state",
+        "state store",
+        "where the counts",
+        "redis",
+        "counters",
+        "in-memory store"
+      ],
+      "tips": {
+        "nudge": "Counters in each server's memory disagree. Make 'where the counts live' its own sub-problem.",
+        "hint": "Compare per-server memory, sticky routing, a SQL table and a sharded in-memory store against 600k ops/s and a 5 ms budget.",
+        "show": "Part 'Shared counter store': a sharded Redis Cluster keyed bucket:{rule}:{client}, ~6 primaries + replicas, ~1 ms per call."
+      }
+    },
+    {
+      "id": "part-placement",
+      "type": "part",
+      "label": "Enforcement point designed as its own part",
+      "keywords": [
+        "where the check",
+        "where it runs",
+        "placement",
+        "enforcement point",
+        "choke point",
+        "gateway",
+        "sidecar",
+        "middleware"
+      ],
+      "tips": {
+        "nudge": "Should 40 API servers, and every team's service, each implement limiting?",
+        "hint": "Add a part that compares in-service middleware, a sidecar, a separate limiter service and an API gateway.",
+        "show": "Part 'Where the check runs': an API gateway behind the load balancer runs the limiter in-process before routing; rejected requests never reach the API servers."
+      }
+    },
+    {
+      "id": "part-rules",
+      "type": "part",
+      "label": "Limit configuration and degraded behaviour designed as its own part",
+      "keywords": [
+        "rule",
+        "config",
+        "polic",
+        "limits change",
+        "without a deploy",
+        "degraded"
+      ],
+      "tips": {
+        "nudge": "Operators change limits without a deploy, and product and security disagree about outages. Whose sub-problem is that?",
+        "hint": "Add a part for how rules are stored, distributed to the enforcement point, and what each rule does when the store is unreachable.",
+        "show": "Part 'Rules config and degraded mode': rules DB + rules service, cached in every gateway and refreshed every 5 s; each rule has failure_mode open|closed."
       }
     },
     {
@@ -255,27 +334,6 @@
       }
     },
     {
-      "id": "comp-rules-store",
-      "type": "component",
-      "label": "Limits have a source of truth",
-      "kinds": [
-        "sql",
-        "nosql",
-        "coordinator"
-      ],
-      "keywords": [
-        "rule",
-        "polic",
-        "config",
-        "limit"
-      ],
-      "tips": {
-        "nudge": "Operators change limits without a deploy. Where do they write them?",
-        "hint": "A small durable store for rules, read (and cached) by the enforcement layer.",
-        "show": "rules DB (SQL) behind a rules service; gateways cache the rules and refresh every few seconds."
-      }
-    },
-    {
       "id": "edge-check-state",
       "type": "edge",
       "label": "Enforcement point consults the shared state",
@@ -294,25 +352,6 @@
       }
     },
     {
-      "id": "dd-algorithm",
-      "type": "decision",
-      "label": "Counting algorithm chosen",
-      "keywords": [
-        "token bucket",
-        "leaky bucket",
-        "fixed window",
-        "sliding window",
-        "sliding log",
-        "gcra",
-        "algorithm"
-      ],
-      "tips": {
-        "nudge": "Counting 'per minute' sounds simple. What happens at 12:00:59 and 12:01:00?",
-        "hint": "Compare fixed window, sliding log, sliding window counter and token bucket on memory and burst behaviour.",
-        "show": "Token bucket: two numbers per key, allows controlled bursts, no boundary spike. Sliding log is exact but stores every timestamp; fixed window doubles bursts at the edge."
-      }
-    },
-    {
       "id": "dd-atomicity",
       "type": "decision",
       "label": "Concurrent updates to one count handled",
@@ -324,7 +363,8 @@
         "compare-and-set",
         "compare and set",
         "transaction",
-        "lock"
+        "lock",
+        "concurren"
       ],
       "tips": {
         "nudge": "Two gateways read tokens=1 at the same time and both allow. Is that okay?",
@@ -344,7 +384,8 @@
         "fallback",
         "degrade",
         "limiter is down",
-        "timeout"
+        "timeout",
+        "unavailable"
       ],
       "tips": {
         "nudge": "The counter store times out. Do you let the request through or not?",
@@ -355,8 +396,8 @@
     {
       "id": "wrap-failures",
       "type": "wrapup",
-      "key": "failures",
       "label": "Failure scenarios walked through",
+      "key": "failures",
       "tips": {
         "nudge": "A counter shard dies. What happens to the clients whose keys lived there?",
         "hint": "Cover store node loss, network partition to the store and a bad rule push.",
@@ -366,8 +407,8 @@
     {
       "id": "wrap-monitoring",
       "type": "wrapup",
-      "key": "monitoring",
       "label": "Operability covered",
+      "key": "monitoring",
       "tips": {
         "nudge": "How would you know the limiter is blocking the wrong people, or nobody?",
         "hint": "List metrics for the decision path and for its effects.",

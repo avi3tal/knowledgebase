@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "why": "Naive start: one service inserts a row per click and redirects, and the dashboard runs COUNT(*) … GROUP BY minute over the clicks table. 60k inserts/s at peak sit on the redirect path (N1), duplicates are counted (F4), and a 90-day chart scans billions of rows (N4).",
+  "nodes": [
+    { "id": "user", "kind": "client", "label": "Browser (ad click)", "x": 40, "y": 120 },
+    { "id": "adv", "kind": "client", "label": "Advertiser dashboard", "x": 40, "y": 400 },
+    { "id": "app", "kind": "service", "label": "Click + reporting service", "x": 340, "y": 260 },
+    { "id": "db", "kind": "sql", "label": "clicks table (one row per click)", "x": 620, "y": 260 }
+  ],
+  "edges": [
+    { "from": "user", "to": "app", "label": "GET /click → INSERT, 302" },
+    { "from": "adv", "to": "app", "label": "GET stats" },
+    { "from": "app", "to": "db", "label": "INSERT click / COUNT(*) GROUP BY minute" }
+  ],
+  "flows": []
+}

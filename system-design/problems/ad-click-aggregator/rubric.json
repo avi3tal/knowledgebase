@@ -1,0 +1,422 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Log first, aggregate in the stream, serve pre-aggregated rollups, and reconcile against a replayable raw archive: the fast path is approximate-then-corrected, the slow path is the source of truth.",
+  "checks": [
+    {
+      "id": "req-click",
+      "type": "requirement",
+      "label": "Core user-facing behaviour captured",
+      "keywords": [
+        "redirect",
+        "landing",
+        "record the click",
+        "record each click",
+        "record click",
+        "track click",
+        "log click",
+        "capture"
+      ],
+      "tips": {
+        "nudge": "What happens, from the user's side, when they click an ad?",
+        "hint": "Write a requirement for recording the click and sending the user on.",
+        "show": "F1: Record each ad click and redirect the user to the advertiser's landing page."
+      }
+    },
+    {
+      "id": "req-aggregate",
+      "type": "requirement",
+      "label": "What advertisers get captured",
+      "keywords": [
+        "aggregat",
+        "per minute",
+        "per ad",
+        "count",
+        "query",
+        "dashboard",
+        "report",
+        "metrics"
+      ],
+      "tips": {
+        "nudge": "What does the advertiser want to see?",
+        "hint": "Write a requirement for counts over time, and how they are queried.",
+        "show": "F2/F3: Aggregate clicks per ad per minute; advertisers query counts by ad/campaign over time ranges."
+      }
+    },
+    {
+      "id": "req-accuracy",
+      "type": "requirement",
+      "label": "Correctness expectation stated",
+      "keywords": [
+        "exact",
+        "accura",
+        "lost",
+        "loss",
+        "duplicate",
+        "twice",
+        "exactly once",
+        "exactly-once",
+        "idempoten",
+        "billing"
+      ],
+      "tips": {
+        "nudge": "Advertisers pay per click. What may never happen to a click?",
+        "hint": "State the accuracy requirement: no loss, no double counting.",
+        "show": "N2: No click is lost and none is counted twice; billing numbers are exact after daily reconciliation."
+      }
+    },
+    {
+      "id": "req-freshness",
+      "type": "requirement",
+      "label": "Timeliness expectations stated",
+      "keywords": [
+        "latency",
+        "ms",
+        "fresh",
+        "stale",
+        "real-time",
+        "real time",
+        "within",
+        "seconds",
+        "minute"
+      ],
+      "tips": {
+        "nudge": "Two different clocks matter here: the user's redirect and the advertiser's dashboard.",
+        "hint": "Add non-functional requirements for redirect latency and dashboard freshness.",
+        "show": "N1: redirect < 50 ms p99; N3: dashboards fresh within ~1 minute; N4: queries < 1 s."
+      }
+    },
+    {
+      "id": "est-click-qps",
+      "type": "estimate",
+      "label": "Click throughput estimated",
+      "keywords": [
+        "click",
+        "event",
+        "write",
+        "ingest",
+        "qps",
+        "rps",
+        "peak"
+      ],
+      "unit": "/s",
+      "min": 3000,
+      "max": 300000,
+      "tips": {
+        "nudge": "1 billion a day is how many per second, on average and at peak?",
+        "hint": "clicks/day ÷ 86,400, then a peak factor.",
+        "show": "click_qps = 1B / 86,400 ≈ 12k /s; peak ×5 ≈ 60k /s."
+      }
+    },
+    {
+      "id": "est-raw-storage",
+      "type": "estimate",
+      "label": "Storage for raw clicks over the retention period estimated",
+      "keywords": [
+        "storage",
+        "raw",
+        "archive",
+        "disk",
+        "retention",
+        "90"
+      ],
+      "unit": "TB",
+      "min": 2,
+      "max": 500,
+      "tips": {
+        "nudge": "How big is one click event, and how long do you keep raw events?",
+        "hint": "clicks/day × bytes per event × days retained.",
+        "show": "raw = 1B × 200 B × 90 days ≈ 18 TB: object storage, not the query database."
+      }
+    },
+    {
+      "id": "api-click",
+      "type": "endpoint",
+      "label": "Click endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "click",
+        "redirect",
+        "302",
+        "impression"
+      ],
+      "tips": {
+        "nudge": "What URL does the ad actually link to?",
+        "hint": "A GET that identifies the ad (and the impression) and answers with a redirect.",
+        "show": "GET /click/{impression_id} → 302 Location: landing_url (impression_id signed: ad_id, campaign, ts, nonce)."
+      }
+    },
+    {
+      "id": "api-query",
+      "type": "endpoint",
+      "label": "Query endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "metrics",
+        "stats",
+        "aggregat",
+        "report",
+        "granularity",
+        "start",
+        "range",
+        "series"
+      ],
+      "tips": {
+        "nudge": "How does the dashboard ask for a chart?",
+        "hint": "A GET with the ad or campaign, a time range and a granularity.",
+        "show": "GET /ads/{ad_id}/metrics?start&end&granularity=minute|hour|day → {series[{ts, clicks}]}"
+      }
+    },
+    {
+      "id": "data-event",
+      "type": "entity",
+      "label": "Raw click event modelled",
+      "keywords": [
+        "impression",
+        "click_id",
+        "event_time",
+        "event time",
+        "click_events",
+        "click event"
+      ],
+      "tips": {
+        "nudge": "What must a click event carry so it can be counted once, in the right minute?",
+        "hint": "Model the event with a unique id and the time it happened.",
+        "show": "click_events(impression_id, ad_id, campaign_id, event_time, …) in a stream, archived in object storage."
+      }
+    },
+    {
+      "id": "data-rollup",
+      "type": "entity",
+      "label": "Pre-aggregated counts modelled",
+      "keywords": [
+        "minute",
+        "rollup",
+        "roll-up",
+        "aggregate",
+        "per_minute",
+        "bucket",
+        "window"
+      ],
+      "tips": {
+        "nudge": "Dashboards shouldn't count billions of raw rows. What do they read instead?",
+        "hint": "Model a table keyed by ad and time bucket.",
+        "show": "ad_clicks_minute(ad_id, minute, clicks) + hourly/daily rollups in an OLAP store."
+      }
+    },
+    {
+      "id": "part-ingest",
+      "type": "part",
+      "label": "Capturing clicks designed as its own part",
+      "keywords": [
+        "ingest",
+        "capture",
+        "redirect",
+        "click service",
+        "record"
+      ],
+      "tips": {
+        "nudge": "The user is waiting for the redirect. What is the least you must do before sending them on, without losing the click?",
+        "hint": "Add a part for ingestion: compare a DB insert, a browser beacon and appending to a durable log.",
+        "show": "Part 'Click ingestion': stateless click service appends to Kafka (by ad_id, acks=all), then 302; aggregation can fail without touching redirects."
+      }
+    },
+    {
+      "id": "part-stream-agg",
+      "type": "part",
+      "label": "Turning events into counts designed as its own part",
+      "keywords": [
+        "stream",
+        "window",
+        "aggregat",
+        "flink",
+        "watermark",
+        "per minute"
+      ],
+      "tips": {
+        "nudge": "700k clicks a minute, dashboards fresh within a minute. Where does counting happen?",
+        "hint": "Add a part that compares per-click counters, hourly batch and a stream processor with windows.",
+        "show": "Part 'Stream aggregation': Flink keyed by ad_id, 1-minute event-time tumbling windows with watermarks; one upsert per ad per minute."
+      }
+    },
+    {
+      "id": "part-dedup",
+      "type": "part",
+      "label": "Counting each click once designed as its own part",
+      "keywords": [
+        "dedup",
+        "duplicate",
+        "idempoten",
+        "exactly-once",
+        "exactly once",
+        "count once",
+        "counted once"
+      ],
+      "tips": {
+        "nudge": "Double clicks, retries, and a stream job restarting from a checkpoint: how many times is a click counted?",
+        "hint": "Add a part for dedup and idempotency: what is the dedup key, where is it remembered, and what makes replays harmless?",
+        "show": "Part 'Dedup and exactly-once': signed impression_id; Flink keyed state remembers ids for 1 h; window results are upserted (overwrite) by (ad_id, minute)."
+      }
+    },
+    {
+      "id": "part-query-store",
+      "type": "part",
+      "label": "Serving advertiser queries designed as its own part",
+      "keywords": [
+        "olap",
+        "query",
+        "rollup",
+        "roll-up",
+        "columnar",
+        "storage for",
+        "dashboard"
+      ],
+      "tips": {
+        "nudge": "A 90-day chart for a campaign of 500 ads. How many rows does that touch?",
+        "hint": "Add a part that compares querying raw clicks, a key-value table by (ad, minute) and a columnar OLAP store with rollups.",
+        "show": "Part 'Query storage': columnar OLAP store with minute rollups (7 days) and hourly/daily rollups (90 days); the query service picks the coarsest table."
+      }
+    },
+    {
+      "id": "part-reconcile",
+      "type": "part",
+      "label": "A source of truth for billing designed as its own part",
+      "keywords": [
+        "reconcil",
+        "batch",
+        "lambda",
+        "kappa",
+        "backfill",
+        "source of truth",
+        "recompute",
+        "audit"
+      ],
+      "tips": {
+        "nudge": "The stream job had a bug for three hours last Tuesday. How do you fix the invoices?",
+        "hint": "Add a part for reconciliation: compare trusting the stream, replaying Kafka, and a batch over an archive of raw clicks.",
+        "show": "Part 'Reconciliation': raw clicks archived to object storage; a nightly Spark job recomputes exact daily counts, overwrites the rollups and alerts on drift."
+      }
+    },
+    {
+      "id": "comp-log",
+      "type": "component",
+      "label": "Clicks are buffered durably before processing",
+      "kinds": [
+        "stream",
+        "queue"
+      ],
+      "tips": {
+        "nudge": "Aggregation goes down for ten minutes. Where are the clicks in the meantime?",
+        "hint": "Put a durable, replayable buffer between the click service and the counting.",
+        "show": "Kafka topic of click events, partitioned by ad_id, replicated."
+      }
+    },
+    {
+      "id": "comp-query-store",
+      "type": "component",
+      "label": "Store suited to aggregate queries over time",
+      "kinds": [
+        "sql",
+        "nosql",
+        "search"
+      ],
+      "keywords": [
+        "olap",
+        "rollup",
+        "aggregate",
+        "minute",
+        "clickhouse",
+        "druid",
+        "pinot",
+        "column",
+        "metrics",
+        "time-series",
+        "time series"
+      ],
+      "tips": {
+        "nudge": "Which kind of database is good at 'sum over a time range, grouped by'?",
+        "hint": "Pick a store for the pre-aggregated counts, not the raw events.",
+        "show": "A columnar OLAP store (ClickHouse / Pinot / Druid) holding minute/hour/day rollups."
+      }
+    },
+    {
+      "id": "edge-stream-agg",
+      "type": "edge",
+      "label": "Events are counted continuously",
+      "from_kinds": [
+        "stream",
+        "queue"
+      ],
+      "to_kinds": [
+        "worker",
+        "service"
+      ],
+      "tips": {
+        "nudge": "Draw what reads the click log.",
+        "hint": "Connect the log to the component that aggregates it.",
+        "show": "Kafka click events → Flink aggregation job."
+      }
+    },
+    {
+      "id": "dd-late-events",
+      "type": "decision",
+      "label": "Late and out-of-order clicks handled",
+      "keywords": [
+        "late",
+        "out-of-order",
+        "out of order",
+        "watermark",
+        "event time",
+        "event-time",
+        "lateness"
+      ],
+      "tips": {
+        "nudge": "A phone in a tunnel sends a click 3 minutes late. Which minute does it count in, and does it count at all?",
+        "hint": "Compare processing-time windows, event-time windows that drop late events, and allowed lateness with a backstop.",
+        "show": "Event-time windows, watermark 30 s behind, 10 min allowed lateness (windows re-fire and upsert), later events to a side output covered by the nightly batch."
+      }
+    },
+    {
+      "id": "dd-hot-ad",
+      "type": "decision",
+      "label": "One very popular ad handled",
+      "keywords": [
+        "hot",
+        "viral",
+        "skew",
+        "salt",
+        "popular ad",
+        "partition"
+      ],
+      "tips": {
+        "nudge": "One ad goes viral at 20k clicks/s, and all its clicks go to one partition. Then what?",
+        "hint": "Think about splitting one key's work and merging the partial counts.",
+        "show": "Detect hot ad_ids and salt them into N sub-keys; pre-aggregate per sub-key and merge per minute (counts are additive)."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure scenarios walked through",
+      "key": "failures",
+      "tips": {
+        "nudge": "The stream job crashes mid-window. The OLAP store is down. Kafka is unreachable from the click service.",
+        "hint": "For each, say what users, advertisers and billing see.",
+        "show": "Flink restarts from checkpoint + Kafka replay (idempotent upserts); OLAP down: dashboards stale, nothing lost; Kafka unreachable: buffer locally, still redirect."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "label": "Operability covered",
+      "key": "monitoring",
+      "tips": {
+        "nudge": "How would you know counts are late, or wrong?",
+        "hint": "List lag, lateness and correctness metrics.",
+        "show": "Consumer lag, watermark delay, late-event count, dedup drop rate, stream vs batch drift, redirect p99, query p99."
+      }
+    }
+  ]
+}

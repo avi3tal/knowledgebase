@@ -1,0 +1,508 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "As the user types in the search box, suggest up to 10 completions for the current prefix."
+      },
+      {
+        "id": "F2",
+        "text": "Suggestions are ranked by how popular the full query has been recently (popularity with time decay)."
+      },
+      {
+        "id": "F3",
+        "text": "Trending queries (e.g. breaking news) start appearing within ~10 minutes."
+      },
+      {
+        "id": "F4",
+        "text": "Offensive or blocked queries are never suggested."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Low latency: suggestions appear in < 100 ms end to end; the origin answers in < 10 ms at p99."
+      },
+      {
+        "id": "N2",
+        "text": "High availability and read-heavy: ~120k suggestion requests/s at peak; stale suggestions are acceptable, missing ones are not."
+      },
+      {
+        "id": "N3",
+        "text": "Logging searches must never slow down the search itself."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "1B searches/day; about 5 suggestion requests per search after debouncing."
+      },
+      {
+        "id": "A2",
+        "text": "~100M distinct queries worth keeping after pruning rare ones; average query ~20 characters."
+      },
+      {
+        "id": "A3",
+        "text": "English only, no personalisation in v1."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "The search results page itself, spelling correction, personalised suggestions."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "GET",
+      "path": "/suggest?q={prefix}&limit=10",
+      "request": "q (prefix, lower-cased), limit",
+      "response": "200 {suggestions: [query]} with Cache-Control: max-age=600",
+      "notes": "Cacheable GET: CDN and browser can serve it."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/search?q={query}",
+      "request": "q",
+      "response": "results page (not designed here)",
+      "notes": "Emits a query log event asynchronously; that log is the input of ranking."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "prefix_index",
+      "fields": "key = v{version}:{prefix} → top 10 [query, score]",
+      "store": "cache",
+      "why": "One GET per keystroke; ~100 GB, sharded by prefix hash, rebuilt hourly into a new version."
+    },
+    {
+      "id": "D2",
+      "name": "query_log",
+      "fields": "query, timestamp, locale (no user id needed)",
+      "store": "stream",
+      "why": "Append-only input to both the batch build and the trending detector; ~100 GB/day."
+    },
+    {
+      "id": "D3",
+      "name": "query_counts",
+      "fields": "query, day, count",
+      "store": "nosql",
+      "why": "Daily aggregates so each build reads 30 small days instead of 30 days of raw logs."
+    },
+    {
+      "id": "D4",
+      "name": "trending_overlay",
+      "fields": "prefix → [query, spike score], TTL 2 h",
+      "store": "cache",
+      "why": "Small and fast-changing; merged with the main index at read time."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Suggestion index: prefix → top 10",
+      "covers": [
+        "F1",
+        "N1"
+      ],
+      "problem": "Return the 10 most popular completions for any prefix in a few milliseconds at ~120k lookups/s, from ~100M candidate queries.",
+      "options": [
+        {
+          "name": "SQL: WHERE query LIKE 'prefix%' ORDER BY count LIMIT 10",
+          "pros": "no new system",
+          "cons": "scans and sorts every match: a 1-letter prefix touches millions of rows"
+        },
+        {
+          "name": "search engine prefix / completion query",
+          "pros": "flexible ranking, typo tolerance",
+          "cons": "more work per keystroke than a lookup; another cluster to run"
+        },
+        {
+          "name": "in-memory trie with top 10 cached at every node",
+          "pros": "one walk of len(prefix) steps, then the answer is precomputed",
+          "cons": "custom service; memory-hungry; must be sharded and rebuilt"
+        },
+        {
+          "name": "precomputed prefix → top 10 table in a sharded in-memory KV",
+          "pros": "a single GET per keystroke; any KV can serve it; easy to cache at the edge",
+          "cons": "every prefix is stored (≈100 GB); rebuilt offline"
+        }
+      ],
+      "choice": "precomputed prefix → top 10 table (built from a trie offline) served from sharded Redis",
+      "why": "N1 wants a lookup, not a computation: one GET of ~1 KB. ~100 GB fits in a handful of Redis shards with replicas, and the same keys are trivially cacheable in the CDN and browser.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "pre-aggregation",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "suggest",
+            "kind": "service",
+            "label": "Suggest service ×N",
+            "x": 520,
+            "y": 110
+          },
+          {
+            "id": "prefixkv",
+            "kind": "cache",
+            "label": "Prefix index: prefix → top 10 (Redis, sharded)",
+            "x": 720,
+            "y": 170
+          }
+        ],
+        "edges": [
+          {
+            "from": "suggest",
+            "to": "prefixkv",
+            "label": "GET prefix"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Offline aggregation pipeline from query logs",
+      "covers": [
+        "F2",
+        "N3"
+      ],
+      "problem": "Turn ~1B searches/day of raw query logs into ranked, filtered prefix → top 10 entries, without slowing searches and without serving a half-built index.",
+      "options": [
+        {
+          "name": "increment counts and update the index on every search",
+          "pros": "always current",
+          "cons": "a write into hot prefix rows on every search; ranking work on the search path"
+        },
+        {
+          "name": "log searches to a stream; batch job aggregates counts with time decay and rebuilds the index",
+          "pros": "search path only appends a log line; the index is rebuilt cleanly and swapped atomically",
+          "cons": "the index lags by up to the build interval"
+        }
+      ],
+      "choice": "search service appends to a Kafka query log; an hourly batch job aggregates counts with exponential decay over 30 days, filters, builds top 10 per prefix and swaps in a new index version",
+      "why": "Ranking by popularity only needs hour-level freshness (trending is P4). Decoupling keeps the search path a fire-and-forget append (N3), and building into a new version then flipping a pointer means readers never see a half-written index.",
+      "technologies": [
+        "kafka",
+        "object-storage",
+        "cassandra"
+      ],
+      "patterns": [
+        "pre-aggregation",
+        "cqrs"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "searchsvc",
+            "kind": "service",
+            "label": "Search service",
+            "x": 520,
+            "y": 330
+          },
+          {
+            "id": "logs",
+            "kind": "stream",
+            "label": "Query log (Kafka)",
+            "x": 700,
+            "y": 330
+          },
+          {
+            "id": "lake",
+            "kind": "blob",
+            "label": "Query log archive (hourly files)",
+            "x": 700,
+            "y": 450
+          },
+          {
+            "id": "builder",
+            "kind": "worker",
+            "label": "Index builder (batch: count, decay, top-k)",
+            "x": 880,
+            "y": 260
+          },
+          {
+            "id": "counts",
+            "kind": "nosql",
+            "label": "query_counts (query, day, count)",
+            "x": 880,
+            "y": 410
+          },
+          {
+            "id": "prefixkv",
+            "kind": "cache",
+            "label": "Prefix index: prefix → top 10 (Redis, sharded)",
+            "x": 720,
+            "y": 170
+          }
+        ],
+        "edges": [
+          {
+            "from": "searchsvc",
+            "to": "logs",
+            "label": "query issued (async)"
+          },
+          {
+            "from": "logs",
+            "to": "lake",
+            "label": "sink hourly files"
+          },
+          {
+            "from": "builder",
+            "to": "lake",
+            "label": "read new hour"
+          },
+          {
+            "from": "builder",
+            "to": "counts",
+            "label": "decayed counts"
+          },
+          {
+            "from": "builder",
+            "to": "prefixkv",
+            "label": "load index v+1, flip version"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Serving latency at the edge",
+      "covers": [
+        "N1",
+        "N2"
+      ],
+      "problem": "Every keystroke is a request: keep suggestions under ~100 ms end to end for users worldwide and absorb peak traffic before it reaches the origin.",
+      "options": [
+        {
+          "name": "every keystroke goes to the origin",
+          "pros": "simplest",
+          "cons": "~5 requests per search; a cross-ocean round trip alone can exceed 100 ms"
+        },
+        {
+          "name": "client debounce + browser cache",
+          "pros": "fewer requests; repeated prefixes are free",
+          "cons": "doesn't help the first lookup or other users"
+        },
+        {
+          "name": "CDN caches GET /suggest?q= by prefix with a short TTL",
+          "pros": "short prefixes (the hottest) are served from the edge near the user",
+          "cons": "staleness up to the TTL; personalised results can't be cached"
+        }
+      ],
+      "choice": "client debounces (~50 ms) and caches responses; CDN caches 1–3 character prefixes for 10 minutes; stateless suggest service behind a load balancer",
+      "why": "The shortest prefixes are both the hottest and the most shared across users, so a small edge cache removes a large share of origin traffic, and the origin only needs to serve the long tail in a few ms.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Search box (browser / app)",
+            "x": 40,
+            "y": 200
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN edge cache (short prefixes)",
+            "x": 200,
+            "y": 200
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 360,
+            "y": 200
+          },
+          {
+            "id": "suggest",
+            "kind": "service",
+            "label": "Suggest service ×N",
+            "x": 520,
+            "y": 110
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "GET /suggest?q=pre (debounced)"
+          },
+          {
+            "from": "cdn",
+            "to": "lb",
+            "label": "cache miss / search"
+          },
+          {
+            "from": "lb",
+            "to": "suggest"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Freshness for trending queries",
+      "covers": [
+        "F3"
+      ],
+      "problem": "A breaking-news query should appear in suggestions within ~10 minutes, long before the hourly rebuild includes it.",
+      "options": [
+        {
+          "name": "rebuild the whole index more often",
+          "pros": "one mechanism",
+          "cons": "a full rebuild every few minutes is expensive and still lags"
+        },
+        {
+          "name": "stream job counts queries in short windows and writes a small trending overlay merged at read time",
+          "pros": "minutes of lag; tiny state; the main index is untouched",
+          "cons": "two sources to merge; spikes need thresholds to avoid noise and abuse"
+        }
+      ],
+      "choice": "Flink counts queries in 5-minute sliding windows, flags ones far above their baseline, and writes them to a trending overlay (prefix → hot queries, TTL 2 h); the suggest service merges overlay and index",
+      "why": "Only a few thousand queries trend at once, so the overlay is small and cheap to keep fresh, while the expensive index keeps its hourly cycle.",
+      "technologies": [
+        "flink",
+        "kafka",
+        "redis"
+      ],
+      "patterns": [
+        "pre-aggregation"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "logs",
+            "kind": "stream",
+            "label": "Query log (Kafka)",
+            "x": 700,
+            "y": 330
+          },
+          {
+            "id": "trend",
+            "kind": "worker",
+            "label": "Trending detector (Flink, 5-min windows)",
+            "x": 880,
+            "y": 90
+          },
+          {
+            "id": "trendkv",
+            "kind": "cache",
+            "label": "Trending overlay: prefix → hot queries",
+            "x": 720,
+            "y": 30
+          },
+          {
+            "id": "suggest",
+            "kind": "service",
+            "label": "Suggest service ×N",
+            "x": 520,
+            "y": 110
+          }
+        ],
+        "edges": [
+          {
+            "from": "logs",
+            "to": "trend"
+          },
+          {
+            "from": "trend",
+            "to": "trendkv",
+            "label": "hot queries (TTL 2 h)"
+          },
+          {
+            "from": "suggest",
+            "to": "trendkv",
+            "label": "merge overlay"
+          }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Keeping offensive queries out",
+      "options": [
+        {
+          "name": "filter at read time in the suggest service",
+          "pros": "takes effect instantly",
+          "cons": "work on every request; a miss in the filter is shown to millions"
+        },
+        {
+          "name": "filter at build time against a blocklist + classifier",
+          "pros": "zero cost per request",
+          "cons": "a newly-blocked query stays until the next build"
+        },
+        {
+          "name": "both: build-time filter plus an instant read-time blocklist for emergencies",
+          "pros": "cheap normally, instant takedown when needed",
+          "cons": "two places to maintain"
+        }
+      ],
+      "choice": "both: build-time blocklist filter plus a small read-time emergency blocklist",
+      "why": "F4 must hold even when the classifier misses something; the emergency list is tiny so checking it per request costs microseconds.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Swapping in a new index",
+      "options": [
+        {
+          "name": "update keys in place",
+          "pros": "no extra memory",
+          "cons": "for minutes, readers mix old and new rankings; a failed build leaves a half-written index"
+        },
+        {
+          "name": "write version v+1 under new keys, then flip a current-version pointer",
+          "pros": "atomic switch; instant rollback to v",
+          "cons": "2× memory during the load"
+        }
+      ],
+      "choice": "versioned keys with an atomic pointer flip (keep v and v+1, then delete v)",
+      "why": "N2 says stale is fine but broken is not: a flip is atomic and reversible, and the extra memory is only needed during the load.",
+      "version": 2
+    },
+    {
+      "id": "DD3",
+      "title": "Hot prefixes",
+      "options": [
+        {
+          "name": "rely on the Redis shard owning the key",
+          "pros": "nothing to build",
+          "cons": "'a', 'th' and 'how' land on single shards and dominate traffic"
+        },
+        {
+          "name": "CDN + in-process LRU for 1–2 character prefixes",
+          "pros": "the hottest keys never reach Redis",
+          "cons": "minutes of staleness for those prefixes"
+        }
+      ],
+      "choice": "CDN + in-process LRU for 1–2 character prefixes",
+      "why": "There are only a few thousand such prefixes; holding them in every suggest instance costs a few MB and removes the hot shards.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Hot short prefixes on single Redis shards (edge + in-process cache), the hourly build job (incremental daily counts), and memory for the index (prune rare queries, cap prefix length at ~20).",
+    "failures": "Redis shard down: replica promotes, CDN keeps serving short prefixes. Build fails: keep serving the current version. Kafka or Flink down: searches still work, trending pauses, the index just ages.",
+    "monitoring": "Suggest p99 latency at origin and edge, CDN hit ratio, index version age, build duration and failures, trending overlay size, suggestion click-through rate.",
+    "scale": "10× traffic: more CDN coverage, more suggest instances and Redis replicas; 10× queries: shard the index by prefix hash and prune harder.",
+    "future": "Personalised re-ranking on top of the global list, multiple languages, typo tolerance via a search engine."
+  }
+}

@@ -1,0 +1,411 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Precompute the answer for every key offline, serve it with a single lookup from memory and the edge, and handle freshness with a small real-time overlay instead of rebuilding the big index more often.",
+  "checks": [
+    {
+      "id": "req-suggest",
+      "type": "requirement",
+      "label": "Core use case captured",
+      "keywords": [
+        "suggest",
+        "autocomplet",
+        "complet",
+        "typeahead",
+        "type-ahead",
+        "prefix"
+      ],
+      "tips": {
+        "nudge": "What does the user see while typing?",
+        "hint": "Write a functional requirement for completions of the current prefix.",
+        "show": "F1: As the user types, suggest up to 10 completions for the current prefix."
+      }
+    },
+    {
+      "id": "req-ranking",
+      "type": "requirement",
+      "label": "Ordering of suggestions stated",
+      "keywords": [
+        "popular",
+        "rank",
+        "frequen",
+        "top 10",
+        "top-10",
+        "top k",
+        "top-k",
+        "most searched",
+        "count"
+      ],
+      "tips": {
+        "nudge": "Out of thousands of queries that start with 'ne', which 10 do you show?",
+        "hint": "Say what decides the order.",
+        "show": "F2: Suggestions are ranked by recent popularity (query frequency with time decay)."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Responsiveness expectation stated",
+      "keywords": [
+        "latency",
+        "ms",
+        "millisecond",
+        "fast",
+        "instant",
+        "as you type",
+        "as the user types",
+        "responsive"
+      ],
+      "tips": {
+        "nudge": "Suggestions that arrive after the user typed the next letter are useless.",
+        "hint": "State an end-to-end latency target.",
+        "show": "N1: Suggestions in < 100 ms end to end; origin p99 < 10 ms."
+      }
+    },
+    {
+      "id": "req-freshness",
+      "type": "requirement",
+      "label": "How quickly new queries show up",
+      "keywords": [
+        "trend",
+        "fresh",
+        "recent",
+        "new queries",
+        "breaking",
+        "minutes",
+        "real-time",
+        "real time"
+      ],
+      "tips": {
+        "nudge": "Breaking news happens. How long until people see it suggested?",
+        "hint": "Add a requirement for how fresh suggestions must be.",
+        "show": "F3: Trending queries appear within ~10 minutes; general rankings may lag by an hour."
+      }
+    },
+    {
+      "id": "est-suggest-qps",
+      "type": "estimate",
+      "label": "Suggestion request rate estimated",
+      "keywords": [
+        "suggest",
+        "request",
+        "qps",
+        "rps",
+        "keystroke",
+        "lookup",
+        "read"
+      ],
+      "unit": "/s",
+      "min": 10000,
+      "max": 2000000,
+      "tips": {
+        "nudge": "One search is not one request. How many requests does typing a query produce?",
+        "hint": "searches/day × requests per search ÷ seconds per day, then a peak factor.",
+        "show": "suggest_qps = 1B × 5 / 86,400 ≈ 58k /s, peak ≈ 120k /s."
+      }
+    },
+    {
+      "id": "est-index-size",
+      "type": "estimate",
+      "label": "Size of the suggestion data estimated",
+      "keywords": [
+        "index",
+        "prefix",
+        "trie",
+        "memory",
+        "size",
+        "storage"
+      ],
+      "unit": "GB",
+      "min": 5,
+      "max": 5000,
+      "tips": {
+        "nudge": "How many prefixes exist, and how much is stored per prefix?",
+        "hint": "distinct queries × average length gives prefixes (many are shared); × bytes per entry.",
+        "show": "prefixes ≈ 100M × 20 / 4 = 500M; × ~200 B (top 10 list) ≈ 100 GB: sharded memory, not one box."
+      }
+    },
+    {
+      "id": "est-log-volume",
+      "type": "estimate",
+      "label": "Input volume of the ranking pipeline estimated",
+      "keywords": [
+        "log",
+        "ingest",
+        "events",
+        "per_day",
+        "daily"
+      ],
+      "unit": "GB",
+      "min": 10,
+      "max": 2000,
+      "tips": {
+        "nudge": "What does a day of searches weigh as raw input?",
+        "hint": "searches/day × bytes per log line.",
+        "show": "query_log = 1B × ~100 B ≈ 100 GB/day: a stream plus cheap archive, not a database."
+      }
+    },
+    {
+      "id": "api-suggest",
+      "type": "endpoint",
+      "label": "Suggestion interface defined",
+      "method": "GET",
+      "keywords": [
+        "suggest",
+        "complet",
+        "prefix",
+        "typeahead",
+        "q="
+      ],
+      "tips": {
+        "nudge": "What does the search box call on each (debounced) keystroke?",
+        "hint": "A GET that takes the prefix; think about whether it can be cached.",
+        "show": "GET /suggest?q={prefix}&limit=10 → 200 {suggestions[]}, Cache-Control: max-age=600"
+      }
+    },
+    {
+      "id": "data-prefix",
+      "type": "entity",
+      "label": "What is served per prefix modelled",
+      "keywords": [
+        "prefix",
+        "trie",
+        "top 10",
+        "top-10",
+        "top k",
+        "top-k",
+        "suggestions"
+      ],
+      "tips": {
+        "nudge": "What exactly is looked up on each keystroke?",
+        "hint": "Model the precomputed answer, keyed by prefix.",
+        "show": "prefix_index: v{version}:{prefix} → top 10 [query, score] in a sharded in-memory store."
+      }
+    },
+    {
+      "id": "data-counts",
+      "type": "entity",
+      "label": "Popularity data modelled",
+      "keywords": [
+        "count",
+        "frequen",
+        "query_log",
+        "query log",
+        "searches",
+        "popularity"
+      ],
+      "tips": {
+        "nudge": "Where do the rankings come from?",
+        "hint": "Model the raw input and the aggregate it becomes.",
+        "show": "query_log(query, ts) in a stream; query_counts(query, day, count) aggregated daily."
+      }
+    },
+    {
+      "id": "part-index",
+      "type": "part",
+      "label": "Lookup structure designed as its own part",
+      "keywords": [
+        "index",
+        "trie",
+        "prefix",
+        "top 10",
+        "top-10",
+        "top-k",
+        "top k",
+        "lookup"
+      ],
+      "tips": {
+        "nudge": "A 1-letter prefix matches millions of queries. Can you afford to sort them on every keystroke?",
+        "hint": "Add a part that compares a SQL LIKE query, a search engine, a trie with top-k per node and a precomputed prefix table.",
+        "show": "Part 'Suggestion index': precompute prefix → top 10 offline (from a trie) and serve it with one GET from sharded Redis."
+      }
+    },
+    {
+      "id": "part-pipeline",
+      "type": "part",
+      "label": "Ranking data pipeline designed as its own part",
+      "keywords": [
+        "pipeline",
+        "aggregat",
+        "offline",
+        "batch",
+        "query log",
+        "logs",
+        "build"
+      ],
+      "tips": {
+        "nudge": "Who computes the popularity, and when? It shouldn't be the request that serves suggestions.",
+        "hint": "Add a part that turns query logs into the index: compare updating on every search with batch aggregation.",
+        "show": "Part 'Offline aggregation': search → Kafka query log → hourly batch with time decay, filtering and top 10 per prefix → new index version, flipped atomically."
+      }
+    },
+    {
+      "id": "part-serving",
+      "type": "part",
+      "label": "Per-keystroke latency designed as its own part",
+      "keywords": [
+        "serving",
+        "edge",
+        "cdn",
+        "latency",
+        "debounce",
+        "browser",
+        "cache"
+      ],
+      "tips": {
+        "nudge": "Five requests per search, from users on every continent. Where can answers come from besides your servers?",
+        "hint": "Add a part for the request path: debounce, browser cache, CDN, load-balanced service.",
+        "show": "Part 'Serving at the edge': client debounce + browser cache; CDN caches short prefixes for ~10 min; stateless suggest service behind an LB."
+      }
+    },
+    {
+      "id": "part-trending",
+      "type": "part",
+      "label": "Freshness designed as its own part",
+      "keywords": [
+        "trend",
+        "fresh",
+        "real-time",
+        "real time",
+        "spike",
+        "breaking",
+        "recent"
+      ],
+      "tips": {
+        "nudge": "The hourly build will miss a story that broke 5 minutes ago. Make that its own sub-problem.",
+        "hint": "Compare rebuilding more often with a small real-time overlay merged at read time.",
+        "show": "Part 'Trending': Flink counts queries in 5-minute windows, flags spikes, writes a trending overlay (TTL 2 h) merged by the suggest service."
+      }
+    },
+    {
+      "id": "comp-read-cache",
+      "type": "component",
+      "label": "Read path can absorb the keystroke load",
+      "kinds": [
+        "cache",
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Most keystrokes ask for the same few thousand short prefixes.",
+        "hint": "Put something in front of the origin, and keep the index itself in memory.",
+        "show": "CDN for short prefixes + an in-memory (Redis) prefix index."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "One server can't take 120k requests/s. What spreads the load?",
+        "hint": "Stateless services behind something that distributes requests.",
+        "show": "Clients → CDN → load balancer → N stateless suggest service instances."
+      }
+    },
+    {
+      "id": "edge-log-async",
+      "type": "edge",
+      "label": "Searches feed ranking without blocking",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "stream",
+        "queue"
+      ],
+      "tips": {
+        "nudge": "Ranking needs to know what people searched for. How does it find out without slowing search down?",
+        "hint": "Emit an event from the service that handles searches to something asynchronous.",
+        "show": "Search service → query log stream (Kafka) → batch builder and trending detector."
+      }
+    },
+    {
+      "id": "edge-build-publish",
+      "type": "edge",
+      "label": "Rankings reach the serving path",
+      "from_kinds": [
+        "worker",
+        "scheduler"
+      ],
+      "to_kinds": [
+        "cache",
+        "nosql",
+        "search",
+        "sql"
+      ],
+      "tips": {
+        "nudge": "The batch job computed new top 10 lists. How do they become what users see?",
+        "hint": "Draw the job writing into the store that the suggest service reads.",
+        "show": "Index builder → prefix index (load version v+1, flip the pointer)."
+      }
+    },
+    {
+      "id": "dd-filtering",
+      "type": "decision",
+      "label": "Unwanted suggestions handled",
+      "keywords": [
+        "offensive",
+        "blocklist",
+        "block list",
+        "filter",
+        "moderat",
+        "abuse",
+        "inappropriate"
+      ],
+      "tips": {
+        "nudge": "A suggestion is offensive and a journalist screenshots it. How fast can you remove it, and where?",
+        "hint": "Compare filtering at build time with filtering at read time.",
+        "show": "Filter at build time with a blocklist + classifier, plus a tiny read-time emergency blocklist for instant takedowns."
+      }
+    },
+    {
+      "id": "dd-index-swap",
+      "type": "decision",
+      "label": "Publishing a new index safely decided",
+      "keywords": [
+        "swap",
+        "version",
+        "flip",
+        "pointer",
+        "in place",
+        "in-place",
+        "blue/green",
+        "blue-green",
+        "atomic"
+      ],
+      "tips": {
+        "nudge": "The hourly build crashes halfway through writing. What do users see?",
+        "hint": "Compare updating keys in place with writing a new version and switching.",
+        "show": "Write v+1 under new keys, then flip a version pointer atomically; keep v for instant rollback."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure scenarios walked through",
+      "key": "failures",
+      "tips": {
+        "nudge": "A Redis shard dies; the build job fails; Kafka is down. What do users see in each case?",
+        "hint": "Walk through serving, building and logging failures separately.",
+        "show": "Shard down: replica + CDN. Build fails: keep the current version. Kafka/Flink down: search unaffected, index ages, trending pauses."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "label": "Operability covered",
+      "key": "monitoring",
+      "tips": {
+        "nudge": "How would you know suggestions got slow, or stale?",
+        "hint": "List latency, cache and freshness metrics.",
+        "show": "Origin/edge p99, CDN hit ratio, index version age, build failures, trending overlay size, suggestion click-through."
+      }
+    }
+  ]
+}

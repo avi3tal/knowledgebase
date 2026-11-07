@@ -1,29 +1,29 @@
 {
   "version": 2,
-  "why": "N2 + N3 + F2: split the loop into a durable frontier queue, a pool of async fetcher workers (with a caching DNS resolver) that store raw pages in blob storage, and parser workers that extract links, normalise them and drop already-seen URLs with a Bloom filter before feeding them back. Content hashes skip exact copies. Flaw left: the frontier is a single FIFO, so fetchers still pile onto the same host (N1) and every page is revisited on the same schedule.",
+  "why": "Compose P2 + P4 for N2, N3 and F4: split the loop into a durable frontier, async fetchers that lease URLs (with a caching DNS resolver), batched raw pages in blob storage, and parser workers fed by a queue. Flaws left: every extracted link is re-enqueued, so the loop refetches the same URLs forever (F2), and the FIFO lets fetchers pile onto one host (N1).",
   "nodes": [
-    { "id": "op", "kind": "client", "label": "Operator (seed URLs)", "x": 60, "y": 200 },
-    { "id": "api", "kind": "service", "label": "Crawl control API", "x": 220, "y": 200 },
-    { "id": "frontier", "kind": "queue", "label": "URL frontier (FIFO)", "x": 400, "y": 200 },
-    { "id": "fetch", "kind": "worker", "label": "Fetchers ×N (async HTTP)", "x": 600, "y": 200 },
-    { "id": "dns", "kind": "cache", "label": "Caching DNS resolver", "x": 800, "y": 60 },
-    { "id": "web", "kind": "external", "label": "Websites", "x": 800, "y": 160 },
-    { "id": "pages", "kind": "blob", "label": "Raw pages (blob, batched files)", "x": 800, "y": 260 },
-    { "id": "parseq", "kind": "queue", "label": "Fetched-page events", "x": 600, "y": 340 },
-    { "id": "parser", "kind": "worker", "label": "Parsers + link extractor", "x": 400, "y": 340 },
-    { "id": "seen", "kind": "cache", "label": "Seen-URL Bloom filter + content hashes", "x": 400, "y": 460 }
+    { "id": "op", "kind": "client", "label": "Operator (seeds, host policies)", "x": 40, "y": 160 },
+    { "id": "api", "kind": "service", "label": "Crawl control API", "x": 200, "y": 160 },
+    { "id": "frontier", "kind": "queue", "label": "URL frontier (FIFO)", "x": 360, "y": 160 },
+    { "id": "fetch", "kind": "worker", "label": "Fetchers ×N (async HTTP, leases)", "x": 690, "y": 160 },
+    { "id": "dns", "kind": "cache", "label": "Caching DNS resolver", "x": 600, "y": 40 },
+    { "id": "web", "kind": "external", "label": "Websites", "x": 860, "y": 160 },
+    { "id": "pages", "kind": "blob", "label": "Raw pages (blob, batched WARC files)", "x": 860, "y": 300 },
+    { "id": "parseq", "kind": "queue", "label": "Fetched-page events", "x": 680, "y": 300 },
+    { "id": "parser", "kind": "worker", "label": "Parsers + link extractor", "x": 500, "y": 300 }
   ],
   "edges": [
     { "from": "op", "to": "api", "label": "POST /seeds" },
     { "from": "api", "to": "frontier" },
-    { "from": "frontier", "to": "fetch" },
+    { "from": "frontier", "to": "fetch", "label": "lease next URL" },
     { "from": "fetch", "to": "dns", "label": "resolve host" },
-    { "from": "fetch", "to": "web", "label": "HTTP GET" },
-    { "from": "fetch", "to": "pages", "label": "store raw HTML" },
-    { "from": "fetch", "to": "parseq" },
+    { "from": "fetch", "to": "web", "label": "HTTP GET (timeouts)" },
+    { "from": "fetch", "to": "pages", "label": "append raw HTML" },
+    { "from": "fetch", "to": "parseq", "label": "page fetched" },
     { "from": "parseq", "to": "parser" },
-    { "from": "parser", "to": "seen", "label": "new URL? new content?" },
-    { "from": "parser", "to": "frontier", "label": "new URLs" }
+    { "from": "parser", "to": "frontier", "label": "new URLs (scored)" }
   ],
-  "flows": [{ "name": "crawl loop", "path": ["frontier", "fetch", "parseq", "parser", "frontier"] }]
+  "flows": [
+    { "name": "crawl loop", "path": ["frontier", "fetch", "parseq", "parser", "frontier"] }
+  ]
 }

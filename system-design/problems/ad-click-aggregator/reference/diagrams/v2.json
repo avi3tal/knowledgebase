@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "why": "Compose P1 + P2 + P4 for N1, N3 and N4: the click service only appends to Kafka and redirects; a Flink job counts clicks per ad per minute and upserts rollups into a columnar OLAP store that the query service reads. Flaws left: duplicates and job restarts can double-count (F4), and nothing checks the numbers advertisers are billed on (N2).",
+  "nodes": [
+    { "id": "user", "kind": "client", "label": "Browser (ad click)", "x": 40, "y": 120 },
+    { "id": "adv", "kind": "client", "label": "Advertiser dashboard", "x": 40, "y": 400 },
+    { "id": "landing", "kind": "external", "label": "Advertiser landing page", "x": 180, "y": 30 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 180, "y": 250 },
+    { "id": "clicksvc", "kind": "service", "label": "Click redirect service ×N", "x": 340, "y": 120 },
+    { "id": "querysvc", "kind": "service", "label": "Query service", "x": 340, "y": 400 },
+    { "id": "clicks", "kind": "stream", "label": "Kafka: click events (partitioned by ad_id)", "x": 520, "y": 120 },
+    { "id": "agg", "kind": "worker", "label": "Flink: 1-min windows per ad", "x": 720, "y": 120 },
+    { "id": "olap", "kind": "sql", "label": "OLAP store: clicks per ad per minute + hourly rollups", "x": 720, "y": 400 }
+  ],
+  "edges": [
+    { "from": "user", "to": "lb", "label": "GET /click/{impression_id}" },
+    { "from": "lb", "to": "clicksvc" },
+    { "from": "clicksvc", "to": "clicks", "label": "click event (acks=all)" },
+    { "from": "user", "to": "landing", "label": "follow 302" },
+    { "from": "clicks", "to": "agg" },
+    { "from": "agg", "to": "olap", "label": "upsert (ad_id, minute) → count" },
+    { "from": "adv", "to": "lb", "label": "GET /ads/{id}/metrics" },
+    { "from": "lb", "to": "querysvc" },
+    { "from": "querysvc", "to": "olap", "label": "aggregate query" }
+  ],
+  "flows": [
+    { "name": "click", "path": ["user", "lb", "clicksvc", "clicks"] },
+    { "name": "aggregate", "path": ["clicks", "agg", "olap"] },
+    { "name": "dashboard", "path": ["adv", "lb", "querysvc", "olap"] }
+  ]
+}

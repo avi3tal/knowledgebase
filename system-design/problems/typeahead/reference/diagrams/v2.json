@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "why": "Compose P1 + P2 for N1 and N3: suggestions become a precomputed prefix → top 10 table in sharded Redis, read with one GET; searches only append to a Kafka query log, and an hourly batch builder aggregates decayed counts and publishes a new index version. Flaw left: every keystroke from every continent still crosses the ocean to the origin.",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Search box (browser / app)", "x": 40, "y": 200 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 360, "y": 200 },
+    { "id": "suggest", "kind": "service", "label": "Suggest service ×N", "x": 520, "y": 110 },
+    { "id": "searchsvc", "kind": "service", "label": "Search service", "x": 520, "y": 330 },
+    { "id": "prefixkv", "kind": "cache", "label": "Prefix index: prefix → top 10 (Redis, sharded)", "x": 720, "y": 170 },
+    { "id": "logs", "kind": "stream", "label": "Query log (Kafka)", "x": 700, "y": 330 },
+    { "id": "lake", "kind": "blob", "label": "Query log archive (hourly files)", "x": 700, "y": 450 },
+    { "id": "builder", "kind": "worker", "label": "Index builder (batch: count, decay, top-k)", "x": 880, "y": 260 },
+    { "id": "counts", "kind": "nosql", "label": "query_counts (query, day, count)", "x": 880, "y": 410 }
+  ],
+  "edges": [
+    { "from": "client", "to": "lb", "label": "GET /suggest?q=, GET /search" },
+    { "from": "lb", "to": "suggest" },
+    { "from": "lb", "to": "searchsvc" },
+    { "from": "suggest", "to": "prefixkv", "label": "GET prefix" },
+    { "from": "searchsvc", "to": "logs", "label": "query issued (async)" },
+    { "from": "logs", "to": "lake", "label": "sink hourly files" },
+    { "from": "builder", "to": "lake", "label": "read new hour" },
+    { "from": "builder", "to": "counts", "label": "decayed counts" },
+    { "from": "builder", "to": "prefixkv", "label": "load index v+1, flip version" }
+  ],
+  "flows": [
+    { "name": "suggest", "path": ["client", "lb", "suggest", "prefixkv"] },
+    { "name": "rank", "path": ["searchsvc", "logs", "lake", "builder", "prefixkv"] }
+  ]
+}

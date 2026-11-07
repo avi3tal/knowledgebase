@@ -31,7 +31,9 @@
         "per-domain",
         "overload",
         "overwhelm",
-        "once per second"
+        "once per second",
+        "1 request/s",
+        "1 req/s"
       ],
       "tips": {
         "nudge": "Site owners complained about something specific.",
@@ -50,6 +52,7 @@
         "already seen",
         "seen before",
         "only once",
+        "once per",
         "near-copies",
         "near-duplicate"
       ],
@@ -173,6 +176,90 @@
       }
     },
     {
+      "id": "part-frontier",
+      "type": "part",
+      "label": "What gets fetched next, and when, designed as its own part",
+      "keywords": [
+        "frontier",
+        "politeness",
+        "polite",
+        "per-host",
+        "per host",
+        "host queue",
+        "back queue",
+        "crawl-delay",
+        "robots",
+        "scheduling"
+      ],
+      "tips": {
+        "nudge": "A single FIFO of URLs is full of links to the same big site. What happens to that site?",
+        "hint": "Add a part for the frontier: compare a global FIFO, per-fetcher sleeps, and queues grouped by host with a release time.",
+        "show": "Part 'URL frontier': priority front queues → per-host back queues; a heap of 'host ready at t' hands each host to one fetcher at ≤1 req/s (or robots crawl-delay); robots.txt cached per host."
+      }
+    },
+    {
+      "id": "part-fetch",
+      "type": "part",
+      "label": "Downloading at scale designed as its own part",
+      "keywords": [
+        "fetcher",
+        "fetching",
+        "download",
+        "dns",
+        "http client",
+        "async"
+      ],
+      "tips": {
+        "nudge": "~1,500 fetches per second, each taking about a second. How many are in flight, and what happens before each one?",
+        "hint": "Add a part for the fetchers: compare thread-per-fetch with async I/O, and say how hostnames are resolved.",
+        "show": "Part 'Fetchers and DNS': async HTTP fetchers leasing URLs from the frontier, a local caching DNS resolver, strict timeouts."
+      }
+    },
+    {
+      "id": "part-dedup",
+      "type": "part",
+      "label": "Detecting repeats designed as its own part",
+      "keywords": [
+        "dedup",
+        "duplicate",
+        "seen",
+        "bloom",
+        "fingerprint",
+        "simhash",
+        "minhash",
+        "checksum",
+        "content hash",
+        "normaliz",
+        "normalis",
+        "canonical"
+      ],
+      "tips": {
+        "nudge": "An exact hash set of 20B URLs needs how much memory? And what about copies with one changed byte?",
+        "hint": "Add a part that separates URL-level dedup from content-level dedup.",
+        "show": "Part 'Dedup': normalise URLs (strip tracking params, lowercase host) then check a Bloom filter; content: exact hash for copies, SimHash for near-duplicates."
+      }
+    },
+    {
+      "id": "part-recrawl",
+      "type": "part",
+      "label": "Freshness designed as its own part",
+      "keywords": [
+        "recrawl",
+        "re-crawl",
+        "freshness",
+        "fresh",
+        "revisit",
+        "change rate",
+        "staleness",
+        "refresh"
+      ],
+      "tips": {
+        "nudge": "News changes hourly, most pages rarely. Should every page be refetched on the same schedule?",
+        "hint": "Add a part for recrawling: what sets a URL's revisit interval and what re-enqueues it.",
+        "show": "Part 'Recrawl scheduling': priority = importance × staleness; revisit interval adapts to observed change rate (halve when changed, double when not); a scheduler re-enqueues due URLs from url_meta."
+      }
+    },
+    {
       "id": "comp-frontier",
       "type": "component",
       "label": "Something orders and paces the work",
@@ -281,75 +368,31 @@
       }
     },
     {
-      "id": "dd-politeness",
+      "id": "dd-traps",
       "type": "decision",
-      "label": "Per-site pacing mechanism decided",
+      "label": "Endless URL spaces handled",
       "keywords": [
-        "per-host queue",
-        "per host queue",
-        "host queue",
-        "back queue",
-        "politeness",
-        "crawl-delay",
-        "robots",
-        "per-domain",
-        "per host"
+        "trap",
+        "infinite",
+        "endless",
+        "calendar",
+        "max depth",
+        "depth limit",
+        "url length",
+        "budget per host",
+        "page budget"
       ],
       "tips": {
-        "nudge": "A single FIFO of URLs is full of links to the same big site. What happens to that site?",
-        "hint": "Group URLs by host so one host is only fetched by one worker at a time, with a delay.",
-        "show": "Priority front queues → per-host back queues; a heap of 'host ready at time t' hands each host to one fetcher at ≤1 req/s (or robots crawl-delay); robots.txt cached per host."
-      }
-    },
-    {
-      "id": "dd-dedup",
-      "type": "decision",
-      "label": "Detecting repeats cheaply decided",
-      "keywords": [
-        "bloom",
-        "fingerprint",
-        "simhash",
-        "minhash",
-        "checksum",
-        "content hash",
-        "md5",
-        "sha-1",
-        "sha-256",
-        "sha256",
-        "normaliz",
-        "normalis",
-        "canonical"
-      ],
-      "tips": {
-        "nudge": "Exact hash set of 20B URLs ≈ how much memory? And copies with one changed byte?",
-        "hint": "Separate URL-level dedup from content-level dedup.",
-        "show": "Normalise URLs (strip tracking params, lowercase host) then check a Bloom filter; content: exact hash for copies, SimHash for near-duplicates."
-      }
-    },
-    {
-      "id": "dd-priority",
-      "type": "decision",
-      "label": "What gets crawled first and how often",
-      "keywords": [
-        "pagerank",
-        "importance",
-        "recrawl",
-        "re-crawl",
-        "freshness",
-        "change rate",
-        "prioriti"
-      ],
-      "tips": {
-        "nudge": "News changes hourly, most pages rarely. Should every page be refetched on the same schedule?",
-        "hint": "Decide what feeds the priority of a URL and its revisit interval.",
-        "show": "Priority = importance (link-based score, domain quality) × staleness; revisit interval adapts to observed change rate (halve when changed, double when not)."
+        "nudge": "A site has a calendar with a 'next month' link on every page. How long does your crawler stay there?",
+        "hint": "Decide which limits or signals stop the crawler from following a generated, infinite URL space.",
+        "show": "Max depth, max URL length and a page budget per host per cycle; demote hosts whose new pages are mostly near-duplicates."
       }
     },
     {
       "id": "wrap-bottlenecks",
       "type": "wrapup",
-      "key": "bottlenecks",
       "label": "Bottlenecks named",
+      "key": "bottlenecks",
       "tips": {
         "nudge": "Which component saturates first as you add fetchers?",
         "hint": "Look at DNS, the frontier, the seen-filter and politeness itself.",
@@ -359,8 +402,8 @@
     {
       "id": "wrap-failures",
       "type": "wrapup",
-      "key": "failures",
       "label": "Failure scenarios walked through",
+      "key": "failures",
       "tips": {
         "nudge": "A fetcher crashes holding 200 URLs. A site returns 503 for an hour. A trap generates infinite URLs.",
         "hint": "Cover worker loss, unhealthy hosts, traps and frontier durability.",

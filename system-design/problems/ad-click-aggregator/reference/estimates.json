@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "clicks_per_day", "formula": "1 * billion", "unit": "/day" },
+    { "name": "click_qps", "formula": "clicks_per_day / day", "unit": "/s" },
+    { "name": "peak_click_qps", "formula": "click_qps * 5", "unit": "/s" },
+    { "name": "click_event_bytes", "formula": "200", "unit": "B" },
+    { "name": "raw_per_day", "formula": "clicks_per_day * click_event_bytes / 10**9", "unit": "GB" },
+    { "name": "raw_storage_90d", "formula": "clicks_per_day * click_event_bytes * 90 / 10**12", "unit": "TB" },
+    { "name": "minute_rollup_rows_per_day", "formula": "10 * million * 1440 * 0.03", "unit": "" },
+    { "name": "minute_rollup_per_day", "formula": "minute_rollup_rows_per_day * 50 / 10**9", "unit": "GB" },
+    { "name": "dedup_state", "formula": "peak_click_qps * hour * 50 / 10**9", "unit": "GB" }
+  ]
+}

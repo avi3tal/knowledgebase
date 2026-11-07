@@ -1,0 +1,31 @@
+{
+  "version": 3,
+  "why": "Compose P3 for N1 worldwide: the client debounces and caches, and a CDN serves short prefixes (the hottest, most shared keys) from the edge for 10 minutes. Flaw left: a breaking-news query waits for the next hourly build (F3).",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Search box (browser / app)", "x": 40, "y": 200 },
+    { "id": "cdn", "kind": "cdn", "label": "CDN edge cache (short prefixes)", "x": 200, "y": 200 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 360, "y": 200 },
+    { "id": "suggest", "kind": "service", "label": "Suggest service ×N", "x": 520, "y": 110 },
+    { "id": "searchsvc", "kind": "service", "label": "Search service", "x": 520, "y": 330 },
+    { "id": "prefixkv", "kind": "cache", "label": "Prefix index: prefix → top 10 (Redis, sharded)", "x": 720, "y": 170 },
+    { "id": "logs", "kind": "stream", "label": "Query log (Kafka)", "x": 700, "y": 330 },
+    { "id": "lake", "kind": "blob", "label": "Query log archive (hourly files)", "x": 700, "y": 450 },
+    { "id": "builder", "kind": "worker", "label": "Index builder (batch: count, decay, top-k)", "x": 880, "y": 260 },
+    { "id": "counts", "kind": "nosql", "label": "query_counts (query, day, count)", "x": 880, "y": 410 }
+  ],
+  "edges": [
+    { "from": "client", "to": "cdn", "label": "GET /suggest?q=pre (debounced)" },
+    { "from": "cdn", "to": "lb", "label": "cache miss / search" },
+    { "from": "lb", "to": "suggest" },
+    { "from": "lb", "to": "searchsvc" },
+    { "from": "suggest", "to": "prefixkv", "label": "GET prefix" },
+    { "from": "searchsvc", "to": "logs", "label": "query issued (async)" },
+    { "from": "logs", "to": "lake", "label": "sink hourly files" },
+    { "from": "builder", "to": "lake", "label": "read new hour" },
+    { "from": "builder", "to": "counts", "label": "decayed counts" },
+    { "from": "builder", "to": "prefixkv", "label": "load index v+1, flip version" }
+  ],
+  "flows": [
+    { "name": "suggest", "path": ["client", "cdn", "lb", "suggest", "prefixkv"] }
+  ]
+}

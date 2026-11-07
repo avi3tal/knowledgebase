@@ -1,0 +1,579 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "When a user clicks an ad, record the click and redirect them to the advertiser's landing page."
+      },
+      {
+        "id": "F2",
+        "text": "Aggregate clicks per ad per minute (and per hour/day)."
+      },
+      {
+        "id": "F3",
+        "text": "Advertisers query click counts for their ads and campaigns over time ranges up to 90 days."
+      },
+      {
+        "id": "F4",
+        "text": "Duplicate clicks (double clicks, retries, replayed links) are counted once."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Redirect latency < 50 ms at p99; the redirect must not depend on aggregation being up."
+      },
+      {
+        "id": "N2",
+        "text": "No click is lost, and billing counts are exact (reconciled daily)."
+      },
+      {
+        "id": "N3",
+        "text": "Dashboards are fresh within ~1 minute."
+      },
+      {
+        "id": "N4",
+        "text": "Advertiser queries return in < 1 s."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "1B clicks/day, peaks of ~5× average during big events; ~10M active ads."
+      },
+      {
+        "id": "A2",
+        "text": "~200 bytes per click event; raw clicks kept 90 days for audit."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Ad serving and auctions, click-fraud models (beyond dedup), billing itself."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "GET",
+      "path": "/click/{impression_id}",
+      "request": "impression_id (signed: ad_id, campaign_id, issued_at, nonce)",
+      "response": "302 Location: landing_url",
+      "notes": "The ad link points here; the signature lets us trust ad_id and dedupe by impression."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/ads/{ad_id}/metrics?start=&end=&granularity=minute|hour|day",
+      "request": "ad_id or campaign_id, time range, granularity",
+      "response": "200 {series: [{ts, clicks}]}",
+      "notes": "Served from rollups; picks the coarsest table that answers the request."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "click_events",
+      "fields": "impression_id (dedup key), ad_id, campaign_id, event_time, user_agent, ip_hash",
+      "store": "stream",
+      "why": "Append-only, partitioned by ad_id; archived as Parquet in object storage for 90 days."
+    },
+    {
+      "id": "D2",
+      "name": "ad_clicks_minute",
+      "fields": "ad_id, campaign_id, minute, clicks (primary key ad_id + minute)",
+      "store": "sql",
+      "why": "Pre-aggregated rollup in a columnar OLAP store; upserted by the stream job, overwritten by reconciliation."
+    },
+    {
+      "id": "D3",
+      "name": "ad_clicks_hour / ad_clicks_day",
+      "fields": "ad_id, campaign_id, hour|day, clicks",
+      "store": "sql",
+      "why": "Coarser rollups keep 90-day queries small."
+    }
+  ],
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Click ingestion and redirect",
+      "covers": [
+        "F1",
+        "N1",
+        "N2"
+      ],
+      "problem": "Send the user to the advertiser's page within ~50 ms, at up to ~60k clicks/s, and never lose a click even if downstream processing is down.",
+      "options": [
+        {
+          "name": "insert each click into a database, then redirect",
+          "pros": "simple, durable",
+          "cons": "60k inserts/s on the redirect path; a slow DB delays every user"
+        },
+        {
+          "name": "redirect immediately, send the click from the browser as a beacon",
+          "pros": "zero server work on the path",
+          "cons": "ad blockers and closed tabs lose clicks; easy to forge"
+        },
+        {
+          "name": "click service appends the event to a durable log (acks from replicas), then 302",
+          "pros": "~5 ms append; the log buffers bursts and outages downstream",
+          "cons": "another system to run; the event must be self-describing"
+        }
+      ],
+      "choice": "stateless click service behind a load balancer appends the click to Kafka (partitioned by ad_id, acks=all) and answers 302 to the landing URL",
+      "why": "An append is a few ms and survives a broker loss, so N1 and N2 both hold; aggregation can lag or restart without touching the user's redirect. Partitioning by ad_id keeps one ad's clicks together for windowing.",
+      "technologies": [
+        "kafka"
+      ],
+      "patterns": [
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "user",
+            "kind": "client",
+            "label": "Browser (ad click)",
+            "x": 40,
+            "y": 120
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 180,
+            "y": 250
+          },
+          {
+            "id": "clicksvc",
+            "kind": "service",
+            "label": "Click redirect service ×N",
+            "x": 340,
+            "y": 120
+          },
+          {
+            "id": "clicks",
+            "kind": "stream",
+            "label": "Kafka: click events (partitioned by ad_id)",
+            "x": 520,
+            "y": 120
+          },
+          {
+            "id": "landing",
+            "kind": "external",
+            "label": "Advertiser landing page",
+            "x": 180,
+            "y": 30
+          }
+        ],
+        "edges": [
+          {
+            "from": "user",
+            "to": "lb",
+            "label": "GET /click/{impression_id}"
+          },
+          {
+            "from": "lb",
+            "to": "clicksvc"
+          },
+          {
+            "from": "clicksvc",
+            "to": "clicks",
+            "label": "click event (acks=all)"
+          },
+          {
+            "from": "user",
+            "to": "landing",
+            "label": "follow 302"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Stream aggregation per ad per minute",
+      "covers": [
+        "F2",
+        "N3"
+      ],
+      "problem": "Turn ~12k clicks/s (peak ~60k) into counts per ad per minute that are visible within a minute, even when events arrive late or out of order.",
+      "options": [
+        {
+          "name": "increment a counter row per click",
+          "pros": "always current",
+          "cons": "a write per click; viral ads become hot rows"
+        },
+        {
+          "name": "hourly batch job over raw clicks",
+          "pros": "simple, exact",
+          "cons": "dashboards up to an hour stale (breaks N3)"
+        },
+        {
+          "name": "stream processor with 1-minute tumbling windows keyed by ad_id, on event time with watermarks",
+          "pros": "one write per ad per minute; late events handled explicitly; state is checkpointed",
+          "cons": "operating a stateful stream job"
+        }
+      ],
+      "choice": "Flink job: keyed by ad_id, 1-minute tumbling event-time windows, watermark = max event time − 30 s, late events up to 10 min update the window again",
+      "why": "Pre-aggregating in the stream turns ~700k clicks/min into at most one row per active ad per minute, and event time keeps a click in the minute it happened, not the minute it arrived.",
+      "technologies": [
+        "flink",
+        "kafka"
+      ],
+      "patterns": [
+        "pre-aggregation",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "clicks",
+            "kind": "stream",
+            "label": "Kafka: click events (partitioned by ad_id)",
+            "x": 520,
+            "y": 120
+          },
+          {
+            "id": "agg",
+            "kind": "worker",
+            "label": "Flink: 1-min windows per ad (event time, dedup)",
+            "x": 720,
+            "y": 120
+          },
+          {
+            "id": "olap",
+            "kind": "sql",
+            "label": "OLAP store: clicks per ad per minute + hourly rollups",
+            "x": 720,
+            "y": 400
+          }
+        ],
+        "edges": [
+          {
+            "from": "clicks",
+            "to": "agg"
+          },
+          {
+            "from": "agg",
+            "to": "olap",
+            "label": "upsert (ad_id, minute) → count"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Dedup and exactly-once counting",
+      "covers": [
+        "F4",
+        "N2"
+      ],
+      "problem": "Count each real click exactly once although users double-click, bots replay links, the click service retries, and the stream job restarts from checkpoints.",
+      "options": [
+        {
+          "name": "count every event",
+          "pros": "nothing to build",
+          "cons": "double clicks and retries inflate what advertisers pay"
+        },
+        {
+          "name": "unique index on click_id in a database",
+          "pros": "exact",
+          "cons": "a DB write per click: the bottleneck we just removed"
+        },
+        {
+          "name": "signed impression id per ad render; dedup in the stream job's keyed state with a TTL; idempotent upserts keyed (ad_id, minute)",
+          "pros": "dedup in memory at stream speed; replays after a restart overwrite rather than add",
+          "cons": "state size grows with the dedup window; checkpoints required"
+        }
+      ],
+      "choice": "the ad server signs an impression_id into each ad link; Flink keeps seen impression_ids for 1 hour in checkpointed keyed state and drops repeats; window results are upserted (overwrite, not increment) by (ad_id, minute)",
+      "why": "A signature stops forged ids, the TTL bounds state (≈ 12k/s × 3,600 s × ~50 B ≈ 2 GB), and overwriting by key makes the sink idempotent, so replays after a crash cannot double-count.",
+      "technologies": [
+        "flink"
+      ],
+      "patterns": [
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "clicksvc",
+            "kind": "service",
+            "label": "Click redirect service ×N",
+            "x": 340,
+            "y": 120
+          },
+          {
+            "id": "clicks",
+            "kind": "stream",
+            "label": "Kafka: click events (partitioned by ad_id)",
+            "x": 520,
+            "y": 120
+          },
+          {
+            "id": "agg",
+            "kind": "worker",
+            "label": "Flink: 1-min windows per ad (event time, dedup)",
+            "x": 720,
+            "y": 120
+          },
+          {
+            "id": "ckpt",
+            "kind": "blob",
+            "label": "Flink checkpoints (window + dedup state)",
+            "x": 900,
+            "y": 40
+          },
+          {
+            "id": "olap",
+            "kind": "sql",
+            "label": "OLAP store: clicks per ad per minute + hourly rollups",
+            "x": 720,
+            "y": 400
+          }
+        ],
+        "edges": [
+          {
+            "from": "clicksvc",
+            "to": "clicks",
+            "label": "click event (acks=all)"
+          },
+          {
+            "from": "clicks",
+            "to": "agg"
+          },
+          {
+            "from": "agg",
+            "to": "ckpt",
+            "label": "checkpoint every 30 s"
+          },
+          {
+            "from": "agg",
+            "to": "olap",
+            "label": "upsert (ad_id, minute) → count"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Storage for advertiser queries",
+      "covers": [
+        "F3",
+        "N4"
+      ],
+      "problem": "Answer 'clicks for my ads per minute/hour/day over the last 90 days', grouped by ad or campaign, in under a second.",
+      "options": [
+        {
+          "name": "query raw clicks in a row store",
+          "pros": "exact, flexible",
+          "cons": "scans billions of rows per dashboard load"
+        },
+        {
+          "name": "key-value table keyed (ad_id, minute)",
+          "pros": "fast for one ad's time range",
+          "cons": "group-by across a campaign's ads means many reads and client-side sums"
+        },
+        {
+          "name": "columnar OLAP store holding minute rollups, plus hourly and daily rollups",
+          "pros": "fast scans and group-bys over pre-aggregated rows; time-partitioned retention",
+          "cons": "another database; best with append/upsert batches, not single-row updates"
+        }
+      ],
+      "choice": "columnar OLAP store (ClickHouse / Pinot / Druid class) partitioned by day: minute rollups for 7 days, hourly and daily rollups for 90 days; a query service picks the coarsest table that answers the request",
+      "why": "Pre-aggregated rows are ~100× fewer than raw clicks, so a 90-day campaign chart scans thousands of rows, not billions, and stays well under N4's 1 s.",
+      "technologies": [
+        "time-series-db"
+      ],
+      "patterns": [
+        "pre-aggregation"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "adv",
+            "kind": "client",
+            "label": "Advertiser dashboard",
+            "x": 40,
+            "y": 400
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 180,
+            "y": 250
+          },
+          {
+            "id": "querysvc",
+            "kind": "service",
+            "label": "Query service",
+            "x": 340,
+            "y": 400
+          },
+          {
+            "id": "olap",
+            "kind": "sql",
+            "label": "OLAP store: clicks per ad per minute + hourly rollups",
+            "x": 720,
+            "y": 400
+          }
+        ],
+        "edges": [
+          {
+            "from": "adv",
+            "to": "lb",
+            "label": "GET /ads/{id}/metrics"
+          },
+          {
+            "from": "lb",
+            "to": "querysvc"
+          },
+          {
+            "from": "querysvc",
+            "to": "olap",
+            "label": "aggregate query"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P5",
+      "title": "Reconciliation with batch",
+      "covers": [
+        "N2",
+        "F2"
+      ],
+      "problem": "Billing must be exact even if the stream job had a bug, dropped very late events, or was replayed: provide a source of truth and a way to correct the counts.",
+      "options": [
+        {
+          "name": "trust the stream counts",
+          "pros": "one pipeline",
+          "cons": "a stream bug silently misbills until someone notices"
+        },
+        {
+          "name": "replay Kafka through a fixed job (kappa)",
+          "pros": "one code path",
+          "cons": "Kafka retention must cover the window; replays compete with live traffic"
+        },
+        {
+          "name": "archive raw clicks to object storage; nightly batch recomputes exact daily counts and overwrites the rollups (lambda)",
+          "pros": "independent check; exact numbers for billing; easy backfills",
+          "cons": "two code paths to keep in agreement"
+        }
+      ],
+      "choice": "Kafka sink writes raw clicks to object storage hourly; a nightly Spark job recomputes per-ad daily counts with the same dedup rules, overwrites them in the OLAP store, and alerts when stream and batch differ by more than 0.1%",
+      "why": "Advertisers are billed per click, so the daily number must come from a full, replayable source; the stream stays the fast path, and the batch is both the correction and the alarm.",
+      "technologies": [
+        "object-storage",
+        "kafka"
+      ],
+      "patterns": [
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "clicks",
+            "kind": "stream",
+            "label": "Kafka: click events (partitioned by ad_id)",
+            "x": 520,
+            "y": 120
+          },
+          {
+            "id": "lake",
+            "kind": "blob",
+            "label": "Raw clicks archive (Parquet, 90 days)",
+            "x": 520,
+            "y": 270
+          },
+          {
+            "id": "batch",
+            "kind": "worker",
+            "label": "Nightly reconciliation (Spark)",
+            "x": 900,
+            "y": 270
+          },
+          {
+            "id": "olap",
+            "kind": "sql",
+            "label": "OLAP store: clicks per ad per minute + hourly rollups",
+            "x": 720,
+            "y": 400
+          }
+        ],
+        "edges": [
+          {
+            "from": "clicks",
+            "to": "lake",
+            "label": "archive raw (hourly)"
+          },
+          {
+            "from": "batch",
+            "to": "lake",
+            "label": "read yesterday"
+          },
+          {
+            "from": "batch",
+            "to": "olap",
+            "label": "overwrite day with exact counts"
+          }
+        ]
+      }
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Late and out-of-order events",
+      "options": [
+        {
+          "name": "processing-time windows",
+          "pros": "simple, no waiting",
+          "cons": "a click delayed 2 minutes is counted in the wrong minute"
+        },
+        {
+          "name": "event-time windows with a watermark, drop anything later",
+          "pros": "correct minutes",
+          "cons": "drops late clicks: billing undercounts"
+        },
+        {
+          "name": "event-time windows, watermark − 30 s, allowed lateness 10 min, later still → side output fixed by the nightly batch",
+          "pros": "correct and fresh; nothing is silently lost",
+          "cons": "windows re-fire updates; needs an idempotent sink"
+        }
+      ],
+      "choice": "event-time windows, 30 s watermark delay, 10 min allowed lateness, later events to a side output that the nightly batch covers",
+      "why": "N3 wants results within a minute, N2 wants none lost: the watermark bounds the wait, re-fired windows upsert the same key, and the batch is the backstop for stragglers.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "A viral ad (hot partition)",
+      "options": [
+        {
+          "name": "partition by ad_id only",
+          "pros": "all of an ad's clicks in one task",
+          "cons": "one ad at 20k clicks/s overloads one partition and one task"
+        },
+        {
+          "name": "salt hot ad_ids into N sub-keys, pre-aggregate per sub-key, then merge",
+          "pros": "spreads the load",
+          "cons": "a second aggregation step"
+        }
+      ],
+      "choice": "salt detected hot ad_ids into N sub-keys and merge per minute",
+      "why": "Counts are additive, so partial sums per sub-key merge exactly; only the few hot ads pay the extra step.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Hot ads on one Kafka partition / Flink task (salt them), the dedup state size (TTL), and OLAP ingest (batch upserts per minute rather than per click).",
+    "failures": "Flink crash: restart from the last checkpoint and replay Kafka; idempotent upserts mean no double counts. OLAP down: Flink buffers / Kafka retains, dashboards go stale, redirects unaffected. Click service: stateless behind the LB; if Kafka is unreachable, buffer briefly on local disk and still redirect.",
+    "monitoring": "Redirect p99, Kafka consumer lag, watermark delay, late-event count, dedup drop rate, stream vs batch difference per day, OLAP query p99.",
+    "scale": "10× clicks: more Kafka partitions and Flink parallelism (both keyed by ad_id), more OLAP shards by time; the redirect tier scales horizontally.",
+    "future": "Impressions and conversions in the same pipeline, click-fraud scoring, per-advertiser real-time budget alerts."
+  }
+}

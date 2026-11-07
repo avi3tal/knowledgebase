@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "rows": [
+    { "name": "searches_per_day", "formula": "1 * billion", "unit": "/day" },
+    { "name": "requests_per_search", "formula": "5", "unit": "" },
+    { "name": "suggest_qps", "formula": "searches_per_day * requests_per_search / day", "unit": "/s" },
+    { "name": "peak_suggest_qps", "formula": "suggest_qps * 2", "unit": "/s" },
+    { "name": "distinct_queries", "formula": "100 * million", "unit": "" },
+    { "name": "prefixes", "formula": "distinct_queries * 20 / 4", "unit": "" },
+    { "name": "prefix_index_size", "formula": "prefixes * 200 / 10**9", "unit": "GB" },
+    { "name": "query_log_per_day", "formula": "searches_per_day * 100 / 10**9", "unit": "GB" }
+  ]
+}

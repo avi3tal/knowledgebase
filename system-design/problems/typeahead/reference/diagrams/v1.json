@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "why": "Naive start: one service runs SELECT … WHERE query LIKE 'prefix%' ORDER BY count LIMIT 10 against a queries table, and each search increments a count. A 1-letter prefix scans millions of rows, ~120k keystrokes/s melt one database (N1, N2), and every search writes to the same hot table (N3).",
+  "nodes": [
+    { "id": "client", "kind": "client", "label": "Search box (browser / app)", "x": 40, "y": 200 },
+    { "id": "suggest", "kind": "service", "label": "Search + suggest service", "x": 380, "y": 200 },
+    { "id": "db", "kind": "sql", "label": "queries table (LIKE 'prefix%')", "x": 700, "y": 260 }
+  ],
+  "edges": [
+    { "from": "client", "to": "suggest", "label": "GET /suggest, GET /search" },
+    { "from": "suggest", "to": "db", "label": "LIKE 'prefix%', count++" }
+  ],
+  "flows": []
+}

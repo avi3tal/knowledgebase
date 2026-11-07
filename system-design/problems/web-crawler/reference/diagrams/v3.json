@@ -1,43 +1,33 @@
 {
   "version": 3,
-  "why": "N1 + F3: the frontier becomes priority front queues feeding per-host back queues; a politeness scheduler hands each host to one fetcher at most once per second (or its robots.txt crawl-delay, cached per host). URL metadata records last fetch and content hash so a recrawl scheduler re-enqueues pages by importance × staleness with an adaptive interval, and SimHash fingerprints catch near-duplicate content.",
+  "why": "Compose P3 for F2: parsers normalise links and drop already-seen URLs with a Bloom filter (~25 GB for 20B URLs), and an exact hash + SimHash fingerprint store keeps the 1/3 of copied pages out of the index. Flaw left: the frontier is still a FIFO (N1) and nothing revisits pages (F3).",
   "nodes": [
-    { "id": "op", "kind": "client", "label": "Operator (seeds, host policies)", "x": 60, "y": 200 },
-    { "id": "api", "kind": "service", "label": "Crawl control API", "x": 220, "y": 200 },
-    { "id": "prio", "kind": "queue", "label": "Frontier: priority front queues", "x": 400, "y": 80 },
-    { "id": "polite", "kind": "scheduler", "label": "Politeness scheduler (per-host back queues, ready-time heap)", "x": 400, "y": 200 },
-    { "id": "fetch", "kind": "worker", "label": "Fetchers ×N (async HTTP, leases)", "x": 600, "y": 200 },
-    { "id": "dns", "kind": "cache", "label": "Caching DNS resolver", "x": 800, "y": 40 },
-    { "id": "robots", "kind": "cache", "label": "robots.txt cache", "x": 800, "y": 120 },
-    { "id": "web", "kind": "external", "label": "Websites", "x": 800, "y": 200 },
-    { "id": "pages", "kind": "blob", "label": "Raw pages (blob, batched files)", "x": 800, "y": 300 },
-    { "id": "parseq", "kind": "queue", "label": "Fetched-page events", "x": 600, "y": 360 },
-    { "id": "parser", "kind": "worker", "label": "Parsers + link extractor", "x": 600, "y": 480 },
-    { "id": "seen", "kind": "cache", "label": "Seen-URL Bloom filter", "x": 800, "y": 420 },
-    { "id": "fingerprints", "kind": "nosql", "label": "Content fingerprints (hash + SimHash)", "x": 800, "y": 520 },
-    { "id": "urlmeta", "kind": "nosql", "label": "url_meta (last fetch, next due, priority)", "x": 400, "y": 600 },
-    { "id": "recrawl", "kind": "scheduler", "label": "Recrawl scheduler (adaptive interval)", "x": 220, "y": 480 }
+    { "id": "op", "kind": "client", "label": "Operator (seeds, host policies)", "x": 40, "y": 160 },
+    { "id": "api", "kind": "service", "label": "Crawl control API", "x": 200, "y": 160 },
+    { "id": "frontier", "kind": "queue", "label": "URL frontier (FIFO)", "x": 360, "y": 160 },
+    { "id": "fetch", "kind": "worker", "label": "Fetchers ×N (async HTTP, leases)", "x": 690, "y": 160 },
+    { "id": "dns", "kind": "cache", "label": "Caching DNS resolver", "x": 600, "y": 40 },
+    { "id": "web", "kind": "external", "label": "Websites", "x": 860, "y": 160 },
+    { "id": "pages", "kind": "blob", "label": "Raw pages (blob, batched WARC files)", "x": 860, "y": 300 },
+    { "id": "parseq", "kind": "queue", "label": "Fetched-page events", "x": 680, "y": 300 },
+    { "id": "parser", "kind": "worker", "label": "Parsers + link extractor", "x": 500, "y": 300 },
+    { "id": "seen", "kind": "cache", "label": "Seen-URL Bloom filter", "x": 420, "y": 440 },
+    { "id": "fingerprints", "kind": "nosql", "label": "Content fingerprints (hash + SimHash)", "x": 620, "y": 440 }
   ],
   "edges": [
-    { "from": "op", "to": "api", "label": "POST /seeds, PUT host policy" },
-    { "from": "api", "to": "prio" },
-    { "from": "prio", "to": "polite" },
-    { "from": "polite", "to": "fetch", "label": "one host → one fetcher, ≤1 req/s" },
+    { "from": "op", "to": "api", "label": "POST /seeds" },
+    { "from": "api", "to": "frontier" },
+    { "from": "frontier", "to": "fetch", "label": "lease next URL" },
     { "from": "fetch", "to": "dns", "label": "resolve host" },
-    { "from": "fetch", "to": "robots", "label": "allowed? crawl-delay?" },
     { "from": "fetch", "to": "web", "label": "HTTP GET (timeouts)" },
-    { "from": "fetch", "to": "pages", "label": "store raw HTML" },
-    { "from": "fetch", "to": "parseq" },
+    { "from": "fetch", "to": "pages", "label": "append raw HTML" },
+    { "from": "fetch", "to": "parseq", "label": "page fetched" },
     { "from": "parseq", "to": "parser" },
+    { "from": "parser", "to": "frontier", "label": "new URLs (scored)" },
     { "from": "parser", "to": "seen", "label": "new URL?" },
-    { "from": "parser", "to": "fingerprints", "label": "duplicate content?" },
-    { "from": "parser", "to": "urlmeta", "label": "last fetch, content hash" },
-    { "from": "parser", "to": "prio", "label": "new URLs (scored)" },
-    { "from": "recrawl", "to": "urlmeta", "label": "due pages" },
-    { "from": "recrawl", "to": "prio", "label": "re-enqueue" }
+    { "from": "parser", "to": "fingerprints", "label": "duplicate content?" }
   ],
   "flows": [
-    { "name": "crawl loop", "path": ["prio", "polite", "fetch", "parseq", "parser", "prio"] },
-    { "name": "recrawl", "path": ["recrawl", "urlmeta"] }
+    { "name": "crawl loop", "path": ["frontier", "fetch", "parseq", "parser", "frontier"] }
   ]
 }

@@ -2,13 +2,17 @@
   "version": 1,
   "why": "Naive start: each API server keeps an in-memory counter per client. It works on one box, but behind a load balancer with 40 servers a user gets up to 40× the quota (breaks N2), counts vanish on restart, and every service team re-implements the logic.",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "API caller", "x": 60, "y": 160 },
-    { "id": "api", "kind": "service", "label": "API server (in-memory counters)", "x": 400, "y": 160 },
-    { "id": "appdb", "kind": "sql", "label": "App database", "x": 640, "y": 160 }
+    { "id": "client", "kind": "client", "label": "API caller", "x": 40, "y": 200 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 200, "y": 200 },
+    { "id": "api", "kind": "service", "label": "API servers ×40 (in-memory counters)", "x": 640, "y": 200 },
+    { "id": "appdb", "kind": "sql", "label": "App database", "x": 880, "y": 200 }
   ],
   "edges": [
-    { "from": "client", "to": "api", "label": "HTTP request" },
+    { "from": "client", "to": "lb", "label": "HTTP request" },
+    { "from": "lb", "to": "api" },
     { "from": "api", "to": "appdb", "label": "business data" }
   ],
-  "flows": [{ "name": "request", "path": ["client", "api", "appdb"] }]
+  "flows": [
+    { "name": "request", "path": ["client", "lb", "api"] }
+  ]
 }

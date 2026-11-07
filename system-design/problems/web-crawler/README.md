@@ -19,9 +19,11 @@ behaving like a good citizen on other people's servers.
 - The web is hostile: endless calendar pages, slow servers, malformed HTML, spam link farms.
 
 ## Your job
-Work through the stages in the console: scope → estimates → API & data → high-level design
-(evolve it: v1 → v2 → v3) → deep dives with trade-offs → wrap-up. Use the checklist on the right
-and ask for tips when stuck: nudge first, then hint, and *show* only as a last resort.
+Work through the console's stages: scope → estimates → API & data → **decompose** into parts
+(the frontier, fetching, dedup, storage, recrawl…). Solve each part on its own: options, choice
+and a small diagram. Then **reduce** them into one high-level design (v1 → v2 → v3 → v4),
+followed by deep dives and wrap-up. Use the checklist and ask for tips when stuck: nudge first,
+then hint, and *show* only as a last resort.
 
 ## Things worth deciding (no answers here)
 - What decides which URL is fetched next, and when?

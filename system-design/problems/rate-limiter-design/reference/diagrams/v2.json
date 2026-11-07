@@ -1,18 +1,22 @@
 {
   "version": 2,
-  "why": "N2 + N1: move the check to one choke point (an API gateway every request passes through) and keep token buckets in a shared Redis cluster, updated by an atomic Lua script in one ~1 ms round trip. Limits are now fleet-wide; rules are still hard-coded in the gateway.",
+  "why": "Compose P1 + P2 + P3 for N2 and N1: the check moves to one choke point (an API gateway every request passes through) and token buckets live in a shared Redis cluster, updated by an atomic Lua script in one ~1 ms round trip. Limits are now fleet-wide. Flaw left: rules are hard-coded in the gateway (F2) and a Redis outage has no defined behaviour (N3).",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "API caller", "x": 60, "y": 160 },
-    { "id": "gw", "kind": "api-gateway", "label": "API gateway + limiter", "x": 220, "y": 160 },
-    { "id": "api", "kind": "service", "label": "API servers ×40", "x": 400, "y": 160 },
-    { "id": "buckets", "kind": "cache", "label": "Redis: token buckets", "x": 400, "y": 40 },
-    { "id": "appdb", "kind": "sql", "label": "App database", "x": 640, "y": 160 }
+    { "id": "client", "kind": "client", "label": "API caller", "x": 40, "y": 200 },
+    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 200, "y": 200 },
+    { "id": "gw", "kind": "api-gateway", "label": "API gateways + limiter", "x": 400, "y": 200 },
+    { "id": "buckets", "kind": "cache", "label": "Redis cluster: token buckets (sharded, replicas)", "x": 400, "y": 40 },
+    { "id": "api", "kind": "service", "label": "API servers ×40", "x": 640, "y": 200 },
+    { "id": "appdb", "kind": "sql", "label": "App database", "x": 880, "y": 200 }
   ],
   "edges": [
-    { "from": "client", "to": "gw", "label": "HTTP request" },
+    { "from": "client", "to": "lb", "label": "HTTP request" },
+    { "from": "lb", "to": "gw" },
     { "from": "gw", "to": "buckets", "label": "atomic take (Lua)" },
     { "from": "gw", "to": "api", "label": "allowed requests only" },
     { "from": "api", "to": "appdb", "label": "business data" }
   ],
-  "flows": [{ "name": "allowed request", "path": ["client", "gw", "buckets"] }]
+  "flows": [
+    { "name": "decision", "path": ["client", "lb", "gw", "buckets"] }
+  ]
 }
