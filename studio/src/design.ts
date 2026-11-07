@@ -1,5 +1,7 @@
 import type {
   DesignCheck,
+  DesignDoc,
+  DesignPart,
   DesignStage,
   Diagram,
   DiagramEdge,
@@ -463,4 +465,363 @@ export function zoomAt(
 /** Snap to a 10px grid. */
 export function snap(v: number, grid = 10): number {
   return Math.round(v / grid) * grid;
+}
+
+// ---------------------------------------------------------------- shapes stencil
+
+/** HTML5 drag-and-drop type for a stencil tile: the payload is the node kind. */
+export const SHAPE_MIME = "application/x-kb-shape";
+
+export interface PaletteGroup {
+  title: string;
+  icon: string;
+  kinds: string[];
+}
+
+const SD_GROUPS: PaletteGroup[] = [
+  {
+    title: "Clients & edge",
+    icon: "🌐",
+    kinds: ["client", "dns", "cdn", "load-balancer", "api-gateway"],
+  },
+  { title: "Compute", icon: "⚙️", kinds: ["service", "worker", "scheduler", "coordinator"] },
+  { title: "Data", icon: "🗄️", kinds: ["cache", "sql", "nosql", "blob", "search"] },
+  { title: "Messaging", icon: "📬", kinds: ["queue", "stream"] },
+  { title: "External", icon: "🔗", kinds: ["external"] },
+];
+const OOD_KINDS = ["actor", "class", "abstract", "interface", "enum"];
+
+/**
+ * The stencil groups for a problem's palette: system-design kinds in five groups, OOD kinds in one.
+ * Only kinds of `palette` appear (in group order); unknown kinds go to "Other"; empty groups are dropped.
+ */
+export function paletteGroups(palette: string[]): PaletteGroup[] {
+  const have = new Set(palette);
+  const ood = palette.some((k) => OOD_KINDS.includes(k));
+  const base = ood ? [{ title: "Classes", icon: "📦", kinds: OOD_KINDS }] : SD_GROUPS;
+  const groups = base.map((g) => ({ ...g, kinds: g.kinds.filter((k) => have.has(k)) }));
+  const known = new Set(base.flatMap((g) => g.kinds));
+  const other = palette.filter((k) => !known.has(k));
+  if (other.length) groups.push({ title: "Other", icon: "◻️", kinds: other });
+  return groups.filter((g) => g.kinds.length > 0);
+}
+
+/** Keep the kinds whose kind, label or id base contains `q` (case-insensitive); drop empty groups. */
+export function filterPalette(groups: PaletteGroup[], q: string): PaletteGroup[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return groups;
+  const hit = (k: string) => {
+    const st = kindStyle(k);
+    return [k, st.label, st.id].some((x) => x.toLowerCase().includes(s));
+  };
+  return groups
+    .map((g) => ({
+      ...g,
+      kinds: g.title.toLowerCase().includes(s) ? g.kinds : g.kinds.filter(hit),
+    }))
+    .filter((g) => g.kinds.length > 0);
+}
+
+/** Stores render as cylinders, messaging as pipes, people as pills; the rest as cards. */
+export function kindShape(kind: string): "store" | "pipe" | "person" | "card" {
+  if (["sql", "nosql", "blob", "search", "cache"].includes(kind)) return "store";
+  if (["queue", "stream"].includes(kind)) return "pipe";
+  if (["client", "actor"].includes(kind)) return "person";
+  return "card";
+}
+
+// ---------------------------------------------------------------- brief
+
+/**
+ * The README's "What the interviewer tells you if you ask" section (markdown, without its heading),
+ * up to the next h1/h2; null when the README has no such section.
+ */
+export function extractBrief(readme: string): string | null {
+  const lines = readme.split(/\r?\n/);
+  const start = lines.findIndex((l) => /^##\s+what the interviewer tells you/i.test(l));
+  if (start < 0) return null;
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((l) => /^#{1,2}\s/.test(l));
+  return (end < 0 ? rest : rest.slice(0, end)).join("\n").trim();
+}
+
+/** Requirement ids a part can cover: F…, N… and A… items that have an id. */
+export function coverableIds(scope: DesignDoc["scope"]): ScopeItem[] {
+  return [
+    ...(scope.functional ?? []),
+    ...(scope.non_functional ?? []),
+    ...(scope.assumptions ?? []),
+  ].filter((x) => x.id);
+}
+
+// ---------------------------------------------------------------- checklist
+
+/** Stage order for the checklist: the current stage first, then the rest in problem order. */
+export function stagesFirst(stages: DesignStage[], current: string): DesignStage[] {
+  return [...stages.filter((s) => s === current), ...stages.filter((s) => s !== current)];
+}
+
+/** Ids that pass in `next` but did not pass in `prev` (drives the "just passed" animation). */
+export function newlyPassed(
+  prev: { id: string; passed: boolean }[],
+  next: { id: string; passed: boolean }[],
+): string[] {
+  const before = new Set(prev.filter((c) => c.passed).map((c) => c.id));
+  return next.filter((c) => c.passed && !before.has(c.id)).map((c) => c.id);
+}
+
+// ---------------------------------------------------------------- decompose → reduce
+
+export type SubDiagram = DesignPart["diagram"];
+
+/** A new empty part with the next free id (P1, P2…). It saves as is: every list starts empty. */
+export function newPart(parts: DesignPart[]): DesignPart {
+  return {
+    id: nextItemId("P", parts),
+    title: "",
+    covers: [],
+    problem: "",
+    options: [
+      { name: "", pros: "", cons: "" },
+      { name: "", pros: "", cons: "" },
+    ],
+    choice: "",
+    why: "",
+    technologies: [],
+    patterns: [],
+    diagram: { nodes: [], edges: [] },
+  };
+}
+
+/** A part's sub-diagram as a canvas Diagram (version 0) and back (only nodes and edges are kept). */
+export function partToDiagram(p: DesignPart): Diagram {
+  return { version: 0, why: "", nodes: p.diagram?.nodes ?? [], edges: p.diagram?.edges ?? [] };
+}
+export function diagramToSub(d: Diagram): SubDiagram {
+  return { nodes: d.nodes, edges: d.edges };
+}
+
+/**
+ * Same as kb's design.compose: merge the parts' sub-diagrams into `diagram` by node id and edges by
+ * from→to. Existing nodes and edges win; new ones are appended as copies, in part order. Idempotent.
+ */
+export function composeDiagram<D extends { nodes: DiagramNode[]; edges: DiagramEdge[] }>(
+  diagram: D,
+  parts: { diagram?: SubDiagram }[],
+): D {
+  const out = { ...diagram, nodes: [...diagram.nodes], edges: [...diagram.edges] };
+  const ids = new Set(out.nodes.map((n) => n.id));
+  const keys = new Set(out.edges.map(edgeKey));
+  for (const p of parts) {
+    for (const n of p.diagram?.nodes ?? []) {
+      if (ids.has(n.id)) continue;
+      out.nodes.push({ ...n });
+      ids.add(n.id);
+    }
+    for (const e of p.diagram?.edges ?? []) {
+      const k = edgeKey(e);
+      if (keys.has(k)) continue;
+      out.edges.push({ ...e });
+      keys.add(k);
+    }
+  }
+  return out;
+}
+
+/** Same as kb's part_smells nodes: every part node id missing from `final`, sorted and unique. */
+export function missingPartNodes(
+  final: { nodes: DiagramNode[] } | undefined,
+  parts: { diagram?: SubDiagram }[],
+): string[] {
+  const have = new Set((final?.nodes ?? []).map((n) => n.id));
+  const miss = new Set<string>();
+  for (const p of parts)
+    for (const n of p.diagram?.nodes ?? []) if (!have.has(n.id)) miss.add(n.id);
+  return [...miss].sort();
+}
+
+/** What composing would add to `final`: the part ids that bring new nodes or edges, and the counts. */
+export function composePreview(
+  final: { nodes: DiagramNode[]; edges: DiagramEdge[] } | undefined,
+  parts: { id: string; diagram?: SubDiagram }[],
+): { parts: string[]; nodes: number; edges: number } {
+  const ids = new Set((final?.nodes ?? []).map((n) => n.id));
+  const keys = new Set((final?.edges ?? []).map(edgeKey));
+  const contributing: string[] = [];
+  let nodes = 0;
+  let edges = 0;
+  for (const p of parts) {
+    let adds = false;
+    for (const n of p.diagram?.nodes ?? []) {
+      if (ids.has(n.id)) continue;
+      ids.add(n.id);
+      nodes++;
+      adds = true;
+    }
+    for (const e of p.diagram?.edges ?? []) {
+      if (keys.has(edgeKey(e))) continue;
+      keys.add(edgeKey(e));
+      edges++;
+      adds = true;
+    }
+    if (adds) contributing.push(p.id);
+  }
+  return { parts: contributing, nodes, edges };
+}
+
+function overlaps(a: Point, b: Point, gap = 16): boolean {
+  return (
+    a.x < b.x + NODE_W + gap &&
+    b.x < a.x + NODE_W + gap &&
+    a.y < b.y + NODE_H + gap &&
+    b.y < a.y + NODE_H + gap
+  );
+}
+
+/**
+ * The nearest free top-left spot to `p` for a new node box: `p` itself if it overlaps nothing, else
+ * the first free point on rings of grid steps around it (snapped to the 10px grid).
+ */
+export function freeSpot(nodes: DiagramNode[], p: Point): Point {
+  const boxes = withPositions(nodes);
+  const start = { x: snap(p.x), y: snap(p.y) };
+  const free = (q: Point) => !boxes.some((b) => overlaps(q, b, 12));
+  if (free(start)) return start;
+  const dx = NODE_W + 30;
+  const dy = NODE_H + 30;
+  for (let r = 1; r < 12; r++) {
+    // nearest first on each ring: 0, 1, -1, 2, -2 … along each side (right, below, left, above)
+    const js = [0, ...Array.from({ length: r }, (_, n) => [n + 1, -(n + 1)]).flat()];
+    for (const j of js)
+      for (const [i, k] of [
+        [r, j],
+        [j, r],
+        [-r, j],
+        [j, -r],
+      ] as const) {
+        const q = { x: start.x + i * dx, y: start.y + k * dy };
+        if (free(q)) return q;
+      }
+  }
+  return start;
+}
+
+/**
+ * Give the nodes that compose added (ids not in `prevIds`) a free spot: keep their part position when
+ * it is free, else move them down (then over a column) until they overlap nothing. Old nodes never move.
+ */
+export function placeComposed<D extends Diagram>(d: D, prevIds: Iterable<string>): D {
+  const old = new Set(prevIds);
+  const placed: Point[] = withPositions(d.nodes.filter((n) => old.has(n.id)));
+  const fresh = d.nodes.filter((n) => !old.has(n.id));
+  const auto = withPositions(fresh);
+  const moved = new Map<string, Point>();
+  fresh.forEach((n, i) => {
+    const start = auto[i]!;
+    let p = { x: start.x, y: start.y };
+    for (let step = 1; placed.some((q) => overlaps(p, q)) && step < 200; step++) {
+      p =
+        step % 6 === 0
+          ? { x: start.x + (step / 6) * (NODE_W + 40), y: start.y }
+          : { x: p.x, y: p.y + NODE_H + 30 };
+    }
+    placed.push(p);
+    moved.set(n.id, { x: Math.round(p.x), y: Math.round(p.y) });
+  });
+  return {
+    ...d,
+    nodes: d.nodes.map((n) => {
+      const p = moved.get(n.id);
+      return p ? { ...n, x: p.x, y: p.y } : n;
+    }),
+  };
+}
+
+/** The why of a composed version: "Compose P1, P2". */
+export function composeWhy(partIds: string[]): string {
+  return `Compose ${partIds.join(", ")}`;
+}
+
+/**
+ * The next diagram version = compose(latest, parts) as version latest+1, new nodes placed off the
+ * existing ones, why "Compose P1, P2" (the parts that add something). Null when nothing would change.
+ */
+export function composeVersion(diagrams: Diagram[], parts: DesignPart[]): Diagram | null {
+  const sorted = sortVersions(diagrams);
+  const latest: Diagram = sorted[sorted.length - 1] ?? {
+    version: 0,
+    why: "",
+    nodes: [],
+    edges: [],
+  };
+  const preview = composePreview(latest, parts);
+  if (preview.parts.length === 0) return null;
+  const copy = JSON.parse(JSON.stringify(latest)) as Diagram;
+  const merged = placeComposed(
+    composeDiagram(copy, parts),
+    latest.nodes.map((n) => n.id),
+  );
+  return { ...merged, version: latest.version + 1, why: composeWhy(preview.parts) };
+}
+
+export interface LinkTarget {
+  id: string;
+  kind: string;
+  label: string;
+  /** where it comes from: "v3" or "P2" */
+  from: string;
+}
+
+/**
+ * Components a node can be linked to so that reduce merges them by id: the latest high-level version's
+ * nodes first, then the other parts' nodes; unique by id, excluding ids already in `current`.
+ */
+export function linkTargets(
+  latest: Diagram | undefined,
+  parts: DesignPart[],
+  exceptPart: string | null,
+  current: { nodes: DiagramNode[] },
+): LinkTarget[] {
+  const taken = new Set(current.nodes.map((n) => n.id));
+  const out: LinkTarget[] = [];
+  const seen = new Set<string>();
+  const add = (n: DiagramNode, from: string) => {
+    if (taken.has(n.id) || seen.has(n.id)) return;
+    seen.add(n.id);
+    out.push({ id: n.id, kind: n.kind, label: n.label || n.id, from });
+  };
+  if (latest) for (const n of latest.nodes) add(n, `v${latest.version}`);
+  for (const p of parts)
+    if (p.id !== exceptPart) for (const n of p.diagram?.nodes ?? []) add(n, p.id);
+  return out;
+}
+
+/**
+ * Re-point node `oldId` at another component: it takes the target's id, kind and label, and its edges
+ * and flow steps follow. Refused (returns `d` unchanged) when another node here already has that id.
+ */
+export function linkNode<D extends Diagram>(
+  d: D,
+  oldId: string,
+  target: Pick<LinkTarget, "id" | "kind" | "label">,
+): D {
+  if (oldId === target.id || d.nodes.some((n) => n.id === target.id)) return d;
+  if (!d.nodes.some((n) => n.id === oldId)) return d;
+  const re = (id: string) => (id === oldId ? target.id : id);
+  return {
+    ...d,
+    nodes: d.nodes.map((n) =>
+      n.id === oldId ? { ...n, id: target.id, kind: target.kind, label: target.label } : n,
+    ),
+    edges: d.edges.map((e) => ({ ...e, from: re(e.from), to: re(e.to) })),
+    ...(d.flows ? { flows: d.flows.map((f) => ({ ...f, path: f.path.map(re) })) } : {}),
+  };
+}
+
+/** Edges touching node `id`, split by direction. */
+export function connections(
+  d: { edges: DiagramEdge[] },
+  id: string,
+): { out: DiagramEdge[]; in: DiagramEdge[] } {
+  return { out: d.edges.filter((e) => e.from === id), in: d.edges.filter((e) => e.to === id) };
 }

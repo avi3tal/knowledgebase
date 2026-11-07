@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DesignCheck, DesignStage, TipLevel } from "../api";
 import { api } from "../api";
-import { STAGE_INFO, nextTipLevel } from "../design";
+import { STAGE_INFO, newlyPassed, nextTipLevel, stagesFirst } from "../design";
 import { ConfirmBar } from "./ConfirmDialog";
 import { Ring } from "./Ring";
 
@@ -12,7 +12,10 @@ export interface TipState {
 
 const LEVEL_LABEL: Record<TipLevel, string> = { nudge: "nudge", hint: "hint", show: "answer" };
 
-/** Right panel: live rubric checks grouped by stage, tips on demand, smells. */
+/**
+ * Right pane: live rubric checks grouped by stage (the current stage first), tips on demand
+ * (nudge → hint → show) and final smells. A check that flips to passed plays a short celebration.
+ */
 export function DesignChecklist({
   subject,
   slug,
@@ -22,6 +25,8 @@ export function DesignChecklist({
   tips,
   setTip,
   onJump,
+  current,
+  showFinalSmells = true,
 }: {
   subject: string;
   slug: string;
@@ -31,6 +36,9 @@ export function DesignChecklist({
   tips: Record<string, TipState>;
   setTip: (id: string, t: TipState) => void;
   onJump: (s: DesignStage) => void;
+  /** the tab on screen: its checks come first */
+  current?: string;
+  showFinalSmells?: boolean;
 }) {
   const [asking, setAsking] = useState<string | null>(null);
   const [confirmShow, setConfirmShow] = useState<string | null>(null);
@@ -51,9 +59,22 @@ export function DesignChecklist({
     );
   };
 
+  // Celebrate checks that just flipped to passed (not on first render).
+  const prev = useRef(check.checks);
+  const [flash, setFlash] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const flipped = newlyPassed(prev.current, check.checks);
+    prev.current = check.checks;
+    if (flipped.length === 0) return;
+    setFlash(new Set(flipped));
+    const t = setTimeout(() => setFlash(new Set()), 1800);
+    return () => clearTimeout(t);
+  }, [check.checks]);
+
   const pct = check.total ? Math.round((100 * check.passed) / check.total) : 0;
+  const order = current ? stagesFirst(stages, current) : stages;
   return (
-    <aside className="checklist">
+    <div className="checklist">
       <div className="cl-head">
         <Ring solved={check.passed} total={check.total} size={64} />
         <div className="grow">
@@ -68,12 +89,12 @@ export function DesignChecklist({
         </div>
       </div>
       {error && <div className="inline-error">⚠ {error}</div>}
-      {stages.map((st) => {
+      {order.map((st) => {
         const items = check.checks.filter((c) => c.stage === st);
         if (items.length === 0) return null;
         const s = check.stages[st];
         return (
-          <section key={st} className="cl-group">
+          <section key={st} className={`cl-group ${st === current ? "current" : ""}`}>
             <button className="cl-stage" onClick={() => onJump(st)}>
               {STAGE_INFO[st].icon} {STAGE_INFO[st].label}
               <span className={`cl-count ${s && s.passed === s.total ? "ok" : ""}`}>
@@ -85,7 +106,10 @@ export function DesignChecklist({
                 const tip = tips[c.id];
                 const next = nextTipLevel(tip?.level);
                 return (
-                  <li key={c.id} className={`cl-item ${c.passed ? "pass" : "fail"}`}>
+                  <li
+                    key={c.id}
+                    className={`cl-item ${c.passed ? "pass" : "fail"} ${flash.has(c.id) ? "just-passed" : ""}`}
+                  >
                     <span className="cl-mark" aria-label={c.passed ? "passed" : "not yet"}>
                       {c.passed ? "✓" : "✗"}
                     </span>
@@ -128,7 +152,7 @@ export function DesignChecklist({
           </section>
         );
       })}
-      {check.final_smells.length > 0 && (
+      {showFinalSmells && check.final_smells.length > 0 && (
         <section className="cl-group">
           <div className="cl-stage static">👃 Final-version smells</div>
           <ul>
@@ -156,6 +180,6 @@ export function DesignChecklist({
           ))}
         </div>
       )}
-    </aside>
+    </div>
   );
 }

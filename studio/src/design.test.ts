@@ -4,7 +4,7 @@ import fixtureJson from "../../tools/tests/testdata/design_check_fixture.json";
 import refV1 from "../../system-design/problems/url-shortener/reference/diagrams/v1.json";
 import refV2 from "../../system-design/problems/url-shortener/reference/diagrams/v2.json";
 import refV3 from "../../system-design/problems/url-shortener/reference/diagrams/v3.json";
-import type { DesignCheck, Diagram } from "./api";
+import type { DesignCheck, DesignDoc, DesignPart, Diagram } from "./api";
 import {
   NODE_H,
   NODE_W,
@@ -39,10 +39,300 @@ import {
   truncate,
   withPositions,
   zoomAt,
+  SHAPE_MIME,
+  composeDiagram,
+  composePreview,
+  composeVersion,
+  composeWhy,
+  connections,
+  coverableIds,
+  diagramToSub,
+  freeSpot,
+  extractBrief,
+  filterPalette,
+  kindShape,
+  linkNode,
+  linkTargets,
+  missingPartNodes,
+  newPart,
+  newlyPassed,
+  paletteGroups,
+  partToDiagram,
+  placeComposed,
+  stagesFirst,
 } from "./design";
+import refDesignJson from "../../system-design/problems/url-shortener/reference/design.json";
 
 const fixture = fixtureJson as unknown as DesignCheck;
 const refs = [refV1, refV2, refV3] as unknown as Diagram[];
+const refDesign = refDesignJson as unknown as DesignDoc;
+const refParts = refDesign.parts ?? [];
+
+const SD_PALETTE = [
+  "client",
+  "dns",
+  "cdn",
+  "load-balancer",
+  "api-gateway",
+  "service",
+  "worker",
+  "scheduler",
+  "cache",
+  "sql",
+  "nosql",
+  "blob",
+  "search",
+  "queue",
+  "stream",
+  "coordinator",
+  "external",
+];
+const OOD_PALETTE = ["actor", "class", "abstract", "interface", "enum"];
+
+const part = (id: string, nodes: string[], edges: [string, string][] = []): DesignPart => ({
+  ...newPart([]),
+  id,
+  diagram: {
+    nodes: nodes.map((n, i) => ({ id: n, kind: "service", label: n, x: 100, y: 40 + i * 100 })),
+    edges: edges.map(([from, to]) => ({ from, to, label: `${from}→${to}` })),
+  },
+});
+
+describe("stencil", () => {
+  it("groups the system-design palette Visio-style, every kind exactly once", () => {
+    const g = paletteGroups(SD_PALETTE);
+    expect(g.map((x) => x.title)).toEqual([
+      "Clients & edge",
+      "Compute",
+      "Data",
+      "Messaging",
+      "External",
+    ]);
+    expect(g[0]!.kinds).toEqual(["client", "dns", "cdn", "load-balancer", "api-gateway"]);
+    expect(g.flatMap((x) => x.kinds).sort()).toEqual([...SD_PALETTE].sort());
+  });
+  it("gives OOD one group, drops kinds the problem lacks, keeps unknown kinds under Other", () => {
+    expect(paletteGroups(OOD_PALETTE)).toEqual([
+      { title: "Classes", icon: "📦", kinds: OOD_PALETTE },
+    ]);
+    const g = paletteGroups(["client", "service", "robot"]);
+    expect(g.map((x) => [x.title, x.kinds])).toEqual([
+      ["Clients & edge", ["client"]],
+      ["Compute", ["service"]],
+      ["Other", ["robot"]],
+    ]);
+  });
+  it("filters by kind, label, id base or group title, and drops empty groups", () => {
+    const g = paletteGroups(SD_PALETTE);
+    expect(filterPalette(g, "  ")).toBe(g);
+    expect(filterPalette(g, "DB").flatMap((x) => x.kinds)).toEqual(["sql"]);
+    expect(filterPalette(g, "lb").flatMap((x) => x.kinds)).toEqual(["load-balancer"]);
+    expect(filterPalette(g, "messag").flatMap((x) => x.kinds)).toEqual(["queue", "stream"]);
+    expect(filterPalette(g, "zzz")).toEqual([]);
+    expect(SHAPE_MIME).toMatch(/^application\/x-/);
+  });
+  it("adds clicked shapes on a free spot next to the centre, never on top of another", () => {
+    expect(freeSpot([], { x: 103, y: 47 })).toEqual({ x: 100, y: 50 });
+    const nodes = [{ id: "a", kind: "service", x: 100, y: 50 }];
+    const p = freeSpot(nodes, { x: 100, y: 50 });
+    expect(p).toEqual({ x: 100 + NODE_W + 30, y: 50 });
+    const q = freeSpot([...nodes, { id: "b", kind: "service", ...p }], { x: 100, y: 50 });
+    expect(q).toEqual({ x: 100, y: 50 + NODE_H + 30 });
+  });
+  it("draws stores as cylinders and messaging as pipes", () => {
+    expect(kindShape("sql")).toBe("store");
+    expect(kindShape("queue")).toBe("pipe");
+    expect(kindShape("actor")).toBe("person");
+    expect(kindShape("service")).toBe("card");
+  });
+});
+
+describe("brief", () => {
+  it("extracts the interviewer section up to the next h2", () => {
+    const md =
+      "# T\n\nintro\n\n## What the interviewer tells you if you ask\n- 100M links\n- 5 years\n\n## Your job\nwork";
+    expect(extractBrief(md)).toBe("- 100M links\n- 5 years");
+    expect(extractBrief("# T\n## what THE interviewer tells you\nx\n### sub\ny")).toBe(
+      "x\n### sub\ny",
+    );
+    expect(extractBrief("# T\n## Your job\nwork")).toBeNull();
+  });
+  it("lists F, N and A ids as coverable", () => {
+    expect(coverableIds(refDesign.scope).map((x) => x.id)).toEqual(
+      expect.arrayContaining(["F1", "F2", "N1"]),
+    );
+    expect(coverableIds(refDesign.scope).some((x) => x.id.startsWith("O"))).toBe(false);
+  });
+});
+
+describe("checklist order and pass animation", () => {
+  it("puts the current stage first", () => {
+    expect(stagesFirst(["scope", "api", "parts", "high-level"], "parts")).toEqual([
+      "parts",
+      "scope",
+      "api",
+      "high-level",
+    ]);
+    expect(stagesFirst(["scope", "api"], "reference")).toEqual(["scope", "api"]);
+  });
+  it("reports only the checks that flipped to passed", () => {
+    const prev = [
+      { id: "a", passed: false },
+      { id: "b", passed: true },
+      { id: "c", passed: false },
+    ];
+    const next = [
+      { id: "a", passed: true },
+      { id: "b", passed: true },
+      { id: "c", passed: false },
+      { id: "d", passed: true },
+    ];
+    expect(newlyPassed(prev, next)).toEqual(["a", "d"]);
+  });
+});
+
+describe("decompose → reduce (mirrors kb design.compose / part_smells)", () => {
+  it("composes the reference parts into v1 exactly like Python", () => {
+    // python3: design.compose(v1, parts) on system-design/problems/url-shortener/reference
+    const c = composeDiagram(refs[0]!, refParts);
+    expect(c.nodes.map((n) => n.id)).toEqual([
+      "client",
+      "svc",
+      "db",
+      "ids",
+      "lb",
+      "cache",
+      "kv",
+      "clicks",
+      "agg",
+      "stats",
+    ]);
+    expect(c.edges.map((e) => `${e.from}->${e.to}`)).toEqual([
+      "client->svc",
+      "svc->db",
+      "svc->ids",
+      "client->lb",
+      "lb->svc",
+      "svc->cache",
+      "svc->kv",
+      "svc->clicks",
+      "clicks->agg",
+      "agg->stats",
+    ]);
+    expect(refs[0]!.nodes).toHaveLength(3); // input untouched
+  });
+  it("lets existing nodes and edges win, dedupes edges by from→to and is idempotent", () => {
+    const base: Diagram = {
+      version: 1,
+      why: "v1",
+      nodes: [{ id: "svc", kind: "service", label: "Mine", x: 1, y: 2 }],
+      edges: [],
+    };
+    const p1 = part("P1", ["svc", "db"], [["svc", "db"]]);
+    const p2 = part("P2", ["db", "cache"], [["svc", "db"]]);
+    const once = composeDiagram(base, [p1, p2]);
+    expect(once.nodes.find((n) => n.id === "svc")).toEqual(base.nodes[0]);
+    expect(once.nodes.map((n) => n.id)).toEqual(["svc", "db", "cache"]);
+    expect(once.edges).toEqual([{ from: "svc", to: "db", label: "svc→db" }]);
+    expect(once.version).toBe(1);
+    expect(composeDiagram(once, [p1, p2])).toEqual(once);
+    // copies, not aliases
+    once.nodes[1]!.label = "changed";
+    expect(p1.diagram.nodes[1]!.label).toBe("db");
+  });
+  it("finds the part nodes missing from a version, like part_smells", () => {
+    expect(missingPartNodes(refs[0], refParts)).toEqual([
+      "agg",
+      "cache",
+      "clicks",
+      "ids",
+      "kv",
+      "lb",
+      "stats",
+    ]);
+    expect(missingPartNodes(refs[2], refParts)).toEqual([]);
+    expect(missingPartNodes(undefined, [part("P1", ["b", "a", "b"])])).toEqual(["a", "b"]);
+    expect(missingPartNodes(refs[0], [])).toEqual([]);
+  });
+  it("previews which parts add something", () => {
+    expect(composePreview(refs[2], refParts)).toEqual({ parts: [], nodes: 0, edges: 0 });
+    const p = composePreview(refs[0], refParts);
+    expect(p.parts).toEqual(refParts.map((x) => x.id));
+    expect(p.nodes).toBe(7);
+    expect(composeWhy(["P1", "P3"])).toBe("Compose P1, P3");
+  });
+  it("builds the next version, placing new nodes off the old ones", () => {
+    const v1: Diagram = {
+      version: 1,
+      why: "naive",
+      nodes: [{ id: "svc", kind: "service", label: "svc", x: 100, y: 40 }],
+      edges: [],
+    };
+    const next = composeVersion([v1], [part("P1", ["svc", "db", "cache"], [["svc", "db"]])])!;
+    expect(next.version).toBe(2);
+    expect(next.why).toBe("Compose P1");
+    expect(next.nodes[0]).toEqual(v1.nodes[0]);
+    const boxes = next.nodes.map((n) => [n.x!, n.y!] as const);
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const [a, b] = [boxes[i]!, boxes[j]!];
+        const apart = Math.abs(a[0] - b[0]) >= NODE_W || Math.abs(a[1] - b[1]) >= NODE_H;
+        expect(apart).toBe(true);
+      }
+    expect(composeVersion([next], [part("P1", ["svc", "db"], [["svc", "db"]])])).toBeNull();
+    expect(composeVersion([], [part("P1", ["a"])])?.version).toBe(1);
+  });
+  it("keeps a free part position as is", () => {
+    const d: Diagram = {
+      version: 2,
+      why: "",
+      nodes: [
+        { id: "a", kind: "service", x: 0, y: 0 },
+        { id: "b", kind: "service", x: 600, y: 600 },
+      ],
+      edges: [],
+    };
+    expect(placeComposed(d, ["a"]).nodes[1]).toMatchObject({ x: 600, y: 600 });
+  });
+  it("starts parts empty but valid, and round-trips the sub-diagram", () => {
+    const p = newPart([part("P1", []), part("P3", [])]);
+    expect(p.id).toBe("P4");
+    expect(p.covers).toEqual([]);
+    expect(p.diagram).toEqual({ nodes: [], edges: [] });
+    const d = partToDiagram(part("P1", ["a"]));
+    expect(d.version).toBe(0);
+    expect(Object.keys(diagramToSub(d)).sort()).toEqual(["edges", "nodes"]);
+  });
+  it("offers link targets from the latest version, then other parts, unique and not already here", () => {
+    const latest = refs[1]!;
+    const ps = [part("P1", ["svc", "ids"]), part("P2", ["svc", "newthing"])];
+    const t = linkTargets(latest, ps, "P1", ps[0]!.diagram);
+    expect(t.map((x) => x.id)).not.toContain("svc");
+    expect(t.map((x) => x.id)).toContain("newthing");
+    expect(t.find((x) => x.id === "newthing")?.from).toBe("P2");
+    expect(t[0]!.from).toBe(`v${latest.version}`);
+    expect(new Set(t.map((x) => x.id)).size).toBe(t.length);
+  });
+  it("links a node to an existing component: id, kind and label follow, edges too", () => {
+    const d: Diagram = {
+      version: 0,
+      why: "",
+      nodes: [
+        { id: "svc", kind: "service" },
+        { id: "db", kind: "sql", label: "SQL DB" },
+      ],
+      edges: [{ from: "svc", to: "db" }],
+      flows: [{ name: "f", path: ["svc", "db"] }],
+    };
+    const r = linkNode(d, "db", { id: "kv", kind: "nosql", label: "links KV" });
+    expect(r.nodes[1]).toEqual({ id: "kv", kind: "nosql", label: "links KV" });
+    expect(r.edges).toEqual([{ from: "svc", to: "kv" }]);
+    expect(r.flows![0]!.path).toEqual(["svc", "kv"]);
+    expect(linkNode(d, "db", { id: "svc", kind: "service", label: "x" })).toBe(d);
+    expect(linkNode(d, "nope", { id: "z", kind: "service", label: "x" })).toBe(d);
+    expect(connections(r, "kv")).toEqual({ out: [], in: [{ from: "svc", to: "kv" }] });
+  });
+});
 
 describe("design check contract", () => {
   it("has the shape the console renders", () => {

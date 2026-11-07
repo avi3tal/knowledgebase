@@ -1,10 +1,56 @@
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { DesignCheck, DesignReference as Ref } from "../api";
 import { api } from "../api";
-import { STAGE_INFO, diffDiagrams, formatSI, newParts, sortVersions } from "../design";
+import {
+  STAGE_INFO,
+  diffDiagrams,
+  formatSI,
+  newParts,
+  partToDiagram,
+  sortVersions,
+} from "../design";
 import { DiagramCanvas } from "./DiagramCanvas";
 import { VersionPills } from "./DesignHighLevel";
 import { Markdown } from "./Markdown";
+
+/**
+ * `Markdown` fence renderer for reference.md: a diagram fence containing `v2` draws that diagram
+ * version (new parts highlighted); `part:P1` draws that part's sub-diagram. Read-only, same canvas.
+ */
+export function diagramFence(ref: Pick<Ref, "diagrams" | "design">, height = 340) {
+  const diagrams = sortVersions(ref.diagrams);
+  return (lang: string, body: string): ReactNode | undefined => {
+    if (lang !== "diagram") return undefined;
+    const name = body.trim();
+    const v = /^v(\d+)$/.exec(name);
+    if (v) {
+      const idx = diagrams.findIndex((d) => d.version === Number(v[1]));
+      const d = diagrams[idx];
+      if (!d) return <div className="callout small">Diagram {name} is missing.</div>;
+      const hl = newParts(diffDiagrams(diagrams[idx - 1] ?? null, d), idx === 0);
+      return (
+        <figure className="md-diagram">
+          <DiagramCanvas diagram={d} highlight={hl} height={height} />
+          <figcaption>
+            <span className="why-tag">v{d.version}</span> {d.why}
+          </figcaption>
+        </figure>
+      );
+    }
+    const p = /^part:(.+)$/.exec(name);
+    const part = p ? (ref.design.parts ?? []).find((x) => x.id === p[1]) : undefined;
+    if (!part) return <div className="callout small">Diagram {name} is missing.</div>;
+    return (
+      <figure className="md-diagram">
+        <DiagramCanvas diagram={partToDiagram(part)} height={Math.round(height * 0.75)} />
+        <figcaption>
+          <span className="why-tag">{part.id}</span> {part.title}
+        </figcaption>
+      </figure>
+    );
+  };
+}
 
 /** After submit: the reference walkthrough, its diagrams (same renderer) and the answer per check. */
 export function DesignReferenceView({
@@ -40,6 +86,8 @@ export function DesignReferenceView({
       diagram ? newParts(diffDiagrams(diagrams[idx - 1] ?? null, diagram), idx === 0) : undefined,
     [diagrams, diagram, idx],
   );
+
+  const fence = useMemo(() => (ref ? diagramFence(ref) : undefined), [ref]);
 
   if (error) {
     return (
@@ -107,7 +155,11 @@ export function DesignReferenceView({
       </section>
 
       <section className="walkthrough">
-        <Markdown text={ref.walkthrough} path={`${subject}/problems/${slug}/reference.md`} />
+        <Markdown
+          text={ref.walkthrough}
+          path={`${subject}/problems/${slug}/reference.md`}
+          fence={fence}
+        />
       </section>
     </div>
   );

@@ -1,8 +1,10 @@
+import type { Ref } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { DesignCheck, Diagram } from "../api";
 import type { Highlight } from "../design";
 import { highlightFor, parseDiagramJson, smellsByNode } from "../design";
 import { ConfirmBar } from "./ConfirmDialog";
+import type { CanvasHandle, Selection } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
 
 /** Version pills v1 … vN with smell / missing-why markers. */
@@ -54,6 +56,12 @@ export function HighLevelEditor({
   onNewVersion,
   onDeleteVersion,
   saveError,
+  mode,
+  setMode,
+  selection,
+  onSelect,
+  onRename,
+  canvasRef,
 }: {
   diagrams: Diagram[];
   check: DesignCheck;
@@ -64,27 +72,37 @@ export function HighLevelEditor({
   onNewVersion: () => void;
   onDeleteVersion: (v: number) => void;
   saveError?: string;
+  mode: "canvas" | "json";
+  setMode: (m: "canvas" | "json") => void;
+  selection: Selection;
+  onSelect: (s: Selection) => void;
+  onRename: () => void;
+  canvasRef: Ref<CanvasHandle>;
 }) {
-  const [mode, setMode] = useState<"canvas" | "json">("canvas");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const diagram = diagrams.find((d) => d.version === shown) ?? diagrams[diagrams.length - 1];
   const versions = diagrams.map((d) => d.version);
   const highlight: Highlight = useMemo(() => highlightFor(check, shown), [check, shown]);
   const smells = useMemo(() => smellsByNode(check.smells, shown), [check.smells, shown]);
-  const shownSmells = check.smells.filter((s) => s.version === shown);
   const info = check.versions.find((v) => v.version === shown);
   const isFirst = versions[0] === shown;
-  const isLast = versions[versions.length - 1] === shown;
   if (!diagram) return null;
+  const changes = info
+    ? info.diff.added_nodes.length +
+      info.diff.removed_nodes.length +
+      info.diff.added_edges.length +
+      info.diff.removed_edges.length
+    : 0;
 
   return (
-    <div className="highlevel">
-      <div className="hl-timeline">
+    <>
+      <div className="cx-toolbar">
         <VersionPills versions={versions} shown={shown} onShow={setShown} check={check} />
         <button
           className="primary new-version"
           onClick={onNewVersion}
           disabled={versions.length >= 20}
+          title="Copy the latest version into a new one, then change what it fixes"
         >
           ＋ New version
         </button>
@@ -103,7 +121,7 @@ export function HighLevelEditor({
             />
           ) : (
             <button className="ghost danger" onClick={() => setConfirmDelete(true)}>
-              🗑 Delete v{shown}
+              🗑 v{shown}
             </button>
           ))}
         <span className="grow" />
@@ -116,85 +134,97 @@ export function HighLevelEditor({
           </button>
         </div>
       </div>
-
-      <label className={`why-field ${diagram.why.trim() ? "" : "missing"}`}>
-        <span className="why-tag">why v{shown}?</span>
-        <input
-          value={diagram.why}
-          placeholder={
-            isFirst
-              ? palette.includes("class")
-                ? "e.g. Core objects first: the main classes and how they relate"
-                : "e.g. Naive start: one service and one database"
-              : "Which flaw, requirement or bottleneck does this version fix? (cite N1, F2…)"
-          }
-          onChange={(e) => onDiagram({ ...diagram, why: e.target.value })}
-        />
-      </label>
-
-      {info && !isFirst && (
-        <div className="diff-strip">
-          {info.diff.added_nodes.map((n) => (
-            <span key={`+${n}`} className="diff-chip add">
-              ＋ {n}
-            </span>
-          ))}
-          {info.diff.removed_nodes.map((n) => (
-            <span key={`-${n}`} className="diff-chip del">
-              − {n}
-            </span>
-          ))}
-          {info.diff.added_edges.length + info.diff.removed_edges.length > 0 && (
-            <span className="muted small">
-              {info.diff.added_edges.length} new · {info.diff.removed_edges.length} removed
-              connections
-            </span>
-          )}
-          {info.diff.added_nodes.length +
-            info.diff.removed_nodes.length +
-            info.diff.added_edges.length +
-            info.diff.removed_edges.length ===
-            0 && <span className="muted small">No change vs the previous version yet.</span>}
-        </div>
-      )}
-
+      <div className="cx-subbar">
+        <label className={`why-field ${diagram.why.trim() ? "" : "missing"}`}>
+          <span className="why-tag">why v{shown}?</span>
+          <input
+            value={diagram.why}
+            placeholder={
+              isFirst
+                ? palette.includes("class")
+                  ? "e.g. Core objects first: the main classes and how they relate"
+                  : "e.g. Naive start: one service and one database"
+                : "Which flaw, requirement or bottleneck does this version fix? (cite N1, F2…)"
+            }
+            onChange={(e) => onDiagram({ ...diagram, why: e.target.value })}
+          />
+        </label>
+        {info && !isFirst && (
+          <div className="diff-strip">
+            {info.diff.added_nodes.map((n) => (
+              <span key={`+${n}`} className="diff-chip add">
+                ＋ {n}
+              </span>
+            ))}
+            {info.diff.removed_nodes.map((n) => (
+              <span key={`-${n}`} className="diff-chip del">
+                − {n}
+              </span>
+            ))}
+            {info.diff.added_edges.length + info.diff.removed_edges.length > 0 && (
+              <span className="muted small">
+                {info.diff.added_edges.length} new · {info.diff.removed_edges.length} removed
+                connections
+              </span>
+            )}
+            {changes === 0 && (
+              <span className="muted small">No change vs the previous version yet.</span>
+            )}
+          </div>
+        )}
+        {saveError && <span className="inline-error">⚠ {saveError}</span>}
+      </div>
       {mode === "canvas" ? (
-        <DiagramCanvas
-          key={shown}
-          diagram={diagram}
-          palette={palette}
-          onChange={onDiagram}
-          highlight={highlight}
-          smells={smells}
-        />
+        <div className="cx-canvas">
+          <DiagramCanvas
+            key={shown}
+            diagram={diagram}
+            onChange={onDiagram}
+            highlight={highlight}
+            smells={smells}
+            height="fill"
+            selection={selection}
+            onSelect={onSelect}
+            onRename={onRename}
+            handle={canvasRef}
+          />
+        </div>
       ) : (
         <JsonTab key={shown} diagram={diagram} onApply={onDiagram} />
       )}
-      {saveError && <div className="inline-error">⚠ {saveError}</div>}
-
-      {shownSmells.length > 0 && (
-        <div className="smells">
-          <b>👃 Smells in v{shown}</b>
-          {!isLast && <span className="muted small"> (only the final version counts)</span>}
-          <ul>
-            {shownSmells.map((s) => (
-              <li key={`${s.rule}:${s.nodes.join(",")}`}>
-                <code>{s.rule}</code> {s.message}{" "}
-                {s.nodes.map((n) => (
-                  <span key={n} className="smell-node">
-                    {n}
-                  </span>
-                ))}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
-function JsonTab({ diagram, onApply }: { diagram: Diagram; onApply: (d: Diagram) => void }) {
+/** Right pane: the smells of the version on screen (only the final version counts). */
+export function ShownSmells({ check, shown }: { check: DesignCheck; shown: number }) {
+  const list = check.smells.filter((s) => s.version === shown);
+  const last = Math.max(0, ...check.versions.map((v) => v.version));
+  return (
+    <section className={`smells ${list.length ? "" : "clean"}`}>
+      <b>👃 Smells in v{shown}</b>
+      {shown !== last && <span className="muted small"> (only the final version counts)</span>}
+      {list.length === 0 ? (
+        <p className="muted small ok-line">✓ None: clean structure.</p>
+      ) : (
+        <ul>
+          {list.map((s) => (
+            <li key={`${s.rule}:${s.nodes.join(",")}`}>
+              <code>{s.rule}</code> {s.message}{" "}
+              {s.nodes.map((n) => (
+                <span key={n} className="smell-node">
+                  {n}
+                </span>
+              ))}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function JsonTab({ diagram, onApply }: { diagram: Diagram; onApply: (d: Diagram) => void }) {
   const pretty = useMemo(() => JSON.stringify(diagram, null, 2), [diagram]);
   const [text, setText] = useState(pretty);
   const [error, setError] = useState<string | null>(null);

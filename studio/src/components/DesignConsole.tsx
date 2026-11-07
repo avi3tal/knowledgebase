@@ -1,9 +1,10 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type {
   DesignAttempt,
   DesignCheck,
   DesignDoc,
+  DesignPart,
   DesignProblemData,
   DesignSaveFile,
   DesignStage,
@@ -12,14 +13,29 @@ import type {
 } from "../api";
 import { api } from "../api";
 import { RootContext } from "../context";
-import { STAGE_INFO, cloneLatest, formatClock, sortVersions } from "../design";
+import {
+  STAGE_INFO,
+  cloneLatest,
+  composeVersion,
+  diagramToSub,
+  formatClock,
+  linkTargets,
+  partToDiagram,
+  sortVersions,
+} from "../design";
 import { designHref } from "../route";
 import { runCommand } from "../sessions";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { DesignBrief } from "./DesignBrief";
 import type { TipState } from "./DesignChecklist";
 import { DesignChecklist } from "./DesignChecklist";
-import { HighLevelEditor } from "./DesignHighLevel";
+import { HighLevelEditor, ShownSmells } from "./DesignHighLevel";
+import { PartsEditor } from "./DesignParts";
 import { DesignReferenceView } from "./DesignReference";
+import type { CanvasHandle, Selection } from "./DiagramCanvas";
+import { Inspector } from "./Inspector";
+import { ShapePalette } from "./ShapePalette";
+import { Workbench } from "./Workbench";
 import {
   ApiDataEditor,
   DeepDivesEditor,
@@ -148,6 +164,17 @@ function useSaver(
 }
 
 type Tab = DesignStage | "reference";
+const DIAGRAM_TABS: Tab[] = ["parts", "high-level"];
+const STAGE_COLOR: Record<DesignStage, string> = {
+  scope: "#4f46e5",
+  estimates: "#0891b2",
+  api: "#7c3aed",
+  parts: "#db2777",
+  "high-level": "#ea580c",
+  "deep-dives": "#0d9488",
+  "wrap-up": "#65a30d",
+  signatures: "#ca8a04",
+};
 
 export function DesignConsole({
   problem,
@@ -173,9 +200,24 @@ export function DesignConsole({
     const saved = sessionStorage.getItem(storeKey) as Tab | null;
     return saved && (saved === "reference" || problem.stages.includes(saved)) ? saved : "scope";
   });
+  const [selection, setSelection] = useState<Selection>(null);
+  const [renameTick, setRenameTick] = useState(0);
+  const [mode, setMode] = useState<"canvas" | "json">("canvas");
+  const parts = design.parts ?? [];
+  const [partId, setPartId] = useState<string | null>(() => parts[0]?.id ?? null);
+  const canvasRef = useRef<CanvasHandle>(null);
   const setTab = (t: Tab) => {
     setTabState(t);
+    setSelection(null);
     sessionStorage.setItem(storeKey, t);
+  };
+  const show = (v: number) => {
+    setShown(v);
+    setSelection(null);
+  };
+  const selectPart = (id: string | null) => {
+    setPartId(id);
+    setSelection(null);
   };
   const [tips, setTips] = useState<Record<string, TipState>>({});
   const [confirmSubmit, setConfirmSubmit] = useState(false);
@@ -191,6 +233,7 @@ export function DesignConsole({
     setDesign(d);
     saver.schedule("design", { file: "design", content: d });
   };
+  const editParts = (ps: DesignPart[]) => editDesign({ ...design, parts: ps });
   const editRows = (r: EstimateRow[]) => {
     setRows(r);
     saver.schedule("estimates", { file: "estimates", content: { version: 1, rows: r } });
@@ -203,12 +246,12 @@ export function DesignConsole({
     setDiagrams((ds) => ds.map((x) => (x.version === d.version ? d : x)));
     saver.schedule(`diagram:${d.version}`, { file: "diagram", content: d, version: d.version });
   };
-  const newVersion = () => {
-    const d = cloneLatest(diagrams);
+  const addVersion = (d: Diagram) => {
     setDiagrams((ds) => [...ds, d]);
-    setShown(d.version);
+    show(d.version);
     saver.schedule(`diagram:${d.version}`, { file: "diagram", content: d, version: d.version }, 0);
   };
+  const newVersion = () => addVersion(cloneLatest(diagrams));
   const deleteVersion = (v: number) => {
     saver.cancel(`diagram:${v}`);
     api.deleteDiagram(subject, slug, attempt, v).then(
@@ -216,10 +259,19 @@ export function DesignConsole({
         setCheck(c);
         const rest = diagrams.filter((d) => d.version !== v);
         setDiagrams(rest);
-        setShown([...rest].reverse().find((d) => d.version < v)?.version ?? rest[0]?.version ?? 1);
+        show([...rest].reverse().find((d) => d.version < v)?.version ?? rest[0]?.version ?? 1);
       },
       (e: unknown) => setActionError(errMsg(e)),
     );
+  };
+  const latest = diagrams[diagrams.length - 1];
+  const composed = useMemo(() => composeVersion(diagrams, parts), [diagrams, parts]);
+  const compose = () => {
+    if (!composed || diagrams.length >= 20) return;
+    addVersion(composed);
+    setTab("high-level");
+    setMode("canvas");
+    showToast(`v${composed.version}: ${composed.why} 🧬`, true);
   };
 
   // ---- recorded actions
@@ -288,171 +340,172 @@ export function DesignConsole({
     error: "⚠ not saved",
   };
   const firstError = Object.values(saver.errors)[0];
+  const saveBadge = (
+    <span
+      className={`save-state ${saver.state}`}
+      title={firstError ?? "Edits autosave after a short pause"}
+    >
+      {saveLabel[saver.state]}
+    </span>
+  );
 
-  return (
-    <div className="console">
-      <header className="console-head">
-        <div className="ch-title">
-          <a className="muted small" href={designHref(subject, slug)}>
-            ← {problem.title}
-          </a>
-          <h1>
-            {problem.title}{" "}
-            <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
-            {check.submitted && <span className="tag ok-tag">✓ submitted</span>}
-          </h1>
-          <div className="ch-meta">
-            <code className="muted small">{attempt}</code>
-            <a href={`vscode://file${initial.path}`} title="Open the attempt folder in VS Code">
-              ⧉ open in VS Code
-            </a>
-            <code className="cmd" onClick={copy} title="click to copy">
-              {copied ? "copied ✓" : cmd}
-            </code>
-          </div>
-        </div>
-        <span className="grow" />
-        <button
-          className={`timer ${over ? "over" : ""} ${running ? "" : "paused"}`}
-          onClick={() => setRunning((r) => !r)}
-          title={running ? "Pause the timer" : "Resume the timer"}
-        >
-          ⏱ {formatClock(elapsed)}
-          {problem.minutes ? <span className="muted"> / {problem.minutes}:00</span> : null}
-        </button>
-        <span
-          className={`save-state ${saver.state}`}
-          title={firstError ?? "Edits autosave after a short pause"}
-        >
-          {saveLabel[saver.state]}
+  // ---- what the canvas on screen edits (for the inspector)
+  const part = parts.find((p) => p.id === partId) ?? parts[0];
+  const shownDiagram = diagrams.find((d) => d.version === shown) ?? latest;
+  const onDiagramTab = DIAGRAM_TABS.includes(tab);
+  const active: { diagram: Diagram; onChange: (d: Diagram) => void } | null =
+    tab === "high-level" && shownDiagram && mode === "canvas"
+      ? { diagram: shownDiagram, onChange: editDiagram }
+      : tab === "parts" && part
+        ? {
+            diagram: partToDiagram(part),
+            onChange: (d) =>
+              editParts(
+                parts.map((p) => (p.id === part.id ? { ...part, diagram: diagramToSub(d) } : p)),
+              ),
+          }
+        : null;
+  const targets = active
+    ? tab === "parts"
+      ? linkTargets(latest, parts, part?.id ?? null, active.diagram)
+      : linkTargets(undefined, parts, null, active.diagram)
+    : [];
+
+  // ---- regions
+  const header = (
+    <>
+      <a className="ch-back" href={designHref(subject, slug)} title="Back to the problem">
+        ←
+      </a>
+      <h1 className="ch-title">
+        {problem.title} <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
+        {check.submitted && <span className="tag ok-tag">✓ submitted</span>}
+      </h1>
+      <code className="muted small ch-attempt" title={`attempt folder: ${attempt}`}>
+        {attempt}
+      </code>
+      <a
+        className="ch-vscode small"
+        href={`vscode://file${initial.path}`}
+        title="Open the attempt folder in VS Code"
+      >
+        ⧉ VS Code
+      </a>
+      <code className="cmd" onClick={copy} title={`click to copy: ${cmd}`}>
+        {copied ? "copied ✓" : cmd}
+      </code>
+      <span className="grow" />
+      {actionError && (
+        <span className="inline-error" role="alert">
+          ⚠ {actionError}
         </span>
-        <button className="check-btn" onClick={() => void runCheck()} disabled={busy !== null}>
-          {busy === "check" ? "checking…" : "✓ Check"}
-        </button>
+      )}
+      <button
+        className={`timer ${over ? "over" : ""} ${running ? "" : "paused"}`}
+        onClick={() => setRunning((r) => !r)}
+        title={running ? "Pause the timer" : "Resume the timer"}
+      >
+        ⏱ {formatClock(elapsed)}
+        {problem.minutes ? <span className="muted"> / {problem.minutes}:00</span> : null}
+      </button>
+      {saveBadge}
+      <button className="check-btn" onClick={() => void runCheck()} disabled={busy !== null}>
+        {busy === "check" ? "checking…" : "✓ Check"}
+      </button>
+      <button
+        className="primary submit-btn"
+        onClick={() => setConfirmSubmit(true)}
+        disabled={busy !== null}
+      >
+        {busy === "submit" ? "submitting…" : check.submitted ? "Re-submit" : "🚀 Submit"}
+      </button>
+    </>
+  );
+
+  const tabBar = tabs.map((t, i) => {
+    if (t === "reference")
+      return (
         <button
-          className="primary submit-btn"
-          onClick={() => setConfirmSubmit(true)}
-          disabled={busy !== null}
+          key={t}
+          className={`wb-tab ref-tab ${tab === t ? "on" : ""}`}
+          onClick={() => setTab(t)}
+          style={{ ["--tab-c" as string]: "#f59e0b" }}
         >
-          {busy === "submit" ? "submitting…" : check.submitted ? "Re-submit" : "🚀 Submit"}
+          📖 Reference <span className="wb-tab-badge">🔓</span>
         </button>
-      </header>
-      {actionError && <div className="inline-error banner">⚠ {actionError}</div>}
-      {toast &&
-        createPortal(
-          <div className={`toast ${toast.good ? "good" : ""}`} role="status">
-            {toast.text}
-          </div>,
-          document.body,
+      );
+    const s = check.stages[t];
+    const done = Boolean(s && s.total > 0 && s.passed === s.total);
+    return (
+      <button
+        key={t}
+        className={`wb-tab ${tab === t ? "on" : ""} ${done ? "done" : ""}`}
+        onClick={() => setTab(t)}
+        style={{ ["--tab-c" as string]: STAGE_COLOR[t] }}
+        aria-current={tab === t ? "step" : undefined}
+      >
+        <span className="tab-num">{i + 1}</span>
+        <span className="tab-icon" aria-hidden>
+          {STAGE_INFO[t].icon}
+        </span>
+        {STAGE_INFO[t].label}
+        <span className="wb-tab-badge">
+          {s && s.total > 0 ? (done ? "✓" : `${s.passed}/${s.total}`) : "–"}
+        </span>
+      </button>
+    );
+  });
+
+  const left = onDiagramTab
+    ? {
+        title: "Shapes",
+        icon: "🧰",
+        width: 248,
+        content: (
+          <ShapePalette
+            palette={problem.palette}
+            onAdd={(k) => canvasRef.current?.addAtCentre(k)}
+            onDrop={(k, x, y) => canvasRef.current?.dropAt(k, x, y) ?? false}
+            onHover={(x, y) => canvasRef.current?.hover(x, y) ?? false}
+            disabled={!active}
+            note={
+              !active
+                ? tab === "parts"
+                  ? "Add a part first."
+                  : "Switch to the canvas to add shapes."
+                : undefined
+            }
+          />
+        ),
+      }
+    : {
+        title: "Brief",
+        icon: "🗣️",
+        width: 280,
+        content: (
+          <DesignBrief problem={problem} scope={design.scope} onScope={() => setTab("scope")} />
+        ),
+      };
+
+  const right = {
+    title: selection && active ? "Inspector · Checks" : "Checks",
+    icon: "✅",
+    width: 330,
+    content: (
+      <>
+        {active && selection && (
+          <Inspector
+            diagram={active.diagram}
+            selection={selection}
+            onChange={active.onChange}
+            onSelect={setSelection}
+            renameTick={renameTick}
+            targets={targets}
+          />
         )}
-
-      <div className="console-grid">
-        <nav className="stage-tabs" aria-label="stages">
-          {tabs.map((t, i) => {
-            if (t === "reference")
-              return (
-                <button
-                  key={t}
-                  className={`stage-tab reference ${tab === t ? "on" : ""}`}
-                  onClick={() => setTab(t)}
-                  style={{ ["--i" as string]: i }}
-                >
-                  <span className="st-icon">📖</span>
-                  <span className="st-label">Reference</span>
-                  <span className="st-count">🔓</span>
-                </button>
-              );
-            const s = check.stages[t];
-            const done = s && s.total > 0 && s.passed === s.total;
-            return (
-              <button
-                key={t}
-                className={`stage-tab ${tab === t ? "on" : ""} ${done ? "done" : ""}`}
-                onClick={() => setTab(t)}
-                style={{ ["--i" as string]: i }}
-              >
-                <span className="st-icon">{STAGE_INFO[t].icon}</span>
-                <span className="st-label">
-                  <span className="st-num">{i + 1}</span> {STAGE_INFO[t].label}
-                </span>
-                <span className="st-count">
-                  {s && s.total > 0 ? (done ? "✓" : `${s.passed}/${s.total}`) : "–"}
-                </span>
-                {s && s.total > 0 && (
-                  <span className="st-bar" style={{ ["--p" as string]: s.passed / s.total }} />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        <main className="stage-body" key={tab}>
-          <h2 className="stage-title">
-            {tab === "reference"
-              ? "📖 Reference"
-              : `${STAGE_INFO[tab].icon} ${STAGE_INFO[tab].label}`}
-          </h2>
-          {tab === "scope" && (
-            <ScopeEditor
-              scope={design.scope}
-              onChange={(scope) => editDesign({ ...design, scope })}
-            />
-          )}
-          {tab === "estimates" && (
-            <EstimatesEditor
-              rows={rows}
-              results={check.estimates}
-              units={problem.units}
-              constants={problem.constants}
-              onChange={editRows}
-            />
-          )}
-          {tab === "api" && (
-            <ApiDataEditor doc={design} palette={problem.palette} onChange={editDesign} />
-          )}
-          {tab === "high-level" && (
-            <HighLevelEditor
-              diagrams={diagrams}
-              check={check}
-              palette={problem.palette}
-              shown={shown}
-              setShown={setShown}
-              onDiagram={editDiagram}
-              onNewVersion={newVersion}
-              onDeleteVersion={deleteVersion}
-              saveError={saver.errors[`diagram:${shown}`]}
-            />
-          )}
-          {tab === "deep-dives" && (
-            <DeepDivesEditor
-              doc={design}
-              versions={diagrams.map((d) => d.version)}
-              onChange={editDesign}
-            />
-          )}
-          {tab === "wrap-up" && (
-            <WrapUpEditor
-              keys={problem.wrapup_keys}
-              wrapup={design.wrapup ?? {}}
-              onChange={(wrapup) => editDesign({ ...design, wrapup })}
-            />
-          )}
-          {tab === "signatures" && (
-            <SignaturesEditor value={signatures} onChange={editSignatures} />
-          )}
-          {tab === "reference" && (
-            <DesignReferenceView subject={subject} slug={slug} attempt={attempt} check={check} />
-          )}
-          {tab !== "high-level" &&
-            Object.entries(saver.errors)
-              .filter(([k]) => !k.startsWith("diagram:"))
-              .map(([k, e]) => (
-                <div key={k} className="inline-error">
-                  ⚠ {k}: {e}
-                </div>
-              ))}
-        </main>
-
+        {tab === "high-level" && shownDiagram && (
+          <ShownSmells check={check} shown={shownDiagram.version} />
+        )}
         <DesignChecklist
           subject={subject}
           slug={slug}
@@ -462,8 +515,169 @@ export function DesignConsole({
           tips={tips}
           setTip={(id, t) => setTips((m) => ({ ...m, [id]: t }))}
           onJump={(s) => setTab(s)}
+          current={tab}
+          showFinalSmells={tab !== "high-level"}
         />
+      </>
+    ),
+  };
+
+  const idx = tabs.indexOf(tab);
+  const prevTab = idx > 0 ? tabs[idx - 1] : undefined;
+  const nextTab = idx >= 0 && idx < tabs.length - 1 ? tabs[idx + 1] : undefined;
+  const tabName = (t: Tab) => (t === "reference" ? "Reference" : STAGE_INFO[t].label);
+  const pct = check.total ? (100 * check.passed) / check.total : 0;
+  const footer = (
+    <>
+      <button className="ghost" disabled={!prevTab} onClick={() => prevTab && setTab(prevTab)}>
+        ← {prevTab ? tabName(prevTab) : "start"}
+      </button>
+      <div className="ft-progress" title={`${check.passed} of ${check.total} checks pass`}>
+        <div className="ft-bar">
+          <span style={{ width: `${pct}%` }} />
+        </div>
+        <b>
+          {check.passed}/{check.total}
+        </b>{" "}
+        checks
       </div>
+      <span className={`ft-chip ${check.final_smells.length ? "bad" : "ok"}`}>
+        👃 {check.final_smells.length} smell{check.final_smells.length === 1 ? "" : "s"}
+      </span>
+      <span className="ft-chip">
+        🗺️ {diagrams.length} version{diagrams.length === 1 ? "" : "s"}
+      </span>
+      {problem.stages.includes("parts") && (
+        <span className="ft-chip">
+          🧩 {parts.length} part{parts.length === 1 ? "" : "s"}
+        </span>
+      )}
+      <span className="grow" />
+      {saveBadge}
+      <button
+        className={nextTab ? "primary" : "ghost"}
+        disabled={!nextTab}
+        onClick={() => nextTab && setTab(nextTab)}
+      >
+        {nextTab ? tabName(nextTab) : "end"} →
+      </button>
+    </>
+  );
+
+  const formErrors = Object.entries(saver.errors)
+    .filter(([k]) => !k.startsWith("diagram:"))
+    .map(([k, e]) => (
+      <div key={k} className="inline-error">
+        ⚠ {k}: {e}
+      </div>
+    ));
+
+  return (
+    <div className="console">
+      <Workbench
+        id="console"
+        header={header}
+        tabs={tabBar}
+        left={left}
+        right={right}
+        footer={footer}
+        centerClass={onDiagramTab ? "flush" : ""}
+      >
+        {tab === "high-level" && (
+          <HighLevelEditor
+            diagrams={diagrams}
+            check={check}
+            palette={problem.palette}
+            shown={shownDiagram?.version ?? shown}
+            setShown={show}
+            onDiagram={editDiagram}
+            onNewVersion={newVersion}
+            onDeleteVersion={deleteVersion}
+            saveError={saver.errors[`diagram:${shown}`]}
+            mode={mode}
+            setMode={(m) => {
+              setMode(m);
+              setSelection(null);
+            }}
+            selection={selection}
+            onSelect={setSelection}
+            onRename={() => setRenameTick((n) => n + 1)}
+            canvasRef={canvasRef}
+          />
+        )}
+        {tab === "parts" && (
+          <PartsEditor
+            parts={parts}
+            selected={part?.id ?? null}
+            setSelected={selectPart}
+            onParts={editParts}
+            latest={latest}
+            scope={design.scope}
+            canCompose={Boolean(composed) && diagrams.length < 20}
+            onCompose={compose}
+            selection={selection}
+            onSelect={setSelection}
+            onRename={() => setRenameTick((n) => n + 1)}
+            canvasRef={canvasRef}
+            saveError={saver.errors.design}
+          />
+        )}
+        {!onDiagramTab && (
+          <div className="console-form" key={tab}>
+            <h2 className="stage-title">
+              {tab === "reference"
+                ? "📖 Reference"
+                : `${STAGE_INFO[tab].icon} ${STAGE_INFO[tab].label}`}
+            </h2>
+            {tab === "scope" && (
+              <ScopeEditor
+                scope={design.scope}
+                onChange={(scope) => editDesign({ ...design, scope })}
+              />
+            )}
+            {tab === "estimates" && (
+              <EstimatesEditor
+                rows={rows}
+                results={check.estimates}
+                units={problem.units}
+                constants={problem.constants}
+                onChange={editRows}
+              />
+            )}
+            {tab === "api" && (
+              <ApiDataEditor doc={design} palette={problem.palette} onChange={editDesign} />
+            )}
+            {tab === "deep-dives" && (
+              <DeepDivesEditor
+                doc={design}
+                versions={diagrams.map((d) => d.version)}
+                onChange={editDesign}
+              />
+            )}
+            {tab === "wrap-up" && (
+              <WrapUpEditor
+                keys={problem.wrapup_keys}
+                wrapup={design.wrapup ?? {}}
+                onChange={(wrapup) => editDesign({ ...design, wrapup })}
+              />
+            )}
+            {tab === "signatures" && (
+              <SignaturesEditor value={signatures} onChange={editSignatures} />
+            )}
+            {tab === "reference" && (
+              <DesignReferenceView subject={subject} slug={slug} attempt={attempt} check={check} />
+            )}
+            {formErrors}
+          </div>
+        )}
+      </Workbench>
+      {toast &&
+        createPortal(
+          <div className={`toast ${toast.good ? "good" : ""}`} role="status">
+            {toast.text}
+          </div>,
+          document.body,
+        )}
 
       {confirmSubmit && (
         <ConfirmDialog
