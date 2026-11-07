@@ -13,7 +13,57 @@ export interface Topic {
 export interface Subject {
   id: string;
   title: string;
+  status: "open" | "locked";
   topics: Topic[];
+}
+
+export interface Resource {
+  id: string;
+  title: string;
+  url: string | null;
+  page: number | null;
+  kind: string;
+  access: "free" | "trial" | "paid" | "local";
+  summary: string;
+  quality: number;
+  source: string;
+  source_name: string;
+  verdict: string;
+}
+
+export interface GraphNode {
+  id: string;
+  type: "topic" | "problem" | "ref" | "source";
+  label: string;
+  kind?: string;
+  status?: string;
+  has_lesson?: boolean;
+  difficulty?: string;
+  access?: string;
+  url?: string | null;
+  page?: number | null;
+}
+export interface GraphEdge {
+  from: string;
+  to: string;
+  type: "prereq" | "related" | "practice" | "covers" | "explains" | "from";
+}
+export interface Graph {
+  subject: string;
+  center?: string;
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+}
+
+export interface TopicPageData {
+  subject: string;
+  subject_status: "open" | "locked";
+  topic: Topic & { prereqs: string[]; related: string[]; group?: string; status?: string };
+  names: Record<string, string>;
+  has_lesson: boolean;
+  problems: { slug: string; title: string; difficulty: "easy" | "medium" | "hard" }[];
+  resources: Resource[];
+  graph: Graph;
 }
 export interface SubjectsResponse {
   root: string;
@@ -37,6 +87,7 @@ export interface ProblemCardData {
   readme: string;
   readme_path: string;
   attempts: { name: string; lang: string; last_run: RunRecord | null }[];
+  refs?: Resource[];
 }
 export interface QuizItem {
   id: string;
@@ -47,13 +98,16 @@ export type Block =
   | { type: "markdown"; text: string; path: string }
   | { type: "trace"; id: string; trace: Trace }
   | { type: "quiz"; items: QuizItem[] }
-  | { type: "problems"; problems: ProblemCardData[] };
+  | { type: "problems"; problems: ProblemCardData[] }
+  | { type: "resources"; resources: Resource[] };
 
 export interface Lesson {
   subject: string;
   topic: string;
   title: string;
   names: Record<string, string>;
+  prereqs?: string[];
+  related?: string[];
   blocks: Block[];
 }
 
@@ -117,6 +171,8 @@ export const api = {
     get<ProblemCardData>(`/api/problem/${subject}/${slug}`),
   feedback: (subject: string) => get<Feedback>(`/api/feedback/${subject}`),
   problems: (subject: string) => get<ProblemRow[]>(`/api/problems/${subject}`),
+  topic: (subject: string, topic: string) => get<TopicPageData>(`/api/topic/${subject}/${topic}`),
+  graph: (subject: string) => get<Graph>(`/api/graph/${subject}`),
   async answer(subject: string, topic: string, item: string, choice: string): Promise<QuizResult> {
     const res = await fetch("/api/quiz", {
       method: "POST",

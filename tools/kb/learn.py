@@ -295,8 +295,52 @@ def resolve(subject: str, topic: str, history: list[dict[str, Any]] | None = Non
             out_blocks.append({"type": "quiz", "items": items})
         elif b["type"] == "problems":
             out_blocks.append({"type": "problems", "problems": [problem_card(subject, s, history) for s in b["slugs"]]})
-    names = {t["id"]: t["name"] for t in catalog(subject)["topics"]}
-    return {"subject": subject, "topic": topic, "title": lesson["title"], "names": names, "blocks": out_blocks}
+    from kb import refs  # local import: refs imports learn
+
+    resources = refs.for_topic(subject, topic)
+    if resources:
+        out_blocks.append({"type": "resources", "resources": resources})
+    cat = catalog(subject)
+    names = {t["id"]: t["name"] for t in cat["topics"]}
+    entry = next((t for t in cat["topics"] if t["id"] == topic), {})
+    return {
+        "subject": subject,
+        "topic": topic,
+        "title": lesson["title"],
+        "names": names,
+        "prereqs": entry.get("prereqs", []),
+        "related": entry.get("related", []),
+        "blocks": out_blocks,
+    }
+
+
+def topic_page(subject: str, topic: str, history: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Everything known about a topic even without a lesson (locked subjects, fundamentals)."""
+    from kb import refs
+
+    cat = catalog(subject)
+    entry = next((t for t in cat["topics"] if t["id"] == _check_id(topic, "topic")), None)
+    if entry is None:
+        raise ProblemError(f"unknown topic {subject}/{topic}")
+    aliases = alias_map(cat)
+    pdir = learn_root() / subject / "problems"
+    problems = []
+    if pdir.is_dir():
+        for p in scaffold.all_problems(pdir):
+            if topic in {aliases.get(t) for t in p.meta.get("patterns", [])}:
+                problems.append({"slug": p.slug, "title": p.meta["title"], "difficulty": p.meta["difficulty"]})
+    order = {"easy": 0, "medium": 1, "hard": 2}
+    problems.sort(key=lambda p: (order.get(p["difficulty"], 3), p["title"]))
+    return {
+        "subject": subject,
+        "subject_status": cat.get("status", "open"),
+        "topic": entry,
+        "names": {t["id"]: t["name"] for t in cat["topics"]},
+        "has_lesson": has_lesson(subject, topic),
+        "problems": problems,
+        "resources": refs.for_topic(subject, topic, limit=8),
+        "graph": refs.neighbourhood(subject, f"topic:{topic}"),
+    }
 
 
 def _repo_rel(path: Path) -> str:
@@ -324,7 +368,14 @@ def problem_card(subject: str, slug: str, history: list[dict[str, Any]] | None =
         "readme": (problem.dir / "README.md").read_text(),
         "readme_path": _repo_rel(problem.dir / "README.md"),
         "attempts": attempts,
+        "refs": _problem_refs(slug),
     }
+
+
+def _problem_refs(slug: str) -> list[dict[str, Any]]:
+    from kb import refs
+
+    return refs.for_problem(slug)
 
 
 def _shuffled(item: dict[str, Any]) -> list[str]:

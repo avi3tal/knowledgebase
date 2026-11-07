@@ -286,6 +286,12 @@ def test_studio_api(studio: str, progress: Path) -> None:
     two_sum = next(p for p in problems if p["slug"] == "two-sum")
     assert "two-pointers" in two_sum["topics"] and two_sum["status"] == "untried"
     assert _get(f"{studio}/api/problems/nope")[0] == 404
+    status, topic = _get(f"{studio}/api/topic/system-design/caching")
+    assert status == 200 and topic["subject_status"] == "locked"
+    assert _get(f"{studio}/api/topic/algo/..%2Fx")[0] == 404
+    status, g = _get(f"{studio}/api/graph/ood")
+    assert status == 200 and any(n["id"] == "topic:solid" for n in g["nodes"])
+    assert any(s["id"] == "system-design" and s["status"] == "locked" for s in subjects["subjects"])
 
     body = json.dumps({"subject": "algo", "topic": "sliding-window", "item": "q1", "choice": "sliding-window"})
     req = urllib.request.Request(f"{studio}/api/quiz", body.encode(), {"Content-Type": "application/json"})

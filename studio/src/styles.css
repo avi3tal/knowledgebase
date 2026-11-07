@@ -719,3 +719,118 @@ table.problems-table th {
 .status.untried {
   color: var(--muted);
 }
+
+/* resources, topic pages, knowledge graph */
+.resources {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin: 22px 0;
+}
+.resources ul {
+  padding-left: 18px;
+  margin: 6px 0;
+}
+.resources li {
+  margin: 6px 0;
+}
+.tag.access-free {
+  border: 1px solid var(--ok);
+  color: var(--ok);
+}
+.tag.access-trial,
+.tag.access-paid {
+  border: 1px solid var(--warn);
+  color: var(--warn);
+}
+.tag.access-local {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.tag.core {
+  background: rgba(76, 195, 138, 0.18);
+  color: var(--ok);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 4px 0;
+}
+.chip-link {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1px 10px;
+  font-size: 0.88em;
+}
+.lesson-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.neighbourhood svg {
+  max-width: 100%;
+  height: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.g-edge {
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+.g-edge.prereq,
+.g-edge.next {
+  stroke: var(--accent);
+}
+.g-node circle {
+  fill: var(--muted);
+}
+.g-node text {
+  fill: var(--text);
+  font-size: 11px;
+}
+.g-node.center circle {
+  fill: var(--accent);
+}
+.g-node.center text {
+  font-weight: 700;
+  font-size: 13px;
+}
+.g-node.prereq circle,
+.g-node.next circle,
+.g-legend.prereq,
+.g-legend.next {
+  fill: var(--accent);
+  color: var(--accent);
+}
+.g-node.problem circle,
+.g-legend.problem {
+  fill: var(--ok);
+  color: var(--ok);
+}
+.g-node.resource circle,
+.g-legend.resource {
+  fill: var(--warn);
+  color: var(--warn);
+}
+.g-legend.related {
+  color: var(--muted);
+}
+a .g-node:hover text {
+  fill: var(--accent);
+}
+.topic-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text);
+}
+.topic-tile:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+}

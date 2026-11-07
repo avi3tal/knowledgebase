@@ -3,11 +3,30 @@ import { isTrace } from "../trace";
 import { Markdown } from "./Markdown";
 import { ProblemCard } from "./ProblemCard";
 import { Quiz } from "./Quiz";
+import { ResourceList } from "./Resources";
+import { TopicChips } from "./TopicPage";
 import { TracePlayer } from "./TracePlayer";
 
 export function LessonView({ lesson }: { lesson: Lesson }) {
   return (
     <article className="lesson">
+      <div className="lesson-links">
+        <TopicChips
+          subject={lesson.subject}
+          label="Learn first"
+          ids={lesson.prereqs ?? []}
+          names={lesson.names}
+        />
+        <TopicChips
+          subject={lesson.subject}
+          label="Related"
+          ids={lesson.related ?? []}
+          names={lesson.names}
+        />
+        <a className="muted small" href={`#/topic/${lesson.subject}/${lesson.topic}`}>
+          🗺️ topic map
+        </a>
+      </div>
       {lesson.blocks.map((b, i) => {
         switch (b.type) {
           case "markdown":
@@ -30,6 +49,8 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
                 names={lesson.names}
               />
             );
+          case "resources":
+            return <ResourceList key={i} items={b.resources} />;
           case "problems":
             return (
               <section key={i}>

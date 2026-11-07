@@ -4,6 +4,8 @@ GET  /api/subjects                       catalogs + lesson availability
 GET  /api/lesson/<subject>/<topic>       resolved lesson (quiz answers withheld)
 GET  /api/problem/<subject>/<slug>       problem card (README, attempts, last runs)
 GET  /api/problems/<subject>             all problems with topics + status (problem browser)
+GET  /api/topic/<subject>/<topic>        topic page: prereqs/related, problems, resources, neighbourhood
+GET  /api/graph/<subject>                full knowledge graph (nodes + edges)
 GET  /api/feedback/<subject>             deterministic progress feedback
 POST /api/quiz  {subject, topic, item, choice}  -> graded, appended to progress/quiz.jsonl
 Everything else is served from studio/dist (SPA fallback to index.html).
@@ -32,7 +34,15 @@ def subjects_payload() -> dict[str, Any]:
     for s in learn.subjects():
         cat = learn.catalog(s)
         topics = [{**t, "has_lesson": learn.has_lesson(s, t["id"])} for t in cat["topics"]]
-        out.append({"id": s, "title": cat.get("title", s), "source": cat.get("source"), "topics": topics})
+        out.append(
+            {
+                "id": s,
+                "title": cat.get("title", s),
+                "status": cat.get("status", "open"),
+                "source": cat.get("source"),
+                "topics": topics,
+            }
+        )
     return {"root": str(ROOT), "subjects": out}
 
 
@@ -92,6 +102,13 @@ class Handler(BaseHTTPRequestHandler):
             if parts[:2] == ["api", "problem"] and len(parts) == 4:
                 learn.catalog(parts[2])  # validates the subject id
                 return self._json(learn.problem_card(parts[2], parts[3], history.runs()))
+            if parts[:2] == ["api", "topic"] and len(parts) == 4:
+                return self._json(learn.topic_page(parts[2], parts[3], history.runs()))
+            if parts[:2] == ["api", "graph"] and len(parts) == 3:
+                from kb import refs
+
+                learn.catalog(parts[2])  # validates the subject id
+                return self._json(refs.graph(parts[2]))
             if parts[:2] == ["api", "problems"] and len(parts) == 3:
                 return self._json(problems_payload(parts[2]))
             if parts[:2] == ["api", "feedback"] and len(parts) == 3:

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ProblemCardData } from "../api";
 import { Markdown } from "./Markdown";
+import { ResourceList } from "./Resources";
 
 function Copy({ text }: { text: string }) {
   const [done, setDone] = useState(false);
@@ -68,6 +69,7 @@ export function ProblemCard({
         )}
       </div>
       {open && <Markdown text={p.readme} path={p.readme_path} />}
+      {open && p.refs && <ResourceList items={p.refs} title="Explanations elsewhere" />}
     </div>
   );
 }
