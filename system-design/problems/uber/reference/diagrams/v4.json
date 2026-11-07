@@ -1,0 +1,229 @@
+{
+  "version": 4,
+  "why": "Compose P4 for F4 and N4: trip transitions commit with an outbox event; a payment worker charges the PSP from the trip stream with ride_id as the idempotency key, so a slow PSP never blocks a driver.",
+  "nodes": [
+    {
+      "id": "rider",
+      "kind": "client",
+      "label": "Rider app",
+      "x": 60,
+      "y": 120
+    },
+    {
+      "id": "driver",
+      "kind": "client",
+      "label": "Driver app",
+      "x": 60,
+      "y": 380
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "API gateway / LB (HTTPS + WebSocket)",
+      "x": 230,
+      "y": 250
+    },
+    {
+      "id": "match",
+      "kind": "service",
+      "label": "Matching & dispatch",
+      "x": 410,
+      "y": 60
+    },
+    {
+      "id": "ride",
+      "kind": "service",
+      "label": "Ride / trip service",
+      "x": 410,
+      "y": 220
+    },
+    {
+      "id": "loc",
+      "kind": "service",
+      "label": "Location service",
+      "x": 410,
+      "y": 400
+    },
+    {
+      "id": "locks",
+      "kind": "coordinator",
+      "label": "Driver leases (Redis SET NX PX)",
+      "x": 620,
+      "y": 40
+    },
+    {
+      "id": "ridesdb",
+      "kind": "sql",
+      "label": "rides (Postgres, sharded by city)",
+      "x": 620,
+      "y": 160
+    },
+    {
+      "id": "geo",
+      "kind": "cache",
+      "label": "Redis GEO: live driver positions by city",
+      "x": 620,
+      "y": 290
+    },
+    {
+      "id": "locstream",
+      "kind": "stream",
+      "label": "Location stream (Kafka)",
+      "x": 620,
+      "y": 430
+    },
+    {
+      "id": "pay",
+      "kind": "worker",
+      "label": "Payment worker",
+      "x": 810,
+      "y": 60
+    },
+    {
+      "id": "trips",
+      "kind": "stream",
+      "label": "Trip events (Kafka, via outbox)",
+      "x": 810,
+      "y": 200
+    },
+    {
+      "id": "push",
+      "kind": "service",
+      "label": "Push gateway (WebSocket)",
+      "x": 810,
+      "y": 400
+    },
+    {
+      "id": "psp",
+      "kind": "external",
+      "label": "Payment provider (PSP)",
+      "x": 970,
+      "y": 160
+    }
+  ],
+  "edges": [
+    {
+      "from": "rider",
+      "to": "lb",
+      "label": "GET nearby / POST /rides"
+    },
+    {
+      "from": "driver",
+      "to": "lb",
+      "label": "location every 4 s (WebSocket)"
+    },
+    {
+      "from": "lb",
+      "to": "ride",
+      "label": "ride request"
+    },
+    {
+      "from": "lb",
+      "to": "loc",
+      "label": "location update"
+    },
+    {
+      "from": "ride",
+      "to": "match",
+      "label": "find a driver"
+    },
+    {
+      "from": "match",
+      "to": "geo",
+      "label": "GEOSEARCH radius, expand ring"
+    },
+    {
+      "from": "loc",
+      "to": "geo",
+      "label": "GEOADD (overwrite last position)"
+    },
+    {
+      "from": "loc",
+      "to": "locstream",
+      "label": "append position"
+    },
+    {
+      "from": "locstream",
+      "to": "push",
+      "label": "positions of drivers on active trips"
+    },
+    {
+      "from": "push",
+      "to": "rider",
+      "label": "live driver position"
+    },
+    {
+      "from": "ride",
+      "to": "ridesdb",
+      "label": "UPDATE … WHERE status='matching' (conditional)"
+    },
+    {
+      "from": "match",
+      "to": "locks",
+      "label": "lease driver 15 s (SET NX PX)"
+    },
+    {
+      "from": "match",
+      "to": "push",
+      "label": "send offer"
+    },
+    {
+      "from": "push",
+      "to": "driver",
+      "label": "ride offer"
+    },
+    {
+      "from": "ride",
+      "to": "trips",
+      "label": "trip completed (outbox relay)"
+    },
+    {
+      "from": "trips",
+      "to": "pay",
+      "label": "consume"
+    },
+    {
+      "from": "pay",
+      "to": "psp",
+      "label": "charge, Idempotency-Key = ride_id"
+    }
+  ],
+  "flows": [
+    {
+      "name": "location update",
+      "path": [
+        "driver",
+        "lb",
+        "loc",
+        "geo"
+      ]
+    },
+    {
+      "name": "ride request",
+      "path": [
+        "rider",
+        "lb",
+        "ride",
+        "match",
+        "geo"
+      ]
+    },
+    {
+      "name": "offer",
+      "path": [
+        "match",
+        "push",
+        "driver"
+      ]
+    },
+    {
+      "name": "payment",
+      "path": [
+        "ride",
+        "trips",
+        "pay",
+        "psp"
+      ]
+    }
+  ]
+}

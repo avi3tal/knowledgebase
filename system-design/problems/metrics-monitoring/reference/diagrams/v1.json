@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "why": "Naive baseline: agents and dashboards talk to one metrics service in front of a single SQL table of datapoints. At 5M rows/s the table and its index can't keep up (N1), 15 days is ~100 TB uncompressed (N4), and long-range graphs scan millions of rows (N2).",
+  "nodes": [
+    {
+      "id": "agents",
+      "kind": "client",
+      "label": "Host agents ×100k",
+      "x": 60,
+      "y": 80
+    },
+    {
+      "id": "user",
+      "kind": "client",
+      "label": "Dashboard users / on-call",
+      "x": 60,
+      "y": 340
+    },
+    {
+      "id": "collect",
+      "kind": "service",
+      "label": "Metrics service",
+      "x": 390,
+      "y": 200
+    },
+    {
+      "id": "tsdb",
+      "kind": "sql",
+      "label": "SQL: datapoints(series, ts, value)",
+      "x": 620,
+      "y": 200
+    }
+  ],
+  "edges": [
+    {
+      "from": "agents",
+      "to": "collect",
+      "label": "POST datapoints"
+    },
+    {
+      "from": "user",
+      "to": "collect",
+      "label": "graph query"
+    },
+    {
+      "from": "collect",
+      "to": "tsdb",
+      "label": "INSERT / SELECT"
+    }
+  ],
+  "flows": []
+}

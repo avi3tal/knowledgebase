@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "why": "Naive baseline: one cron service scans the jobs table every second and runs due jobs inline. It is a single point of failure (N3), the scan is O(50M) per tick (N1), and a crash mid-job loses the run (N2).",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Job owners / services",
+      "x": 60,
+      "y": 200
+    },
+    {
+      "id": "api",
+      "kind": "service",
+      "label": "Cron service (single box)",
+      "x": 370,
+      "y": 200
+    },
+    {
+      "id": "jobsdb",
+      "kind": "sql",
+      "label": "jobs table",
+      "x": 540,
+      "y": 200
+    },
+    {
+      "id": "handlers",
+      "kind": "external",
+      "label": "Job handlers / target services",
+      "x": 720,
+      "y": 200
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "api",
+      "label": "create job"
+    },
+    {
+      "from": "api",
+      "to": "jobsdb",
+      "label": "SELECT * every second (full scan)"
+    },
+    {
+      "from": "api",
+      "to": "handlers",
+      "label": "run job inline"
+    }
+  ],
+  "flows": []
+}

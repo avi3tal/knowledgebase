@@ -1,0 +1,129 @@
+{
+  "version": 2,
+  "why": "Compose P1 and P2 for N1 and N3: a Job API behind a load balancer writes a partitioned jobs store with a next_run_at index, and leased schedulers claim only due rows and enqueue runs. Executors still just pull and call handlers.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Job owners / services",
+      "x": 60,
+      "y": 200
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 210,
+      "y": 200
+    },
+    {
+      "id": "api",
+      "kind": "service",
+      "label": "Job API",
+      "x": 370,
+      "y": 200
+    },
+    {
+      "id": "jobsdb",
+      "kind": "sql",
+      "label": "jobs + next_run_at index (Postgres, partitioned)",
+      "x": 540,
+      "y": 200
+    },
+    {
+      "id": "coord",
+      "kind": "coordinator",
+      "label": "etcd: partition leases",
+      "x": 540,
+      "y": 50
+    },
+    {
+      "id": "sched",
+      "kind": "scheduler",
+      "label": "Schedulers (one per leased partition)",
+      "x": 720,
+      "y": 90
+    },
+    {
+      "id": "runq",
+      "kind": "queue",
+      "label": "Run queue (visibility timeout)",
+      "x": 720,
+      "y": 260
+    },
+    {
+      "id": "exec",
+      "kind": "worker",
+      "label": "Executor pool",
+      "x": 900,
+      "y": 260
+    },
+    {
+      "id": "handlers",
+      "kind": "external",
+      "label": "Job handlers / target services",
+      "x": 900,
+      "y": 90
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "POST /jobs, GET /jobs/{id}/runs"
+    },
+    {
+      "from": "lb",
+      "to": "api",
+      "label": "job CRUD"
+    },
+    {
+      "from": "api",
+      "to": "jobsdb",
+      "label": "insert job + next_run_at"
+    },
+    {
+      "from": "sched",
+      "to": "coord",
+      "label": "lease partition"
+    },
+    {
+      "from": "sched",
+      "to": "jobsdb",
+      "label": "claim due: next_run_at <= now + 5 s"
+    },
+    {
+      "from": "sched",
+      "to": "runq",
+      "label": "enqueue run (run_id)"
+    },
+    {
+      "from": "runq",
+      "to": "exec",
+      "label": "receive"
+    },
+    {
+      "from": "exec",
+      "to": "handlers",
+      "label": "invoke"
+    }
+  ],
+  "flows": [
+    {
+      "name": "dispatch",
+      "path": [
+        "sched",
+        "jobsdb"
+      ]
+    },
+    {
+      "name": "enqueue",
+      "path": [
+        "sched",
+        "runq",
+        "exec",
+        "handlers"
+      ]
+    }
+  ]
+}

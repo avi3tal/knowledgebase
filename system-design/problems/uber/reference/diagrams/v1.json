@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "why": "Naive baseline: one ride service and one SQL database holding rides and driver lat/lng. It works for a demo, but 250k location writes/s (N1) and lat/lng range scans for nearby search (N2) break it, and nothing stops two requests grabbing the same driver (N3).",
+  "nodes": [
+    {
+      "id": "rider",
+      "kind": "client",
+      "label": "Rider app",
+      "x": 60,
+      "y": 120
+    },
+    {
+      "id": "driver",
+      "kind": "client",
+      "label": "Driver app",
+      "x": 60,
+      "y": 380
+    },
+    {
+      "id": "ride",
+      "kind": "service",
+      "label": "Ride service (monolith)",
+      "x": 410,
+      "y": 220
+    },
+    {
+      "id": "ridesdb",
+      "kind": "sql",
+      "label": "SQL: rides + driver lat/lng",
+      "x": 620,
+      "y": 220
+    }
+  ],
+  "edges": [
+    {
+      "from": "rider",
+      "to": "ride",
+      "label": "request ride / nearby"
+    },
+    {
+      "from": "driver",
+      "to": "ride",
+      "label": "location every 4 s"
+    },
+    {
+      "from": "ride",
+      "to": "ridesdb",
+      "label": "UPDATE location; SELECT … WHERE lat BETWEEN …"
+    }
+  ],
+  "flows": []
+}

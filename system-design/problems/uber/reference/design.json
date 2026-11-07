@@ -1,0 +1,687 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Riders see nearby available drivers on a map with an ETA before requesting."
+      },
+      {
+        "id": "F2",
+        "text": "A rider requests a ride (pickup, drop-off); the system matches a nearby available driver who accepts."
+      },
+      {
+        "id": "F3",
+        "text": "Drivers send their GPS location every ~4 s; riders track the assigned driver's position live."
+      },
+      {
+        "id": "F4",
+        "text": "Trip lifecycle (accepted, arriving, in progress, completed, cancelled); the fare is charged after the trip."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Absorb ~250k location updates/s at peak; positions used for matching are at most a few seconds old."
+      },
+      {
+        "id": "N2",
+        "text": "Nearby search p99 < 100 ms; a driver is offered the ride within ~5 s of the request."
+      },
+      {
+        "id": "N3",
+        "text": "Consistency of dispatch: a driver is never assigned to two rides at once and a ride never gets two drivers."
+      },
+      {
+        "id": "N4",
+        "text": "Ride requests and trip state are highly available (99.99%) and durable; payments are charged exactly once."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "1M drivers online at peak worldwide, 20M trips per day; traffic is local to a city."
+      },
+      {
+        "id": "A2",
+        "text": "A driver who ignores an offer for 15 s is released and the next candidate is tried."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Surge pricing model, ETA machine learning, pooled rides, driver onboarding."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/drivers/location",
+      "request": "lat, lng, heading, ts (over the driver's WebSocket)",
+      "response": "204",
+      "notes": "Fire-and-forget; latest write wins."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/drivers/nearby?lat&lng&radius",
+      "request": "",
+      "response": "[{driver_id, lat, lng, eta_s}]",
+      "notes": "Map pins; served from the geo index."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/rides",
+      "request": "pickup, dropoff, payment_method; Idempotency-Key header",
+      "response": "201 {ride_id, status: matching}",
+      "notes": "Starts matching asynchronously."
+    },
+    {
+      "id": "E4",
+      "method": "POST",
+      "path": "/rides/{id}/accept",
+      "request": "driver_id, offer_id",
+      "response": "200 {ride} or 409 offer expired / taken",
+      "notes": "Conditional update: wins only if still matching."
+    },
+    {
+      "id": "E5",
+      "method": "PATCH",
+      "path": "/rides/{id}",
+      "request": "status: arriving | in_progress | completed | cancelled",
+      "response": "200 {ride}",
+      "notes": "State machine; illegal transitions → 409."
+    },
+    {
+      "id": "E6",
+      "method": "GET",
+      "path": "/rides/{id}",
+      "request": "",
+      "response": "{status, driver, driver_position}",
+      "notes": "Live updates are pushed over WebSocket."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "driver_locations",
+      "fields": "city:{id} → GEO set of driver_id → (lat, lng) as geohash score; updated_at",
+      "store": "cache",
+      "why": "In-memory geo index, overwritten every 4 s; rebuilt from the next updates if lost."
+    },
+    {
+      "id": "D2",
+      "name": "driver_state",
+      "fields": "driver_id, state (offline|available|offered|on_trip), ride_id, lease TTL",
+      "store": "cache",
+      "why": "Leases with TTL decide who may be offered a ride."
+    },
+    {
+      "id": "D3",
+      "name": "rides",
+      "fields": "ride_id PK, city, rider_id, driver_id, pickup, dropoff, status, fare, created_at, updated_at",
+      "store": "sql",
+      "why": "Transactions and conditional updates for the trip state machine; a partial unique index on driver_id for active statuses enforces one ride per driver; sharded by city."
+    },
+    {
+      "id": "D4",
+      "name": "outbox / trip_events",
+      "fields": "event_id, ride_id, type, payload, created_at",
+      "store": "sql",
+      "why": "Written in the same transaction as the ride, relayed to Kafka for payments and receipts."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Hot cities and sharding the geo index",
+      "options": [
+        {
+          "name": "One global Redis GEO key",
+          "pros": "simple",
+          "cons": "one key for 1M drivers is one hot shard and one failure domain"
+        },
+        {
+          "name": "Shard by city / region, split big cities by geohash prefix",
+          "pros": "traffic is local; scales by adding shards",
+          "cons": "requests near a shard border search two shards"
+        }
+      ],
+      "choice": "Shard the geo index and dispatch by city; split the biggest cities by a geohash prefix and query neighbouring shards near borders",
+      "why": "Rides almost never cross cities, so a city is a natural partition. A few megacities hold most drivers, so they get several shards keyed by geohash prefix.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Driver ignores or declines the offer",
+      "options": [
+        {
+          "name": "Wait for an explicit decline",
+          "pros": "simple",
+          "cons": "a driver who loses signal blocks the ride forever"
+        },
+        {
+          "name": "Lease TTL of 15 s, then the next candidate",
+          "pros": "progress is guaranteed; nothing to clean up",
+          "cons": "a late accept must be rejected by the conditional update"
+        }
+      ],
+      "choice": "Lease TTL of 15 s, then offer the next ranked candidate; give up and tell the rider after ~3 rounds",
+      "why": "Mobile networks drop; a TTL bounds how long any single driver can block a ride. A late accept fails the lease check (the lease is gone or names another ride) and gets 409 'offer expired'.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Location ingestion (250k/s) in the biggest cities (shard the geo index by city and geohash prefix); the matching service per city; the push gateway's open WebSocket connections (1M+ drivers, scale horizontally with sticky routing).",
+    "failures": "If a Redis geo shard dies, a replica takes over and positions refill within 4 s. If the PSP is down, payments queue in Kafka and retry with the same idempotency key. If the push gateway drops a connection, the app reconnects and fetches state with GET /rides/{id}.",
+    "monitoring": "Location update lag, geo index size per city, time to match (p50/p99), offer acceptance rate, unmatched requests, lease expiries, payment failures and outbox relay lag.",
+    "scale": "10× drivers: more city shards and location service instances; the stream partitions by city; the rides database is already sharded by city.",
+    "future": "Pooled rides, H3-based surge pricing, ETA from a road graph, batch matching (assign many riders to many drivers per city every second)."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Driver location ingestion",
+      "covers": [
+        "F3",
+        "N1"
+      ],
+      "problem": "Absorb ~250k GPS location updates per second from 1M online drivers (one every 4 s), keep only the latest position for matching, and stream positions to riders who are watching a trip.",
+      "options": [
+        {
+          "name": "Write each update to the SQL rides database",
+          "pros": "one store, durable",
+          "cons": "250k overwrites/s of data that is stale in 4 s; index churn and replication lag on the transactional store"
+        },
+        {
+          "name": "Write every update to Kafka first; a consumer updates the index",
+          "pros": "buffers spikes, replayable",
+          "cons": "adds a hop and seconds of lag to the one thing matching needs fresh"
+        },
+        {
+          "name": "Location service overwrites an in-memory geo index and appends to a stream on the side",
+          "pros": "memory-speed writes, freshness ~1 s, history and live tracking hang off the stream",
+          "cons": "positions are lost if the index node dies (they come back within 4 s)"
+        }
+      ],
+      "choice": "Location service overwrites an in-memory geo index (Redis GEO, sharded by city) and appends to a Kafka location stream on the side",
+      "why": "Only the last position matters and it is replaced every 4 s, so durability is cheap to give up: a lost index rebuilds itself within one update interval. 250k small writes/s across city shards is easy for Redis; the stream feeds live tracking and trip history without slowing ingestion.",
+      "technologies": [
+        "redis",
+        "kafka",
+        "websockets-sse"
+      ],
+      "patterns": [
+        "real-time-push",
+        "geo-indexing"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "driver",
+            "kind": "client",
+            "label": "Driver app",
+            "x": 60,
+            "y": 380
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / LB (HTTPS + WebSocket)",
+            "x": 230,
+            "y": 250
+          },
+          {
+            "id": "loc",
+            "kind": "service",
+            "label": "Location service",
+            "x": 410,
+            "y": 400
+          },
+          {
+            "id": "geo",
+            "kind": "cache",
+            "label": "Redis GEO: live driver positions by city",
+            "x": 620,
+            "y": 290
+          },
+          {
+            "id": "locstream",
+            "kind": "stream",
+            "label": "Location stream (Kafka)",
+            "x": 620,
+            "y": 430
+          },
+          {
+            "id": "push",
+            "kind": "service",
+            "label": "Push gateway (WebSocket)",
+            "x": 810,
+            "y": 400
+          },
+          {
+            "id": "rider",
+            "kind": "client",
+            "label": "Rider app",
+            "x": 60,
+            "y": 120
+          }
+        ],
+        "edges": [
+          {
+            "from": "driver",
+            "to": "lb",
+            "label": "location every 4 s (WebSocket)"
+          },
+          {
+            "from": "lb",
+            "to": "loc",
+            "label": "location update"
+          },
+          {
+            "from": "loc",
+            "to": "geo",
+            "label": "GEOADD (overwrite last position)"
+          },
+          {
+            "from": "loc",
+            "to": "locstream",
+            "label": "append position"
+          },
+          {
+            "from": "locstream",
+            "to": "push",
+            "label": "positions of drivers on active trips"
+          },
+          {
+            "from": "push",
+            "to": "rider",
+            "label": "live driver position"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Nearby-driver search",
+      "covers": [
+        "F1",
+        "F2",
+        "N2"
+      ],
+      "problem": "Given a rider's position, return the available drivers within a few km in < 100 ms, while those positions change every 4 s.",
+      "options": [
+        {
+          "name": "SQL range query on lat and lng columns",
+          "pros": "no new technology",
+          "cons": "a B-tree indexes one dimension; a box query scans a whole latitude stripe; does not survive 250k updates/s"
+        },
+        {
+          "name": "Geohash cells in Redis GEO (sorted set by geohash score)",
+          "pros": "GEOADD/GEOSEARCH built in, O(log n + k), cheap overwrites",
+          "cons": "square cells distort near the poles; you search the cell plus neighbours"
+        },
+        {
+          "name": "In-memory quadtree per region",
+          "pros": "adapts to density (Manhattan vs suburbs)",
+          "cons": "rebalancing under 250k moves/s is costly; custom code"
+        },
+        {
+          "name": "Hexagonal grid (H3) or S2 cells with an in-memory map cell → drivers",
+          "pros": "uniform neighbours, good for ETA and surge by cell",
+          "cons": "custom index service to build and operate"
+        }
+      ],
+      "choice": "Geohash-based Redis GEO, one key per city shard: GEOSEARCH a 2 km radius, expand the ring if fewer than ~10 available drivers",
+      "why": "1M positions × ~100 B ≈ 100 MB fits in memory many times over, so the question is update cost, not size. Redis GEO gives cheap overwrites and radius search out of the box; H3 is the upgrade when surge pricing and ETA need uniform cells.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "geo-indexing",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "rider",
+            "kind": "client",
+            "label": "Rider app",
+            "x": 60,
+            "y": 120
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / LB (HTTPS + WebSocket)",
+            "x": 230,
+            "y": 250
+          },
+          {
+            "id": "ride",
+            "kind": "service",
+            "label": "Ride / trip service",
+            "x": 410,
+            "y": 220
+          },
+          {
+            "id": "match",
+            "kind": "service",
+            "label": "Matching & dispatch",
+            "x": 410,
+            "y": 60
+          },
+          {
+            "id": "geo",
+            "kind": "cache",
+            "label": "Redis GEO: live driver positions by city",
+            "x": 620,
+            "y": 290
+          },
+          {
+            "id": "loc",
+            "kind": "service",
+            "label": "Location service",
+            "x": 410,
+            "y": 400
+          }
+        ],
+        "edges": [
+          {
+            "from": "rider",
+            "to": "lb",
+            "label": "GET nearby / POST /rides"
+          },
+          {
+            "from": "lb",
+            "to": "ride",
+            "label": "ride request"
+          },
+          {
+            "from": "ride",
+            "to": "match",
+            "label": "find a driver"
+          },
+          {
+            "from": "match",
+            "to": "geo",
+            "label": "GEOSEARCH radius, expand ring"
+          },
+          {
+            "from": "lb",
+            "to": "loc",
+            "label": "GET /drivers/nearby"
+          },
+          {
+            "from": "loc",
+            "to": "geo",
+            "label": "GEOADD (overwrite last position)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Matching and dispatch: one driver, one ride",
+      "covers": [
+        "F2",
+        "N3"
+      ],
+      "problem": "Concurrent ride requests in the same area all see the same nearest driver. Each driver must get one offer at a time and be assigned at most one ride, and an offer that is ignored must free the driver after ~15 s.",
+      "options": [
+        {
+          "name": "Broadcast the request to several drivers, first accept wins",
+          "pros": "fast to match",
+          "cons": "wastes drivers' attention, many losers get 'ride taken'; still needs an atomic accept"
+        },
+        {
+          "name": "Lock the driver row in SQL for the offer window",
+          "pros": "strong consistency",
+          "cons": "holds a database lock for 15 s on the hot path; deadlocks across requests"
+        },
+        {
+          "name": "Per-driver lease with TTL in Redis + conditional write on accept",
+          "pros": "short, self-expiring locks; no lock held in the database",
+          "cons": "lease expiry and accept can race, so the accept must be a conditional write"
+        },
+        {
+          "name": "Single-threaded dispatcher per city partition",
+          "pros": "no locks; can batch-match globally",
+          "cons": "a hot partition in big cities; failover pauses dispatch"
+        }
+      ],
+      "choice": "Lease the chosen driver with SET driver:{id} ride_id NX PX 15000 and send one offer; accept succeeds only if the lease still names this ride (atomic compare-and-set to on_trip) and the conditional UPDATE rides … WHERE status = 'matching' wins, backed by a partial unique index on rides(driver_id) for active statuses",
+      "why": "The lease stops two matchers offering the same driver, and the TTL frees a driver who ignores the offer with no cleanup job. Two guarantees remain: the conditional update gives a ride one driver, and checking the lease on accept plus the unique index on active rides gives a driver one ride, even when a late accept for an expired offer arrives after the driver was re-leased.",
+      "technologies": [
+        "redis",
+        "postgresql"
+      ],
+      "patterns": [
+        "distributed-locking",
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "match",
+            "kind": "service",
+            "label": "Matching & dispatch",
+            "x": 410,
+            "y": 60
+          },
+          {
+            "id": "geo",
+            "kind": "cache",
+            "label": "Redis GEO: live driver positions by city",
+            "x": 620,
+            "y": 290
+          },
+          {
+            "id": "locks",
+            "kind": "coordinator",
+            "label": "Driver leases (Redis SET NX PX)",
+            "x": 620,
+            "y": 40
+          },
+          {
+            "id": "push",
+            "kind": "service",
+            "label": "Push gateway (WebSocket)",
+            "x": 810,
+            "y": 400
+          },
+          {
+            "id": "driver",
+            "kind": "client",
+            "label": "Driver app",
+            "x": 60,
+            "y": 380
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / LB (HTTPS + WebSocket)",
+            "x": 230,
+            "y": 250
+          },
+          {
+            "id": "ride",
+            "kind": "service",
+            "label": "Ride / trip service",
+            "x": 410,
+            "y": 220
+          },
+          {
+            "id": "ridesdb",
+            "kind": "sql",
+            "label": "rides (Postgres, sharded by city)",
+            "x": 620,
+            "y": 160
+          }
+        ],
+        "edges": [
+          {
+            "from": "match",
+            "to": "geo",
+            "label": "GEOSEARCH radius, expand ring"
+          },
+          {
+            "from": "match",
+            "to": "locks",
+            "label": "lease driver 15 s (SET NX PX)"
+          },
+          {
+            "from": "match",
+            "to": "push",
+            "label": "send offer"
+          },
+          {
+            "from": "push",
+            "to": "driver",
+            "label": "ride offer"
+          },
+          {
+            "from": "driver",
+            "to": "lb",
+            "label": "accept / decline"
+          },
+          {
+            "from": "lb",
+            "to": "ride",
+            "label": "accept"
+          },
+          {
+            "from": "ride",
+            "to": "ridesdb",
+            "label": "UPDATE … WHERE status='matching' (conditional)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Trip state and payments handoff",
+      "covers": [
+        "F4",
+        "N4"
+      ],
+      "problem": "Drive each trip through a durable state machine (matching → accepted → arriving → in_progress → completed / cancelled) and charge the rider exactly once after completion, even if the payment provider is slow or down.",
+      "options": [
+        {
+          "name": "Charge the card inside the 'complete trip' request",
+          "pros": "simple, immediate",
+          "cons": "PSP latency and outages block the driver; a retry after a timeout can double-charge"
+        },
+        {
+          "name": "Distributed transaction across trips and payments",
+          "pros": "atomic on paper",
+          "cons": "the PSP does not take part in 2PC; locks across services"
+        },
+        {
+          "name": "Commit the state change and an outbox row in one transaction; a payment worker charges with an idempotency key",
+          "pros": "trip flow never waits on the PSP; retries are safe",
+          "cons": "payment completes seconds later; needs reconciliation"
+        }
+      ],
+      "choice": "Transactional outbox: the trip service commits the transition plus a 'trip_completed' event, a relay publishes it to Kafka and a payment worker charges with Idempotency-Key = ride_id",
+      "why": "Trip state must never be lost (N4), but the charge can lag by seconds. The outbox removes the dual-write problem, and the idempotency key makes at-least-once delivery safe against double charges.",
+      "technologies": [
+        "postgresql",
+        "kafka"
+      ],
+      "patterns": [
+        "outbox-pattern",
+        "idempotency",
+        "saga"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "driver",
+            "kind": "client",
+            "label": "Driver app",
+            "x": 60,
+            "y": 380
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "API gateway / LB (HTTPS + WebSocket)",
+            "x": 230,
+            "y": 250
+          },
+          {
+            "id": "ride",
+            "kind": "service",
+            "label": "Ride / trip service",
+            "x": 410,
+            "y": 220
+          },
+          {
+            "id": "ridesdb",
+            "kind": "sql",
+            "label": "rides (Postgres, sharded by city)",
+            "x": 620,
+            "y": 160
+          },
+          {
+            "id": "trips",
+            "kind": "stream",
+            "label": "Trip events (Kafka, via outbox)",
+            "x": 810,
+            "y": 200
+          },
+          {
+            "id": "pay",
+            "kind": "worker",
+            "label": "Payment worker",
+            "x": 810,
+            "y": 60
+          },
+          {
+            "id": "psp",
+            "kind": "external",
+            "label": "Payment provider (PSP)",
+            "x": 970,
+            "y": 160
+          }
+        ],
+        "edges": [
+          {
+            "from": "driver",
+            "to": "lb",
+            "label": "pickup / complete"
+          },
+          {
+            "from": "lb",
+            "to": "ride",
+            "label": "state transition"
+          },
+          {
+            "from": "ride",
+            "to": "ridesdb",
+            "label": "UPDATE … WHERE status='matching' (conditional)"
+          },
+          {
+            "from": "ride",
+            "to": "trips",
+            "label": "trip completed (outbox relay)"
+          },
+          {
+            "from": "trips",
+            "to": "pay",
+            "label": "consume"
+          },
+          {
+            "from": "pay",
+            "to": "psp",
+            "label": "charge, Idempotency-Key = ride_id"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "hosts",
+      "formula": "100 * thousand",
+      "unit": ""
+    },
+    {
+      "name": "active_series",
+      "formula": "hosts * 500",
+      "unit": ""
+    },
+    {
+      "name": "datapoints_per_s",
+      "formula": "active_series / 10",
+      "unit": "/s"
+    },
+    {
+      "name": "ingest_bandwidth_raw",
+      "formula": "datapoints_per_s * 16 / 10**6",
+      "unit": "MB/s"
+    },
+    {
+      "name": "raw_storage_15d_uncompressed",
+      "formula": "datapoints_per_s * day * 15 * 16 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "raw_storage_15d_compressed",
+      "formula": "datapoints_per_s * day * 15 * 1.5 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "rollup_1m_storage_30d",
+      "formula": "active_series * 1440 * 30 * 8 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "rollup_1h_storage_2y",
+      "formula": "active_series * 24 * 730 * 8 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "dashboard_query_qps",
+      "formula": "5 * thousand * 20 / 30",
+      "unit": "/s"
+    },
+    {
+      "name": "alert_eval_qps",
+      "formula": "50 * thousand / 30",
+      "unit": "/s"
+    }
+  ]
+}

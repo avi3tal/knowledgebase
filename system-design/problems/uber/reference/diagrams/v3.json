@@ -1,0 +1,182 @@
+{
+  "version": 3,
+  "why": "Compose P3 for N3 (one driver, one ride): the matcher leases a driver before offering, offers go out over the push gateway, and accept must still hold the lease and wins through a conditional update, with a unique index on a driver's active ride, so neither side can be double-assigned.",
+  "nodes": [
+    {
+      "id": "rider",
+      "kind": "client",
+      "label": "Rider app",
+      "x": 60,
+      "y": 120
+    },
+    {
+      "id": "driver",
+      "kind": "client",
+      "label": "Driver app",
+      "x": 60,
+      "y": 380
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "API gateway / LB (HTTPS + WebSocket)",
+      "x": 230,
+      "y": 250
+    },
+    {
+      "id": "ride",
+      "kind": "service",
+      "label": "Ride / trip service",
+      "x": 410,
+      "y": 220
+    },
+    {
+      "id": "match",
+      "kind": "service",
+      "label": "Matching & dispatch",
+      "x": 410,
+      "y": 60
+    },
+    {
+      "id": "loc",
+      "kind": "service",
+      "label": "Location service",
+      "x": 410,
+      "y": 400
+    },
+    {
+      "id": "geo",
+      "kind": "cache",
+      "label": "Redis GEO: live driver positions by city",
+      "x": 620,
+      "y": 290
+    },
+    {
+      "id": "locstream",
+      "kind": "stream",
+      "label": "Location stream (Kafka)",
+      "x": 620,
+      "y": 430
+    },
+    {
+      "id": "push",
+      "kind": "service",
+      "label": "Push gateway (WebSocket)",
+      "x": 810,
+      "y": 400
+    },
+    {
+      "id": "ridesdb",
+      "kind": "sql",
+      "label": "rides (Postgres, sharded by city)",
+      "x": 620,
+      "y": 160
+    },
+    {
+      "id": "locks",
+      "kind": "coordinator",
+      "label": "Driver leases (Redis SET NX PX)",
+      "x": 620,
+      "y": 40
+    }
+  ],
+  "edges": [
+    {
+      "from": "rider",
+      "to": "lb",
+      "label": "GET nearby / POST /rides"
+    },
+    {
+      "from": "driver",
+      "to": "lb",
+      "label": "location every 4 s (WebSocket)"
+    },
+    {
+      "from": "lb",
+      "to": "ride",
+      "label": "ride request"
+    },
+    {
+      "from": "lb",
+      "to": "loc",
+      "label": "location update"
+    },
+    {
+      "from": "ride",
+      "to": "match",
+      "label": "find a driver"
+    },
+    {
+      "from": "match",
+      "to": "geo",
+      "label": "GEOSEARCH radius, expand ring"
+    },
+    {
+      "from": "loc",
+      "to": "geo",
+      "label": "GEOADD (overwrite last position)"
+    },
+    {
+      "from": "loc",
+      "to": "locstream",
+      "label": "append position"
+    },
+    {
+      "from": "locstream",
+      "to": "push",
+      "label": "positions of drivers on active trips"
+    },
+    {
+      "from": "push",
+      "to": "rider",
+      "label": "live driver position"
+    },
+    {
+      "from": "ride",
+      "to": "ridesdb",
+      "label": "UPDATE … WHERE status='matching' (conditional)"
+    },
+    {
+      "from": "match",
+      "to": "locks",
+      "label": "lease driver 15 s (SET NX PX)"
+    },
+    {
+      "from": "match",
+      "to": "push",
+      "label": "send offer"
+    },
+    {
+      "from": "push",
+      "to": "driver",
+      "label": "ride offer"
+    }
+  ],
+  "flows": [
+    {
+      "name": "dispatch",
+      "path": [
+        "ride",
+        "match",
+        "locks"
+      ]
+    },
+    {
+      "name": "offer",
+      "path": [
+        "match",
+        "push",
+        "driver"
+      ]
+    },
+    {
+      "name": "accept",
+      "path": [
+        "driver",
+        "lb",
+        "ride",
+        "ridesdb"
+      ]
+    }
+  ]
+}

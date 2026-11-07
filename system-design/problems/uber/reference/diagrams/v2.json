@@ -1,0 +1,154 @@
+{
+  "version": 2,
+  "why": "Compose P1 and P2 for N1 and N2: a gateway, a dedicated location service that overwrites a Redis GEO index per city, a location stream for live tracking, and a matching service that searches the index by radius.",
+  "nodes": [
+    {
+      "id": "rider",
+      "kind": "client",
+      "label": "Rider app",
+      "x": 60,
+      "y": 120
+    },
+    {
+      "id": "driver",
+      "kind": "client",
+      "label": "Driver app",
+      "x": 60,
+      "y": 380
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "API gateway / LB (HTTPS + WebSocket)",
+      "x": 230,
+      "y": 250
+    },
+    {
+      "id": "ride",
+      "kind": "service",
+      "label": "Ride / trip service",
+      "x": 410,
+      "y": 220
+    },
+    {
+      "id": "match",
+      "kind": "service",
+      "label": "Matching & dispatch",
+      "x": 410,
+      "y": 60
+    },
+    {
+      "id": "loc",
+      "kind": "service",
+      "label": "Location service",
+      "x": 410,
+      "y": 400
+    },
+    {
+      "id": "geo",
+      "kind": "cache",
+      "label": "Redis GEO: live driver positions by city",
+      "x": 620,
+      "y": 290
+    },
+    {
+      "id": "locstream",
+      "kind": "stream",
+      "label": "Location stream (Kafka)",
+      "x": 620,
+      "y": 430
+    },
+    {
+      "id": "push",
+      "kind": "service",
+      "label": "Push gateway (WebSocket)",
+      "x": 810,
+      "y": 400
+    },
+    {
+      "id": "ridesdb",
+      "kind": "sql",
+      "label": "rides (Postgres, sharded by city)",
+      "x": 620,
+      "y": 160
+    }
+  ],
+  "edges": [
+    {
+      "from": "rider",
+      "to": "lb",
+      "label": "GET nearby / POST /rides"
+    },
+    {
+      "from": "driver",
+      "to": "lb",
+      "label": "location every 4 s (WebSocket)"
+    },
+    {
+      "from": "lb",
+      "to": "ride",
+      "label": "ride request"
+    },
+    {
+      "from": "lb",
+      "to": "loc",
+      "label": "location update"
+    },
+    {
+      "from": "ride",
+      "to": "match",
+      "label": "find a driver"
+    },
+    {
+      "from": "ride",
+      "to": "ridesdb",
+      "label": "create ride"
+    },
+    {
+      "from": "match",
+      "to": "geo",
+      "label": "GEOSEARCH radius, expand ring"
+    },
+    {
+      "from": "loc",
+      "to": "geo",
+      "label": "GEOADD (overwrite last position)"
+    },
+    {
+      "from": "loc",
+      "to": "locstream",
+      "label": "append position"
+    },
+    {
+      "from": "locstream",
+      "to": "push",
+      "label": "positions of drivers on active trips"
+    },
+    {
+      "from": "push",
+      "to": "rider",
+      "label": "live driver position"
+    }
+  ],
+  "flows": [
+    {
+      "name": "location update",
+      "path": [
+        "driver",
+        "lb",
+        "loc",
+        "geo"
+      ]
+    },
+    {
+      "name": "find candidates",
+      "path": [
+        "rider",
+        "lb",
+        "ride",
+        "match",
+        "geo"
+      ]
+    }
+  ]
+}

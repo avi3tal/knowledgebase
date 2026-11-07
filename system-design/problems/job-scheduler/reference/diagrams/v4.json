@@ -1,0 +1,191 @@
+{
+  "version": 4,
+  "why": "Compose P4 for F3 and F4: failures reschedule with backoff through next_run_at, poison runs go to a dead-letter queue for triage and redrive, and the API serves run history.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Job owners / services",
+      "x": 60,
+      "y": 200
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 210,
+      "y": 200
+    },
+    {
+      "id": "api",
+      "kind": "service",
+      "label": "Job API",
+      "x": 370,
+      "y": 200
+    },
+    {
+      "id": "jobsdb",
+      "kind": "sql",
+      "label": "jobs + next_run_at index (Postgres, partitioned)",
+      "x": 540,
+      "y": 200
+    },
+    {
+      "id": "coord",
+      "kind": "coordinator",
+      "label": "etcd: partition leases",
+      "x": 540,
+      "y": 50
+    },
+    {
+      "id": "sched",
+      "kind": "scheduler",
+      "label": "Schedulers (one per leased partition)",
+      "x": 720,
+      "y": 90
+    },
+    {
+      "id": "runq",
+      "kind": "queue",
+      "label": "Run queue (visibility timeout)",
+      "x": 720,
+      "y": 260
+    },
+    {
+      "id": "exec",
+      "kind": "worker",
+      "label": "Executor pool",
+      "x": 900,
+      "y": 260
+    },
+    {
+      "id": "handlers",
+      "kind": "external",
+      "label": "Job handlers / target services",
+      "x": 900,
+      "y": 90
+    },
+    {
+      "id": "runs",
+      "kind": "nosql",
+      "label": "job_runs (status, attempts, TTL 30 d)",
+      "x": 540,
+      "y": 380
+    },
+    {
+      "id": "dlq",
+      "kind": "queue",
+      "label": "Dead-letter queue",
+      "x": 720,
+      "y": 420
+    },
+    {
+      "id": "triage",
+      "kind": "worker",
+      "label": "DLQ triage / redrive",
+      "x": 900,
+      "y": 420
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "POST /jobs, GET /jobs/{id}/runs"
+    },
+    {
+      "from": "lb",
+      "to": "api",
+      "label": "job CRUD"
+    },
+    {
+      "from": "api",
+      "to": "jobsdb",
+      "label": "insert job + next_run_at"
+    },
+    {
+      "from": "sched",
+      "to": "coord",
+      "label": "lease partition"
+    },
+    {
+      "from": "sched",
+      "to": "jobsdb",
+      "label": "claim due: next_run_at <= now + 5 s"
+    },
+    {
+      "from": "sched",
+      "to": "runq",
+      "label": "enqueue run (run_id)"
+    },
+    {
+      "from": "runq",
+      "to": "exec",
+      "label": "receive, extend visibility (heartbeat)"
+    },
+    {
+      "from": "exec",
+      "to": "handlers",
+      "label": "invoke, Idempotency-Key = run_id"
+    },
+    {
+      "from": "exec",
+      "to": "runs",
+      "label": "conditional status update"
+    },
+    {
+      "from": "exec",
+      "to": "jobsdb",
+      "label": "retry: next_run_at = now + backoff"
+    },
+    {
+      "from": "exec",
+      "to": "dlq",
+      "label": "max attempts exceeded"
+    },
+    {
+      "from": "dlq",
+      "to": "triage",
+      "label": "inspect, alert owner"
+    },
+    {
+      "from": "triage",
+      "to": "runq",
+      "label": "redrive after fix"
+    },
+    {
+      "from": "api",
+      "to": "runs",
+      "label": "read run history"
+    }
+  ],
+  "flows": [
+    {
+      "name": "create",
+      "path": [
+        "client",
+        "lb",
+        "api",
+        "jobsdb"
+      ]
+    },
+    {
+      "name": "dispatch",
+      "path": [
+        "sched",
+        "runq",
+        "exec",
+        "handlers"
+      ]
+    },
+    {
+      "name": "give up",
+      "path": [
+        "exec",
+        "dlq",
+        "triage",
+        "runq"
+      ]
+    }
+  ]
+}

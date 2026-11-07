@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "job_definitions",
+      "formula": "50 * million",
+      "unit": ""
+    },
+    {
+      "name": "definitions_storage",
+      "formula": "job_definitions * 1000 / 10**9",
+      "unit": "GB"
+    },
+    {
+      "name": "executions_per_day",
+      "formula": "100 * million",
+      "unit": ""
+    },
+    {
+      "name": "avg_dispatch_qps",
+      "formula": "executions_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_dispatch_qps",
+      "formula": "avg_dispatch_qps * 10",
+      "unit": "/s"
+    },
+    {
+      "name": "concurrent_runs",
+      "formula": "avg_dispatch_qps * 30",
+      "unit": ""
+    },
+    {
+      "name": "executor_hosts",
+      "formula": "concurrent_runs / 50",
+      "unit": ""
+    },
+    {
+      "name": "run_history_storage_30d",
+      "formula": "executions_per_day * 30 * 500 / 10**12",
+      "unit": "TB"
+    }
+  ]
+}

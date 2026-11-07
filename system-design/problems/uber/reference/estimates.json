@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "online_drivers",
+      "formula": "1 * million",
+      "unit": ""
+    },
+    {
+      "name": "location_update_qps",
+      "formula": "online_drivers / 4",
+      "unit": "/s"
+    },
+    {
+      "name": "location_ingest_bandwidth",
+      "formula": "location_update_qps * 200 / 10**6",
+      "unit": "MB/s"
+    },
+    {
+      "name": "geo_index_memory",
+      "formula": "online_drivers * 100 / 10**6",
+      "unit": "MB"
+    },
+    {
+      "name": "rides_per_day",
+      "formula": "20 * million",
+      "unit": ""
+    },
+    {
+      "name": "ride_request_qps",
+      "formula": "rides_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_ride_request_qps",
+      "formula": "ride_request_qps * 3",
+      "unit": "/s"
+    },
+    {
+      "name": "trip_storage_per_year",
+      "formula": "rides_per_day * 365 * 2000 / 10**12",
+      "unit": "TB"
+    }
+  ]
+}

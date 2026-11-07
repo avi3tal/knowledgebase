@@ -1,0 +1,173 @@
+{
+  "version": 3,
+  "why": "Compose P3 for N2: the query service resolves tags in the series index, picks raw or rollups by range, scatter-gathers across shards, and serves refreshing panels from a result cache.",
+  "nodes": [
+    {
+      "id": "agents",
+      "kind": "client",
+      "label": "Host agents ×100k",
+      "x": 60,
+      "y": 80
+    },
+    {
+      "id": "user",
+      "kind": "client",
+      "label": "Dashboard users / on-call",
+      "x": 60,
+      "y": 340
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 220,
+      "y": 200
+    },
+    {
+      "id": "collect",
+      "kind": "service",
+      "label": "Collectors (validate, batch)",
+      "x": 390,
+      "y": 60
+    },
+    {
+      "id": "kafka",
+      "kind": "stream",
+      "label": "metrics topic (Kafka, by series hash)",
+      "x": 560,
+      "y": 60
+    },
+    {
+      "id": "writer",
+      "kind": "worker",
+      "label": "TSDB ingest writers",
+      "x": 730,
+      "y": 60
+    },
+    {
+      "id": "index",
+      "kind": "search",
+      "label": "Series index (tags → series ids)",
+      "x": 900,
+      "y": 60
+    },
+    {
+      "id": "tsdb",
+      "kind": "nosql",
+      "label": "TSDB hot tier (sharded, Gorilla-compressed)",
+      "x": 730,
+      "y": 180
+    },
+    {
+      "id": "rollup",
+      "kind": "worker",
+      "label": "Downsampler / compactor",
+      "x": 900,
+      "y": 180
+    },
+    {
+      "id": "cold",
+      "kind": "blob",
+      "label": "Rollups + old blocks (object storage)",
+      "x": 900,
+      "y": 290
+    },
+    {
+      "id": "query",
+      "kind": "service",
+      "label": "Query service (scatter-gather)",
+      "x": 390,
+      "y": 300
+    },
+    {
+      "id": "qcache",
+      "kind": "cache",
+      "label": "Query result cache",
+      "x": 390,
+      "y": 440
+    }
+  ],
+  "edges": [
+    {
+      "from": "agents",
+      "to": "lb",
+      "label": "POST /v1/series (batched every 10 s)"
+    },
+    {
+      "from": "lb",
+      "to": "collect",
+      "label": "batches"
+    },
+    {
+      "from": "collect",
+      "to": "kafka",
+      "label": "produce, key = series hash"
+    },
+    {
+      "from": "kafka",
+      "to": "writer",
+      "label": "consume per partition"
+    },
+    {
+      "from": "writer",
+      "to": "tsdb",
+      "label": "append to head block"
+    },
+    {
+      "from": "writer",
+      "to": "index",
+      "label": "register new series"
+    },
+    {
+      "from": "tsdb",
+      "to": "rollup",
+      "label": "sealed 2 h blocks"
+    },
+    {
+      "from": "rollup",
+      "to": "cold",
+      "label": "1 min / 1 h rollups, old blocks"
+    },
+    {
+      "from": "user",
+      "to": "lb",
+      "label": "GET /v1/query"
+    },
+    {
+      "from": "lb",
+      "to": "query",
+      "label": "query"
+    },
+    {
+      "from": "query",
+      "to": "tsdb",
+      "label": "recent range (raw)"
+    },
+    {
+      "from": "query",
+      "to": "qcache",
+      "label": "cached panel results"
+    },
+    {
+      "from": "query",
+      "to": "index",
+      "label": "resolve tags → series ids"
+    },
+    {
+      "from": "query",
+      "to": "cold",
+      "label": "long range (rollups)"
+    }
+  ],
+  "flows": [
+    {
+      "name": "dashboard query",
+      "path": [
+        "user",
+        "lb",
+        "query",
+        "index"
+      ]
+    }
+  ]
+}

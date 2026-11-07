@@ -1,0 +1,531 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Schedule a job: one-off at a time (or after a delay) or recurring with a cron expression, with a handler and payload; pause, edit or cancel it."
+      },
+      {
+        "id": "F2",
+        "text": "Execute each job at its scheduled time on a pool of workers."
+      },
+      {
+        "id": "F3",
+        "text": "Retry failed runs with backoff up to a max number of attempts, then dead-letter them."
+      },
+      {
+        "id": "F4",
+        "text": "Show status and history of every run (queued, running, succeeded, failed) for 30 days."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Timing: a run starts within 2 s of its scheduled time (p99), including top-of-the-hour spikes of ~10×."
+      },
+      {
+        "id": "N2",
+        "text": "At-least-once execution: no run is ever lost when a scheduler or executor dies; duplicates are made harmless with idempotency."
+      },
+      {
+        "id": "N3",
+        "text": "Scale and availability: 100M runs/day, 50M job definitions, no single point of failure."
+      },
+      {
+        "id": "N4",
+        "text": "Job definitions are durable and edits are consistent with dispatch."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Runs last 30 s on average and up to 1 hour; the scheduler triggers handlers but does not host code."
+      },
+      {
+        "id": "A2",
+        "text": "Many cron jobs are set to :00, so the start of each hour sees ~10× the average rate."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Workflow DAGs with dependencies (Airflow-style), code packaging and sandboxing."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/jobs",
+      "request": "name, schedule (cron | run_at | delay), handler, payload, retry_policy, timeout; Idempotency-Key",
+      "response": "201 {job_id, next_run_at}",
+      "notes": "next_run_at is computed from the cron expression in the job's time zone."
+    },
+    {
+      "id": "E2",
+      "method": "PATCH",
+      "path": "/jobs/{id}",
+      "request": "schedule?, payload?, paused?",
+      "response": "200 {job}",
+      "notes": "Optimistic version check; recomputes next_run_at."
+    },
+    {
+      "id": "E3",
+      "method": "DELETE",
+      "path": "/jobs/{id}",
+      "request": "",
+      "response": "204",
+      "notes": "Already enqueued runs check the job's state before executing."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "/jobs/{id}/runs?status&from",
+      "request": "",
+      "response": "[{run_id, scheduled_at, attempt, status, started_at, finished_at, error}]",
+      "notes": "Served from job_runs."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "jobs",
+      "fields": "job_id PK, owner, schedule (cron | run_at), next_run_at, handler, payload, retry_policy, timeout, status, version",
+      "store": "sql",
+      "why": "Partitioned by hash(job_id); index on next_run_at for the due query; transactions to claim and advance."
+    },
+    {
+      "id": "D2",
+      "name": "job_runs",
+      "fields": "run_id (job_id + scheduled_at), job_id, attempt, status, started_at, finished_at, error, executor",
+      "store": "nosql",
+      "why": "100M rows/day, write-heavy, read by job_id; TTL 30 days."
+    },
+    {
+      "id": "D3",
+      "name": "partition_leases",
+      "fields": "partition_id → scheduler_id, lease TTL",
+      "store": "coordinator",
+      "why": "Exactly one active scheduler per partition; fails over when the lease expires."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Duplicate runs and idempotency",
+      "options": [
+        {
+          "name": "Trust the queue to deliver once",
+          "pros": "simple",
+          "cons": "visibility timeouts and scheduler failovers both produce duplicates"
+        },
+        {
+          "name": "Deterministic run_id = job_id + scheduled_at as the idempotency key, conditional status updates",
+          "pros": "duplicates become no-ops in the handler and in job_runs",
+          "cons": "handlers must honour the key"
+        }
+      ],
+      "choice": "Deterministic run_id passed as the Idempotency-Key; job_runs moves status only from the expected attempt (conditional write)",
+      "why": "At-least-once is the only achievable guarantee, so duplicates must be cheap. Deriving the key from the schedule means even a second scheduler enqueuing the same occurrence produces the same key.",
+      "version": 3
+    },
+    {
+      "id": "DD2",
+      "title": "Top-of-the-hour spikes",
+      "options": [
+        {
+          "name": "Provision executors for the peak",
+          "pros": "simple",
+          "cons": "10× capacity idle 59 minutes an hour"
+        },
+        {
+          "name": "Claim a few seconds ahead, queue absorbs the burst, add per-job jitter for jobs that allow it",
+          "pros": "smooths the spike; executors autoscale on queue depth",
+          "cons": "jobs that allow jitter start up to N s late"
+        }
+      ],
+      "choice": "Claim 5 s ahead, let the run queue absorb the burst, autoscale executors on queue depth, and offer an opt-in jitter window for cron jobs",
+      "why": "Most ':00' jobs don't need second precision; spreading them over a minute turns a 10× spike into ~1.5×, while strict jobs still start on time from the pre-claimed queue.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The jobs store's write load (every run advances next_run_at), the per-partition polling at top-of-the-hour, and slow handlers occupying executor slots.",
+    "failures": "Scheduler dies: its partition lease expires in ~10 s and another scheduler takes over; claimed-but-unenqueued rows roll back with the transaction. Executor dies: the visibility timeout returns the run to the queue. Handler down: backoff, then DLQ.",
+    "monitoring": "Schedule lag (actual start − scheduled_at) p99, due-but-unclaimed rows per partition, queue depth and age, executor utilisation, retry and DLQ rates, and lease handovers.",
+    "scale": "10×: more logical partitions (rebalance leases), more SQL shards, a sharded queue, and executors autoscaled on queue depth.",
+    "future": "DAG dependencies (run B after A succeeds), per-tenant quotas and priorities, and calendars and time-zone-aware schedules."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Job definitions and the schedule store",
+      "covers": [
+        "F1",
+        "N4"
+      ],
+      "problem": "Durably store 50M job definitions (one-off and cron), keep each job's next_run_at correct, and make edits, pauses and cancels consistent with jobs that are about to be dispatched.",
+      "options": [
+        {
+          "name": "Key-value store keyed by job_id",
+          "pros": "scales trivially, simple CRUD",
+          "cons": "no efficient 'what is due next' query; a secondary index on time is a hot partition"
+        },
+        {
+          "name": "SQL partitioned by hash(job_id), B-tree index on next_run_at per partition",
+          "pros": "range query on due time, transactions to claim and advance atomically",
+          "cons": "must partition to scale; the index is written on every run"
+        }
+      ],
+      "choice": "Postgres partitioned by hash(job_id) into ~64 logical partitions, each with an index on (next_run_at) WHERE active; the API computes next_run_at from the cron expression on create and update",
+      "why": "50M rows × ~1 KB ≈ 50 GB fits a handful of SQL shards, and the scheduler needs exactly what SQL is good at: an indexed range query plus a transaction that claims a job and advances its next run together.",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Job owners / services",
+            "x": 60,
+            "y": 200
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 210,
+            "y": 200
+          },
+          {
+            "id": "api",
+            "kind": "service",
+            "label": "Job API",
+            "x": 370,
+            "y": 200
+          },
+          {
+            "id": "jobsdb",
+            "kind": "sql",
+            "label": "jobs + next_run_at index (Postgres, partitioned)",
+            "x": 540,
+            "y": 200
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "POST /jobs, GET /jobs/{id}/runs"
+          },
+          {
+            "from": "lb",
+            "to": "api",
+            "label": "job CRUD"
+          },
+          {
+            "from": "api",
+            "to": "jobsdb",
+            "label": "insert job + next_run_at"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Finding due jobs without a full scan",
+      "covers": [
+        "F2",
+        "N1",
+        "N3"
+      ],
+      "problem": "Every second, find the jobs whose time has come among 50M definitions and dispatch them within 2 s, including top-of-the-hour spikes of ~10× (≈12k due jobs/s), with no single scheduler box.",
+      "options": [
+        {
+          "name": "One cron box scanning the whole table every second",
+          "pros": "trivial",
+          "cons": "O(50M) per tick; a single point of failure"
+        },
+        {
+          "name": "Indexed range query per partition, each partition owned by one scheduler via a lease",
+          "pros": "reads only due rows; scale by adding partitions; failover by lease expiry",
+          "cons": "polling cost per partition; lease handover gap of a few seconds"
+        },
+        {
+          "name": "In-memory priority queue / Redis sorted set (score = run_at) loaded from the store",
+          "pros": "sub-second precision, cheap pops",
+          "cons": "a second copy of the truth to keep in sync; memory and durability concerns"
+        },
+        {
+          "name": "Time-bucketed table (one row set per minute) loaded into a timer wheel",
+          "pros": "O(due) reads, great for huge one-off volumes",
+          "cons": "more moving parts; cron jobs must be re-bucketed each run"
+        }
+      ],
+      "choice": "Each partition is leased (etcd) by one scheduler, which every second claims SELECT … WHERE next_run_at <= now() + 5 s ORDER BY next_run_at LIMIT 1000 FOR UPDATE SKIP LOCKED, enqueues a run and advances next_run_at in the same transaction",
+      "why": "The index turns 'what is due' into a range read of only the due rows (~12k/s at peak across 64 partitions ≈ 200 per partition per second). Leases give exactly one active scheduler per partition and automatic failover; claiming and advancing in one transaction means a crash never loses or double-advances a run.",
+      "technologies": [
+        "zookeeper-etcd",
+        "postgresql"
+      ],
+      "patterns": [
+        "distributed-locking"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "sched",
+            "kind": "scheduler",
+            "label": "Schedulers (one per leased partition)",
+            "x": 720,
+            "y": 90
+          },
+          {
+            "id": "coord",
+            "kind": "coordinator",
+            "label": "etcd: partition leases",
+            "x": 540,
+            "y": 50
+          },
+          {
+            "id": "jobsdb",
+            "kind": "sql",
+            "label": "jobs + next_run_at index (Postgres, partitioned)",
+            "x": 540,
+            "y": 200
+          },
+          {
+            "id": "runq",
+            "kind": "queue",
+            "label": "Run queue (visibility timeout)",
+            "x": 720,
+            "y": 260
+          }
+        ],
+        "edges": [
+          {
+            "from": "sched",
+            "to": "coord",
+            "label": "lease partition"
+          },
+          {
+            "from": "sched",
+            "to": "jobsdb",
+            "label": "claim due: next_run_at <= now + 5 s"
+          },
+          {
+            "from": "sched",
+            "to": "runq",
+            "label": "enqueue run (run_id)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Dispatch and execution: at-least-once with leases",
+      "covers": [
+        "F2",
+        "N2"
+      ],
+      "problem": "Hand each due run to one of hundreds of executors, survive executor crashes mid-run without losing the run, and keep duplicates harmless.",
+      "options": [
+        {
+          "name": "Scheduler calls the handler directly",
+          "pros": "fewest hops",
+          "cons": "slow jobs block scheduling; a scheduler crash loses in-flight runs"
+        },
+        {
+          "name": "Queue with visibility timeout; executors pull, heartbeat to extend, delete on success",
+          "pros": "a crashed executor's run reappears automatically; executors scale independently",
+          "cons": "at-least-once: a slow executor can lose its lease and the run executes twice"
+        },
+        {
+          "name": "Exactly-once via distributed transactions with the handler",
+          "pros": "no duplicates in theory",
+          "cons": "handlers are external; side effects can't join a transaction"
+        }
+      ],
+      "choice": "Run queue with visibility timeout: executors pull, extend the lease with heartbeats for long jobs, call the handler with Idempotency-Key = run_id (job_id + scheduled_at) and record status with a conditional update on attempt",
+      "why": "Exactly-once execution is impossible end to end, so the design picks at-least-once delivery plus an idempotency key that turns duplicates into no-ops. Visibility timeouts make crash recovery automatic with no reaper to run.",
+      "technologies": [
+        "kafka",
+        "dynamodb"
+      ],
+      "patterns": [
+        "idempotency",
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "runq",
+            "kind": "queue",
+            "label": "Run queue (visibility timeout)",
+            "x": 720,
+            "y": 260
+          },
+          {
+            "id": "exec",
+            "kind": "worker",
+            "label": "Executor pool",
+            "x": 900,
+            "y": 260
+          },
+          {
+            "id": "handlers",
+            "kind": "external",
+            "label": "Job handlers / target services",
+            "x": 900,
+            "y": 90
+          },
+          {
+            "id": "runs",
+            "kind": "nosql",
+            "label": "job_runs (status, attempts, TTL 30 d)",
+            "x": 540,
+            "y": 380
+          }
+        ],
+        "edges": [
+          {
+            "from": "runq",
+            "to": "exec",
+            "label": "receive, extend visibility (heartbeat)"
+          },
+          {
+            "from": "exec",
+            "to": "handlers",
+            "label": "invoke, Idempotency-Key = run_id"
+          },
+          {
+            "from": "exec",
+            "to": "runs",
+            "label": "conditional status update"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Retries, dead letters and status visibility",
+      "covers": [
+        "F3",
+        "F4"
+      ],
+      "problem": "Retry failed runs without hammering a broken dependency, stop retrying poison jobs, and let owners see the status and history of every run.",
+      "options": [
+        {
+          "name": "Retry immediately in the executor",
+          "pros": "fast recovery from blips",
+          "cons": "hammers a failing dependency; ties up executor slots"
+        },
+        {
+          "name": "Infinite retries",
+          "pros": "never gives up",
+          "cons": "poison jobs loop forever and crowd out healthy ones"
+        },
+        {
+          "name": "Reschedule with exponential backoff + jitter, dead-letter after max attempts",
+          "pros": "failing dependencies get room; poison jobs are parked for humans",
+          "cons": "a delay before recovery; needs a DLQ workflow"
+        }
+      ],
+      "choice": "On failure the executor sets next_run_at = now + base × 2^attempt ± jitter in the jobs store; after max attempts the run goes to a dead-letter queue, an owner is alerted and can redrive it; every attempt is written to job_runs, which the API reads",
+      "why": "Reusing next_run_at means retries flow through the same due-job path with no second timer system, jitter spreads retry storms, and the DLQ bounds the damage of a bad job. A runs table with a 30-day TTL answers 'did my job run?' without touching the schedule store.",
+      "technologies": [
+        "postgresql",
+        "dynamodb"
+      ],
+      "patterns": [
+        "retries-dlq"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "exec",
+            "kind": "worker",
+            "label": "Executor pool",
+            "x": 900,
+            "y": 260
+          },
+          {
+            "id": "jobsdb",
+            "kind": "sql",
+            "label": "jobs + next_run_at index (Postgres, partitioned)",
+            "x": 540,
+            "y": 200
+          },
+          {
+            "id": "dlq",
+            "kind": "queue",
+            "label": "Dead-letter queue",
+            "x": 720,
+            "y": 420
+          },
+          {
+            "id": "triage",
+            "kind": "worker",
+            "label": "DLQ triage / redrive",
+            "x": 900,
+            "y": 420
+          },
+          {
+            "id": "runq",
+            "kind": "queue",
+            "label": "Run queue (visibility timeout)",
+            "x": 720,
+            "y": 260
+          },
+          {
+            "id": "api",
+            "kind": "service",
+            "label": "Job API",
+            "x": 370,
+            "y": 200
+          },
+          {
+            "id": "runs",
+            "kind": "nosql",
+            "label": "job_runs (status, attempts, TTL 30 d)",
+            "x": 540,
+            "y": 380
+          }
+        ],
+        "edges": [
+          {
+            "from": "exec",
+            "to": "jobsdb",
+            "label": "retry: next_run_at = now + backoff"
+          },
+          {
+            "from": "exec",
+            "to": "dlq",
+            "label": "max attempts exceeded"
+          },
+          {
+            "from": "dlq",
+            "to": "triage",
+            "label": "inspect, alert owner"
+          },
+          {
+            "from": "triage",
+            "to": "runq",
+            "label": "redrive after fix"
+          },
+          {
+            "from": "api",
+            "to": "runs",
+            "label": "read run history"
+          }
+        ]
+      }
+    }
+  ]
+}

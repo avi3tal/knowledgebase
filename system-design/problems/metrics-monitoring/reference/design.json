@@ -1,0 +1,592 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Collect metrics (name, tags, timestamp, value) pushed by an agent on every host and service."
+      },
+      {
+        "id": "F2",
+        "text": "Query and graph metrics on dashboards: time range, aggregation (avg, sum, p99) and group by tag."
+      },
+      {
+        "id": "F3",
+        "text": "Alert rules (query + threshold + 'for' duration) notify on-call via PagerDuty, Slack or email; no duplicate pages."
+      },
+      {
+        "id": "F4",
+        "text": "Retention: raw 10 s data for 15 days, 1 min rollups for 30 days, 1 h rollups for 2 years."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Ingest ~5M datapoints per second without losing data during spikes (write-heavy)."
+      },
+      {
+        "id": "N2",
+        "text": "Dashboard queries p95 < 1 s for the last hour, a few seconds for long ranges."
+      },
+      {
+        "id": "N3",
+        "text": "Alerting fires within ~1 minute of a breach and stays available when the monitored systems fail."
+      },
+      {
+        "id": "N4",
+        "text": "Storage is cheap per point: compress and downsample instead of keeping raw forever."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "100k hosts × ~500 series each, sampled every 10 s; 50M active series."
+      },
+      {
+        "id": "A2",
+        "text": "~5k open dashboards with ~20 panels refreshing every 30 s; ~50k alert rules."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Logs, distributed traces and ML anomaly detection."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/v1/series",
+      "request": "[{metric, tags, points: [[ts, value]]}] (batched, gzip)",
+      "response": "202",
+      "notes": "Agents batch every 10 s; collectors ack after Kafka acks."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/v1/query?q=avg:cpu{service=web} by {host}&from&to&step",
+      "request": "",
+      "response": "[{tags, points: [[ts, value]]}]",
+      "notes": "Resolution is chosen from the range and step."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/v1/alerts",
+      "request": "name, query, condition, for, channels",
+      "response": "201 {alert_id}",
+      "notes": "Rules are assigned to an evaluator shard by id."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "/v1/alerts/{id}",
+      "request": "",
+      "response": "{state: ok|pending|firing, since, last_value}",
+      "notes": ""
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "series_index",
+      "fields": "series_id ↔ metric + sorted tags; inverted index tag=value → series ids",
+      "store": "search",
+      "why": "Turns {service=web} into the series ids to read."
+    },
+    {
+      "id": "D2",
+      "name": "datapoints",
+      "fields": "series_id, timestamp, value in 2 h blocks (delta-of-delta ts, XOR values)",
+      "store": "nosql",
+      "why": "Append-only, compressed to ~1.5 B per point, sharded by series hash."
+    },
+    {
+      "id": "D3",
+      "name": "rollups",
+      "fields": "series_id, bucket (1 min | 1 h), min, max, sum, count",
+      "store": "blob",
+      "why": "Keep long ranges cheap; avg = sum / count stays correct when re-aggregated."
+    },
+    {
+      "id": "D4",
+      "name": "alert_rules / alert_state",
+      "fields": "rule_id, query, condition, for, channels; state, since, fingerprint",
+      "store": "sql",
+      "why": "Small, transactional, edited by people."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "High cardinality tags",
+      "options": [
+        {
+          "name": "Accept any tags",
+          "pros": "flexible for users",
+          "cons": "a user_id or request_id tag creates millions of series and blows up the index and head block"
+        },
+        {
+          "name": "Per-tenant series limits and a tag allowlist; reject or drop at the collector",
+          "pros": "protects the shared system",
+          "cons": "users must be told why data is missing"
+        }
+      ],
+      "choice": "Enforce per-tenant active-series limits at the collectors, drop unbounded tags (ids, URLs), and expose a cardinality report",
+      "why": "Cost scales with the number of active series, not datapoints: one bad tag can add 10M series. Stopping it at ingest is the only place it is cheap.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Flapping and duplicate pages",
+      "options": [
+        {
+          "name": "Notify on every evaluation that breaches",
+          "pros": "simple",
+          "cons": "a value hovering at the threshold pages every 30 s; one outage fires 500 alerts"
+        },
+        {
+          "name": "State machine with a 'for' duration, hysteresis, grouping and a dedupe key",
+          "pros": "one page per incident",
+          "cons": "a short delay before firing"
+        }
+      ],
+      "choice": "Pending → firing only after the 'for' duration; the notifier dedupes on (rule, labels) fingerprint and groups related alerts per service for 30 s",
+      "why": "On-call trust is the product: fewer, correct pages beat fast noisy ones. The fingerprint also makes notifier retries idempotent.",
+      "version": 4
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Ingest writers and the TSDB head blocks (memory per active series), the series index under high cardinality, and the query fan-out across shards for wide queries.",
+    "failures": "Kafka buffers hours of data if the TSDB is down; writers replay from offsets. If a query shard is slow, return partial results with a warning. Alerting runs in its own cluster and a dead-man's-switch alert pages if the evaluators stop.",
+    "monitoring": "Monitor the monitor: ingest lag (Kafka consumer lag), dropped points, active series per tenant, query p95, evaluator loop duration vs interval, notification delivery failures. A second, small independent system watches this one.",
+    "scale": "10×: more Kafka partitions and writers, more TSDB shards by series hash, rollups earlier; split tenants into separate cells.",
+    "future": "Logs and traces with shared tags, streaming evaluation for sub-10-second rules, anomaly detection, SLO burn-rate alerts."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Ingestion pipeline",
+      "covers": [
+        "F1",
+        "N1"
+      ],
+      "problem": "Accept ~5M datapoints per second from 100k host agents, survive spikes and storage hiccups without dropping data, and let more than one consumer read the same stream.",
+      "options": [
+        {
+          "name": "Agents write straight to the time-series store",
+          "pros": "fewest hops",
+          "cons": "spikes and slow storage push back on every host; no replay; one consumer only"
+        },
+        {
+          "name": "Pull: scrapers poll each target's /metrics endpoint",
+          "pros": "the server controls the rate; a failed scrape is itself a signal; no buffering in agents",
+          "cons": "needs service discovery and sharded scrapers; awkward across networks and for short-lived jobs"
+        },
+        {
+          "name": "Push to stateless collectors that produce to a partitioned log",
+          "pros": "absorbs spikes, replayable, many consumers (storage, streaming alerts, rollups)",
+          "cons": "one more system to run; end-to-end lag of seconds"
+        }
+      ],
+      "choice": "Agents push batches every 10 s to stateless collectors behind a load balancer; collectors validate and produce to Kafka partitioned by series hash; ingest writers consume per partition into the TSDB",
+      "why": "5M points/s is ~80 MB/s of values (a few hundred MB/s on the wire with tag sets) and arrives in bursts (deploys, incidents). A log in the middle lets storage fall behind for minutes without losing data, and partitioning by series hash keeps each series on one writer so appends stay in order.",
+      "technologies": [
+        "kafka"
+      ],
+      "patterns": [
+        "backpressure"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "agents",
+            "kind": "client",
+            "label": "Host agents ×100k",
+            "x": 60,
+            "y": 80
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 220,
+            "y": 200
+          },
+          {
+            "id": "collect",
+            "kind": "service",
+            "label": "Collectors (validate, batch)",
+            "x": 390,
+            "y": 60
+          },
+          {
+            "id": "kafka",
+            "kind": "stream",
+            "label": "metrics topic (Kafka, by series hash)",
+            "x": 560,
+            "y": 60
+          },
+          {
+            "id": "writer",
+            "kind": "worker",
+            "label": "TSDB ingest writers",
+            "x": 730,
+            "y": 60
+          },
+          {
+            "id": "tsdb",
+            "kind": "nosql",
+            "label": "TSDB hot tier (sharded, Gorilla-compressed)",
+            "x": 730,
+            "y": 180
+          }
+        ],
+        "edges": [
+          {
+            "from": "agents",
+            "to": "lb",
+            "label": "POST /v1/series (batched every 10 s)"
+          },
+          {
+            "from": "lb",
+            "to": "collect",
+            "label": "batches"
+          },
+          {
+            "from": "collect",
+            "to": "kafka",
+            "label": "produce, key = series hash"
+          },
+          {
+            "from": "kafka",
+            "to": "writer",
+            "label": "consume per partition"
+          },
+          {
+            "from": "writer",
+            "to": "tsdb",
+            "label": "append to head block"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Time-series storage and downsampling",
+      "covers": [
+        "F4",
+        "N4"
+      ],
+      "problem": "Store 5M points/s cheaply: raw 10 s data for 15 days, 1 min rollups for 30 days and 1 h rollups for 2 years, with fast reads by series and time range.",
+      "options": [
+        {
+          "name": "Relational table (series_id, ts, value)",
+          "pros": "familiar, SQL",
+          "cons": "~16 B + index per row at 5M rows/s: index bloat and vacuum pain; no compression"
+        },
+        {
+          "name": "Wide-column store (Cassandra) keyed by series and time bucket",
+          "pros": "scales writes linearly",
+          "cons": "no native compression or downsampling; you build the TSDB on top"
+        },
+        {
+          "name": "Purpose-built TSDB: in-memory head block, Gorilla-compressed immutable blocks, rollups to object storage",
+          "pros": "~1.5 B per point, append-only, fast range scans",
+          "cons": "a specialised system; cardinality limits"
+        }
+      ],
+      "choice": "TSDB sharded by series hash: in-memory head block, sealed 2 h blocks with delta-of-delta timestamps and XOR-compressed values; a downsampler writes 1 min and 1 h rollups (min, max, sum, count) and moves old blocks to object storage",
+      "why": "Compression is the whole game: 5M × 86,400 × 15 days × 16 B ≈ 100 TB raw, but ≈ 10 TB compressed. Rollups make 30-day graphs read 1,440 points per series per day instead of 8,640, and object storage makes 2-year retention cheap.",
+      "technologies": [
+        "time-series-db",
+        "object-storage"
+      ],
+      "patterns": [
+        "pre-aggregation"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "writer",
+            "kind": "worker",
+            "label": "TSDB ingest writers",
+            "x": 730,
+            "y": 60
+          },
+          {
+            "id": "tsdb",
+            "kind": "nosql",
+            "label": "TSDB hot tier (sharded, Gorilla-compressed)",
+            "x": 730,
+            "y": 180
+          },
+          {
+            "id": "index",
+            "kind": "search",
+            "label": "Series index (tags → series ids)",
+            "x": 900,
+            "y": 60
+          },
+          {
+            "id": "rollup",
+            "kind": "worker",
+            "label": "Downsampler / compactor",
+            "x": 900,
+            "y": 180
+          },
+          {
+            "id": "cold",
+            "kind": "blob",
+            "label": "Rollups + old blocks (object storage)",
+            "x": 900,
+            "y": 290
+          }
+        ],
+        "edges": [
+          {
+            "from": "writer",
+            "to": "tsdb",
+            "label": "append to head block"
+          },
+          {
+            "from": "writer",
+            "to": "index",
+            "label": "register new series"
+          },
+          {
+            "from": "tsdb",
+            "to": "rollup",
+            "label": "sealed 2 h blocks"
+          },
+          {
+            "from": "rollup",
+            "to": "cold",
+            "label": "1 min / 1 h rollups, old blocks"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Query path for dashboards",
+      "covers": [
+        "F2",
+        "N2"
+      ],
+      "problem": "Serve ~3k dashboard queries/s (auto-refreshing panels) in under a second, over ranges from 1 hour to 1 year, aggregating thousands of series by tag.",
+      "options": [
+        {
+          "name": "Always query raw data",
+          "pros": "exact",
+          "cons": "a 90-day panel over 1,000 series reads ~800M points"
+        },
+        {
+          "name": "Pick resolution by range + scatter-gather over shards + result cache",
+          "pros": "bounded points per query; refreshes hit the cache",
+          "cons": "rollups lose detail (spikes inside a minute); cache invalidation for 'now'"
+        }
+      ],
+      "choice": "Query service resolves tags to series ids through the series index, picks raw for ranges < 1 day and rollups otherwise, scatter-gathers across TSDB shards, and caches results by (query, step, aligned time window)",
+      "why": "A graph is ~1,000 pixels wide, so more than ~1,000 points per series is waste. Choosing the resolution by range keeps every query bounded, and most dashboard load is the same panels refreshing every 30 s, which a cache aligned to the step absorbs.",
+      "technologies": [
+        "time-series-db"
+      ],
+      "patterns": [
+        "scatter-gather",
+        "cqrs"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "user",
+            "kind": "client",
+            "label": "Dashboard users / on-call",
+            "x": 60,
+            "y": 340
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 220,
+            "y": 200
+          },
+          {
+            "id": "query",
+            "kind": "service",
+            "label": "Query service (scatter-gather)",
+            "x": 390,
+            "y": 300
+          },
+          {
+            "id": "qcache",
+            "kind": "cache",
+            "label": "Query result cache",
+            "x": 390,
+            "y": 440
+          },
+          {
+            "id": "index",
+            "kind": "search",
+            "label": "Series index (tags → series ids)",
+            "x": 900,
+            "y": 60
+          },
+          {
+            "id": "tsdb",
+            "kind": "nosql",
+            "label": "TSDB hot tier (sharded, Gorilla-compressed)",
+            "x": 730,
+            "y": 180
+          },
+          {
+            "id": "cold",
+            "kind": "blob",
+            "label": "Rollups + old blocks (object storage)",
+            "x": 900,
+            "y": 290
+          }
+        ],
+        "edges": [
+          {
+            "from": "user",
+            "to": "lb",
+            "label": "GET /v1/query"
+          },
+          {
+            "from": "lb",
+            "to": "query",
+            "label": "query"
+          },
+          {
+            "from": "query",
+            "to": "qcache",
+            "label": "cached panel results"
+          },
+          {
+            "from": "query",
+            "to": "index",
+            "label": "resolve tags → series ids"
+          },
+          {
+            "from": "query",
+            "to": "tsdb",
+            "label": "recent range (raw)"
+          },
+          {
+            "from": "query",
+            "to": "cold",
+            "label": "long range (rollups)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Alert evaluation and notification",
+      "covers": [
+        "F3",
+        "N3"
+      ],
+      "problem": "Evaluate ~50k alert rules every 30–60 s, fire within about a minute of a breach, avoid flapping and duplicate pages, and keep alerting while the systems being monitored are on fire.",
+      "options": [
+        {
+          "name": "Periodic evaluation: run each rule's query against recent data",
+          "pros": "reuses the query language and path; simple state machine",
+          "cons": "adds query load; detection latency = scrape + interval"
+        },
+        {
+          "name": "Streaming evaluation on the ingest log (Flink)",
+          "pros": "seconds of latency, no storage load",
+          "cons": "windowed state per rule; complex rules (joins, ratios) are hard; harder to test"
+        }
+      ],
+      "choice": "Periodic evaluation: evaluators shard the rules by id, query the hot tier every 30 s, keep per-rule state (ok → pending → firing → resolved) with a 'for' duration, and enqueue notifications; a notifier dedupes, groups and routes them",
+      "why": "50k rules / 30 s ≈ 1.7k queries/s on recent, cached data is cheap, and one query language for dashboards and alerts avoids drift. The 'for' duration and grouping stop flapping and page storms; streaming stays an option for the few rules that need seconds.",
+      "technologies": [
+        "postgresql",
+        "kafka"
+      ],
+      "patterns": [
+        "idempotency",
+        "retries-dlq"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "alerteval",
+            "kind": "scheduler",
+            "label": "Alert evaluators (sharded by rule)",
+            "x": 560,
+            "y": 340
+          },
+          {
+            "id": "rules",
+            "kind": "sql",
+            "label": "Alert rules + state",
+            "x": 560,
+            "y": 450
+          },
+          {
+            "id": "query",
+            "kind": "service",
+            "label": "Query service (scatter-gather)",
+            "x": 390,
+            "y": 300
+          },
+          {
+            "id": "notifyq",
+            "kind": "queue",
+            "label": "Notification queue",
+            "x": 730,
+            "y": 340
+          },
+          {
+            "id": "notifier",
+            "kind": "worker",
+            "label": "Notifier (dedupe, group, route)",
+            "x": 900,
+            "y": 390
+          },
+          {
+            "id": "pager",
+            "kind": "external",
+            "label": "PagerDuty / Slack / email",
+            "x": 730,
+            "y": 460
+          }
+        ],
+        "edges": [
+          {
+            "from": "alerteval",
+            "to": "rules",
+            "label": "load rules, save state"
+          },
+          {
+            "from": "alerteval",
+            "to": "query",
+            "label": "evaluate rule query every 30 s"
+          },
+          {
+            "from": "alerteval",
+            "to": "notifyq",
+            "label": "firing / resolved"
+          },
+          {
+            "from": "notifyq",
+            "to": "notifier",
+            "label": "consume"
+          },
+          {
+            "from": "notifier",
+            "to": "pager",
+            "label": "page / message"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,418 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Write-heavy append-only telemetry: buffer ingest in a partitioned log, store in compressed time blocks with rollups for long ranges, bound every query by resolution, and evaluate alerts on a schedule with stateful dedupe so humans get one page per incident.",
+  "checks": [
+    {
+      "id": "req-collect",
+      "type": "requirement",
+      "label": "Data collection use case captured",
+      "keywords": [
+        "collect",
+        "ingest",
+        "push",
+        "emit",
+        "agent",
+        "send metric",
+        "scrape"
+      ],
+      "tips": {
+        "nudge": "Where does the data come from in the first place?",
+        "hint": "Write a requirement for hosts and services sending metrics in.",
+        "show": "F1: Collect metrics (name, tags, timestamp, value) pushed by an agent on every host."
+      }
+    },
+    {
+      "id": "req-query",
+      "type": "requirement",
+      "label": "Read use case captured",
+      "keywords": [
+        "dashboard",
+        "graph",
+        "query",
+        "visuali",
+        "chart",
+        "plot"
+      ],
+      "tips": {
+        "nudge": "What do engineers do with the data during an incident?",
+        "hint": "Add a requirement for querying and graphing metrics.",
+        "show": "F2: Query and graph metrics on dashboards with time range, aggregation and group-by tag."
+      }
+    },
+    {
+      "id": "req-alert",
+      "type": "requirement",
+      "label": "Alerting use case captured",
+      "keywords": [
+        "alert",
+        "notif",
+        "page",
+        "threshold",
+        "on-call"
+      ],
+      "tips": {
+        "nudge": "Nobody watches dashboards at 3 a.m. What wakes them up?",
+        "hint": "Add a requirement for rules that notify people.",
+        "show": "F3: Alert rules (query + threshold + duration) notify on-call via PagerDuty/Slack/email."
+      }
+    },
+    {
+      "id": "req-retention",
+      "type": "requirement",
+      "label": "Data lifetime decided",
+      "keywords": [
+        "retention",
+        "downsampl",
+        "rollup",
+        "retain",
+        "days",
+        "years",
+        "resolution"
+      ],
+      "tips": {
+        "nudge": "Do you need 10-second resolution from last year?",
+        "hint": "State how long data is kept and at which resolution.",
+        "show": "F4: raw 10 s data for 15 days; 1 min rollups for 30 days; 1 h rollups for 2 years."
+      }
+    },
+    {
+      "id": "req-write-scale",
+      "type": "requirement",
+      "label": "Write volume expectation stated",
+      "keywords": [
+        "datapoint",
+        "points",
+        "million",
+        "throughput",
+        "write-heavy",
+        "write heavy",
+        "per second",
+        "/s",
+        "ingest"
+      ],
+      "sections": [
+        "non_functional"
+      ],
+      "tips": {
+        "nudge": "Is this system read-heavy or write-heavy?",
+        "hint": "State the ingest rate as a non-functional requirement.",
+        "show": "N1: ingest ~5M datapoints/s without loss during spikes; heavily write-dominated."
+      }
+    },
+    {
+      "id": "est-datapoints",
+      "type": "estimate",
+      "label": "Ingest rate estimated",
+      "keywords": [
+        "datapoint",
+        "points",
+        "sample",
+        "ingest",
+        "write"
+      ],
+      "unit": "/s",
+      "min": 500000,
+      "max": 50000000,
+      "tips": {
+        "nudge": "How many hosts, how many series each, how often sampled?",
+        "hint": "points/s = hosts × series per host / sampling interval.",
+        "show": "datapoints_per_s = 100k × 500 / 10 s = 5M /s."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Hot storage for the raw retention estimated",
+      "keywords": [
+        "storage",
+        "disk",
+        "raw",
+        "bytes",
+        "size"
+      ],
+      "unit": "TB",
+      "min": 2,
+      "max": 500,
+      "tips": {
+        "nudge": "How many bytes is one point, before and after compression?",
+        "hint": "storage = points/s × 86,400 × days × bytes per point.",
+        "show": "raw 15 days = 5M × 86,400 × 15 × 16 B ≈ 100 TB uncompressed, ≈ 10 TB at ~1.5 B/point."
+      }
+    },
+    {
+      "id": "est-query-qps",
+      "type": "estimate",
+      "label": "Read load estimated",
+      "keywords": [
+        "query",
+        "dashboard",
+        "read",
+        "panel"
+      ],
+      "unit": "/s",
+      "min": 100,
+      "max": 100000,
+      "tips": {
+        "nudge": "Dashboards refresh themselves. How many panels are open?",
+        "hint": "queries/s = open dashboards × panels / refresh interval.",
+        "show": "dashboard_query_qps = 5k × 20 / 30 s ≈ 3,300 /s."
+      }
+    },
+    {
+      "id": "api-ingest",
+      "type": "endpoint",
+      "label": "Ingest endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "series",
+        "metric",
+        "datapoint",
+        "points",
+        "ingest",
+        "write",
+        "push"
+      ],
+      "tips": {
+        "nudge": "What does an agent send, and how often?",
+        "hint": "A POST that takes a batch of series with points.",
+        "show": "POST /v1/series [{metric, tags, points: [[ts, value]]}] (batched, gzip) → 202"
+      }
+    },
+    {
+      "id": "api-query",
+      "type": "endpoint",
+      "label": "Query endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "query",
+        "series",
+        "metric",
+        "range",
+        "from"
+      ],
+      "tips": {
+        "nudge": "What does a dashboard panel ask for?",
+        "hint": "A GET with a query expression, time range and step.",
+        "show": "GET /v1/query?q=avg:cpu{service=web} by {host}&from&to&step → [{tags, points}]"
+      }
+    },
+    {
+      "id": "data-datapoint",
+      "type": "entity",
+      "label": "Time-series data modelled",
+      "keywords": [
+        "series_id",
+        "series",
+        "timestamp",
+        "datapoint",
+        "tags",
+        "labels"
+      ],
+      "tips": {
+        "nudge": "What identifies a series, and what is one point?",
+        "hint": "Model the series identity (metric + tags) separately from the points.",
+        "show": "series_index(series_id ↔ metric + tags) and datapoints(series_id, ts, value) in compressed time blocks."
+      }
+    },
+    {
+      "id": "part-ingest",
+      "type": "part",
+      "label": "Ingestion designed as its own part",
+      "keywords": [
+        "ingest",
+        "pipeline",
+        "collector",
+        "buffer",
+        "scrape",
+        "push",
+        "pull"
+      ],
+      "tips": {
+        "nudge": "5M points/s arrive in bursts. What happens when storage is slow for five minutes?",
+        "hint": "Add a part for the ingest path: compare direct writes, pull/scrape and a buffered pipeline.",
+        "show": "Part 'Ingestion pipeline': agents push to stateless collectors → Kafka partitioned by series hash → TSDB writers."
+      }
+    },
+    {
+      "id": "part-storage",
+      "type": "part",
+      "label": "Storage and retention designed as its own part",
+      "keywords": [
+        "storage",
+        "downsampl",
+        "rollup",
+        "compression",
+        "retention",
+        "time-series",
+        "tsdb",
+        "time series"
+      ],
+      "tips": {
+        "nudge": "16 bytes a point, 5M points a second, 15 days. Is a regular table the right shape?",
+        "hint": "Add a part for storing time series: compare SQL, wide-column and a purpose-built TSDB, plus downsampling.",
+        "show": "Part 'Time-series storage and downsampling': Gorilla-compressed TSDB blocks, 1 min / 1 h rollups, old blocks in object storage."
+      }
+    },
+    {
+      "id": "part-query",
+      "type": "part",
+      "label": "Query path designed as its own part",
+      "keywords": [
+        "query",
+        "dashboard",
+        "read path",
+        "graph"
+      ],
+      "tips": {
+        "nudge": "A 1-year graph is 1,000 pixels wide. How many points should it read?",
+        "hint": "Add a part for dashboard queries: resolution by range, fan-out across shards and caching.",
+        "show": "Part 'Query path': series index → pick raw or rollup by range → scatter-gather shards → result cache."
+      }
+    },
+    {
+      "id": "part-alerting",
+      "type": "part",
+      "label": "Alerting designed as its own part",
+      "keywords": [
+        "alert",
+        "notif",
+        "rule evaluation",
+        "evaluat",
+        "paging"
+      ],
+      "tips": {
+        "nudge": "Who checks the rules, how often, and how do you avoid 500 pages for one outage?",
+        "hint": "Add a part for alert evaluation and notification: compare periodic queries and streaming evaluation.",
+        "show": "Part 'Alert evaluation and notification': sharded evaluators every 30 s, ok → pending → firing state, notifier dedupes and groups."
+      }
+    },
+    {
+      "id": "comp-tsdb",
+      "type": "component",
+      "label": "Storage suited to time-ordered datapoints",
+      "kinds": [
+        "nosql",
+        "sql"
+      ],
+      "keywords": [
+        "tsdb",
+        "time",
+        "series",
+        "metric",
+        "points",
+        "prometheus",
+        "influx",
+        "timescale",
+        "m3"
+      ],
+      "tips": {
+        "nudge": "Which store is built for append-only (series, time, value) data?",
+        "hint": "Add a store specialised for time series.",
+        "show": "A TSDB (Prometheus/M3/InfluxDB/Timescale-like), sharded by series hash, with compressed blocks."
+      }
+    },
+    {
+      "id": "edge-ingest-buffer",
+      "type": "edge",
+      "label": "Ingest decoupled from storage writes",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "stream",
+        "queue"
+      ],
+      "tips": {
+        "nudge": "If the store is slow, should agents feel it?",
+        "hint": "Put an asynchronous buffer between the receiving tier and storage.",
+        "show": "Collectors → Kafka (partitioned by series hash) → ingest writers → TSDB."
+      }
+    },
+    {
+      "id": "edge-alert-notify",
+      "type": "edge",
+      "label": "Alerts reach humans reliably",
+      "from_kinds": [
+        "scheduler",
+        "worker",
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream",
+        "external"
+      ],
+      "from_keywords": [
+        "alert",
+        "rule",
+        "eval"
+      ],
+      "tips": {
+        "nudge": "Evaluating a rule is one job; telling a human is another. How are they connected?",
+        "hint": "Connect the alert evaluator to a notification path that can retry.",
+        "show": "Alert evaluators → notification queue → notifier (dedupe, group, route) → PagerDuty/Slack/email."
+      }
+    },
+    {
+      "id": "dd-cardinality",
+      "type": "decision",
+      "label": "Protection against series explosion decided",
+      "keywords": [
+        "cardinality",
+        "series explosion",
+        "tag",
+        "label",
+        "unbounded"
+      ],
+      "tips": {
+        "nudge": "What happens if someone tags a metric with user_id?",
+        "hint": "Decide how the system limits the number of distinct series.",
+        "show": "Per-tenant active-series limits at the collectors, drop unbounded tags, publish a cardinality report."
+      }
+    },
+    {
+      "id": "dd-flapping",
+      "type": "decision",
+      "label": "Noise control for alerts decided",
+      "keywords": [
+        "flap",
+        "dedup",
+        "duplicate",
+        "hysteresis",
+        "group",
+        "for duration",
+        "noise"
+      ],
+      "tips": {
+        "nudge": "A value hovers right at the threshold. How often does on-call get paged?",
+        "hint": "Decide how alerts avoid flapping and duplicates.",
+        "show": "A 'for' duration before firing, hysteresis, dedupe on (rule, labels) fingerprint and grouping per service."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "label": "Bottlenecks named",
+      "key": "bottlenecks",
+      "tips": {
+        "nudge": "Which resource grows with the number of series rather than points?",
+        "hint": "Walk the ingest and query paths and name what saturates first.",
+        "show": "Head-block memory per active series, the series index under high cardinality, and wide query fan-out."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "label": "Monitoring the monitor covered",
+      "key": "monitoring",
+      "tips": {
+        "nudge": "How do you know the monitoring system itself is broken?",
+        "hint": "List the system's own health metrics, and who watches it.",
+        "show": "Kafka lag, dropped points, active series, evaluator loop time; a dead-man's switch and a small independent watcher."
+      }
+    }
+  ]
+}

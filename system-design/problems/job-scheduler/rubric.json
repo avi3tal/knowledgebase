@@ -1,0 +1,418 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Time-triggered work at scale: index work by its due time, give each partition exactly one leased owner that claims and advances in one transaction, decouple execution through a queue with visibility timeouts, and make at-least-once safe with deterministic idempotency keys, backoff and a dead-letter queue.",
+  "checks": [
+    {
+      "id": "req-schedule",
+      "type": "requirement",
+      "label": "Core write use case captured",
+      "keywords": [
+        "schedule",
+        "cron",
+        "recurring",
+        "run at",
+        "run_at",
+        "delay",
+        "one-off",
+        "one off"
+      ],
+      "tips": {
+        "nudge": "What does a user hand to this system?",
+        "hint": "Write a requirement for registering one-off and recurring jobs.",
+        "show": "F1: Schedule a job one-off (run_at / delay) or recurring (cron), with handler and payload; pause, edit, cancel."
+      }
+    },
+    {
+      "id": "req-execute",
+      "type": "requirement",
+      "label": "Core execution use case captured",
+      "keywords": [
+        "execute",
+        "run each",
+        "runs each",
+        "trigger",
+        "run the job",
+        "run jobs",
+        "invoke"
+      ],
+      "tips": {
+        "nudge": "What must happen when a job's time arrives?",
+        "hint": "Add a requirement for executing jobs on time on workers.",
+        "show": "F2: Execute each job at its scheduled time on a pool of workers."
+      }
+    },
+    {
+      "id": "req-retry",
+      "type": "requirement",
+      "label": "Failure behaviour captured",
+      "keywords": [
+        "retry",
+        "retries",
+        "backoff",
+        "dead letter",
+        "dead-letter",
+        "dlq"
+      ],
+      "tips": {
+        "nudge": "Jobs fail. What does the user expect then?",
+        "hint": "Add a requirement for retries and what happens after the last one.",
+        "show": "F3: Retry failed runs with backoff up to N attempts, then dead-letter them."
+      }
+    },
+    {
+      "id": "req-status",
+      "type": "requirement",
+      "label": "Visibility for job owners captured",
+      "keywords": [
+        "status",
+        "history",
+        "visib",
+        "dashboard",
+        "query runs",
+        "observ"
+      ],
+      "tips": {
+        "nudge": "How does an owner find out whether last night's job ran?",
+        "hint": "Add a requirement for run status and history.",
+        "show": "F4: Show status and history of every run for 30 days."
+      }
+    },
+    {
+      "id": "req-delivery",
+      "type": "requirement",
+      "label": "Execution guarantee stated",
+      "keywords": [
+        "at-least-once",
+        "at least once",
+        "exactly once",
+        "exactly-once",
+        "not lost",
+        "never lost",
+        "never lose",
+        "idempot",
+        "no run is"
+      ],
+      "sections": [
+        "non_functional"
+      ],
+      "tips": {
+        "nudge": "A worker crashes halfway through a job. Is the run lost, repeated or neither?",
+        "hint": "State the delivery guarantee as a non-functional requirement.",
+        "show": "N2: at-least-once execution; no run is lost when a node dies; duplicates made harmless with idempotency."
+      }
+    },
+    {
+      "id": "req-timing",
+      "type": "requirement",
+      "label": "Timing precision stated",
+      "keywords": [
+        "within",
+        "second",
+        "latency",
+        "on time",
+        "accura",
+        "precision",
+        "late",
+        "lag"
+      ],
+      "sections": [
+        "non_functional"
+      ],
+      "tips": {
+        "nudge": "How late may a 09:00 job start?",
+        "hint": "State a timing target, including busy moments.",
+        "show": "N1: start within 2 s of scheduled time (p99), including top-of-the-hour spikes."
+      }
+    },
+    {
+      "id": "est-dispatch-qps",
+      "type": "estimate",
+      "label": "Dispatch rate estimated",
+      "keywords": [
+        "dispatch",
+        "execution",
+        "run",
+        "job",
+        "trigger"
+      ],
+      "unit": "/s",
+      "min": 300,
+      "max": 50000,
+      "tips": {
+        "nudge": "Start from runs per day.",
+        "hint": "dispatches/s = runs per day / 86,400.",
+        "show": "avg_dispatch_qps = 100M / day ≈ 1,160 /s."
+      }
+    },
+    {
+      "id": "est-peak",
+      "type": "estimate",
+      "label": "Burst rate estimated",
+      "keywords": [
+        "peak",
+        "burst",
+        "spike",
+        "max"
+      ],
+      "unit": "/s",
+      "min": 2000,
+      "max": 200000,
+      "tips": {
+        "nudge": "Everyone loves '0 * * * *'. What does that do to the rate at :00?",
+        "hint": "Multiply the average rate by a burst factor for the top of the hour.",
+        "show": "peak_dispatch_qps = 1,160 × 10 ≈ 12,000 /s at the top of the hour."
+      }
+    },
+    {
+      "id": "est-history-storage",
+      "type": "estimate",
+      "label": "Run history storage estimated",
+      "keywords": [
+        "storage",
+        "history",
+        "disk",
+        "bytes",
+        "size"
+      ],
+      "unit": "TB",
+      "min": 0.3,
+      "max": 20,
+      "tips": {
+        "nudge": "Every run leaves a record. How many, for how long, how big?",
+        "hint": "storage = runs per day × retention days × bytes per run record.",
+        "show": "run_history_storage_30d = 100M × 30 × 500 B ≈ 1.5 TB."
+      }
+    },
+    {
+      "id": "api-create",
+      "type": "endpoint",
+      "label": "Job creation endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "job",
+        "schedule",
+        "cron",
+        "task"
+      ],
+      "tips": {
+        "nudge": "Which call registers a job?",
+        "hint": "A POST taking the schedule, handler, payload and retry policy.",
+        "show": "POST /jobs {name, schedule: cron | run_at, handler, payload, retry_policy, timeout} → 201 {job_id, next_run_at}"
+      }
+    },
+    {
+      "id": "api-status",
+      "type": "endpoint",
+      "label": "Status endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "run",
+        "status",
+        "job",
+        "history",
+        "execution"
+      ],
+      "tips": {
+        "nudge": "How does a user see what happened to their job?",
+        "hint": "A GET that lists a job's runs with their status.",
+        "show": "GET /jobs/{id}/runs?status&from → [{run_id, scheduled_at, attempt, status, error}]"
+      }
+    },
+    {
+      "id": "data-job",
+      "type": "entity",
+      "label": "Job definition modelled for fast due lookup",
+      "keywords": [
+        "next_run_at",
+        "next run",
+        "next_run",
+        "run_at",
+        "fire time",
+        "due"
+      ],
+      "tips": {
+        "nudge": "What field lets the system ask 'what is due now' cheaply?",
+        "hint": "Store each job with an explicit next fire time that can be indexed.",
+        "show": "jobs(job_id PK, schedule, next_run_at (indexed), handler, payload, retry_policy, status, version)."
+      }
+    },
+    {
+      "id": "part-schedule-store",
+      "type": "part",
+      "label": "Job storage designed as its own part",
+      "keywords": [
+        "definition",
+        "schedule store",
+        "job store",
+        "jobs table",
+        "store"
+      ],
+      "tips": {
+        "nudge": "Where do 50M definitions live so you can both edit them and ask 'what's due'?",
+        "hint": "Add a part for the job store: compare a key-value store with indexed SQL.",
+        "show": "Part 'Job definitions and the schedule store': Postgres partitioned by hash(job_id) with an index on next_run_at."
+      }
+    },
+    {
+      "id": "part-due-jobs",
+      "type": "part",
+      "label": "Finding due jobs designed as its own part",
+      "keywords": [
+        "due",
+        "poll",
+        "scan",
+        "next_run_at",
+        "priority queue",
+        "time bucket",
+        "sorted set",
+        "timer",
+        "delay queue"
+      ],
+      "tips": {
+        "nudge": "Scanning 50M rows every second is a non-starter. What do you read instead?",
+        "hint": "Add a part for finding due jobs: compare a full scan, an indexed range per partition, a priority queue and time buckets.",
+        "show": "Part 'Finding due jobs': leased schedulers per partition run SELECT … WHERE next_run_at <= now()+5s … FOR UPDATE SKIP LOCKED."
+      }
+    },
+    {
+      "id": "part-dispatch",
+      "type": "part",
+      "label": "Execution guarantees designed as their own part",
+      "keywords": [
+        "at-least-once",
+        "at least once",
+        "lease",
+        "visibility",
+        "heartbeat",
+        "dispatch",
+        "executor",
+        "idempot"
+      ],
+      "tips": {
+        "nudge": "An executor dies at minute 20 of a 30-minute job. How does anyone find out?",
+        "hint": "Add a part for dispatch and execution: compare direct calls, a queue with leases and 'exactly once'.",
+        "show": "Part 'Dispatch and execution': queue with visibility timeout and heartbeats; Idempotency-Key = job_id + scheduled_at."
+      }
+    },
+    {
+      "id": "part-retries",
+      "type": "part",
+      "label": "Failure handling designed as its own part",
+      "keywords": [
+        "retry",
+        "retries",
+        "backoff",
+        "dlq",
+        "dead letter",
+        "dead-letter",
+        "poison"
+      ],
+      "tips": {
+        "nudge": "A downstream API is down for an hour. What do your retries do to it?",
+        "hint": "Add a part for retries and dead letters, and how owners see what happened.",
+        "show": "Part 'Retries, dead letters and status': exponential backoff + jitter via next_run_at, DLQ after max attempts, job_runs history."
+      }
+    },
+    {
+      "id": "edge-queue-workers",
+      "type": "edge",
+      "label": "Execution decoupled from scheduling",
+      "from_kinds": [
+        "queue",
+        "stream"
+      ],
+      "to_kinds": [
+        "worker",
+        "service"
+      ],
+      "tips": {
+        "nudge": "Should the component that decides *when* also be the one that runs the job?",
+        "hint": "Put a buffer between the scheduler and a pool of workers that pull from it.",
+        "show": "Schedulers → run queue (visibility timeout) → executor pool."
+      }
+    },
+    {
+      "id": "comp-dlq",
+      "type": "component",
+      "label": "Permanently failing work has somewhere to go",
+      "kinds": [
+        "queue",
+        "stream"
+      ],
+      "keywords": [
+        "dead",
+        "dlq",
+        "failed",
+        "poison",
+        "parking"
+      ],
+      "tips": {
+        "nudge": "What happens to a job that fails every single time?",
+        "hint": "Add a place to park runs that exhausted their retries.",
+        "show": "A dead-letter queue, with a triage worker that alerts the owner and can redrive runs."
+      }
+    },
+    {
+      "id": "dd-idempotency",
+      "type": "decision",
+      "label": "Duplicate runs handled",
+      "keywords": [
+        "idempot",
+        "duplicate",
+        "dedup",
+        "exactly",
+        "twice"
+      ],
+      "tips": {
+        "nudge": "Your guarantee allows a run to happen twice. Who makes that safe?",
+        "hint": "Decide how duplicates are detected or neutralised.",
+        "show": "Deterministic run_id = job_id + scheduled_at passed as an Idempotency-Key; conditional status updates per attempt."
+      }
+    },
+    {
+      "id": "dd-spikes",
+      "type": "decision",
+      "label": "Burst at the top of the hour handled",
+      "keywords": [
+        "spike",
+        "burst",
+        "top of the hour",
+        "top-of-the-hour",
+        "jitter",
+        "thundering",
+        "herd",
+        "peak"
+      ],
+      "tips": {
+        "nudge": "12,000 jobs want to start at 09:00:00. What do you do?",
+        "hint": "Decide how the system absorbs or smooths the burst.",
+        "show": "Claim a few seconds ahead, let the queue absorb, autoscale executors on queue depth, and offer opt-in jitter."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "label": "Bottlenecks named",
+      "key": "bottlenecks",
+      "tips": {
+        "nudge": "What gets written on every single run?",
+        "hint": "Walk the dispatch path and name what saturates first.",
+        "show": "The jobs store (next_run_at advanced per run), per-partition polling at :00, and executor slots held by slow handlers."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure handling covered",
+      "key": "failures",
+      "tips": {
+        "nudge": "Kill a scheduler, an executor and a handler in turn. What happens each time?",
+        "hint": "Name each failure and how the design recovers.",
+        "show": "Scheduler: lease expires, another takes the partition. Executor: visibility timeout re-queues. Handler: backoff, then DLQ."
+      }
+    }
+  ]
+}

@@ -1,0 +1,412 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Fast-moving location data plus a scarce resource: keep ephemeral positions in a sharded in-memory geo index (latest write wins), guard the scarce resource with short leases and a conditional write, and hand money off through an outbox and idempotency keys.",
+  "checks": [
+    {
+      "id": "req-request-ride",
+      "type": "requirement",
+      "label": "Core rider use case captured",
+      "keywords": [
+        "request a ride",
+        "request ride",
+        "requests a ride",
+        "book",
+        "hail",
+        "match",
+        "ride request",
+        "assign"
+      ],
+      "tips": {
+        "nudge": "What is the one thing a rider comes to the app to do?",
+        "hint": "Write a functional requirement for requesting a ride and getting a driver assigned.",
+        "show": "F2: A rider requests a ride (pickup, drop-off) and the system matches a nearby available driver who accepts."
+      }
+    },
+    {
+      "id": "req-nearby",
+      "type": "requirement",
+      "label": "Discovery use case captured",
+      "keywords": [
+        "nearby",
+        "near",
+        "closest",
+        "proximity",
+        "around",
+        "radius"
+      ],
+      "tips": {
+        "nudge": "Before requesting, what does the rider see on the map?",
+        "hint": "Add a requirement for showing drivers around the rider.",
+        "show": "F1: Riders see nearby available drivers on a map with an ETA."
+      }
+    },
+    {
+      "id": "req-location",
+      "type": "requirement",
+      "label": "Driver-side data flow captured",
+      "keywords": [
+        "location",
+        "gps",
+        "position",
+        "track",
+        "coordinates"
+      ],
+      "tips": {
+        "nudge": "Where does the system learn where drivers are?",
+        "hint": "Add a requirement for drivers reporting their position and riders tracking it.",
+        "show": "F3: Drivers send GPS location every ~4 s; riders track the assigned driver live."
+      }
+    },
+    {
+      "id": "req-consistency",
+      "type": "requirement",
+      "label": "Correctness guarantee for assignment stated",
+      "keywords": [
+        "double",
+        "two rides",
+        "one ride",
+        "one driver",
+        "at most one",
+        "exactly one",
+        "consisten",
+        "never assigned",
+        "twice",
+        "conflict"
+      ],
+      "sections": [
+        "non_functional"
+      ],
+      "tips": {
+        "nudge": "Two riders, one nearby driver, same second. What must never happen?",
+        "hint": "State a non-functional requirement about how many rides a driver can hold.",
+        "show": "N3: A driver is never assigned to two rides at once, and a ride never gets two drivers."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Freshness and speed expectations stated",
+      "keywords": [
+        "latency",
+        "ms",
+        "second",
+        "fast",
+        "real-time",
+        "real time",
+        "fresh",
+        "stale"
+      ],
+      "sections": [
+        "non_functional"
+      ],
+      "tips": {
+        "nudge": "How old can a driver's position be, and how fast must search answer?",
+        "hint": "Add non-functional targets for search latency and location freshness.",
+        "show": "N1/N2: positions at most a few seconds old; nearby search p99 < 100 ms; offer within ~5 s."
+      }
+    },
+    {
+      "id": "est-location-qps",
+      "type": "estimate",
+      "label": "Location write rate estimated",
+      "keywords": [
+        "location",
+        "gps",
+        "position",
+        "ping",
+        "update"
+      ],
+      "unit": "/s",
+      "min": 20000,
+      "max": 2000000,
+      "tips": {
+        "nudge": "How many drivers are online, and how often does each one report?",
+        "hint": "location updates/s = online drivers / seconds between updates.",
+        "show": "location_update_qps = 1M online drivers / 4 s ≈ 250,000 /s."
+      }
+    },
+    {
+      "id": "est-ride-qps",
+      "type": "estimate",
+      "label": "Ride request rate estimated",
+      "keywords": [
+        "ride",
+        "trip",
+        "request",
+        "match",
+        "booking"
+      ],
+      "unit": "/s",
+      "min": 50,
+      "max": 5000,
+      "tips": {
+        "nudge": "Start from the number of trips per day.",
+        "hint": "ride requests/s = trips per day / 86,400 s; multiply for peak.",
+        "show": "ride_request_qps = 20M / day ≈ 230 /s (peak ×3 ≈ 700 /s): tiny next to location updates."
+      }
+    },
+    {
+      "id": "est-geo-memory",
+      "type": "estimate",
+      "label": "Size of the live position set estimated",
+      "keywords": [
+        "memory",
+        "ram",
+        "index",
+        "geo"
+      ],
+      "unit": "MB",
+      "min": 10,
+      "max": 10000,
+      "tips": {
+        "nudge": "If you kept every online driver's latest position, how much would it take?",
+        "hint": "memory = online drivers × bytes per entry (id, lat, lng, timestamp ≈ 100 B).",
+        "show": "geo_index_memory = 1M × 100 B ≈ 100 MB: it fits in RAM, so update rate, not size, is the problem."
+      }
+    },
+    {
+      "id": "api-request-ride",
+      "type": "endpoint",
+      "label": "Ride request endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "ride",
+        "trip",
+        "request",
+        "booking"
+      ],
+      "tips": {
+        "nudge": "Which call starts the whole flow?",
+        "hint": "A POST that creates a ride with pickup and drop-off.",
+        "show": "POST /rides {pickup, dropoff, payment_method} + Idempotency-Key → 201 {ride_id, status: matching}"
+      }
+    },
+    {
+      "id": "api-location",
+      "type": "endpoint",
+      "label": "Location update interface defined",
+      "keywords": [
+        "location",
+        "position",
+        "gps",
+        "coordinates"
+      ],
+      "tips": {
+        "nudge": "How does the driver app send its position?",
+        "hint": "Define the call (or WebSocket message) the driver sends every few seconds.",
+        "show": "POST /drivers/location {lat, lng, heading, ts} over a persistent WebSocket → 204"
+      }
+    },
+    {
+      "id": "data-ride",
+      "type": "entity",
+      "label": "Trip record modelled",
+      "keywords": [
+        "ride",
+        "trip"
+      ],
+      "tips": {
+        "nudge": "What record lives from request to payment?",
+        "hint": "One entity per ride with its status and the assigned driver.",
+        "show": "rides(ride_id PK, city, rider_id, driver_id, pickup, dropoff, status, fare, timestamps) in SQL sharded by city."
+      }
+    },
+    {
+      "id": "data-driver-location",
+      "type": "entity",
+      "label": "Live position data modelled",
+      "keywords": [
+        "location",
+        "lat",
+        "geohash",
+        "position",
+        "geo",
+        "coordinates"
+      ],
+      "tips": {
+        "nudge": "Where is the latest driver position stored, keyed how?",
+        "hint": "An entity for the latest position per driver, organised for spatial lookup.",
+        "show": "driver_locations: city → GEO set of driver_id → (lat, lng) (geohash score), in Redis; overwritten every 4 s."
+      }
+    },
+    {
+      "id": "part-location-ingest",
+      "type": "part",
+      "label": "Location ingestion designed as its own part",
+      "keywords": [
+        "ingest",
+        "location update",
+        "driver location",
+        "gps",
+        "position update",
+        "location ingestion"
+      ],
+      "tips": {
+        "nudge": "250k small writes per second that are stale in 4 s. Does that belong in your transactional store?",
+        "hint": "Add a part for ingesting driver updates: compare writing to SQL, buffering in Kafka and overwriting an in-memory index.",
+        "show": "Part 'Driver location ingestion': a location service overwrites the latest position in Redis GEO (sharded by city) and appends to a Kafka stream for live tracking."
+      }
+    },
+    {
+      "id": "part-nearby-search",
+      "type": "part",
+      "label": "Spatial search designed as its own part",
+      "keywords": [
+        "geohash",
+        "quadtree",
+        "h3",
+        "s2",
+        "geo index",
+        "geospatial",
+        "spatial",
+        "nearby",
+        "proximity"
+      ],
+      "tips": {
+        "nudge": "A B-tree indexes one dimension. How do you search two?",
+        "hint": "Add a part for finding drivers near a point: compare lat/lng SQL ranges, geohash, quadtree and H3/S2.",
+        "show": "Part 'Nearby-driver search': geohash cells in Redis GEO per city; GEOSEARCH a radius and expand the ring if too few drivers."
+      }
+    },
+    {
+      "id": "part-dispatch",
+      "type": "part",
+      "label": "Assignment consistency designed as its own part",
+      "keywords": [
+        "lock",
+        "lease",
+        "dispatch",
+        "double",
+        "one driver",
+        "one ride",
+        "contention",
+        "assignment"
+      ],
+      "tips": {
+        "nudge": "Two matchers pick the same closest driver in the same millisecond. Who wins, and how?",
+        "hint": "Add a part for dispatch: compare broadcast-first-wins, DB row locks, a per-driver lease and a single dispatcher per city.",
+        "show": "Part 'Matching and dispatch': lease the driver with SET NX PX 15000, offer once, and accept only if the lease still names this ride, via a conditional UPDATE … WHERE status='matching' plus a unique index on the driver's active ride."
+      }
+    },
+    {
+      "id": "part-trip-payment",
+      "type": "part",
+      "label": "Trip lifecycle and payment designed as its own part",
+      "keywords": [
+        "payment",
+        "trip state",
+        "state machine",
+        "charge",
+        "billing",
+        "fare",
+        "lifecycle"
+      ],
+      "tips": {
+        "nudge": "The trip ends; the card must be charged once. What if the payment provider times out?",
+        "hint": "Add a part for the trip state machine and how completion hands off to payments.",
+        "show": "Part 'Trip state and payments handoff': commit the transition plus an outbox event; a worker charges the PSP with Idempotency-Key = ride_id."
+      }
+    },
+    {
+      "id": "comp-geo-memory",
+      "type": "component",
+      "label": "Nearby search keeps up with constant position changes",
+      "kinds": [
+        "cache"
+      ],
+      "keywords": [
+        "geo",
+        "location",
+        "position",
+        "driver",
+        "spatial",
+        "h3",
+        "quadtree"
+      ],
+      "tips": {
+        "nudge": "Where do the ~1M latest positions live so a search takes milliseconds?",
+        "hint": "Add an in-memory store that holds driver positions.",
+        "show": "Redis GEO (or an in-memory quadtree/H3 index) holding the latest driver positions, sharded by city."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Millions of phones hold connections open. What spreads them?",
+        "hint": "Put something in front of stateless service instances.",
+        "show": "Rider and driver apps → API gateway / load balancer (HTTPS + WebSocket) → service instances."
+      }
+    },
+    {
+      "id": "edge-location-stream",
+      "type": "edge",
+      "label": "Location updates feed other consumers without blocking ingestion",
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "stream",
+        "queue"
+      ],
+      "to_keywords": [
+        "location",
+        "position",
+        "gps",
+        "driver"
+      ],
+      "tips": {
+        "nudge": "Live tracking and trip history both need positions. Should the location service call them directly?",
+        "hint": "Have the location service publish to an asynchronous log that other components consume.",
+        "show": "Location service → location stream (Kafka) → push gateway (live tracking) and trip-route archiving."
+      }
+    },
+    {
+      "id": "dd-sharding",
+      "type": "decision",
+      "label": "Partitioning of the hot data decided",
+      "keywords": [
+        "shard",
+        "partition",
+        "city",
+        "region",
+        "hot"
+      ],
+      "tips": {
+        "nudge": "One Redis key for every driver on Earth: what breaks first?",
+        "hint": "Decide how the geo index and dispatch are partitioned, and what happens at the borders.",
+        "show": "Shard by city (rides are local); split megacities by geohash prefix; search neighbouring shards near borders."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "label": "Bottlenecks named",
+      "key": "bottlenecks",
+      "tips": {
+        "nudge": "Which component sees the most load, and in which cities?",
+        "hint": "Walk the location path and the dispatch path and name what saturates first.",
+        "show": "Location ingestion in megacities (shard by city + geohash prefix), per-city matching, and the WebSocket push gateway's connection count."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure handling covered",
+      "key": "failures",
+      "tips": {
+        "nudge": "A geo shard dies, the PSP times out, a driver loses signal mid-offer. What happens?",
+        "hint": "Name each failure and how the design recovers.",
+        "show": "Geo shard: replica + positions refill within 4 s. PSP down: retry from Kafka with the same idempotency key. Lost driver: lease TTL frees the ride."
+      }
+    }
+  ]
+}
