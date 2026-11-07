@@ -53,7 +53,7 @@ have, suggest `/new-problem` instead.
 ## 4. Report back (≤ 8 lines)
 Strengths and weak spots in one line each, the session title and id, the first step
 (`open http://127.0.0.1:8765/#/session/<id>` or `./kb session attempt <id> --item p1 --lang go`), and
-how scores work (passing cases 70, target complexity 20, first-try 10; re-runs update them).
+how scores work (passing cases 70, target complexity 20, first real try 10; re-runs update them).
 
 ## Rules
 - Sessions, attempts and progress are private (`_workspace/`, git-ignored). Never commit them.

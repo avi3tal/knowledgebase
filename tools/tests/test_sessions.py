@@ -42,6 +42,8 @@ def r(attempt: str, passed: int, total: int = 4, ts: str = "t1", verdict: bool |
         ([r("a", 4, verdict=None)], 90),  # complexity not measured
         ([r("a", 4, verdict=False)], 80),  # complexity missed
         ([r("a", 2, ts="t1"), r("a", 4, ts="t2", verdict=True)], 90),  # needed a second run
+        ([r("a", 0, ts="t1"), r("a", 4, ts="t2", verdict=True)], 100),  # running the red stub first is fine
+        ([r("a", 0, ts="t1", error=True), r("a", 4, ts="t2", verdict=True)], 100),
         ([r("a", 2)], 35),  # half the cases
         ([r("a", 0, error=True)], 0),  # crashed
         ([r("a", 1), r("b", 4, verdict=True)], 100),  # best attempt wins
@@ -132,6 +134,13 @@ def test_plan_lifecycle_attempt_and_scores() -> None:
     assert adir.parent == workspace_dir() / "attempts" / "algo" / "three-sum"
     loaded = sessions.load(s["id"])
     assert loaded["status"] == "active" and loaded["items"][0]["attempts"] == [adir.name]
+
+    (adir / "review.md").write_text("# Review\n**Verdict:** correct")
+    from kb import learn
+
+    card = learn.problem_card("algo", "three-sum")
+    assert [x["review"] for x in card["attempts"]] == ["# Review\n**Verdict:** correct"]
+    assert card["attempts"][0]["path"] == str(adir.resolve())
 
     run("three-sum", adir.name, passed=4, verdict=True)
     run("three-sum", "2026-01-01_go_unlinked", passed=0)  # not linked: ignored

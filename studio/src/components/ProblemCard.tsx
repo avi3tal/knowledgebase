@@ -75,6 +75,15 @@ export function ProblemCard({
           <span className="muted">{practice.length} practice attempt(s)</span>
         )}
       </div>
+      {open &&
+        p.attempts
+          .filter((a) => a.review)
+          .map((a) => (
+            <details key={`review-${a.name}`} className="review">
+              <summary>📝 Tutor review of {a.name}</summary>
+              <Markdown text={a.review ?? ""} path={p.readme_path} />
+            </details>
+          ))}
       {open && <Markdown text={p.readme} path={p.readme_path} />}
       {open && p.refs && <ResourceList items={p.refs} title="Explanations elsewhere" />}
     </div>

@@ -123,8 +123,9 @@ export function SessionView({ initial }: { initial: Session }) {
       </section>
       <p className="muted small">
         Scores come from your <code>kb run</code> results: 70 for passing cases, 20 for hitting the
-        target complexity, 10 for passing on the first run. Re-run an attempt and the score updates.
-        Need a review? In Claude Code: <code>/review</code>.
+        target complexity, 10 for passing on your first real try (running the empty stub doesn't
+        count). Re-run an attempt and the score updates. Need a review? In Claude Code:{" "}
+        <code>/review</code>.
       </p>
     </div>
   );

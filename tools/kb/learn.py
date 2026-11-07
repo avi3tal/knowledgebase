@@ -357,7 +357,16 @@ def problem_card(subject: str, slug: str, history: list[dict[str, Any]] | None =
             lang = scaffold.attempt_lang(a)
         except ProblemError:
             lang = "?"
-        attempts.append({"name": a.name, "lang": lang, "last_run": last, "path": str(a.resolve())})
+        review = a / "review.md"  # written by the /review skill
+        attempts.append(
+            {
+                "name": a.name,
+                "lang": lang,
+                "last_run": last,
+                "path": str(a.resolve()),
+                "review": review.read_text() if review.exists() else None,
+            }
+        )
     m = problem.meta
     return {
         "slug": slug,

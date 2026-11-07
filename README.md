@@ -79,8 +79,8 @@ whole session.
 Or open 🎯 **Sessions** in the studio. In Claude Code, `/session` reads your progress and past
 sessions, explains strengths and weak spots, and writes a plan that kb validates and saves.
 `/review <slug>` gives tutor feedback on one attempt (on demand, written to `review.md`).
-Per-problem score: 70 for passing cases, +20 for the target complexity, +10 for passing on the
-first run; re-runs update it.
+Per-problem score: 70 for passing cases, +20 for the target complexity, +10 for passing on your
+first real try (running the empty stub first doesn't count); re-runs update it.
 
 ## Usage
 

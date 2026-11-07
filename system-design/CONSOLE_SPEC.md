@@ -134,4 +134,4 @@ shows the new parts highlighted, like the "NEW" badge in the inspiration.
   - The studio never spawns processes.
 - **AI review is on demand only.** The `/review` skill runs the deterministic checks first, then writes
   structured feedback (strengths, issues with examples, tips, next step) to `attempts/<dir>/review.md`,
-  which the studio shows. Nothing calls AI automatically.
+  which the studio shows on the problem page. Nothing calls AI automatically.
