@@ -170,7 +170,7 @@ export interface ProblemRow {
 // ---------------------------------------------------------------- design console (system-design/FORMAT.md)
 
 export type DesignStage =
-  "scope" | "estimates" | "api" | "high-level" | "deep-dives" | "wrap-up" | "signatures";
+  "scope" | "estimates" | "api" | "parts" | "high-level" | "deep-dives" | "wrap-up" | "signatures";
 export type TipLevel = "nudge" | "hint" | "show";
 export interface DesignProblemCard {
   slug: string;
@@ -201,12 +201,41 @@ export interface DesignProblemData {
   units: string[];
   constants: Record<string, number>;
   checks: DesignCheckItem[];
+  /** catalog ids (groups "technologies" / "patterns"); empty for OOD */
+  technologies: string[];
+  patterns: string[];
+  /** other names, e.g. ["WhatsApp"] */
+  aka: string[];
+  has_solution: boolean;
   attempts: { name: string; path: string; submitted: boolean }[];
   status: { status: "solved" | "failing" | "untried" };
 }
 export interface ScopeItem {
   id: string;
   text: string;
+}
+export interface DesignOption {
+  name: string;
+  pros: string;
+  cons: string;
+}
+/**
+ * Decompose → reduce: one piece of the problem with its own alternatives, choice and sub-diagram.
+ * Sub-diagram node ids are the same ids used in the high-level design; "compose" merges by id and the
+ * `part-not-composed` smell flags part nodes missing from the final version.
+ */
+export interface DesignPart {
+  id: string;
+  title: string;
+  /** requirement ids this part serves, e.g. ["F2", "N1"] */
+  covers: string[];
+  problem: string;
+  options: DesignOption[];
+  choice: string;
+  why: string;
+  technologies: string[];
+  patterns: string[];
+  diagram: { nodes: DiagramNode[]; edges: DiagramEdge[] };
 }
 export interface DesignDoc {
   version: 1;
@@ -225,6 +254,8 @@ export interface DesignDoc {
     notes: string;
   }[];
   data: { id: string; name: string; fields: string; store: string; why: string }[];
+  /** optional in v1 files: treat a missing list as [] */
+  parts?: DesignPart[];
   deep_dives: {
     id: string;
     title: string;
@@ -307,7 +338,10 @@ export interface DesignAttempt {
   signatures: string;
   check: DesignCheck;
 }
+/** Worked solution: reference attempt + walkthrough (reference.md; ```diagram v2``` / ```diagram part:P1``` fences). */
 export interface DesignReference {
+  technologies: string[];
+  patterns: string[];
   walkthrough: string;
   pattern: string;
   diagrams: Diagram[];
@@ -403,6 +437,11 @@ export const api = {
     get<DesignAttempt>(`/api/design/${subject}/${slug}/${attempt}`),
   designReference: (subject: string, slug: string, attempt: string) =>
     get<DesignReference>(`/api/design/${subject}/${slug}/${attempt}/reference`),
+  /** Read mode: always available; call solutionViewed when the learner chooses to reveal it. */
+  designSolution: (subject: string, slug: string) =>
+    get<DesignReference>(`/api/design/${subject}/${slug}/solution`),
+  solutionViewed: (subject: string, slug: string) =>
+    post<{ ok: boolean }>(`/api/design/${subject}/${slug}/solution-viewed`, {}),
   newDesignAttempt: (subject: string, slug: string, label?: string) =>
     post<DesignAttempt>(`/api/design/${subject}/${slug}/attempt`, label ? { label } : {}),
   designTip: (subject: string, slug: string, check: string, level: TipLevel, attempt?: string) =>

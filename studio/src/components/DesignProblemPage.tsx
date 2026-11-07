@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { DesignProblemData } from "../api";
 import { api } from "../api";
 import { STAGE_INFO } from "../design";
+import type { DesignView } from "../route";
 import { designHref } from "../route";
 import { Markdown } from "./Markdown";
 
@@ -14,6 +15,8 @@ export function DesignProblemPage({
 }: {
   p: DesignProblemData;
   names: Record<string, string>;
+  /** reader tab; the reader agent implements it */
+  view: DesignView;
 }) {
   const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);

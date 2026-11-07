@@ -20,6 +20,8 @@ const GROUP_LABEL: Record<string, string> = {
   fundamentals: "Fundamentals",
   "building-blocks": "Building blocks",
   "case-studies": "Case studies",
+  technologies: "Key technologies",
+  patterns: "Design patterns & techniques",
   genai: "GenAI systems",
   "design-patterns": "Design patterns",
 };
@@ -30,6 +32,8 @@ const GROUP_ICON: Record<string, string> = {
   fundamentals: "📐",
   "building-blocks": "🧱",
   "case-studies": "🏙️",
+  technologies: "🛠️",
+  patterns: "🧠",
   genai: "🤖",
   "design-patterns": "🎨",
 };
@@ -122,7 +126,15 @@ export function topicIcon(t: Pick<Topic, "id" | "kind" | "group">): string {
   return TOPIC_ICON[t.id] ?? GROUP_ICON[groupOf(t)] ?? "•";
 }
 
-const KIND_ORDER = ["pattern", "fundamentals", "fundamental", "building-blocks", "case-studies"];
+const KIND_ORDER = [
+  "pattern",
+  "fundamentals",
+  "fundamental",
+  "building-blocks",
+  "technologies",
+  "patterns",
+  "case-studies",
+];
 
 /** Topics grouped (in a stable, teaching-friendly order) with a colour per group. */
 export function groupTopics(topics: Topic[]): { group: string; color: string; topics: Topic[] }[] {

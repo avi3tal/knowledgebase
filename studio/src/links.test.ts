@@ -6,7 +6,7 @@ describe("design routes", () => {
   it.each([
     [
       "#/design/system-design/url-shortener",
-      { page: "design", subject: "system-design", slug: "url-shortener" },
+      { page: "design", subject: "system-design", slug: "url-shortener", view: "problem" },
     ],
     [
       "#/design/system-design/url-shortener/2026-11-07_design_practice-2",
@@ -17,7 +17,14 @@ describe("design routes", () => {
         attempt: "2026-11-07_design_practice-2",
       },
     ],
-    ["#/design/ood/parking-lot", { page: "design", subject: "ood", slug: "parking-lot" }],
+    [
+      "#/design/ood/parking-lot",
+      { page: "design", subject: "ood", slug: "parking-lot", view: "problem" },
+    ],
+    [
+      "#/design/system-design/chat-system/solution",
+      { page: "design", subject: "system-design", slug: "chat-system", view: "solution" },
+    ],
     ["#/design/system-design/url-shortener/..", { page: "home", subject: "system-design" }],
     ["#/design/system-design/url-shortener/a.b", { page: "home", subject: "system-design" }],
     ["#/design/system-design/../x", { page: "home", subject: "algo" }],

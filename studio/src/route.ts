@@ -8,8 +8,12 @@ export type Route =
   | { page: "map"; subject: string }
   | { page: "sessions"; subject: string }
   | { page: "session"; subject: string; id: string }
-  | { page: "design"; subject: string; slug: string }
+  | { page: "design"; subject: string; slug: string; view: DesignView }
   | { page: "console"; subject: string; slug: string; attempt: string };
+
+/** Tabs of the design reader: the prompt, the worked solution (Read mode) and your attempts. */
+export type DesignView = "problem" | "solution" | "attempts";
+const DESIGN_VIEWS: DesignView[] = ["problem", "solution", "attempts"];
 
 /** The subject's sub-tabs; every page belongs to exactly one. */
 export type Tab = "learn" | "problems" | "map" | "progress" | "sessions";
@@ -25,6 +29,11 @@ export function designHref(subject: string, slug: string, attempt?: string): str
   return `#/design/${subject}/${slug}${attempt ? `/${attempt}` : ""}`;
 }
 
+/** Reader tab of a design problem ("problem" is the bare problem URL). */
+export function designViewHref(subject: string, slug: string, view: DesignView): string {
+  return view === "problem" ? designHref(subject, slug) : `#/design/${subject}/${slug}/${view}`;
+}
+
 /** Where a problem row links: the design page for design subjects, else the problem card. */
 export function problemHref(subject: string, slug: string): string {
   return DESIGN_SUBJECTS.has(subject) ? designHref(subject, slug) : `#/problem/${subject}/${slug}`;
@@ -34,7 +43,9 @@ export function parseRoute(hash: string): Route {
   const [kind = "", subject = "algo", id = "", attempt = ""] = hash.replace(/^#\/?/, "").split("/");
   const s = ID.test(subject) ? subject : "algo";
   if (kind === "design" && ID.test(subject) && ID.test(id)) {
-    if (!attempt) return { page: "design", subject, slug: id };
+    if (!attempt) return { page: "design", subject, slug: id, view: "problem" };
+    if ((DESIGN_VIEWS as string[]).includes(attempt))
+      return { page: "design", subject, slug: id, view: attempt as DesignView };
     if (ATTEMPT.test(attempt)) return { page: "console", subject, slug: id, attempt };
     return { page: "home", subject };
   }

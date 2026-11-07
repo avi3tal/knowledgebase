@@ -14,9 +14,11 @@ POST /api/sessions  {subject, topics, difficulty, count, focus, goal, title, min
 POST /api/session/<id>/status   {status}           -> planned/active/done/abandoned
 POST /api/session/<id>/attempt  {item, lang}       -> new attempt linked to the item
 GET  /api/design/<subject>/<slug>                   design problem (no spoilers) + attempts
+GET  /api/design/<subject>/<slug>/solution          worked solution, Read mode (the UI asks before revealing)
 GET  /api/design/<subject>/<slug>/<attempt>         attempt files + live check (not recorded)
 GET  /api/design/<subject>/<slug>/<attempt>/reference   reference design (only after submit)
 POST /api/design/<subject>/<slug>/attempt  {label?}                 -> new attempt
+POST /api/design/<subject>/<slug>/solution-viewed {}  -> logged (no first-try bonus afterwards)
 POST /api/design/<subject>/<slug>/tip      {check, level, attempt?}  -> {text} (recorded in tips.jsonl)
 POST /api/design/<subject>/<slug>/<attempt>/save  {file, content, version?} -> live check (not recorded)
 POST /api/design/<subject>/<slug>/<attempt>/delete-diagram {version}
@@ -214,6 +216,8 @@ class Handler(BaseHTTPRequestHandler):
             payload = design.public_problem(problem)
             payload["status"] = feedback.problem_status(problem, history.runs())  # type: ignore[arg-type]
             return self._json(payload)
+        if len(parts) == 5 and parts[4] == "solution":
+            return self._json(design.solution(problem))
         adir = design.attempt_dir(subject, slug, parts[4])
         if len(parts) == 5:
             return self._json(design.attempt_payload(problem, adir))
@@ -230,6 +234,9 @@ class Handler(BaseHTTPRequestHandler):
             label = body.get("label") or None
             adir = design.new_attempt(problem, str(label) if label else None)
             return self._json(design.attempt_payload(problem, adir), HTTPStatus.CREATED)
+        if len(parts) == 5 and parts[4] == "solution-viewed":
+            design.mark_solution_seen(problem)
+            return self._json({"ok": True})
         if len(parts) == 5 and parts[4] == "tip":
             text = design.tip(problem, str(body["check"]), str(body["level"]), body.get("attempt"))
             return self._json({"check": body["check"], "level": body["level"], "text": text})

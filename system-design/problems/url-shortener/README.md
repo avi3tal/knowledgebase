@@ -13,9 +13,11 @@ Design a service like a link shortener: users paste a long URL and get a short o
 - Basic click analytics (count per link) would be welcome, but it must never slow the redirect.
 
 ## Your job
-Work through the stages in the console: scope → estimates → API & data → high-level design
-(evolve it: v1 → v2 → v3) → deep dives with trade-offs → wrap-up. Use the checklist on the right
-and ask for tips when stuck: nudge first, then hint, and *show* only as a last resort.
+Work through the console's stages: scope → estimates → API & data → **decompose** into parts
+(code generation, the read path, analytics…). Solve each part on its own: options, choice and a
+small diagram. Then **reduce** them into one high-level design (v1 → v2 → v3), followed by deep
+dives and wrap-up. Use the checklist and ask for tips when stuck: nudge first, then hint, and
+*show* only as a last resort.
 
 ## Things worth deciding (no answers here)
 - How do you generate short codes that are short, unique and hard to guess?

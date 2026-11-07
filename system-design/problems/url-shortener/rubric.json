@@ -1,13 +1,23 @@
 {
   "version": 1,
-  "flags": { "read_heavy": true, "needs_lb": true },
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
   "pattern": "Read-heavy key → value lookup: generate compact unique keys once on write, then serve the hot read path from cache/edge, and push side effects (analytics) onto an async queue.",
   "checks": [
     {
       "id": "req-shorten",
       "type": "requirement",
       "label": "Core write use case captured",
-      "keywords": ["shorten", "short url", "short link", "create a short", "generate a short", "create short"],
+      "keywords": [
+        "shorten",
+        "short url",
+        "short link",
+        "create a short",
+        "generate a short",
+        "create short"
+      ],
       "tips": {
         "nudge": "What is the one thing a user does before anyone can be redirected?",
         "hint": "Write a functional requirement for turning a long URL into a short one.",
@@ -18,7 +28,13 @@
       "id": "req-redirect",
       "type": "requirement",
       "label": "Core read use case captured",
-      "keywords": ["redirect", "resolve", "visit", "open the short", "lookup"],
+      "keywords": [
+        "redirect",
+        "resolve",
+        "visit",
+        "open the short",
+        "lookup"
+      ],
       "tips": {
         "nudge": "What happens when someone clicks the short link?",
         "hint": "Add a functional requirement for resolving a short code back to the long URL.",
@@ -29,7 +45,14 @@
       "id": "req-latency",
       "type": "requirement",
       "label": "Performance expectation stated",
-      "keywords": ["latency", "fast", "ms", "milliseconds", "instant", "low-latency"],
+      "keywords": [
+        "latency",
+        "fast",
+        "ms",
+        "milliseconds",
+        "instant",
+        "low-latency"
+      ],
       "tips": {
         "nudge": "Which non-functional property would users notice first?",
         "hint": "State a latency target for redirects.",
@@ -40,7 +63,13 @@
       "id": "req-availability",
       "type": "requirement",
       "label": "Reliability expectation stated",
-      "keywords": ["availab", "uptime", "99.9", "fault toler", "reliab"],
+      "keywords": [
+        "availab",
+        "uptime",
+        "99.9",
+        "fault toler",
+        "reliab"
+      ],
       "tips": {
         "nudge": "Broken links are worse than slow ones. Which property protects against that?",
         "hint": "Add a non-functional requirement about availability.",
@@ -51,7 +80,12 @@
       "id": "est-write-qps",
       "type": "estimate",
       "label": "Write throughput estimated",
-      "keywords": ["write", "create", "shorten", "new"],
+      "keywords": [
+        "write",
+        "create",
+        "shorten",
+        "new"
+      ],
       "unit": "/s",
       "min": 10,
       "max": 1000,
@@ -65,7 +99,11 @@
       "id": "est-read-qps",
       "type": "estimate",
       "label": "Read throughput estimated",
-      "keywords": ["read", "redirect", "resolve"],
+      "keywords": [
+        "read",
+        "redirect",
+        "resolve"
+      ],
       "unit": "/s",
       "min": 1000,
       "max": 100000,
@@ -79,7 +117,13 @@
       "id": "est-storage",
       "type": "estimate",
       "label": "Storage for the retention period estimated",
-      "keywords": ["storage", "disk", "total", "bytes", "size"],
+      "keywords": [
+        "storage",
+        "disk",
+        "total",
+        "bytes",
+        "size"
+      ],
       "unit": "TB",
       "min": 1,
       "max": 100,
@@ -94,7 +138,11 @@
       "type": "endpoint",
       "label": "Write endpoint defined",
       "method": "POST",
-      "keywords": ["url", "link", "shorten"],
+      "keywords": [
+        "url",
+        "link",
+        "shorten"
+      ],
       "tips": {
         "nudge": "Which HTTP method creates a new resource?",
         "hint": "Define a POST endpoint that takes the long URL (and an optional alias).",
@@ -106,7 +154,13 @@
       "type": "endpoint",
       "label": "Read endpoint defined",
       "method": "GET",
-      "keywords": ["code", "redirect", "{", ":", "short"],
+      "keywords": [
+        "code",
+        "redirect",
+        "{",
+        ":",
+        "short"
+      ],
       "tips": {
         "nudge": "What does the browser request when someone opens the short link?",
         "hint": "A GET on the short code path that answers with a redirect status.",
@@ -117,7 +171,13 @@
       "id": "data-mapping",
       "type": "entity",
       "label": "Core data model defined",
-      "keywords": ["long_url", "long url", "code", "mapping", "destination"],
+      "keywords": [
+        "long_url",
+        "long url",
+        "code",
+        "mapping",
+        "destination"
+      ],
       "tips": {
         "nudge": "What is the minimum you must store to redirect?",
         "hint": "One entity keyed by the short code that holds the long URL plus metadata.",
@@ -128,7 +188,10 @@
       "id": "comp-cache",
       "type": "component",
       "label": "Read path can absorb the read load",
-      "kinds": ["cache", "cdn"],
+      "kinds": [
+        "cache",
+        "cdn"
+      ],
       "tips": {
         "nudge": "Most redirects hit a small set of popular links. How do you exploit that?",
         "hint": "Put something in front of the database for hot codes.",
@@ -139,7 +202,10 @@
       "id": "comp-lb",
       "type": "component",
       "label": "Traffic spread across instances",
-      "kinds": ["load-balancer", "api-gateway"],
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
       "tips": {
         "nudge": "One server can't take 10k QPS forever. What spreads the traffic?",
         "hint": "Stateless services behind something that distributes requests.",
@@ -150,7 +216,10 @@
       "id": "comp-store",
       "type": "component",
       "label": "Durable storage for links",
-      "kinds": ["nosql", "sql"],
+      "kinds": [
+        "nosql",
+        "sql"
+      ],
       "tips": {
         "nudge": "Where do links live for five years?",
         "hint": "Pick a durable store suited to key → value lookups.",
@@ -161,8 +230,13 @@
       "id": "comp-async-analytics",
       "type": "edge",
       "label": "Side effects kept off the hot path",
-      "from_kinds": ["service"],
-      "to_kinds": ["queue", "stream"],
+      "from_kinds": [
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
       "tips": {
         "nudge": "Counting clicks must never slow a redirect. How do you decouple it?",
         "hint": "Emit an event from the redirect service to something asynchronous.",
@@ -170,10 +244,19 @@
       }
     },
     {
-      "id": "dd-id-generation",
-      "type": "decision",
-      "label": "Key generation decided",
-      "keywords": ["base62", "base 62", "hash", "counter", "snowflake", "key generation", "id generation", "short code"],
+      "id": "part-code-gen",
+      "type": "part",
+      "label": "Code generation designed as its own part",
+      "keywords": [
+        "base62",
+        "base 62",
+        "hash",
+        "counter",
+        "snowflake",
+        "key generation",
+        "id generation",
+        "short code"
+      ],
       "tips": {
         "nudge": "7 characters of [a-zA-Z0-9] give how many codes? How do you hand them out without collisions?",
         "hint": "Compare hashing the URL, a global counter + base62, and pre-generated key ranges.",
@@ -181,10 +264,47 @@
       }
     },
     {
+      "id": "part-read-path",
+      "type": "part",
+      "label": "Hot read path designed as its own part",
+      "keywords": [
+        "redirect",
+        "read path",
+        "read",
+        "lookup",
+        "resolve"
+      ],
+      "tips": {
+        "nudge": "Which single request dominates traffic? Treat it as its own sub-problem.",
+        "hint": "Add a part for the redirect path: compare a single DB, replicas and a cache in front of a key-value store.",
+        "show": "Part 'Redirect read path': read-through cache (Redis) over a key-value store sharded by code, stateless instances behind a load balancer."
+      }
+    },
+    {
+      "id": "part-analytics",
+      "type": "part",
+      "label": "Analytics designed as its own part",
+      "keywords": [
+        "analytics",
+        "click",
+        "count"
+      ],
+      "tips": {
+        "nudge": "Counting clicks is a different problem from redirecting. Give it its own part.",
+        "hint": "Compare counting inline with emitting events and aggregating later.",
+        "show": "Part 'Click analytics': the service emits click events to a stream; a worker aggregates them in batches into click_counts."
+      }
+    },
+    {
       "id": "dd-redirect-status",
       "type": "decision",
       "label": "Redirect semantics decided",
-      "keywords": ["301", "302", "permanent", "temporary"],
+      "keywords": [
+        "301",
+        "302",
+        "permanent",
+        "temporary"
+      ],
       "tips": {
         "nudge": "Which redirect status lets browsers cache the answer, and what does that cost you?",
         "hint": "Compare 301 (cacheable) with 302 (every click reaches you).",

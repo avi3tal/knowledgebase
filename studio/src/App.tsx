@@ -199,7 +199,7 @@ export function App() {
         ))}
       </nav>
       <main
-        className={`content ${route.page === "console" ? "wide" : ""}`}
+        className={`content ${route.page === "console" || route.page === "design" ? "bench" : ""}`}
         key={window.location.hash}
       >
         {current && <Crumbs route={route} subject={current} page={page} />}
@@ -218,6 +218,7 @@ export function App() {
         {page?.kind === "design" && (
           <DesignProblemPage
             p={page.data}
+            view={route.page === "design" ? route.view : "problem"}
             names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
           />
         )}

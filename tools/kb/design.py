@@ -58,12 +58,19 @@ PALETTES: dict[str, list[str]] = {
 }
 STORE_KINDS = {"sql", "nosql", "blob", "search"}
 ENTRY_KINDS = {"client", "actor"}
-STAGES = ["scope", "estimates", "api", "high-level", "deep-dives", "wrap-up", "signatures"]
+STAGES = ["scope", "estimates", "api", "parts", "high-level", "deep-dives", "wrap-up", "signatures"]
+# Stages each subject practises: system design decomposes into parts and reduces them into one design;
+# OOD has no estimates or parts.
+SUBJECT_STAGES = {
+    "system-design": ["scope", "estimates", "api", "parts", "high-level", "deep-dives", "wrap-up"],
+    "ood": ["scope", "api", "high-level", "deep-dives", "wrap-up", "signatures"],
+}
 CHECK_STAGE = {
     "requirement": "scope",
     "estimate": "estimates",
     "endpoint": "api",
     "entity": "api",
+    "part": "parts",
     "component": "high-level",
     "edge": "high-level",
     "decision": "deep-dives",
@@ -81,7 +88,25 @@ SMELL_RULES = {
     "no-load-balancer": "Clients hit services directly: no load balancer for horizontal scaling.",
     "orphan-class": "A class/interface has no relationships: is it part of the design?",
     "unimplemented-interface": "An interface/abstract type nothing implements or extends.",
+    "part-not-composed": "A part's components are missing from the final design: reduce every part into it.",
 }
+# reference.md of a system-design problem: these H2 sections, in this order ("## 4. Decompose: …" matches).
+REFERENCE_SECTIONS = [
+    "What makes it distinctive",
+    "Requirements and assumptions",
+    "Scale numbers",
+    "API and data model",
+    "Decompose",
+    "Reduce",
+    "Deep dives",
+    "Technologies",
+    "Patterns",
+    "Evaluation",
+    "Tips",
+    "Learn more",
+]
+DIAGRAM_FENCE_RE = re.compile(r"^```diagram\n(v\d+|part:[A-Za-z][A-Za-z0-9_-]*)\n```$", re.M)
+MAX_PARTS = 12
 FLAG_RULES = {"read_heavy": "single-store-read-heavy", "needs_lb": "no-load-balancer"}
 MAX_VERSIONS = 20
 MAX_TEXT = 4000
@@ -165,8 +190,10 @@ def load(subject: str, slug: str) -> DesignProblem:
     if not pdir.is_dir():
         raise ProblemError(f"no design problem {subject}/{slug}")
     meta = _json(pdir / "meta.json")
-    # `patterns` mirrors `topics` so progress/feedback code shared with algo works unchanged.
-    meta.setdefault("patterns", meta.get("topics", []))
+    # `patterns` = every catalog tag (topics + technologies + design_patterns) so progress/feedback and
+    # topic pages shared with algo work unchanged: the Kafka topic page lists every problem using Kafka.
+    tags = [*meta.get("topics", []), *meta.get("technologies", []), *meta.get("design_patterns", [])]
+    meta["patterns"] = list(dict.fromkeys(tags))
     return DesignProblem(pdir, meta, _json(pdir / "rubric.json"))
 
 
@@ -276,9 +303,18 @@ def validate_diagram(d: Any, subject: str) -> list[str]:
     e: list[str] = []
     if not isinstance(d.get("version"), int) or not 1 <= d["version"] <= MAX_VERSIONS:
         e.append(f"version must be 1..{MAX_VERSIONS}")
+    e += _validate_graph(d, subject)
+    if len(str(d.get("why", ""))) > MAX_TEXT:
+        e.append("why is too long")
+    return e
+
+
+def _validate_graph(d: dict[str, Any], subject: str) -> list[str]:
+    """nodes/edges of a diagram or of a part's sub-diagram."""
+    e: list[str] = []
     nodes, edges = d.get("nodes", []), d.get("edges", [])
     if not isinstance(nodes, list) or not isinstance(edges, list):
-        return e + ["nodes and edges must be lists"]
+        return ["nodes and edges must be lists"]
     ids = set()
     for i, n in enumerate(nodes):
         if not isinstance(n, dict) or not ID_RE.match(str(n.get("id", ""))):
@@ -295,8 +331,6 @@ def validate_diagram(d: Any, subject: str) -> list[str]:
     for i, ed in enumerate(edges):
         if not isinstance(ed, dict) or ed.get("from") not in ids or ed.get("to") not in ids:
             e.append(f"edges[{i}] must connect two existing nodes")
-    if len(str(d.get("why", ""))) > MAX_TEXT:
-        e.append("why is too long")
     return e
 
 
@@ -364,6 +398,48 @@ def smells(d: dict[str, Any], flags: dict[str, Any], subject: str) -> list[dict[
     return out
 
 
+def part_smells(final: dict[str, Any], parts: list[Any]) -> list[dict[str, Any]]:
+    """Reduce check: every node of every part's sub-diagram must be in the final design (same id)."""
+    have = {n.get("id") for n in final.get("nodes", []) if isinstance(n, dict)}
+    missing = sorted(
+        {
+            str(n.get("id"))
+            for p in parts
+            if isinstance(p, dict) and isinstance(p.get("diagram"), dict)
+            for n in p["diagram"].get("nodes", [])
+            if isinstance(n, dict) and n.get("id") not in have
+        }
+    )
+    if not missing:
+        return []
+    return [
+        {
+            "rule": "part-not-composed",
+            "message": SMELL_RULES["part-not-composed"],
+            "nodes": missing,
+            "version": final.get("version"),
+        }
+    ]
+
+
+def compose(diagram: dict[str, Any], parts: list[dict[str, Any]]) -> dict[str, Any]:
+    """Reduce parts into a diagram: merge nodes by id and edges by from→to (existing ones win)."""
+    out = {**diagram, "nodes": list(diagram.get("nodes", [])), "edges": list(diagram.get("edges", []))}
+    ids = {n["id"] for n in out["nodes"]}
+    keys = {_edge_key(e) for e in out["edges"]}
+    for p in parts:
+        sub = p.get("diagram") or {}
+        for n in sub.get("nodes", []):
+            if n["id"] not in ids:
+                out["nodes"].append(dict(n))
+                ids.add(n["id"])
+        for e in sub.get("edges", []):
+            if _edge_key(e) not in keys:
+                out["edges"].append(dict(e))
+                keys.add(_edge_key(e))
+    return out
+
+
 def _ood_smells(d: dict[str, Any]) -> list[dict[str, Any]]:
     nodes = {n["id"]: n for n in d.get("nodes", []) if isinstance(n, dict) and "id" in n}
     edges = [e for e in d.get("edges", []) if e.get("from") in nodes and e.get("to") in nodes]
@@ -406,6 +482,7 @@ def empty_design() -> dict[str, Any]:
         "scope": {"functional": [], "non_functional": [], "assumptions": [], "out_of_scope": []},
         "api": [],
         "data": [],
+        "parts": [],
         "deep_dives": [],
         "wrapup": dict.fromkeys(WRAPUP_KEYS, ""),
     }
@@ -472,9 +549,27 @@ def validate_design(d: Any) -> list[str]:
                 isinstance(x, dict) and isinstance(x.get("text", ""), str) for x in items
             ):
                 e.append(f"scope.{k} must be a list of {{id, text}}")
-    for k in ("api", "data", "deep_dives"):
+    for k in ("api", "data", "deep_dives", "parts"):
         if not isinstance(d.get(k, []), list) or not all(isinstance(x, dict) for x in d.get(k, [])):
             e.append(f"{k} must be a list of objects")
+    parts = d.get("parts", [])
+    if isinstance(parts, list):
+        if len(parts) > MAX_PARTS:
+            e.append(f"at most {MAX_PARTS} parts")
+        seen: set[str] = set()
+        for i, p in enumerate(x for x in parts if isinstance(x, dict)):
+            pid = str(p.get("id", ""))
+            if not ID_RE.match(pid) or pid in seen:
+                e.append(f"parts[{i}].id must be a unique short identifier")
+            seen.add(pid)
+            for k in ("covers", "technologies", "patterns", "options"):
+                if not isinstance(p.get(k, []), list):
+                    e.append(f"parts[{i}].{k} must be a list")
+            sub = p.get("diagram", {"nodes": [], "edges": []})
+            if not isinstance(sub, dict):
+                e.append(f"parts[{i}].diagram must be {{nodes, edges}}")
+            else:
+                e += [f"parts[{i}].diagram: {m}" for m in _validate_graph(sub, "system-design")]
     if not isinstance(d.get("wrapup", {}), dict):
         e.append("wrapup must be an object")
     if len(json.dumps(d)) > 200_000:
@@ -651,6 +746,18 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
                 and (not c.get("label_keywords") or _hit(str(e.get("label", "")).lower(), c["label_keywords"]))
                 for e in final.get("edges", [])
             )
+        elif t == "part":
+            passed = any(
+                isinstance(p, dict)
+                and _hit(_norm({k: p.get(k, "") for k in ("title", "problem", "covers", "choice")}), kw)
+                and str(p.get("choice", "")).strip()
+                and str(p.get("why", "")).strip()
+                and (p.get("diagram") or {}).get("nodes")
+                and (not c.get("choice_keywords") or _hit(str(p.get("choice", "")).lower(), c["choice_keywords"]))
+                for p in design.get("parts", [])
+            )
+            if not passed:
+                detail = "a matching part needs a choice, a why and a sub-diagram"
         elif t == "decision":
             passed = any(
                 _hit(_norm(dd), kw)
@@ -694,6 +801,11 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
             }
         )
         prev = v
+    if subject == "system-design" and versions and isinstance(design.get("parts"), list):
+        composed = part_smells(final, design["parts"])
+        all_smells += composed
+        if out_versions:
+            out_versions[-1]["smells"] += [s["rule"] for s in composed]
     final_smells = [s for s in all_smells if s["version"] == final.get("version")]
     missing_why = [v["version"] for v in out_versions[1:] if not str(v["why"]).strip()]
     stages = {
@@ -737,6 +849,7 @@ def record(result: dict[str, Any]) -> None:
             "verdict": not result["final_smells"] and not result["versions_missing_why"],
             "fit": None,
             "smells": len(result["final_smells"]),
+            "solution_seen": solution_seen(result["subject"], result["slug"]),
         }
     )
 
@@ -788,7 +901,11 @@ def public_problem(problem: DesignProblem) -> dict[str, Any]:
         "readme": (problem.dir / "README.md").read_text(),
         "readme_path": f"{problem.subject}/problems/{problem.slug}/README.md",
         "palette": PALETTES[problem.subject],
-        "stages": STAGES if problem.subject == "system-design" else [s for s in STAGES if s != "estimates"],
+        "stages": SUBJECT_STAGES[problem.subject],
+        "technologies": problem.meta.get("technologies", []),
+        "patterns": problem.meta.get("design_patterns", []),
+        "aka": problem.meta.get("aka", []),
+        "has_solution": (problem.dir / "reference.md").exists(),
         "wrapup_keys": WRAPUP_KEYS,
         "units": sorted(UNITS),
         "constants": CONSTANTS,
@@ -801,10 +918,18 @@ def public_problem(problem: DesignProblem) -> dict[str, Any]:
 
 
 def reference(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
+    """Practice mode: the reference unlocks only after this attempt is submitted."""
     if not (attempt / "submitted.json").exists():
         raise ProblemError("submit your attempt first: the reference is a spoiler")
+    return solution(problem)
+
+
+def solution(problem: DesignProblem) -> dict[str, Any]:
+    """Read mode: the full worked solution (the studio asks before revealing it; see mark_solution_seen)."""
     ref = problem.dir / "reference"
     return {
+        "technologies": problem.meta.get("technologies", []),
+        "patterns": problem.meta.get("design_patterns", []),
         "walkthrough": (problem.dir / "reference.md").read_text(),
         "pattern": problem.rubric.get("pattern", ""),
         "diagrams": diagram_versions(ref),
@@ -816,6 +941,17 @@ def reference(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
         ),
         "tips": {c["id"]: c["tips"]["show"] for c in problem.rubric.get("checks", [])},
     }
+
+
+def mark_solution_seen(problem: DesignProblem) -> None:
+    """Log that the learner opened the solution: later attempts of it get no first-try bonus."""
+    history._append(  # noqa: SLF001 - part of progress
+        "views.jsonl", {"ts": history.now(), "subject": problem.subject, "slug": problem.slug, "what": "solution"}
+    )
+
+
+def solution_seen(subject: str, slug: str) -> bool:
+    return any(v.get("subject") == subject and v.get("slug") == slug for v in history._read("views.jsonl"))  # noqa: SLF001
 
 
 def attempt_payload(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
@@ -884,7 +1020,7 @@ def validate_problem(problem: DesignProblem) -> list[str]:
         tips = c.get("tips", {})
         if not isinstance(tips, dict) or any(not tips.get(level) for level in TIP_LEVELS):
             e.append(f"{where}: tips need nudge, hint and show")
-        if t in {"requirement", "endpoint", "entity", "decision", "estimate"} and not c.get("keywords"):
+        if t in {"requirement", "endpoint", "entity", "decision", "estimate", "part"} and not c.get("keywords"):
             e.append(f"{where}: keywords are required")
         if t == "estimate":
             if (
@@ -923,6 +1059,8 @@ def validate_problem(problem: DesignProblem) -> list[str]:
             e.append(f"{where}: method must be an HTTP verb")
     if len(ids) < 5:
         e.append("rubric needs at least 5 checks")
+    if subject == "system-design":
+        e += _validate_sd_content(problem, topics)
     ref = problem.dir / "reference"
     if not (ref / "design.json").exists():
         return e + ["reference/ attempt is missing (design.json, estimates.json, diagrams/v1..vN.json)"]
@@ -940,4 +1078,63 @@ def validate_problem(problem: DesignProblem) -> list[str]:
     est_errors = [f"{x['name']}: {x['error']}" for x in res["estimates"] if x["error"]]
     if est_errors:
         e.append("reference estimates: " + "; ".join(est_errors))
+    return e
+
+
+def _validate_sd_content(problem: DesignProblem, topics: set[str]) -> list[str]:
+    """System-design extras: technologies/patterns tags, ≥ 2 parts, and the reference.md layout."""
+    from kb import learn
+
+    e: list[str] = []
+    groups = {t["id"]: t.get("group") for t in learn.catalog("system-design")["topics"]}
+    for key, group in (("technologies", "technologies"), ("design_patterns", "patterns")):
+        tags = problem.meta.get(key, [])
+        if not tags or any(groups.get(t) != group for t in tags):
+            e.append(f"meta.{key} must be non-empty catalog ids from the {group!r} group")
+    if sum(1 for c in problem.rubric.get("checks", []) if c.get("type") == "part") < 2:
+        e.append("rubric needs at least 2 part checks (decompose the problem)")
+    ref = problem.dir / "reference"
+    try:
+        design = json.loads((ref / "design.json").read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return e
+    parts = design.get("parts", []) if isinstance(design, dict) else []
+    part_ids = {str(p.get("id")) for p in parts if isinstance(p, dict)}
+    if len(parts) < 2:
+        e.append("reference design needs at least 2 parts")
+    for p in parts:
+        if isinstance(p, dict) and not all(
+            p.get(k) for k in ("title", "problem", "choice", "why", "options", "diagram")
+        ):
+            e.append(f"reference part {p.get('id')}: needs title, problem, options, choice, why and a diagram")
+        if isinstance(p, dict) and len(p.get("options", [])) < 2:
+            e.append(f"reference part {p.get('id')}: compare at least 2 options")
+    md_path = problem.dir / "reference.md"
+    if not md_path.exists():
+        return e
+    md = md_path.read_text()
+    heads = [h.strip() for h in re.findall(r"^## (.+)$", md, re.M)]
+    plain = [re.sub(r"^\d+\.\s*", "", h) for h in heads]
+    pos = -1
+    for name in REFERENCE_SECTIONS:
+        i = next((j for j, h in enumerate(plain) if h.startswith(name)), None)
+        if i is None:
+            e.append(f"reference.md is missing the '## {name}' section")
+        elif i < pos:
+            e.append(f"reference.md: '## {name}' is out of order")
+        else:
+            pos = i
+    versions = {f"v{v.get('version')}" for v in diagram_versions(ref)}
+    fences = DIAGRAM_FENCE_RE.findall(md)
+    for f in fences:
+        if f.startswith("part:") and f[5:] not in part_ids:
+            e.append(f"reference.md: ```diagram {f}``` names no reference part")
+        if f.startswith("v") and f not in versions:
+            e.append(f"reference.md: ```diagram {f}``` names no reference diagram version")
+    if not any(f.startswith("part:") for f in fences) or not any(f.startswith("v") for f in fences):
+        e.append("reference.md should embed part diagrams (```diagram part:P1```) and versions (```diagram v2```)")
+    links = re.findall(r"\(#/(?:learn|topic)/system-design/([a-z0-9-]+)\)", md)
+    if not links:
+        e.append("reference.md 'Learn more' should link lessons/topics, e.g. (#/topic/system-design/caching)")
+    e += [f"reference.md links unknown topic {t!r}" for t in sorted(set(links) - topics)]
     return e

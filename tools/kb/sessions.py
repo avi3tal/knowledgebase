@@ -177,7 +177,8 @@ def item_score(item_runs: list[dict[str, Any]]) -> int | None:
       correctness  70 × passed/total   (an error run scores 0)
       complexity   +20 if all passed and the measured complexity matches, +10 if not measured, 0 if missed
       first try    +10 if the first run that passed any case already passed everything
-                   (runs of the untouched stub, 0 passed, don't count: red → green is fine)
+                   (runs of the untouched stub, 0 passed, don't count: red → green is fine;
+                   none if the design solution had been read: `solution_seen` on the run)
     """
     if not item_runs:
         return None
@@ -193,7 +194,8 @@ def item_score(item_runs: list[dict[str, Any]]) -> int | None:
         if last["passed"] == last["total"]:
             score += {True: 20, None: 10, False: 0}[last.get("verdict")]
             first_real = next((x for x in runs if not x.get("error") and x.get("passed", 0) > 0), None)
-            if feedback._passed(first_real):  # noqa: SLF001 - shared definition of "passed"
+            # no bonus once the worked solution was read before this attempt's first real run
+            if feedback._passed(first_real) and not first_real.get("solution_seen"):  # noqa: SLF001
                 score += 10
         best = max(best, round(score))
     return best

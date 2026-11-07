@@ -2,21 +2,53 @@
   "version": 1,
   "scope": {
     "functional": [
-      { "id": "F1", "text": "Shorten: given a long URL (optionally a custom alias), create a unique short URL." },
-      { "id": "F2", "text": "Redirect: visiting a short URL redirects to the original long URL." },
-      { "id": "F3", "text": "Links expire after 5 years by default; owners can delete them." },
-      { "id": "F4", "text": "Count clicks per link (analytics), best effort." }
+      {
+        "id": "F1",
+        "text": "Shorten: given a long URL (optionally a custom alias), create a unique short URL."
+      },
+      {
+        "id": "F2",
+        "text": "Redirect: visiting a short URL redirects to the original long URL."
+      },
+      {
+        "id": "F3",
+        "text": "Links expire after 5 years by default; owners can delete them."
+      },
+      {
+        "id": "F4",
+        "text": "Count clicks per link (analytics), best effort."
+      }
     ],
     "non_functional": [
-      { "id": "N1", "text": "Low latency redirects: p99 < 50 ms; read-heavy, ~100 reads per write." },
-      { "id": "N2", "text": "High availability for redirects (99.99%); brief write unavailability is tolerable." },
-      { "id": "N3", "text": "Short codes are not guessable in sequence." }
+      {
+        "id": "N1",
+        "text": "Low latency redirects: p99 < 50 ms; read-heavy, ~100 reads per write."
+      },
+      {
+        "id": "N2",
+        "text": "High availability for redirects (99.99%); brief write unavailability is tolerable."
+      },
+      {
+        "id": "N3",
+        "text": "Short codes are not guessable in sequence."
+      }
     ],
     "assumptions": [
-      { "id": "A1", "text": "100M new links per month; ~500 bytes per stored record." },
-      { "id": "A2", "text": "Analytics may lag by minutes." }
+      {
+        "id": "A1",
+        "text": "100M new links per month; ~500 bytes per stored record."
+      },
+      {
+        "id": "A2",
+        "text": "Analytics may lag by minutes."
+      }
     ],
-    "out_of_scope": [{ "id": "O1", "text": "User accounts and billing." }]
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "User accounts and billing."
+      }
+    ]
   },
   "api": [
     {
@@ -54,23 +86,19 @@
   ],
   "deep_dives": [
     {
-      "id": "DD1",
-      "title": "Short code generation",
-      "options": [
-        { "name": "hash(long_url) truncated", "pros": "stateless", "cons": "collisions must be detected and retried" },
-        { "name": "random 7 chars", "pros": "unguessable", "cons": "existence check on every write" },
-        { "name": "range-leased counter + base62", "pros": "no collisions, cheap", "cons": "needs a range allocator; sequential unless shuffled" }
-      ],
-      "choice": "range-leased counter + base62",
-      "why": "Each service instance leases a block of 1M ids from a coordinator, encodes them in base62 (7 chars ≈ 3.5e12 codes) and applies a reversible bit shuffle so codes are not sequential.",
-      "version": 2
-    },
-    {
       "id": "DD2",
       "title": "Redirect status",
       "options": [
-        { "name": "301 permanent", "pros": "browsers and CDN cache it", "cons": "clicks become invisible" },
-        { "name": "302 temporary", "pros": "every click is counted", "cons": "more load on the service" }
+        {
+          "name": "301 permanent",
+          "pros": "browsers and CDN cache it",
+          "cons": "clicks become invisible"
+        },
+        {
+          "name": "302 temporary",
+          "pros": "every click is counted",
+          "cons": "more load on the service"
+        }
       ],
       "choice": "302 temporary",
       "why": "Click analytics is a requirement; the cache in front of the store absorbs the extra load.",
@@ -83,5 +111,238 @@
     "monitoring": "p50/p99 redirect latency, cache hit ratio, 404 and 5xx rates, stream consumer lag; alerts on SLO burn rate.",
     "scale": "10× growth: add redirect instances behind the load balancer, more cache shards, and more store partitions keyed by code hash.",
     "future": "Custom domains, link previews and abuse detection (malware URLs)."
-  }
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Short code generation",
+      "covers": [
+        "F1",
+        "N3"
+      ],
+      "problem": "Hand out short, unique, non-sequential codes from many service instances without a write-time collision check.",
+      "options": [
+        {
+          "name": "hash(long_url) truncated",
+          "pros": "stateless",
+          "cons": "collisions must be detected and retried"
+        },
+        {
+          "name": "random 7 chars",
+          "pros": "unguessable",
+          "cons": "existence check on every write"
+        },
+        {
+          "name": "range-leased counter + base62",
+          "pros": "no collisions, cheap",
+          "cons": "needs a range allocator; sequential unless shuffled"
+        }
+      ],
+      "choice": "range-leased counter + base62",
+      "why": "Each service instance leases a block of 1M ids from a coordinator, encodes them in base62 (7 chars ≈ 3.5e12 codes) and applies a reversible bit shuffle so codes are not sequential.",
+      "technologies": [
+        "zookeeper-etcd"
+      ],
+      "patterns": [
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "svc",
+            "kind": "service",
+            "label": "Shortener / redirect service ×N",
+            "x": 400,
+            "y": 160
+          },
+          {
+            "id": "ids",
+            "kind": "coordinator",
+            "label": "ID range allocator",
+            "x": 400,
+            "y": 40
+          }
+        ],
+        "edges": [
+          {
+            "from": "svc",
+            "to": "ids",
+            "label": "lease id block"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Redirect read path",
+      "covers": [
+        "F2",
+        "N1",
+        "N2"
+      ],
+      "problem": "Serve ~4k (peak ~10k) redirects per second in tens of milliseconds, and keep serving when a node fails.",
+      "options": [
+        {
+          "name": "Single SQL database",
+          "pros": "simple, consistent",
+          "cons": "every redirect hits one box: latency and a single point of failure"
+        },
+        {
+          "name": "SQL + read replicas",
+          "pros": "scales reads somewhat",
+          "cons": "replication lag, still disk-bound per lookup"
+        },
+        {
+          "name": "Read-through cache over a sharded key-value store",
+          "pros": "memory-speed hits, horizontal scale by code hash",
+          "cons": "cache invalidation on delete/expiry; hot keys"
+        }
+      ],
+      "choice": "Read-through cache over a sharded key-value store, stateless instances behind a load balancer",
+      "why": "Access is purely by key and ~100:1 read-heavy, so a cache absorbs most reads and the store only needs key lookups; stateless instances scale out and fail independently.",
+      "technologies": [
+        "redis",
+        "dynamodb"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Browser",
+            "x": 60,
+            "y": 160
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 220,
+            "y": 160
+          },
+          {
+            "id": "svc",
+            "kind": "service",
+            "label": "Shortener / redirect service ×N",
+            "x": 400,
+            "y": 160
+          },
+          {
+            "id": "cache",
+            "kind": "cache",
+            "label": "Redis: code → long_url",
+            "x": 600,
+            "y": 80
+          },
+          {
+            "id": "kv",
+            "kind": "nosql",
+            "label": "links (KV, sharded by code)",
+            "x": 600,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb"
+          },
+          {
+            "from": "lb",
+            "to": "svc"
+          },
+          {
+            "from": "svc",
+            "to": "cache",
+            "label": "read-through"
+          },
+          {
+            "from": "svc",
+            "to": "kv",
+            "label": "write / cache miss"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Click analytics off the hot path",
+      "covers": [
+        "F4",
+        "N1"
+      ],
+      "problem": "Count clicks per link without adding latency or a failure mode to the redirect.",
+      "options": [
+        {
+          "name": "Increment a counter in the request",
+          "pros": "exact, simple",
+          "cons": "a write per redirect on the hot path; hot counters"
+        },
+        {
+          "name": "Emit events to a stream, aggregate in batches",
+          "pros": "redirect stays a read; batches are cheap",
+          "cons": "counts lag by minutes; best effort if the stream is down"
+        }
+      ],
+      "choice": "Emit click events to a stream and aggregate in batches",
+      "why": "A2 allows minutes of lag; batching turns millions of increments into few writes and keeps N1 intact.",
+      "technologies": [
+        "kafka"
+      ],
+      "patterns": [
+        "pre-aggregation"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "svc",
+            "kind": "service",
+            "label": "Shortener / redirect service ×N",
+            "x": 400,
+            "y": 160
+          },
+          {
+            "id": "clicks",
+            "kind": "stream",
+            "label": "click events",
+            "x": 400,
+            "y": 320
+          },
+          {
+            "id": "agg",
+            "kind": "worker",
+            "label": "Analytics aggregator",
+            "x": 600,
+            "y": 380
+          },
+          {
+            "id": "stats",
+            "kind": "nosql",
+            "label": "click_counts",
+            "x": 800,
+            "y": 380
+          }
+        ],
+        "edges": [
+          {
+            "from": "svc",
+            "to": "clicks",
+            "label": "emit click (async)"
+          },
+          {
+            "from": "clicks",
+            "to": "agg"
+          },
+          {
+            "from": "agg",
+            "to": "stats",
+            "label": "batched counts"
+          }
+        ]
+      }
+    }
+  ]
 }

@@ -1,332 +1,320 @@
 {
- "version": 1,
- "subject": "system-design",
- "slug": "url-shortener",
- "attempt": "2026-11-07_design_reference",
- "checks": [
-  {
-   "id": "req-shorten",
-   "type": "requirement",
-   "stage": "scope",
-   "label": "Core write use case captured",
-   "passed": true,
-   "detail": ""
+  "version": 1,
+  "subject": "system-design",
+  "slug": "url-shortener",
+  "attempt": "2026-11-07_design_reference",
+  "checks": [
+    {
+      "id": "req-shorten",
+      "type": "requirement",
+      "stage": "scope",
+      "label": "Core write use case captured",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "req-redirect",
+      "type": "requirement",
+      "stage": "scope",
+      "label": "Core read use case captured",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "stage": "scope",
+      "label": "Performance expectation stated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "req-availability",
+      "type": "requirement",
+      "stage": "scope",
+      "label": "Reliability expectation stated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "est-write-qps",
+      "type": "estimate",
+      "stage": "estimates",
+      "label": "Write throughput estimated",
+      "passed": true,
+      "detail": "write_qps ≈ 38.6 /s"
+    },
+    {
+      "id": "est-read-qps",
+      "type": "estimate",
+      "stage": "estimates",
+      "label": "Read throughput estimated",
+      "passed": true,
+      "detail": "read_qps ≈ 3.86e+03 /s"
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "stage": "estimates",
+      "label": "Storage for the retention period estimated",
+      "passed": true,
+      "detail": "storage_5y ≈ 3 TB"
+    },
+    {
+      "id": "api-create",
+      "type": "endpoint",
+      "stage": "api",
+      "label": "Write endpoint defined",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "api-redirect",
+      "type": "endpoint",
+      "stage": "api",
+      "label": "Read endpoint defined",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "data-mapping",
+      "type": "entity",
+      "stage": "api",
+      "label": "Core data model defined",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "comp-cache",
+      "type": "component",
+      "stage": "high-level",
+      "label": "Read path can absorb the read load",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "stage": "high-level",
+      "label": "Traffic spread across instances",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "comp-store",
+      "type": "component",
+      "stage": "high-level",
+      "label": "Durable storage for links",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "comp-async-analytics",
+      "type": "edge",
+      "stage": "high-level",
+      "label": "Side effects kept off the hot path",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "part-code-gen",
+      "type": "part",
+      "stage": "parts",
+      "label": "Code generation designed as its own part",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "part-read-path",
+      "type": "part",
+      "stage": "parts",
+      "label": "Hot read path designed as its own part",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "part-analytics",
+      "type": "part",
+      "stage": "parts",
+      "label": "Analytics designed as its own part",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "dd-redirect-status",
+      "type": "decision",
+      "stage": "deep-dives",
+      "label": "Redirect semantics decided",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "stage": "wrap-up",
+      "label": "Bottlenecks and single points of failure named",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "stage": "wrap-up",
+      "label": "Operability covered",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "stages": {
+    "scope": {
+      "passed": 4,
+      "total": 4
+    },
+    "estimates": {
+      "passed": 3,
+      "total": 3
+    },
+    "api": {
+      "passed": 3,
+      "total": 3
+    },
+    "parts": {
+      "passed": 3,
+      "total": 3
+    },
+    "high-level": {
+      "passed": 4,
+      "total": 4
+    },
+    "deep-dives": {
+      "passed": 1,
+      "total": 1
+    },
+    "wrap-up": {
+      "passed": 2,
+      "total": 2
+    },
+    "signatures": {
+      "passed": 0,
+      "total": 0
+    }
   },
-  {
-   "id": "req-redirect",
-   "type": "requirement",
-   "stage": "scope",
-   "label": "Core read use case captured",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "req-latency",
-   "type": "requirement",
-   "stage": "scope",
-   "label": "Performance expectation stated",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "req-availability",
-   "type": "requirement",
-   "stage": "scope",
-   "label": "Reliability expectation stated",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "est-write-qps",
-   "type": "estimate",
-   "stage": "estimates",
-   "label": "Write throughput estimated",
-   "passed": true,
-   "detail": "write_qps ≈ 38.6 /s"
-  },
-  {
-   "id": "est-read-qps",
-   "type": "estimate",
-   "stage": "estimates",
-   "label": "Read throughput estimated",
-   "passed": true,
-   "detail": "read_qps ≈ 3.86e+03 /s"
-  },
-  {
-   "id": "est-storage",
-   "type": "estimate",
-   "stage": "estimates",
-   "label": "Storage for the retention period estimated",
-   "passed": true,
-   "detail": "storage_5y ≈ 3 TB"
-  },
-  {
-   "id": "api-create",
-   "type": "endpoint",
-   "stage": "api",
-   "label": "Write endpoint defined",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "api-redirect",
-   "type": "endpoint",
-   "stage": "api",
-   "label": "Read endpoint defined",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "data-mapping",
-   "type": "entity",
-   "stage": "api",
-   "label": "Core data model defined",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "comp-cache",
-   "type": "component",
-   "stage": "high-level",
-   "label": "Read path can absorb the read load",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "comp-lb",
-   "type": "component",
-   "stage": "high-level",
-   "label": "Traffic spread across instances",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "comp-store",
-   "type": "component",
-   "stage": "high-level",
-   "label": "Durable storage for links",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "comp-async-analytics",
-   "type": "edge",
-   "stage": "high-level",
-   "label": "Side effects kept off the hot path",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "dd-id-generation",
-   "type": "decision",
-   "stage": "deep-dives",
-   "label": "Key generation decided",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "dd-redirect-status",
-   "type": "decision",
-   "stage": "deep-dives",
-   "label": "Redirect semantics decided",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "wrap-bottlenecks",
-   "type": "wrapup",
-   "stage": "wrap-up",
-   "label": "Bottlenecks and single points of failure named",
-   "passed": true,
-   "detail": ""
-  },
-  {
-   "id": "wrap-monitoring",
-   "type": "wrapup",
-   "stage": "wrap-up",
-   "label": "Operability covered",
-   "passed": true,
-   "detail": ""
-  }
- ],
- "stages": {
-  "scope": {
-   "passed": 4,
-   "total": 4
-  },
-  "estimates": {
-   "passed": 3,
-   "total": 3
-  },
-  "api": {
-   "passed": 3,
-   "total": 3
-  },
-  "high-level": {
-   "passed": 4,
-   "total": 4
-  },
-  "deep-dives": {
-   "passed": 2,
-   "total": 2
-  },
-  "wrap-up": {
-   "passed": 2,
-   "total": 2
-  },
-  "signatures": {
-   "passed": 0,
-   "total": 0
-  }
- },
- "passed": 18,
- "total": 18,
- "smells": [
-  {
-   "rule": "single-store-read-heavy",
-   "message": "Read-heavy requirement, but one data store and no cache serve every read.",
-   "nodes": [
-    "db"
-   ],
-   "version": 1
-  },
-  {
-   "rule": "no-load-balancer",
-   "message": "Clients hit services directly: no load balancer for horizontal scaling.",
-   "nodes": [
-    "svc"
-   ],
-   "version": 1
-  }
- ],
- "final_smells": [],
- "versions": [
-  {
-   "version": 1,
-   "why": "Naive start: one service and one database. It works for a demo, but every redirect hits the single database.",
-   "nodes": 3,
-   "edges": 2,
-   "diff": {
-    "added_nodes": [
-     "client",
-     "db",
-     "svc"
-    ],
-    "removed_nodes": [],
-    "added_edges": [
-     "client->svc",
-     "svc->db"
-    ],
-    "removed_edges": []
-   },
-   "smells": [
-    "single-store-read-heavy",
-    "no-load-balancer"
-   ]
-  },
-  {
-   "version": 2,
-   "why": "N1/N2: ~10k peak read QPS would melt one DB and one server. Add a load balancer over stateless instances, a cache for hot codes, a key-value store, and a range allocator for collision-free codes.",
-   "nodes": 6,
-   "edges": 5,
-   "diff": {
-    "added_nodes": [
-     "cache",
-     "ids",
-     "kv",
-     "lb"
-    ],
-    "removed_nodes": [
-     "db"
-    ],
-    "added_edges": [
-     "client->lb",
-     "lb->svc",
-     "svc->cache",
-     "svc->ids",
-     "svc->kv"
-    ],
-    "removed_edges": [
-     "client->svc",
-     "svc->db"
-    ]
-   },
-   "smells": []
-  },
-  {
-   "version": 3,
-   "why": "F4 without hurting N1: the redirect service emits click events to a stream; a worker aggregates them into click counts asynchronously.",
-   "nodes": 9,
-   "edges": 8,
-   "diff": {
-    "added_nodes": [
-     "agg",
-     "clicks",
-     "stats"
-    ],
-    "removed_nodes": [],
-    "added_edges": [
-     "agg->stats",
-     "clicks->agg",
-     "svc->clicks"
-    ],
-    "removed_edges": []
-   },
-   "smells": []
-  }
- ],
- "versions_missing_why": [],
- "estimates": [
-  {
-   "name": "links_per_month",
-   "formula": "100 * million",
-   "unit": "",
-   "value": 100000000.0,
-   "error": null
-  },
-  {
-   "name": "write_qps",
-   "formula": "links_per_month / month",
-   "unit": "/s",
-   "value": 38.58024691358025,
-   "error": null
-  },
-  {
-   "name": "read_qps",
-   "formula": "write_qps * 100",
-   "unit": "/s",
-   "value": 3858.0246913580245,
-   "error": null
-  },
-  {
-   "name": "peak_read_qps",
-   "formula": "read_qps * 3",
-   "unit": "/s",
-   "value": 11574.074074074073,
-   "error": null
-  },
-  {
-   "name": "links_5y",
-   "formula": "links_per_month * 12 * 5",
-   "unit": "",
-   "value": 6000000000.0,
-   "error": null
-  },
-  {
-   "name": "storage_5y",
-   "formula": "links_5y * 500 / 10**12",
-   "unit": "TB",
-   "value": 3.0,
-   "error": null
-  },
-  {
-   "name": "cache_memory",
-   "formula": "read_qps * day * 0.2 * 500 / 10**9",
-   "unit": "GB",
-   "value": 33.33333333333333,
-   "error": null
-  }
- ],
- "errors": [],
- "submitted": false
+  "passed": 20,
+  "total": 20,
+  "smells": [
+    {
+      "rule": "single-store-read-heavy",
+      "message": "Read-heavy requirement, but one data store and no cache serve every read.",
+      "nodes": ["db"],
+      "version": 1
+    },
+    {
+      "rule": "no-load-balancer",
+      "message": "Clients hit services directly: no load balancer for horizontal scaling.",
+      "nodes": ["svc"],
+      "version": 1
+    }
+  ],
+  "final_smells": [],
+  "versions": [
+    {
+      "version": 1,
+      "why": "Naive start: one service and one database. It works for a demo, but every redirect hits the single database.",
+      "nodes": 3,
+      "edges": 2,
+      "diff": {
+        "added_nodes": ["client", "db", "svc"],
+        "removed_nodes": [],
+        "added_edges": ["client->svc", "svc->db"],
+        "removed_edges": []
+      },
+      "smells": ["single-store-read-heavy", "no-load-balancer"]
+    },
+    {
+      "version": 2,
+      "why": "N1/N2: ~10k peak read QPS would melt one DB and one server. Add a load balancer over stateless instances, a cache for hot codes, a key-value store, and a range allocator for collision-free codes.",
+      "nodes": 6,
+      "edges": 5,
+      "diff": {
+        "added_nodes": ["cache", "ids", "kv", "lb"],
+        "removed_nodes": ["db"],
+        "added_edges": [
+          "client->lb",
+          "lb->svc",
+          "svc->cache",
+          "svc->ids",
+          "svc->kv"
+        ],
+        "removed_edges": ["client->svc", "svc->db"]
+      },
+      "smells": []
+    },
+    {
+      "version": 3,
+      "why": "F4 without hurting N1: the redirect service emits click events to a stream; a worker aggregates them into click counts asynchronously.",
+      "nodes": 9,
+      "edges": 8,
+      "diff": {
+        "added_nodes": ["agg", "clicks", "stats"],
+        "removed_nodes": [],
+        "added_edges": ["agg->stats", "clicks->agg", "svc->clicks"],
+        "removed_edges": []
+      },
+      "smells": []
+    }
+  ],
+  "versions_missing_why": [],
+  "estimates": [
+    {
+      "name": "links_per_month",
+      "formula": "100 * million",
+      "unit": "",
+      "value": 100000000.0,
+      "error": null
+    },
+    {
+      "name": "write_qps",
+      "formula": "links_per_month / month",
+      "unit": "/s",
+      "value": 38.58024691358025,
+      "error": null
+    },
+    {
+      "name": "read_qps",
+      "formula": "write_qps * 100",
+      "unit": "/s",
+      "value": 3858.0246913580245,
+      "error": null
+    },
+    {
+      "name": "peak_read_qps",
+      "formula": "read_qps * 3",
+      "unit": "/s",
+      "value": 11574.074074074073,
+      "error": null
+    },
+    {
+      "name": "links_5y",
+      "formula": "links_per_month * 12 * 5",
+      "unit": "",
+      "value": 6000000000.0,
+      "error": null
+    },
+    {
+      "name": "storage_5y",
+      "formula": "links_5y * 500 / 10**12",
+      "unit": "TB",
+      "value": 3.0,
+      "error": null
+    },
+    {
+      "name": "cache_memory",
+      "formula": "read_qps * day * 0.2 * 500 / 10**9",
+      "unit": "GB",
+      "value": 33.33333333333333,
+      "error": null
+    }
+  ],
+  "errors": [],
+  "submitted": false
 }

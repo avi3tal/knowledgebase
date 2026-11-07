@@ -90,7 +90,7 @@ def test_new_attempt_fails_checks_and_reference_passes(problem: design.DesignPro
     assert empty["passed"] == 0 and empty["errors"] == [] and empty["final_smells"] == []
     copy_reference(problem, adir)
     full = design.run_checks(problem, adir)
-    assert full["passed"] == full["total"] == 18 and full["final_smells"] == []
+    assert full["passed"] == full["total"] == 20 and full["final_smells"] == []
     assert [v["smells"] for v in full["versions"]][0] == ["single-store-read-heavy", "no-load-balancer"]
     assert full["versions"][2]["diff"]["added_nodes"] == ["agg", "clicks", "stats"]
 
@@ -149,7 +149,7 @@ def test_public_payload_has_no_spoilers(problem: design.DesignProblem) -> None:
     with pytest.raises(ProblemError, match="submit"):
         design.reference(problem, adir)
     design.submit(problem, adir)
-    assert "Transferable pattern" in design.reference(problem, adir)["walkthrough"]
+    assert "## 4. Decompose" in design.reference(problem, adir)["walkthrough"]
 
 
 def test_check_records_only_when_asked_and_tips_are_logged(problem: design.DesignProblem) -> None:
@@ -159,7 +159,7 @@ def test_check_records_only_when_asked_and_tips_are_logged(problem: design.Desig
     copy_reference(problem, adir)
     design.record(design.run_checks(problem, adir))
     (run,) = history.runs()
-    assert run["subject"] == "system-design" and run["passed"] == 18 and run["verdict"] is True
+    assert run["subject"] == "system-design" and run["passed"] == 20 and run["verdict"] is True
     assert design.tip(problem, "comp-cache", "nudge", adir.name).startswith("Most redirects")
     assert history._read("tips.jsonl")[0]["check"] == "comp-cache"  # noqa: SLF001
 
@@ -198,7 +198,7 @@ def test_design_api_end_to_end() -> None:
     base = f"http://127.0.0.1:{httpd.server_address[1]}/api/design/system-design/url-shortener"
     try:
         status, prob = _call(base)
-        assert status == 200 and prob["palette"][0] == "client" and len(prob["checks"]) == 18
+        assert status == 200 and prob["palette"][0] == "client" and len(prob["checks"]) == 20
         assert "tips" not in json.dumps(prob["checks"])
         status, att = _call(f"{base}/attempt", {})
         assert status == 201 and att["check"]["passed"] == 0
@@ -240,6 +240,9 @@ def test_design_api_end_to_end() -> None:
         assert history.runs() == []  # saves are never recorded
         assert _call(f"{base}/{name}/reference")[0] == 409
         assert _call(f"{base}/tip", {"check": "comp-cache", "level": "hint"})[1]["text"]
+        status, sol = _call(f"{base}/solution")  # Read mode: always available, logs nothing by itself
+        assert status == 200 and "## 4. Decompose" in sol["walkthrough"] and len(sol["design"]["parts"]) == 3
+        assert not design.solution_seen("system-design", "url-shortener")
         assert _call(f"{base}/{name}/check", {})[0] == 200 and len(history.runs()) == 1
         assert _call(f"{base}/{name}/submit", {})[1]["submitted"] is True
         status, ref = _call(f"{base}/{name}/reference")
@@ -270,7 +273,7 @@ def test_cli_sd_and_run_on_design_attempts(problem: design.DesignProblem, capsys
     assert main(["sd", "tip", str(adir), "comp-cache", "--level", "hint"]) == 0
     copy_reference(problem, adir)
     assert main(["run", str(adir / "design.json")]) == 0
-    assert "18/18 checks passed" in capsys.readouterr().out
+    assert "20/20 checks passed" in capsys.readouterr().out
     assert len(history.runs()) == 1  # kb run records (like algo runs); --no-log doesn't
     assert main(["sd", "submit", "url-shortener", adir.name]) == 0
     assert (adir / "submitted.json").exists()
@@ -372,3 +375,80 @@ def test_save_guards_against_gaps_partial_docs_and_bad_units() -> None:
         design.save(*a, "design", {"version": 1})
     with pytest.raises(ProblemError, match="unknown unit"):
         design.save(*a, "estimates", {"version": 1, "rows": [{"name": "x", "formula": "1", "unit": "zz"}]})
+
+
+def _part(pid: str, title: str, nodes: list[tuple[str, str]], edges: list[tuple[str, str]], **kw: Any) -> dict:
+    return {
+        "id": pid,
+        "title": title,
+        "covers": [],
+        "problem": "",
+        "options": [],
+        "choice": kw.get("choice", "a choice"),
+        "why": kw.get("why", "because"),
+        "technologies": [],
+        "patterns": [],
+        "diagram": {
+            "nodes": [{"id": i, "kind": k} for i, k in nodes],
+            "edges": [{"from": a, "to": b} for a, b in edges],
+        },
+    }
+
+
+def test_parts_check_compose_and_reduce_smell(problem: design.DesignProblem) -> None:
+    adir = design.new_attempt(problem)
+    doc = json.loads((adir / "design.json").read_text())
+    assert doc["parts"] == []
+    read = _part("P1", "Redirect read path", [("svc", "service"), ("cache", "cache")], [("svc", "cache")])
+    clicks = _part("P2", "Click analytics", [("svc", "service"), ("q", "stream")], [("svc", "q")], why="")
+    doc["parts"] = [read, clicks]
+    design.save("system-design", "url-shortener", adir.name, "design", doc)
+    res = design.run_checks(problem, adir)
+    by = {c["id"]: c for c in res["checks"]}
+    assert by["part-read-path"]["passed"] and not by["part-analytics"]["passed"]  # P2 has no why
+    assert res["stages"]["parts"] == {"passed": 1, "total": 3}
+    smell = [s for s in res["final_smells"] if s["rule"] == "part-not-composed"]
+    assert smell and smell[0]["nodes"] == ["cache", "q", "svc"]
+    v1 = json.loads((adir / "diagrams" / "v1.json").read_text())
+    merged = design.compose(v1, [read, clicks])
+    assert [n["id"] for n in merged["nodes"]] == ["client", "svc", "cache", "q"]
+    assert design.compose(merged, [read]) == merged  # idempotent: existing nodes/edges win
+    merged["edges"].append({"from": "client", "to": "svc"})
+    design.save("system-design", "url-shortener", adir.name, "diagram", merged, 1)
+    res = design.run_checks(problem, adir)
+    assert not [s for s in res["final_smells"] if s["rule"] == "part-not-composed"]
+
+
+def test_design_without_parts_still_loads_and_bad_parts_are_rejected(problem: design.DesignProblem) -> None:
+    adir = design.new_attempt(problem)
+    doc = json.loads((adir / "design.json").read_text())
+    del doc["parts"]  # v1 attempts in learners' workspaces have no parts
+    design.save("system-design", "url-shortener", adir.name, "design", doc)
+    assert design.run_checks(problem, adir)["errors"] == []
+    doc["parts"] = [_part("P1", "x", [("a", "ufo")], []), _part("P1", "y", [], [])]
+    with pytest.raises(ProblemError, match="kind must be one of|unique short identifier"):
+        design.save("system-design", "url-shortener", adir.name, "design", doc)
+
+
+def test_reading_the_solution_removes_the_first_try_bonus(problem: design.DesignProblem) -> None:
+    adir = design.new_attempt(problem)
+    copy_reference(problem, adir)
+    design.record(design.run_checks(problem, adir))
+    assert sessions.item_score(history.runs()) == 100
+    design.mark_solution_seen(problem)
+    adir2 = design.new_attempt(problem, "again")
+    copy_reference(problem, adir2)
+    design.record(design.run_checks(problem, adir2))
+    later = [r for r in history.runs() if r["attempt"] == adir2.name]
+    assert later[0]["solution_seen"] is True and sessions.item_score(later) == 90
+
+
+def test_sd_content_gate_requires_layout_and_parts(problem: design.DesignProblem, tmp_path: Path) -> None:
+    clone = tmp_path / "system-design" / "problems" / "url-shortener"
+    shutil.copytree(problem.dir, clone)
+    md = clone / "reference.md"
+    md.write_text(md.read_text().replace("## 8. Patterns", "## 8. Other").replace("part:P3", "part:P9"))
+    p = design.DesignProblem(dir=clone, meta=problem.meta, rubric=problem.rubric)
+    errors = design.validate_problem(p)
+    assert "reference.md is missing the '## Patterns' section" in errors
+    assert any("part:P9" in e for e in errors)

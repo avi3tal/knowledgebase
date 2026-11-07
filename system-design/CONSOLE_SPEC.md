@@ -135,3 +135,17 @@ shows the new parts highlighted, like the "NEW" badge in the inspiration.
 - **AI review is on demand only.** The `/review` skill runs the deterministic checks first, then writes
   structured feedback (strengths, issues with examples, tips, next step) to `attempts/<dir>/review.md`,
   which the studio shows on the problem page. Nothing calls AI automatically.
+
+## 8. v2 changes (2026-11-07, user feedback)
+- **Layout:** the reader and the console share one workbench: header, tabs, then left | center | right,
+  then footer (`studio/src/components/Workbench.tsx`).
+  - The canvas is the center pane on the diagram stages (Decompose, Reduce).
+  - The shape palette sits in the left pane, Visio-style.
+  - The inspector and checklist sit in the right pane.
+- **Decompose → reduce:** a new `parts` stage. Each part is solved on its own: options, choice, tech,
+  patterns and a sub-diagram. "Compose" merges the parts into the high-level design by node id.
+- **Read mode (reverses §7's "reference only after submit"):** the reader's Solution tab shows the
+  worked solution at any time, after a reveal prompt.
+  - Revealing logs `views.jsonl`, and later attempts of that problem lose the first-try bonus.
+  - Inside the console (Practice mode), the reference still unlocks only after submitting.
+- **Solution layout:** fixed sections, listed in FORMAT.md "Solution layout".
