@@ -7,16 +7,37 @@ export type Route =
   | { page: "topic"; subject: string; topic: string }
   | { page: "map"; subject: string }
   | { page: "sessions"; subject: string }
-  | { page: "session"; subject: string; id: string };
+  | { page: "session"; subject: string; id: string }
+  | { page: "design"; subject: string; slug: string }
+  | { page: "console"; subject: string; slug: string; attempt: string };
 
 /** The subject's sub-tabs; every page belongs to exactly one. */
 export type Tab = "learn" | "problems" | "map" | "progress" | "sessions";
 
 const ID = /^[a-z0-9-]+$/;
+/** Attempt dirs look like 2026-11-07_design_practice-2: no dots, so ".." can't get through. */
+const ATTEMPT = /^[A-Za-z0-9_-]+$/;
+
+/** Subjects whose problems open in the design console rather than the code problem page. */
+export const DESIGN_SUBJECTS = new Set(["system-design", "ood"]);
+
+export function designHref(subject: string, slug: string, attempt?: string): string {
+  return `#/design/${subject}/${slug}${attempt ? `/${attempt}` : ""}`;
+}
+
+/** Where a problem row links: the design page for design subjects, else the problem card. */
+export function problemHref(subject: string, slug: string): string {
+  return DESIGN_SUBJECTS.has(subject) ? designHref(subject, slug) : `#/problem/${subject}/${slug}`;
+}
 
 export function parseRoute(hash: string): Route {
-  const [kind = "", subject = "algo", id = ""] = hash.replace(/^#\/?/, "").split("/");
+  const [kind = "", subject = "algo", id = "", attempt = ""] = hash.replace(/^#\/?/, "").split("/");
   const s = ID.test(subject) ? subject : "algo";
+  if (kind === "design" && ID.test(subject) && ID.test(id)) {
+    if (!attempt) return { page: "design", subject, slug: id };
+    if (ATTEMPT.test(attempt)) return { page: "console", subject, slug: id, attempt };
+    return { page: "home", subject };
+  }
   if (kind === "learn" && ID.test(subject) && ID.test(id))
     return { page: "lesson", subject, topic: id };
   if (kind === "learn" || kind === "home") return { page: "home", subject: s };
@@ -37,6 +58,8 @@ export function tabOf(route: Route): Tab {
   switch (route.page) {
     case "problems":
     case "problem":
+    case "design":
+    case "console":
       return "problems";
     case "map":
       return "map";
