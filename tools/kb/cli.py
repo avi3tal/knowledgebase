@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from kb import debug, feedback, history, learn, runner, scaffold, server
+from kb import debug, feedback, history, learn, runner, scaffold, server, sessions
 from kb.complexity import matches
 from kb.paths import ROOT, problems_dir, workspace_dir
 from kb.schema import DIFFICULTIES, LANGS, Problem, ProblemError, load_problem, validate
@@ -331,6 +331,81 @@ def cmd_feedback(a: argparse.Namespace) -> int:
     return 0
 
 
+def _csv(v: str | None) -> list[str]:
+    return [x.strip() for x in (v or "").split(",") if x.strip()]
+
+
+def _print_session(ev: dict) -> None:
+    score = "—" if ev["score"] is None else f"{ev['score']}/100"
+    print(f"{ev['title']}  [{ev['status']}]  ({ev['id']})")
+    print(
+        f"  completion {ev['completion']:.0%} · score {score}"
+        f" · generator {ev['generator']} · focus {ev['target']['focus']}"
+    )
+    for r in ev.get("rationale", []):
+        print(f"  · {r}")
+    if ev["materials"]:
+        print("  materials: " + ", ".join(f"{m['subject']}/{m['topic']}" for m in ev["materials"]))
+    for it in ev["items"]:
+        sc = "" if it["score"] is None else f" {it['score']}/100"
+        print(
+            f"  {it['id']:4} {it['state']:9}{sc:8} {it.get('difficulty') or '':7} {it['slug']:40} {it.get('why') or ''}"
+        )
+
+
+def cmd_session(a: argparse.Namespace) -> int:
+    if a.action == "new":
+        if a.plan:
+            plan = json.loads(Path(a.plan).read_text())
+            s = sessions.from_plan(plan)
+        else:
+            s = sessions.generate(
+                subject=a.subject,
+                topics=_csv(a.topics),
+                difficulty=_csv(a.difficulty),
+                count=a.count,
+                focus=a.focus,
+                goal=a.goal,
+                title=a.title,
+                minutes=a.minutes,
+                seed=a.seed,
+            )
+        if a.dry_run:
+            _print_session(sessions.evaluate(s))
+            return 0
+        path = sessions.save(s)
+        _print_session(sessions.evaluate(s))
+        print(f"saved {path}")
+        return 0
+    if a.action == "list":
+        evs = [sessions.evaluate(s) for s in sessions.all_sessions()]
+        if a.json:
+            print(json.dumps(evs, indent=1))
+            return 0
+        for ev in evs:
+            score = "—" if ev["score"] is None else ev["score"]
+            print(f"{ev['id']:50} {ev['status']:9} {ev['completion']:>4.0%}  score {score}")
+        return 0
+    if not a.id:
+        raise ProblemError(f"kb session {a.action} needs a session id")
+    if a.action == "show":
+        ev = sessions.evaluate(sessions.load(a.id))
+        print(json.dumps(ev, indent=1)) if a.json else _print_session(ev)
+        return 0
+    if a.action in ("start", "done", "abandon"):
+        status = {"start": "active", "done": "done", "abandon": "abandoned"}[a.action]
+        s = sessions.set_status(a.id, status)
+        print(f"{s['id']} → {s['status']}")
+        return 0
+    if a.action == "attempt":
+        if not a.item or not a.lang:
+            raise ProblemError("usage: kb session attempt <id> --item p1 --lang go|python")
+        adir = sessions.start_attempt(a.id, a.item, a.lang, a.pattern)
+        print(f"created {_rel(adir)} — solve it, then: ./kb run {_rel(adir)}")
+        return 0
+    raise ProblemError(f"unknown action {a.action}")
+
+
 def cmd_studio(a: argparse.Namespace) -> int:
     server.serve(a.port)
     return 0
@@ -377,6 +452,26 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--topic", help="only this catalog topic id")
     s.add_argument("--json", action="store_true")
     s.set_defaults(fn=cmd_feedback)
+
+    s = sub.add_parser("session", help="study sessions: new | list | show | start | done | abandon | attempt")
+    s.add_argument("action", choices=["new", "list", "show", "start", "done", "abandon", "attempt"])
+    s.add_argument("id", nargs="?", help="session id (show/start/done/abandon/attempt)")
+    s.add_argument("--subject", default="algo")
+    s.add_argument("--topics", help="comma-separated catalog topic ids (default: all)")
+    s.add_argument("--difficulty", help="comma-separated: easy,medium,hard (default: any)")
+    s.add_argument("--count", type=int, default=5)
+    s.add_argument("--focus", choices=list(sessions.FOCUS), default="mixed")
+    s.add_argument("--goal", help="free-text target, e.g. 'Google onsite in 2 weeks'")
+    s.add_argument("--title")
+    s.add_argument("--minutes", type=int, help="time budget")
+    s.add_argument("--seed", help="tie-break seed (default: today's date)")
+    s.add_argument("--plan", help="create from a plan JSON (written by the /session skill)")
+    s.add_argument("--dry-run", action="store_true", help="show the session without saving it")
+    s.add_argument("--item", help="item id for `attempt`, e.g. p2")
+    s.add_argument("--lang", choices=sorted(LANGS))
+    s.add_argument("--pattern")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(fn=cmd_session)
 
     s = sub.add_parser("studio", help="serve the learning studio + API on 127.0.0.1")
     s.add_argument("--port", type=int, default=8765)

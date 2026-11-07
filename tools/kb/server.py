@@ -7,7 +7,13 @@ GET  /api/problems/<subject>             all problems with topics + status (prob
 GET  /api/topic/<subject>/<topic>        topic page: prereqs/related, problems, resources, neighbourhood
 GET  /api/graph/<subject>                full knowledge graph (nodes + edges)
 GET  /api/feedback/<subject>             deterministic progress feedback
+GET  /api/sessions                       study sessions with derived completion / scores
+GET  /api/session/<id>                   one session (items, scores, attempt paths, materials)
 POST /api/quiz  {subject, topic, item, choice}  -> graded, appended to progress/quiz.jsonl
+POST /api/sessions  {subject, topics, difficulty, count, focus, goal, title, minutes}  -> new session
+POST /api/session/<id>/status   {status}           -> planned/active/done/abandoned
+POST /api/session/<id>/attempt  {item, lang}       -> new attempt linked to the item
+All writes go to the private workspace and only from the local studio (see local_request).
 Everything else is served from studio/dist (SPA fallback to index.html).
 """
 
@@ -21,8 +27,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from kb import feedback, history, learn, scaffold
-from kb.paths import ROOT, problems_dir
+from kb import feedback, history, learn, scaffold, sessions
+from kb.paths import ROOT, attempts_root, problems_dir
 from kb.schema import ProblemError
 
 DIST = ROOT / "studio" / "dist"
@@ -83,6 +89,25 @@ def problems_payload(subject: str) -> list[dict[str, Any]]:
     return out
 
 
+def session_payload(session: dict[str, Any]) -> dict[str, Any]:
+    """Evaluated session plus what the studio needs: attempt paths and material names."""
+    ev = sessions.evaluate(session)
+    for it in ev["items"]:
+        root = attempts_root(it["subject"], it["slug"])
+        it["attempt_paths"] = [str(root / a) for a in it.get("attempts", [])]
+    for m in ev["materials"]:
+        names = {t["id"]: t["name"] for t in learn.catalog(m["subject"])["topics"]}
+        m["name"] = names.get(m["topic"], m["topic"])
+        m["has_lesson"] = learn.has_lesson(m["subject"], m["topic"])
+    return ev
+
+
+def _str_list(v: Any) -> list[str]:
+    if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+        raise ValueError("expected a list of strings")
+    return v
+
+
 def problems_for(subject: str) -> Path:
     return problems_dir(subject)
 
@@ -126,6 +151,10 @@ class Handler(BaseHTTPRequestHandler):
             if parts[:2] == ["api", "feedback"] and len(parts) == 3:
                 learn.catalog(parts[2])  # validates the subject id
                 return self._json(feedback.compute(parts[2], problems_for(parts[2])))
+            if parts[:2] == ["api", "sessions"] and len(parts) == 2:
+                return self._json([session_payload(x) for x in sessions.all_sessions()])
+            if parts[:2] == ["api", "session"] and len(parts) == 3:
+                return self._json(session_payload(sessions.load(parts[2])))
             if parts and parts[0] == "api":
                 return self._error(HTTPStatus.NOT_FOUND, "unknown endpoint")
         except ProblemError as e:
@@ -133,7 +162,20 @@ class Handler(BaseHTTPRequestHandler):
         self._static(parts)
 
     def do_POST(self) -> None:  # noqa: N802 - http.server API
-        if urlparse(self.path).path != "/api/quiz":
+        parts = [p for p in urlparse(self.path).path.split("/") if p]
+        routes = {
+            ("api", "quiz"): self._post_quiz,
+            ("api", "sessions"): self._post_session,
+        }
+        handler = routes.get(tuple(parts))  # type: ignore[call-overload]
+        if (
+            handler is None
+            and parts[:2] == ["api", "session"]
+            and len(parts) == 4
+            and parts[3] in ("status", "attempt")
+        ):
+            handler = self._post_session_action
+        if handler is None:
             return self._error(HTTPStatus.NOT_FOUND, "unknown endpoint")
         if not local_request(self.headers):
             return self._error(HTTPStatus.FORBIDDEN, "writes are only accepted from the local studio")
@@ -142,16 +184,47 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(HTTPStatus.BAD_REQUEST, "bad body")
         try:
             body = json.loads(self.rfile.read(length))
-            subject, topic, item, choice = (str(body[k]) for k in ("subject", "topic", "item", "choice"))
+            if not isinstance(body, dict):
+                raise ValueError("expected an object")
+            return handler(parts, body)
+        except (KeyError, ValueError, TypeError) as e:
+            return self._error(HTTPStatus.BAD_REQUEST, f"bad request: {e}")
+        except ProblemError as e:
+            return self._error(HTTPStatus.UNPROCESSABLE_ENTITY, str(e))
+
+    def _post_quiz(self, parts: list[str], body: dict[str, Any]) -> None:
+        subject, topic, item, choice = (str(body[k]) for k in ("subject", "topic", "item", "choice"))
+        try:
             result = learn.grade_quiz(subject, topic, item, choice)
-        except (KeyError, ValueError, TypeError):
-            return self._error(HTTPStatus.BAD_REQUEST, "expected {subject, topic, item, choice}")
         except ProblemError as e:
             return self._error(HTTPStatus.NOT_FOUND, str(e))
         history.record_quiz(
             {"subject": subject, "topic": topic, "item": item, "choice": choice, "correct": result["correct"]}
         )
         self._json(result)
+
+    def _post_session(self, parts: list[str], body: dict[str, Any]) -> None:
+        minutes = body.get("minutes")
+        s = sessions.generate(
+            subject=str(body.get("subject", "algo")),
+            topics=_str_list(body.get("topics", [])),
+            difficulty=_str_list(body.get("difficulty", [])),
+            count=int(body.get("count", 5)),
+            focus=str(body.get("focus", "mixed")),
+            goal=(str(body["goal"]).strip() or None) if body.get("goal") else None,
+            title=(str(body["title"]).strip() or None) if body.get("title") else None,
+            minutes=int(minutes) if minutes else None,
+        )
+        sessions.save(s)
+        self._json(session_payload(s), HTTPStatus.CREATED)
+
+    def _post_session_action(self, parts: list[str], body: dict[str, Any]) -> None:
+        sid, action = parts[2], parts[3]
+        if action == "status":
+            sessions.set_status(sid, str(body["status"]))
+        else:
+            sessions.start_attempt(sid, str(body["item"]), str(body["lang"]), body.get("pattern") or None)
+        self._json(session_payload(sessions.load(sid)))
 
     def _static(self, parts: list[str]) -> None:
         if not DIST.is_dir():
