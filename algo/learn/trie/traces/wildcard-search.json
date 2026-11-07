@@ -19,7 +19,9 @@
   "                if key != \"$\" and match(child, i + 1):",
   "                    return True",
   "            return False",
-  "        return ch in node and match(node[ch], i + 1)",
+  "        if ch not in node:",
+  "            return False",
+  "        return match(node[ch], i + 1)",
   "",
   "    return match(root, 0)"
  ],
@@ -1125,7 +1127,7 @@
    }
   },
   {
-   "line": 18,
+   "line": 20,
    "note": "a normal letter — exactly one child to follow",
    "state": {
     "stack": {
@@ -1181,7 +1183,7 @@
    }
   },
   {
-   "line": 18,
+   "line": 20,
    "note": "a normal letter — exactly one child to follow",
    "state": {
     "stack": {
@@ -1362,7 +1364,7 @@
    }
   },
   {
-   "line": 20,
+   "line": 22,
    "note": null,
    "state": {
     "stack": {

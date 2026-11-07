@@ -57,6 +57,9 @@ structure and tone.
      - `intervals` — `lanes: {label: var}` (lists of [start, end]), `pointers: {label: index_var}`
        into the first lane.
      - `callstack` — no options; shows active frames of the traced function and nested helpers.
+   - Keep traced code portable across Python versions: one call per line, no `a and f(x)` /
+     `x or g()` short-circuits around calls on a `return` line (line events differ between
+     versions and the trace goes stale under `make test`).
    - Recursion and nested helpers (`def dfs(...)` inside the traced function) are traced; watched
      vars resolve in the current frame first, then the outer function (e.g. outer `visited`).
    - Typed inputs: `"types": {"head": "ListNode"}` converts JSON input (and `checks` inputs)

@@ -21,6 +21,8 @@ def wildcard_search(words: list[str], pattern: str) -> bool:
                 if key != "$" and match(child, i + 1):
                     return True  # note: wildcard — try every child, stop at the first that matches
             return False
-        return ch in node and match(node[ch], i + 1)  # note: a normal letter — exactly one child to follow
+        if ch not in node:
+            return False  # note: a normal letter with no child — dead end
+        return match(node[ch], i + 1)  # note: a normal letter — exactly one child to follow
 
     return match(root, 0)
