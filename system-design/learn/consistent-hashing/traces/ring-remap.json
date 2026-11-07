@@ -1,0 +1,4954 @@
+{
+ "version": 1,
+ "title": "Hash ring 0..99 — node D joins at 65",
+ "code": [
+  "def ring_remap(nodes: dict[str, int], key_pos: dict[str, int], new_node: str, new_pos: int) -> list[str]:",
+  "    ring = sorted(nodes.values())",
+  "    at = {pos: name for name, pos in nodes.items()}",
+  "    owner: dict[str, str] = {}",
+  "    for key in key_pos:",
+  "        idx = bisect_left(ring, key_pos[key]) % len(",
+  "            ring",
+  "        )",
+  "        owner[key] = at[ring[idx]]",
+  "    ring.insert(bisect_left(ring, new_pos), new_pos)",
+  "    at[new_pos] = new_node",
+  "    moved: list[str] = []",
+  "    for key in key_pos:",
+  "        idx = bisect_left(ring, key_pos[key]) % len(ring)",
+  "        new_owner = at[ring[idx]]",
+  "        if new_owner != owner[key]:",
+  "            moved.append(key)",
+  "            owner[key] = new_owner",
+  "    return moved"
+ ],
+ "view": [
+  {
+   "id": "ring",
+   "type": "array",
+   "var": "ring",
+   "label": "ring (node positions, clockwise)",
+   "pointers": {
+    "owner": "idx"
+   }
+  },
+  {
+   "id": "key_pos",
+   "type": "map",
+   "var": "key_pos",
+   "label": "key → position"
+  },
+  {
+   "id": "owner",
+   "type": "map",
+   "var": "owner",
+   "label": "owner (key → node)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "new_owner"
+   ]
+  },
+  {
+   "id": "moved",
+   "type": "array",
+   "var": "moved",
+   "label": "moved keys"
+  }
+ ],
+ "input": {
+  "nodes": {
+   "A": 20,
+   "B": 50,
+   "C": 85
+  },
+  "key_pos": {
+   "k1": 17,
+   "k2": 58,
+   "k3": 8,
+   "k4": 91,
+   "k5": 63,
+   "k6": 25,
+   "k7": 74,
+   "k8": 36
+  },
+  "new_node": "D",
+  "new_pos": 65
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "the ring — node positions sorted clockwise",
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": null
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": null
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "a new node joins the ring at its own position",
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_owner": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "only keys between the new node and its predecessor move — all to the new node",
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "C"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 0
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": "A"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "only keys between the new node and its predecessor move — all to the new node",
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "C"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 2
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_owner": "D"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_owner": "B"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_owner": "B"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 3
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_owner": "B"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 3
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_owner": "C"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 3
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": "C"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": "C"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": "B"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "ring": {
+     "values": [
+      20,
+      50,
+      65,
+      85
+     ],
+     "pointers": {
+      "owner": 1
+     },
+     "window": null
+    },
+    "key_pos": {
+     "entries": [
+      [
+       "k1",
+       17
+      ],
+      [
+       "k2",
+       58
+      ],
+      [
+       "k3",
+       8
+      ],
+      [
+       "k4",
+       91
+      ],
+      [
+       "k5",
+       63
+      ],
+      [
+       "k6",
+       25
+      ],
+      [
+       "k7",
+       74
+      ],
+      [
+       "k8",
+       36
+      ]
+     ]
+    },
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       "A"
+      ],
+      [
+       "k2",
+       "D"
+      ],
+      [
+       "k3",
+       "A"
+      ],
+      [
+       "k4",
+       "A"
+      ],
+      [
+       "k5",
+       "D"
+      ],
+      [
+       "k6",
+       "B"
+      ],
+      [
+       "k7",
+       "C"
+      ],
+      [
+       "k8",
+       "B"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_owner": "B"
+     }
+    },
+    "moved": {
+     "values": [
+      "k2",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  "k2",
+  "k5"
+ ]
+}

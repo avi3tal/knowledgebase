@@ -1,0 +1,3290 @@
+{
+ "version": 1,
+ "title": "Sliding window counter — limit 4 per 10 s",
+ "code": [
+  "def sliding_window_counter(times: list[int], limit: int, window: int) -> list[str]:",
+  "    cur_start, cur_count, prev_count = 0, 0, 0",
+  "    decisions: list[str] = []",
+  "    for i in range(len(times)):",
+  "        now = times[i]",
+  "        start = now - now % window",
+  "        if start != cur_start:",
+  "            prev_count = (",
+  "                cur_count if start == cur_start + window else 0",
+  "            )",
+  "            cur_start, cur_count = start, 0",
+  "        elapsed = now - cur_start",
+  "        estimate = (",
+  "            prev_count * (window - elapsed) / window + cur_count",
+  "        )",
+  "        if prev_count * (window - elapsed) + cur_count * window < limit * window:",
+  "            cur_count += 1",
+  "            decisions.append(\"allow\")",
+  "        else:",
+  "            decisions.append(\"reject\")",
+  "    return decisions"
+ ],
+ "view": [
+  {
+   "id": "times",
+   "type": "array",
+   "var": "times",
+   "label": "request times (s)",
+   "pointers": {
+    "req": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "now",
+    "cur_start",
+    "elapsed",
+    "prev_count",
+    "cur_count",
+    "estimate"
+   ]
+  },
+  {
+   "id": "decisions",
+   "type": "array",
+   "var": "decisions",
+   "label": "decisions"
+  }
+ ],
+ "input": {
+  "times": [
+   1,
+   2,
+   3,
+   4,
+   11,
+   12,
+   13,
+   15,
+   18,
+   19
+  ],
+  "limit": 4,
+  "window": 10
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "cur_start": 0,
+      "elapsed": null,
+      "prev_count": 0,
+      "cur_count": 0,
+      "estimate": null
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "cur_start": 0,
+      "elapsed": null,
+      "prev_count": 0,
+      "cur_count": 0,
+      "estimate": null
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": null,
+      "prev_count": 0,
+      "cur_count": 0,
+      "estimate": null
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": null,
+      "prev_count": 0,
+      "cur_count": 0,
+      "estimate": null
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 0,
+      "estimate": null
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 0,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 1,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 0.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 1,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 2,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 1.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 2,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 3,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 2.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 3,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 4,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 4,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 4,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 4,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 0,
+      "cur_count": 4,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 0,
+      "elapsed": 4,
+      "prev_count": 4,
+      "cur_count": 4,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 10,
+      "elapsed": 4,
+      "prev_count": 4,
+      "cur_count": 0,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 0,
+      "estimate": 3.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 0,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "cur_start": 10,
+      "elapsed": 1,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "cur_start": 10,
+      "elapsed": 2,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.6
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "cur_start": 10,
+      "elapsed": 2,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 4.2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": "estimate at the limit — reject; rejected requests are not counted",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "cur_start": 10,
+      "elapsed": 2,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 4.2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "cur_start": 10,
+      "elapsed": 2,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 4.2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 2,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 4.2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 2,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 4.2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 4.2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 1,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 13,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 15,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 15,
+      "cur_start": 10,
+      "elapsed": 3,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 15,
+      "cur_start": 10,
+      "elapsed": 5,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 3.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 15,
+      "cur_start": 10,
+      "elapsed": 5,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 4.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": "estimate at the limit — reject; rejected requests are not counted",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 15,
+      "cur_start": 10,
+      "elapsed": 5,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 4.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 15,
+      "cur_start": 10,
+      "elapsed": 5,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 4.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 5,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 4.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 5,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 4.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 4.0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 2,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 18,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "which fixed window does this request fall into?",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 8,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 9,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 2.8
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 9,
+      "prev_count": 4,
+      "cur_count": 3,
+      "estimate": 3.4
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "estimate below the limit — allow and count it",
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 9,
+      "prev_count": 4,
+      "cur_count": 4,
+      "estimate": 3.4
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 9,
+      "prev_count": 4,
+      "cur_count": 4,
+      "estimate": 3.4
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12,
+      13,
+      15,
+      18,
+      19
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 19,
+      "cur_start": 10,
+      "elapsed": 9,
+      "prev_count": 4,
+      "cur_count": 4,
+      "estimate": 3.4
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  "allow",
+  "allow",
+  "allow",
+  "allow",
+  "allow",
+  "reject",
+  "allow",
+  "reject",
+  "allow",
+  "allow"
+ ]
+}

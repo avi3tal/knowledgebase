@@ -1,0 +1,2888 @@
+{
+ "version": 1,
+ "title": "LRU cache of size 3 — hits, misses and evictions",
+ "code": [
+  "def lru_hits_misses(requests: list[str], capacity: int) -> list[int]:",
+  "    cache: dict[str, str] = {}",
+  "    order: list[str] = []  # least recently used first, most recent last",
+  "    hits, misses = 0, 0",
+  "    for i in range(len(requests)):",
+  "        key = requests[i]",
+  "        if key in cache:",
+  "            hits += 1",
+  "            order.remove(key)",
+  "            order.append(key)",
+  "            continue",
+  "        misses += 1",
+  "        if len(cache) == capacity:",
+  "            victim = order.pop(0)",
+  "            del cache[victim]",
+  "        cache[key] = \"row:\" + key",
+  "        order.append(key)",
+  "    return [hits, misses]"
+ ],
+ "view": [
+  {
+   "id": "requests",
+   "type": "array",
+   "var": "requests",
+   "label": "read stream",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "order",
+   "type": "array",
+   "var": "order",
+   "label": "order (LRU → MRU)"
+  },
+  {
+   "id": "cache",
+   "type": "map",
+   "var": "cache",
+   "label": "cache"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "hits",
+    "misses",
+    "victim"
+   ]
+  }
+ ],
+ "input": {
+  "requests": [
+   "a",
+   "b",
+   "a",
+   "c",
+   "d",
+   "a",
+   "b",
+   "c",
+   "a"
+  ],
+  "capacity": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "hits": null,
+      "misses": null,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "hits": 0,
+      "misses": 0,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "hits": 0,
+      "misses": 0,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 0,
+      "misses": 0,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "miss — read from the database (slow path)",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 0,
+      "misses": 1,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "fill the cache so the next read of this key is a hit",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "order": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 0,
+      "misses": 1,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 0,
+      "misses": 1,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 0,
+      "misses": 1,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 0,
+      "misses": 1,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "miss — read from the database (slow path)",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 0,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "fill the cache so the next read of this key is a hit",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 0,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 0,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 0,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 0,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "hit — served from memory, the database is not touched",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 1,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 1,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "move the key to the most-recent end",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 1,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 1,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 1,
+      "misses": 2,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "miss — read from the database (slow path)",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 1,
+      "misses": 3,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "fill the cache so the next read of this key is a hit",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 1,
+      "misses": 3,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 1,
+      "misses": 3,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 1,
+      "misses": 3,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 3,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "miss — read from the database (slow path)",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 4,
+      "victim": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "cache full — evict the least recently used key",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "fill the cache so the next read of this key is a hit",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "d",
+      "hits": 1,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 1,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "hit — served from memory, the database is not touched",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 2,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 2,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "move the key to the most-recent end",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "c",
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 2,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "c",
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 2,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "c",
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 4,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "miss — read from the database (slow path)",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "c",
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 5,
+      "victim": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "cache full — evict the least recently used key",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "c",
+       "row:c"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 5,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 5,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "fill the cache so the next read of this key is a hit",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 5,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 5,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "hits": 2,
+      "misses": 5,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 5,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "miss — read from the database (slow path)",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "d",
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 6,
+      "victim": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "cache full — evict the least recently used key",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "d",
+       "row:d"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "fill the cache so the next read of this key is a hit",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "c",
+      "hits": 2,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 2,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "hit — served from memory, the database is not touched",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "a",
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 3,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 3,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "move the key to the most-recent end",
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 3,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "c",
+      "d",
+      "a",
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "order": {
+     "values": [
+      "b",
+      "c",
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       "row:a"
+      ],
+      [
+       "b",
+       "row:b"
+      ],
+      [
+       "c",
+       "row:c"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "hits": 3,
+      "misses": 6,
+      "victim": "d"
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  3,
+  6
+ ]
+}

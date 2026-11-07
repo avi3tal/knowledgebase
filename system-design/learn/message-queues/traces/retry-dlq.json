@@ -1,0 +1,1148 @@
+{
+ "version": 1,
+ "title": "Retries and a dead-letter queue — max 3 attempts",
+ "code": [
+  "def retry_dlq(messages: list[str], fails: dict[str, int], max_attempts: int) -> dict[str, list[str]]:",
+  "    queue = list(messages)",
+  "    attempts: dict[str, int] = {}",
+  "    done: list[str] = []",
+  "    dlq: list[str] = []",
+  "    while queue:",
+  "        msg = queue.pop(0)",
+  "        attempts[msg] = attempts.get(msg, 0) + 1",
+  "        if attempts[msg] > fails.get(msg, 0):",
+  "            done.append(msg)",
+  "        elif attempts[msg] >= max_attempts:",
+  "            dlq.append(msg)",
+  "        else:",
+  "            queue.append(msg)",
+  "    return {\"done\": done, \"dlq\": dlq}"
+ ],
+ "view": [
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue",
+   "label": "queue"
+  },
+  {
+   "id": "attempts",
+   "type": "map",
+   "var": "attempts",
+   "label": "delivery attempts"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "msg"
+   ]
+  },
+  {
+   "id": "done",
+   "type": "array",
+   "var": "done",
+   "label": "acked"
+  },
+  {
+   "id": "dlq",
+   "type": "array",
+   "var": "dlq",
+   "label": "dead-letter queue"
+  }
+ ],
+ "input": {
+  "messages": [
+   "a",
+   "b",
+   "c",
+   "d"
+  ],
+  "fails": {
+   "b": 1,
+   "d": 9
+  },
+  "max_attempts": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [
+      "a",
+      "b",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": null
+     }
+    },
+    "done": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [
+      "b",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": "a"
+     }
+    },
+    "done": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [
+      "b",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "a"
+     }
+    },
+    "done": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "handler succeeded — ack, and the broker deletes the message",
+   "state": {
+    "queue": {
+     "values": [
+      "b",
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "a"
+     }
+    },
+    "done": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "b"
+     }
+    },
+    "done": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [
+      "c",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "b"
+     }
+    },
+    "done": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "handler failed — no ack, so the message is redelivered later (at-least-once)",
+   "state": {
+    "queue": {
+     "values": [
+      "c",
+      "d",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "b"
+     }
+    },
+    "done": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [
+      "d",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "c"
+     }
+    },
+    "done": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [
+      "d",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "c"
+     }
+    },
+    "done": {
+     "values": [
+      "a"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "handler succeeded — ack, and the broker deletes the message",
+   "state": {
+    "queue": {
+     "values": [
+      "d",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "c"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "handler failed — no ack, so the message is redelivered later (at-least-once)",
+   "state": {
+    "queue": {
+     "values": [
+      "b",
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "b"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "b"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "handler succeeded — ack, and the broker deletes the message",
+   "state": {
+    "queue": {
+     "values": [
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "b"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "handler failed — no ack, so the message is redelivered later (at-least-once)",
+   "state": {
+    "queue": {
+     "values": [
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "deliver the next message; it is not acknowledged yet",
+   "state": {
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "still failing after max attempts — park it in the DLQ so it stops blocking others",
+   "state": {
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "attempts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ],
+      [
+       "d",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "d"
+     }
+    },
+    "done": {
+     "values": [
+      "a",
+      "c",
+      "b"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "dlq": {
+     "values": [
+      "d"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": {
+  "done": [
+   "a",
+   "c",
+   "b"
+  ],
+  "dlq": [
+   "d"
+  ]
+ }
+}

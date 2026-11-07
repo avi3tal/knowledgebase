@@ -1,0 +1,249 @@
+{
+ "version": 1,
+ "subject": "system-design",
+ "topic": "sharding",
+ "title": "Sharding and Partitioning",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "range-partition",
+   "title": "Range partitioning by date — boundaries 2026-05, 2026-09",
+   "source": "examples/partition.py",
+   "function": "partition",
+   "input": {
+    "keys": [
+     "2026-01-15",
+     "2026-03-02",
+     "2026-06-20",
+     "2026-11-01",
+     "2026-11-02",
+     "2026-11-03",
+     "2026-11-04",
+     "2026-11-05",
+     "2026-11-06"
+    ],
+    "mode": "range",
+    "shards": 3,
+    "boundaries": [
+     "2026-05",
+     "2026-09"
+    ]
+   },
+   "view": [
+    {
+     "id": "keys",
+     "type": "array",
+     "var": "keys",
+     "label": "order dates (keys)",
+     "pointers": {
+      "key": "i"
+     }
+    },
+    {
+     "id": "placement",
+     "type": "map",
+     "var": "placement",
+     "label": "placement (key → shard)"
+    },
+    {
+     "id": "counts",
+     "type": "array",
+     "var": "counts",
+     "label": "keys per shard",
+     "pointers": {
+      "shard": "shard"
+     }
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "keys": [
+       "2026-01-15",
+       "2026-03-02",
+       "2026-06-20",
+       "2026-11-01",
+       "2026-11-02",
+       "2026-11-03",
+       "2026-11-04",
+       "2026-11-05",
+       "2026-11-06"
+      ],
+      "mode": "range",
+      "shards": 3,
+      "boundaries": [
+       "2026-05",
+       "2026-09"
+      ]
+     },
+     "expected": [
+      2,
+      1,
+      6
+     ]
+    },
+    {
+     "input": {
+      "keys": [
+       "a",
+       "m",
+       "z"
+      ],
+      "mode": "range",
+      "shards": 3,
+      "boundaries": [
+       "h",
+       "p"
+      ]
+     },
+     "expected": [
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "input": {
+      "keys": [
+       "b",
+       "c"
+      ],
+      "mode": "range",
+      "shards": 2,
+      "boundaries": [
+       "m"
+      ]
+     },
+     "expected": [
+      2,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "type": "trace",
+   "id": "hash-partition",
+   "title": "Hash partitioning — crc32(key) % 3",
+   "source": "examples/partition.py",
+   "function": "partition",
+   "input": {
+    "keys": [
+     "2026-01-15",
+     "2026-03-02",
+     "2026-06-20",
+     "2026-11-01",
+     "2026-11-02",
+     "2026-11-03",
+     "2026-11-04",
+     "2026-11-05",
+     "2026-11-06"
+    ],
+    "mode": "hash",
+    "shards": 3,
+    "boundaries": [
+     "2026-05",
+     "2026-09"
+    ]
+   },
+   "view": [
+    {
+     "id": "keys",
+     "type": "array",
+     "var": "keys",
+     "label": "order dates (keys)",
+     "pointers": {
+      "key": "i"
+     }
+    },
+    {
+     "id": "placement",
+     "type": "map",
+     "var": "placement",
+     "label": "placement (key → shard)"
+    },
+    {
+     "id": "counts",
+     "type": "array",
+     "var": "counts",
+     "label": "keys per shard",
+     "pointers": {
+      "shard": "shard"
+     }
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "keys": [
+       "2026-01-15",
+       "2026-03-02",
+       "2026-06-20",
+       "2026-11-01",
+       "2026-11-02",
+       "2026-11-03",
+       "2026-11-04",
+       "2026-11-05",
+       "2026-11-06"
+      ],
+      "mode": "hash",
+      "shards": 3,
+      "boundaries": [
+       "2026-05",
+       "2026-09"
+      ]
+     },
+     "expected": [
+      4,
+      3,
+      2
+     ]
+    },
+    {
+     "input": {
+      "keys": [
+       "x"
+      ],
+      "mode": "hash",
+      "shards": 4,
+      "boundaries": []
+     },
+     "expected": [
+      0,
+      0,
+      0,
+      1
+     ]
+    },
+    {
+     "input": {
+      "keys": [],
+      "mode": "hash",
+      "shards": 2,
+      "boundaries": []
+     },
+     "expected": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-compare.md"
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  }
+ ]
+}

@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "A metrics service stores 80 TB and ingests 300 000 writes/s; one database node handles about 20 000 writes/s.",
+   "options": [
+    "sharding",
+    "replication",
+    "caching"
+   ],
+   "answer": "sharding",
+   "why": "Both write throughput and data size exceed one node → split the data. Replicas would each still take all 300k writes."
+  },
+  {
+   "id": "q2",
+   "prompt": "A blog platform's database is fine on writes, but reads have grown 10× and the primary's CPU is saturated by varied queries.",
+   "options": [
+    "replication",
+    "sharding",
+    "message-queues"
+   ],
+   "answer": "replication",
+   "why": "The problem is read-only load of varied queries → add read replicas. Writes and size are fine, so sharding isn't needed yet."
+  },
+  {
+   "id": "q3",
+   "prompt": "Orders are partitioned by created_at ranges per month; every write goes to the newest partition and that node is overloaded.",
+   "options": [
+    "sharding",
+    "caching",
+    "load-balancing"
+   ],
+   "answer": "sharding",
+   "why": "A hot last shard from a monotonically increasing range key is a shard-key problem → hash the key or use a compound key."
+  },
+  {
+   "id": "q4",
+   "prompt": "Your cache tier uses hash % N across nodes, and adding one node empties most of the cache.",
+   "options": [
+    "consistent-hashing",
+    "sharding",
+    "replication"
+   ],
+   "answer": "consistent-hashing",
+   "why": "The split already exists. The problem is placement remapping when N changes → consistent hashing (or fixed slots)."
+  },
+  {
+   "id": "q5",
+   "prompt": "A chat app stores billions of messages, and almost every query is 'latest messages of conversation X'.",
+   "options": [
+    "sharding",
+    "search-indexing",
+    "caching"
+   ],
+   "answer": "sharding",
+   "why": "Huge data with a natural partition key that every hot query includes → shard by conversation_id."
+  },
+  {
+   "id": "q6",
+   "prompt": "At 9am a flood of signup writes spikes for 2 minutes, then the database is idle again; average load is low.",
+   "options": [
+    "message-queues",
+    "sharding",
+    "replication"
+   ],
+   "answer": "message-queues",
+   "why": "A short burst over a low average → buffer it with a queue. Sharding is for sustained load beyond one node."
+  },
+  {
+   "id": "q7",
+   "prompt": "In a multi-tenant SaaS sharded by tenant_id, one enterprise customer generates 40% of all traffic and overloads its shard; they pay for that volume, so throttling them is not an option.",
+   "options": [
+    "sharding",
+    "load-balancing",
+    "rate-limiting"
+   ],
+   "answer": "sharding",
+   "why": "A hot partition from a skewed key, and limiting is ruled out → split that tenant further (salted sub-keys or a dedicated shard). That's a partitioning fix."
+  }
+ ]
+}

@@ -1,0 +1,1929 @@
+{
+ "version": 1,
+ "title": "Token bucket — capacity 3, refill 1 token/s",
+ "code": [
+  "def token_bucket(times: list[int], capacity: int, refill_per_sec: int) -> list[str]:",
+  "    tokens = capacity",
+  "    last = times[0] if times else 0",
+  "    decisions: list[str] = []",
+  "    for i in range(len(times)):",
+  "        now = times[i]",
+  "        tokens = min(",
+  "            capacity, tokens + (now - last) * refill_per_sec",
+  "        )",
+  "        last = now",
+  "        if tokens >= 1:",
+  "            tokens -= 1",
+  "            decisions.append(\"allow\")",
+  "        else:",
+  "            decisions.append(\"reject\")",
+  "    return decisions"
+ ],
+ "view": [
+  {
+   "id": "times",
+   "type": "array",
+   "var": "times",
+   "label": "request times (s)",
+   "pointers": {
+    "req": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "now",
+    "last",
+    "tokens"
+   ]
+  },
+  {
+   "id": "decisions",
+   "type": "array",
+   "var": "decisions",
+   "label": "decisions"
+  }
+ ],
+ "input": {
+  "times": [
+   0,
+   0,
+   0,
+   0,
+   1,
+   1,
+   2,
+   5,
+   5,
+   5,
+   5
+  ],
+  "capacity": 3,
+  "refill_per_sec": 1
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "start full, so a fresh client may burst up to `capacity` requests",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "last": null,
+      "tokens": 3
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "last": 0,
+      "tokens": 3
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "last": 0,
+      "tokens": 3
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 3
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 2
+     }
+    },
+    "decisions": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "bucket empty — reject (HTTP 429) until it refills",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "last": 0,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 0,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 0,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 1,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 1,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 1,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 1,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "bucket empty — reject (HTTP 429) until it refills",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 1,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "last": 1,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "last": 1,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "last": 1,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "last": 2,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "last": 2,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "last": 2,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "last": 2,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 2,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 2,
+      "tokens": 3
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 3
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 2
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 1
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a token is available — spend it and let the request through",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow",
+      "allow"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "bucket empty — reject (HTTP 429) until it refills",
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "times": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      5,
+      5
+     ],
+     "pointers": {
+      "req": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "now": 5,
+      "last": 5,
+      "tokens": 0
+     }
+    },
+    "decisions": {
+     "values": [
+      "allow",
+      "allow",
+      "allow",
+      "reject",
+      "allow",
+      "reject",
+      "allow",
+      "allow",
+      "allow",
+      "allow",
+      "reject"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  "allow",
+  "allow",
+  "allow",
+  "reject",
+  "allow",
+  "reject",
+  "allow",
+  "allow",
+  "allow",
+  "allow",
+  "reject"
+ ]
+}

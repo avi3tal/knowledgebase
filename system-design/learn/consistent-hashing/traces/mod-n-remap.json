@@ -1,0 +1,2214 @@
+{
+ "version": 1,
+ "title": "Naive hash % N — 3 servers become 4",
+ "code": [
+  "def mod_n_remap(key_hashes: dict[str, int], n_before: int, n_after: int) -> list[str]:",
+  "    owner: dict[str, int] = {}",
+  "    for key in key_hashes:",
+  "        owner[key] = key_hashes[key] % n_before",
+  "    moved: list[str] = []",
+  "    for key in key_hashes:",
+  "        new_server = key_hashes[key] % n_after",
+  "        if new_server != owner[key]:",
+  "            moved.append(key)",
+  "        owner[key] = new_server",
+  "    return moved"
+ ],
+ "view": [
+  {
+   "id": "owner",
+   "type": "map",
+   "var": "owner",
+   "label": "owner (key → server)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "new_server"
+   ]
+  },
+  {
+   "id": "moved",
+   "type": "array",
+   "var": "moved",
+   "label": "moved keys"
+  }
+ ],
+ "input": {
+  "key_hashes": {
+   "k1": 17,
+   "k2": 58,
+   "k3": 8,
+   "k4": 91,
+   "k5": 63,
+   "k6": 25,
+   "k7": 74,
+   "k8": 36
+  },
+  "n_before": 3,
+  "n_after": 4
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "place every key on server hash % N",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_server": null
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_server": 1
+     }
+    },
+    "moved": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "different server — this key must be migrated (or is a cache miss)",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       2
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_server": 1
+     }
+    },
+    "moved": {
+     "values": [
+      "k1"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "new_server": 1
+     }
+    },
+    "moved": {
+     "values": [
+      "k1"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_server": 1
+     }
+    },
+    "moved": {
+     "values": [
+      "k1"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_server": 2
+     }
+    },
+    "moved": {
+     "values": [
+      "k1"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "different server — this key must be migrated (or is a cache miss)",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       1
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_server": 2
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "new_server": 2
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_server": 2
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_server": 0
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "different server — this key must be migrated (or is a cache miss)",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       2
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_server": 0
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "new_server": 0
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_server": 0
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "different server — this key must be migrated (or is a cache miss)",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       1
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k4",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "different server — this key must be migrated (or is a cache miss)",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       0
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k5",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_server": 3
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k6",
+      "new_server": 1
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_server": 1
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k7",
+      "new_server": 2
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_server": 2
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one server added — recompute hash % (N+1) for every key",
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_server": 0
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "owner": {
+     "entries": [
+      [
+       "k1",
+       1
+      ],
+      [
+       "k2",
+       2
+      ],
+      [
+       "k3",
+       0
+      ],
+      [
+       "k4",
+       3
+      ],
+      [
+       "k5",
+       3
+      ],
+      [
+       "k6",
+       1
+      ],
+      [
+       "k7",
+       2
+      ],
+      [
+       "k8",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "k8",
+      "new_server": 0
+     }
+    },
+    "moved": {
+     "values": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  "k1",
+  "k2",
+  "k3",
+  "k4",
+  "k5"
+ ]
+}

@@ -1,0 +1,2809 @@
+{
+ "version": 1,
+ "title": "Round robin — 3 servers, every third request is slow",
+ "code": [
+  "def balance(durations: list[int], servers: int, strategy: str) -> dict[str, object]:",
+  "    active = [0] * servers  # open connections per server",
+  "    ends: list[list[int]] = []  # [finish_time, server] of open requests",
+  "    assigned: list[int] = []",
+  "    peak = 0",
+  "    for i in range(len(durations)):",
+  "        for job in [j for j in ends if j[0] <= i]:",
+  "            active[job[1]] -= 1",
+  "            ends.remove(job)",
+  "        if strategy == \"round-robin\":",
+  "            target = i % servers",
+  "        else:",
+  "            target = active.index(",
+  "                min(active)",
+  "            )",
+  "        active[target] += 1",
+  "        ends.append([i + durations[i], target])",
+  "        assigned.append(target)",
+  "        peak = max(peak, active[target])",
+  "    return {\"assigned\": assigned, \"peak\": peak}"
+ ],
+ "view": [
+  {
+   "id": "durations",
+   "type": "array",
+   "var": "durations",
+   "label": "request durations (one arrives per tick)",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "active",
+   "type": "array",
+   "var": "active",
+   "label": "active connections per server",
+   "pointers": {
+    "target": "target"
+   }
+  },
+  {
+   "id": "assigned",
+   "type": "array",
+   "var": "assigned",
+   "label": "server chosen per request"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "target",
+    "peak"
+   ]
+  }
+ ],
+ "input": {
+  "durations": [
+   8,
+   1,
+   1,
+   8,
+   1,
+   1,
+   8,
+   1,
+   1
+  ],
+  "servers": 3,
+  "strategy": "round-robin"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": null
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": null,
+      "peak": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": null
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": null,
+      "peak": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": null
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": null,
+      "peak": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a request finished — its server frees a connection",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a request finished — its server frees a connection",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a request finished — its server frees a connection",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a request finished — its server frees a connection",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 0
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 0,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      3,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a request finished — its server frees a connection",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      1,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a request finished — its server frees a connection",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 1
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 1,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "round robin — next server in turn, ignoring how busy it is",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "track the worst pile-up on any single server",
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "durations": {
+     "values": [
+      8,
+      1,
+      1,
+      8,
+      1,
+      1,
+      8,
+      1,
+      1
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "active": {
+     "values": [
+      2,
+      0,
+      1
+     ],
+     "pointers": {
+      "target": 2
+     },
+     "window": null
+    },
+    "assigned": {
+     "values": [
+      0,
+      1,
+      2,
+      0,
+      1,
+      2,
+      0,
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 2,
+      "peak": 3
+     }
+    }
+   }
+  }
+ ],
+ "result": {
+  "assigned": [
+   0,
+   1,
+   2,
+   0,
+   1,
+   2,
+   0,
+   1,
+   2
+  ],
+  "peak": 3
+ }
+}

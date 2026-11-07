@@ -1,0 +1,1168 @@
+{
+ "version": 1,
+ "title": "Cache-aside without invalidation — counting stale reads",
+ "code": [
+  "def cache_aside(db: dict[str, int], ops: list[str], invalidate: bool) -> int:",
+  "    db = dict(db)  # work on a copy so the input is left unchanged",
+  "    cache: dict[str, int] = {}",
+  "    stale = 0",
+  "    for i in range(len(ops)):",
+  "        kind, rest = ops[i].split(\":\")",
+  "        if kind == \"w\":",
+  "            key, value = rest.split(\"=\")",
+  "            db[key] = int(value)",
+  "            if invalidate:",
+  "                cache.pop(key, None)",
+  "            continue",
+  "        key = rest",
+  "        if key not in cache:",
+  "            cache[key] = db[key]",
+  "        answer = cache[key]",
+  "        if answer != db[key]:",
+  "            stale += 1",
+  "    return stale"
+ ],
+ "view": [
+  {
+   "id": "ops",
+   "type": "array",
+   "var": "ops",
+   "label": "operations",
+   "pointers": {
+    "op": "i"
+   }
+  },
+  {
+   "id": "db",
+   "type": "map",
+   "var": "db",
+   "label": "database"
+  },
+  {
+   "id": "cache",
+   "type": "map",
+   "var": "cache",
+   "label": "cache"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "answer",
+    "stale"
+   ]
+  }
+ ],
+ "input": {
+  "db": {
+   "a": 1,
+   "b": 1
+  },
+  "ops": [
+   "r:a",
+   "r:b",
+   "w:a=2",
+   "r:a",
+   "r:a",
+   "w:b=5",
+   "r:b"
+  ],
+  "invalidate": false
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "answer": null,
+      "stale": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "answer": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "answer": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "miss — load from the database and populate the cache",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "miss — load from the database and populate the cache",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "writes go to the database, the source of truth",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "stale read — the cache still holds the value from before the write",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "stale read — the cache still holds the value from before the write",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "a",
+      "answer": 1,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "writes go to the database, the source of truth",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       5
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       5
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "stale read — the cache still holds the value from before the write",
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       5
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "r:a",
+      "r:b",
+      "w:a=2",
+      "r:a",
+      "r:a",
+      "w:b=5",
+      "r:b"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "db": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       5
+      ]
+     ]
+    },
+    "cache": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "key": "b",
+      "answer": 1,
+      "stale": 3
+     }
+    }
+   }
+  }
+ ],
+ "result": 3
+}

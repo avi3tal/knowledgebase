@@ -1,0 +1,385 @@
+{
+ "version": 1,
+ "title": "Estimating a photo-sharing app, step by step",
+ "code": [
+  "def photo_app_estimate(",
+  "    dau: int, users_per_upload: int, views_per_user: int, photo_kb: int, years: int, replicas: int, peak_factor: int",
+  ") -> dict[str, int]:",
+  "    uploads_per_day = dau // users_per_upload",
+  "    write_qps = round(uploads_per_day / SECONDS_PER_DAY)",
+  "    views_per_day = (",
+  "        dau * views_per_user",
+  "    )",
+  "    read_qps = round(views_per_day / SECONDS_PER_DAY)",
+  "    read_write_ratio = (",
+  "        read_qps // write_qps",
+  "    )",
+  "    peak_read_qps = read_qps * peak_factor",
+  "    storage_gb_per_day = (",
+  "        uploads_per_day * photo_kb // 1_000_000",
+  "    )",
+  "    storage_tb_total = (",
+  "        storage_gb_per_day * 365 * years * replicas // 1_000",
+  "    )",
+  "    egress_gbps = round(",
+  "        read_qps * photo_kb * 8 / 1_000_000",
+  "    )",
+  "    return {",
+  "        \"write_qps\": write_qps,",
+  "        \"peak_read_qps\": peak_read_qps,",
+  "        \"read_write_ratio\": read_write_ratio,",
+  "        \"storage_tb_total\": storage_tb_total,",
+  "        \"egress_gbps\": egress_gbps,",
+  "    }"
+ ],
+ "view": [
+  {
+   "id": "assumptions",
+   "type": "vars",
+   "label": "assumptions",
+   "vars": [
+    "dau",
+    "users_per_upload",
+    "views_per_user",
+    "photo_kb",
+    "years",
+    "replicas",
+    "peak_factor"
+   ]
+  },
+  {
+   "id": "estimates",
+   "type": "vars",
+   "label": "estimates",
+   "vars": [
+    "uploads_per_day",
+    "write_qps",
+    "views_per_day",
+    "read_qps",
+    "read_write_ratio",
+    "peak_read_qps",
+    "storage_gb_per_day",
+    "storage_tb_total",
+    "egress_gbps"
+   ]
+  }
+ ],
+ "input": {
+  "dau": 10000000,
+  "users_per_upload": 5,
+  "views_per_user": 50,
+  "photo_kb": 500,
+  "years": 5,
+  "replicas": 3,
+  "peak_factor": 3
+ },
+ "steps": [
+  {
+   "line": 4,
+   "note": "assumption → volume: 1 in N daily users posts one photo a day",
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": null,
+      "views_per_day": null,
+      "read_qps": null,
+      "read_write_ratio": null,
+      "peak_read_qps": null,
+      "storage_gb_per_day": null,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "per day → per second: divide by ~1e5 (86 400 s)",
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": null,
+      "read_qps": null,
+      "read_write_ratio": null,
+      "peak_read_qps": null,
+      "storage_gb_per_day": null,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": null,
+      "read_write_ratio": null,
+      "peak_read_qps": null,
+      "storage_gb_per_day": null,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": null,
+      "peak_read_qps": null,
+      "storage_gb_per_day": null,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": 251,
+      "peak_read_qps": null,
+      "storage_gb_per_day": null,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "design for the peak, not the average (evening spike ≈ 2–3× average)",
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": 251,
+      "peak_read_qps": 17361,
+      "storage_gb_per_day": null,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": 251,
+      "peak_read_qps": 17361,
+      "storage_gb_per_day": 1000,
+      "storage_tb_total": null,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": 251,
+      "peak_read_qps": 17361,
+      "storage_gb_per_day": 1000,
+      "storage_tb_total": 5475,
+      "egress_gbps": null
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": 251,
+      "peak_read_qps": 17361,
+      "storage_gb_per_day": 1000,
+      "storage_tb_total": 5475,
+      "egress_gbps": 23
+     }
+    }
+   }
+  },
+  {
+   "line": 23,
+   "note": null,
+   "state": {
+    "assumptions": {
+     "values": {
+      "dau": 10000000,
+      "users_per_upload": 5,
+      "views_per_user": 50,
+      "photo_kb": 500,
+      "years": 5,
+      "replicas": 3,
+      "peak_factor": 3
+     }
+    },
+    "estimates": {
+     "values": {
+      "uploads_per_day": 2000000,
+      "write_qps": 23,
+      "views_per_day": 500000000,
+      "read_qps": 5787,
+      "read_write_ratio": 251,
+      "peak_read_qps": 17361,
+      "storage_gb_per_day": 1000,
+      "storage_tb_total": 5475,
+      "egress_gbps": 23
+     }
+    }
+   }
+  }
+ ],
+ "result": {
+  "write_qps": 23,
+  "peak_read_qps": 17361,
+  "read_write_ratio": 251,
+  "storage_tb_total": 5475,
+  "egress_gbps": 23
+ }
+}

@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "The interviewer says: 200 M daily users, each sends 40 messages a day, kept forever. You're about to choose the message store.",
+   "options": [
+    "back-of-envelope",
+    "sd-framework",
+    "latency-throughput"
+   ],
+   "answer": "back-of-envelope",
+   "why": "Concrete volumes before a storage decision → turn them into writes/s and TB/year first. The store choice depends on those numbers."
+  },
+  {
+   "id": "q2",
+   "prompt": "Product asks for 'p99 checkout latency under 300 ms and 99.95% availability' and wants to know what that allows per dependency.",
+   "options": [
+    "latency-throughput",
+    "back-of-envelope",
+    "caching"
+   ],
+   "answer": "latency-throughput",
+   "why": "Percentile targets, nines and latency budgets along a call path are the latency/throughput/availability topic, not load sizing."
+  },
+  {
+   "id": "q3",
+   "prompt": "Your estimate shows about 20 Gbps of outbound image traffic, mostly the same popular images.",
+   "options": [
+    "cdn",
+    "load-balancing",
+    "sharding"
+   ],
+   "answer": "cdn",
+   "why": "Huge static egress repeated across users → push it to the edge with a CDN. Adding servers or shards would just move the bandwidth bill."
+  },
+  {
+   "id": "q4",
+   "prompt": "Your estimate: 150 000 writes/s sustained and 400 TB of rows after a year.",
+   "options": [
+    "sharding",
+    "caching",
+    "replication"
+   ],
+   "answer": "sharding",
+   "why": "Sustained writes and size beyond one node → partition the data. Caches and replicas don't add write capacity."
+  },
+  {
+   "id": "q5",
+   "prompt": "DAU is 8 M, each user views 300 items a day and edits about 1 a day; the team wants to know whether a cache is worth adding.",
+   "options": [
+    "back-of-envelope",
+    "caching",
+    "sharding"
+   ],
+   "answer": "back-of-envelope",
+   "why": "Nobody has turned the numbers into a read/write ratio and QPS yet (≈ 28k reads/s vs ≈ 90 writes/s). Estimate first, and the caching decision follows from it."
+  },
+  {
+   "id": "q6",
+   "prompt": "The interview just started with 'design a ride-sharing app' and you're unsure which features matter.",
+   "options": [
+    "sd-framework",
+    "back-of-envelope",
+    "api-design"
+   ],
+   "answer": "sd-framework",
+   "why": "Before any numbers you need scope: functional and non-functional requirements. That's step one of the framework, and estimates come after."
+  },
+  {
+   "id": "q7",
+   "prompt": "You must decide whether a user's last 1 000 notifications for all 50 M users fit in memory on a few cache nodes.",
+   "options": [
+    "back-of-envelope",
+    "caching",
+    "databases-sql-nosql"
+   ],
+   "answer": "back-of-envelope",
+   "why": "'Does it fit?' is a sizing question: 50 M × 1 000 × ~200 B ≈ 10 TB, which settles it before you pick a tool."
+  }
+ ]
+}

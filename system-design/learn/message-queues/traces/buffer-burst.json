@@ -1,0 +1,952 @@
+{
+ "version": 1,
+ "title": "Load levelling — a burst drained at 2 messages per tick",
+ "code": [
+  "def buffer_burst(arrivals: list[int], rate: int) -> list[int]:",
+  "    queue: list[str] = []",
+  "    next_id, max_depth, tick = 1, 0, 0",
+  "    while tick < len(arrivals) or queue:",
+  "        incoming = arrivals[tick] if tick < len(arrivals) else 0",
+  "        for _ in range(incoming):",
+  "            queue.append(",
+  "                \"m\" + str(next_id)",
+  "            )",
+  "            next_id += 1",
+  "        max_depth = max(",
+  "            max_depth, len(queue)",
+  "        )",
+  "        for _ in range(min(rate, len(queue))):",
+  "            queue.pop(0)",
+  "        tick += 1",
+  "    return [max_depth, tick]"
+ ],
+ "view": [
+  {
+   "id": "arrivals",
+   "type": "array",
+   "var": "arrivals",
+   "label": "messages published per tick",
+   "pointers": {
+    "tick": "tick"
+   }
+  },
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue",
+   "label": "queue (oldest first)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "tick",
+    "max_depth"
+   ]
+  }
+ ],
+ "input": {
+  "arrivals": [
+   6,
+   0,
+   0,
+   3,
+   0
+  ],
+  "rate": 2
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": null
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": null,
+      "max_depth": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1",
+      "m2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1",
+      "m2",
+      "m3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1",
+      "m2",
+      "m3",
+      "m4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "m5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m2",
+      "m3",
+      "m4",
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m3",
+      "m4",
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m3",
+      "m4",
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m4",
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m5",
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 2,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 2,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 2,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m7",
+      "m8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m7",
+      "m8",
+      "m9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m8",
+      "m9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 4
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "m9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 4,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "consumer takes the oldest message at its own steady pace",
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 4
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 4,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 5
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 5,
+      "max_depth": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      6,
+      0,
+      0,
+      3,
+      0
+     ],
+     "pointers": {
+      "tick": 5
+     },
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 5,
+      "max_depth": 6
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  6,
+  5
+ ]
+}

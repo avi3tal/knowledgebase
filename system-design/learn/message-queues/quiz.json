@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "After a user uploads a photo, three thumbnails must be generated and followers notified; the upload request must return in under 200 ms.",
+   "options": [
+    "message-queues",
+    "load-balancing",
+    "caching"
+   ],
+   "answer": "message-queues",
+   "why": "Work the user doesn't wait for, plus fan-out to several actions → publish an event and let workers process it asynchronously."
+  },
+  {
+   "id": "q2",
+   "prompt": "Clickstream events must feed a real-time dashboard computing per-minute counts per page, with late events handled correctly.",
+   "options": [
+    "stream-processing",
+    "message-queues",
+    "caching"
+   ],
+   "answer": "stream-processing",
+   "why": "Windowed aggregation over events in motion is stream processing. The log only transports the events."
+  },
+  {
+   "id": "q3",
+   "prompt": "An order service must call payment, inventory and shipping; teams argue whether these should be REST calls or events, and how to roll back a failed step.",
+   "options": [
+    "microservices",
+    "message-queues",
+    "load-balancing"
+   ],
+   "answer": "microservices",
+   "why": "The question is service-to-service communication style and cross-service workflows (sagas) → the microservices topic. A queue is only one ingredient."
+  },
+  {
+   "id": "q4",
+   "prompt": "Black-Friday checkouts create 50× the normal number of fulfilment jobs for an hour; the warehouse system can only take a steady rate.",
+   "options": [
+    "message-queues",
+    "rate-limiting",
+    "sharding"
+   ],
+   "answer": "message-queues",
+   "why": "Every job must eventually be processed, and the burst exceeds a fixed consumer capacity → buffer in a queue (load levelling). Rejecting orders is unacceptable."
+  },
+  {
+   "id": "q5",
+   "prompt": "A webhook consumer occasionally crashes after charging a card but before acknowledging the message, so customers get charged twice.",
+   "options": [
+    "message-queues",
+    "caching",
+    "replication"
+   ],
+   "answer": "message-queues",
+   "why": "Duplicate processing from at-least-once redelivery → make the consumer idempotent (dedupe by message id). That's a delivery-semantics fix."
+  },
+  {
+   "id": "q6",
+   "prompt": "The home page must show each user's top 10 search suggestions within 50 ms; the suggestions are recomputed hourly and read millions of times.",
+   "options": [
+    "caching",
+    "message-queues",
+    "stream-processing"
+   ],
+   "answer": "caching",
+   "why": "The user needs the answer now, synchronously, so a queue is the wrong tool. Repeated reads of slowly changing data → serve them from a cache."
+  },
+  {
+   "id": "q7",
+   "prompt": "Five teams each want every 'order placed' event, and a new analytics team needs to reprocess the last 7 days.",
+   "options": [
+    "message-queues",
+    "load-balancing",
+    "api-design"
+   ],
+   "answer": "message-queues",
+   "why": "Many independent consumers plus replay → a retained event log with one consumer group per team."
+  }
+ ]
+}
