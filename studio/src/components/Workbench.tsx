@@ -40,6 +40,22 @@ function useCollapsed(id: string, side: "left" | "right"): [boolean, (v: boolean
   return [v, setV];
 }
 
+const NARROW = "(max-width: 1100px)";
+
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(
+    () => typeof window !== "undefined" && !!window.matchMedia?.(NARROW).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia?.(NARROW);
+    if (!mq) return;
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return narrow;
+}
+
 function SidePane({
   side,
   pane,
@@ -108,8 +124,27 @@ export function Workbench({
   children: ReactNode;
   centerClass?: string;
 }) {
-  const [leftCollapsed, setLeftCollapsed] = useCollapsed(id, "left");
-  const [rightCollapsed, setRightCollapsed] = useCollapsed(id, "right");
+  const [leftWide, setLeftWide] = useCollapsed(id, "left");
+  const [rightWide, setRightWide] = useCollapsed(id, "right");
+  // Narrow screens: panes float over the center, so they start closed (not remembered) and a click
+  // in the center closes them again.
+  const narrow = useNarrow();
+  const [leftNarrow, setLeftNarrow] = useState(true);
+  const [rightNarrow, setRightNarrow] = useState(true);
+  const leftCollapsed = narrow ? leftNarrow : leftWide;
+  const rightCollapsed = narrow ? rightNarrow : rightWide;
+  const setLeftCollapsed = (v: boolean) => {
+    if (narrow) {
+      setLeftNarrow(v);
+      if (!v) setRightNarrow(true);
+    } else setLeftWide(v);
+  };
+  const setRightCollapsed = (v: boolean) => {
+    if (narrow) {
+      setRightNarrow(v);
+      if (!v) setLeftNarrow(true);
+    } else setRightWide(v);
+  };
   // Fill the viewport below wherever the bench starts (app bar, tabs, crumbs).
   const ref = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(110);
@@ -135,7 +170,17 @@ export function Workbench({
             setCollapsed={setLeftCollapsed}
           />
         )}
-        <main className={`wb-center ${centerClass}`}>{children}</main>
+        <main
+          className={`wb-center ${centerClass}`}
+          onPointerDown={() => {
+            if (narrow) {
+              setLeftNarrow(true);
+              setRightNarrow(true);
+            }
+          }}
+        >
+          {children}
+        </main>
         {right && (
           <SidePane
             side="right"
