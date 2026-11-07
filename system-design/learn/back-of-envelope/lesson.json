@@ -1,134 +1,132 @@
 {
- "version": 1,
- "subject": "system-design",
- "topic": "back-of-envelope",
- "title": "Back-of-the-Envelope Estimation",
- "blocks": [
-  {
-   "type": "markdown",
-   "src": "01-intro.md"
-  },
-  {
-   "type": "trace",
-   "id": "photo-app-estimate",
-   "title": "Estimating a photo-sharing app, step by step",
-   "source": "examples/photo_app_estimate.py",
-   "function": "photo_app_estimate",
-   "input": {
-    "dau": 10000000,
-    "users_per_upload": 5,
-    "views_per_user": 50,
-    "photo_kb": 500,
-    "years": 5,
-    "replicas": 3,
-    "peak_factor": 3
-   },
-   "view": [
+  "version": 1,
+  "subject": "system-design",
+  "topic": "back-of-envelope",
+  "title": "Back-of-the-Envelope Estimation",
+  "blocks": [
     {
-     "id": "assumptions",
-     "type": "vars",
-     "label": "assumptions",
-     "vars": [
-      "dau",
-      "users_per_upload",
-      "views_per_user",
-      "photo_kb",
-      "years",
-      "replicas",
-      "peak_factor"
-     ]
+      "type": "markdown",
+      "src": "01-intro.md"
     },
     {
-     "id": "estimates",
-     "type": "vars",
-     "label": "estimates",
-     "vars": [
-      "uploads_per_day",
-      "write_qps",
-      "views_per_day",
-      "read_qps",
-      "read_write_ratio",
-      "peak_read_qps",
-      "storage_gb_per_day",
-      "storage_tb_total",
-      "egress_gbps"
-     ]
+      "type": "trace",
+      "id": "photo-app-estimate",
+      "title": "Estimating a photo-sharing app, step by step",
+      "source": "examples/photo_app_estimate.py",
+      "function": "photo_app_estimate",
+      "input": {
+        "dau": 10000000,
+        "users_per_upload": 5,
+        "views_per_user": 50,
+        "photo_kb": 500,
+        "years": 5,
+        "replicas": 3,
+        "peak_factor": 3
+      },
+      "view": [
+        {
+          "id": "assumptions",
+          "type": "vars",
+          "label": "assumptions",
+          "vars": [
+            "dau",
+            "users_per_upload",
+            "views_per_user",
+            "photo_kb",
+            "years",
+            "replicas",
+            "peak_factor"
+          ]
+        },
+        {
+          "id": "estimates",
+          "type": "vars",
+          "label": "estimates",
+          "vars": [
+            "uploads_per_day",
+            "write_qps",
+            "views_per_day",
+            "read_qps",
+            "read_write_ratio",
+            "peak_read_qps",
+            "storage_gb_per_day",
+            "storage_tb_total",
+            "egress_gbps"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "dau": 10000000,
+            "users_per_upload": 5,
+            "views_per_user": 50,
+            "photo_kb": 500,
+            "years": 5,
+            "replicas": 3,
+            "peak_factor": 3
+          },
+          "expected": {
+            "write_qps": 23,
+            "peak_read_qps": 17361,
+            "read_write_ratio": 251,
+            "storage_tb_total": 5475,
+            "egress_gbps": 23
+          }
+        },
+        {
+          "input": {
+            "dau": 1000000,
+            "users_per_upload": 10,
+            "views_per_user": 20,
+            "photo_kb": 200,
+            "years": 1,
+            "replicas": 1,
+            "peak_factor": 2
+          },
+          "expected": {
+            "write_qps": 1,
+            "peak_read_qps": 462,
+            "read_write_ratio": 231,
+            "storage_tb_total": 7,
+            "egress_gbps": 0
+          }
+        },
+        {
+          "input": {
+            "dau": 86400000,
+            "users_per_upload": 1,
+            "views_per_user": 10,
+            "photo_kb": 100,
+            "years": 2,
+            "replicas": 3,
+            "peak_factor": 2
+          },
+          "expected": {
+            "write_qps": 1000,
+            "peak_read_qps": 20000,
+            "read_write_ratio": 10,
+            "storage_tb_total": 18921,
+            "egress_gbps": 8
+          }
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-console.md"
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["url-shortener", "news-feed"]
     }
-   ],
-   "checks": [
-    {
-     "input": {
-      "dau": 10000000,
-      "users_per_upload": 5,
-      "views_per_user": 50,
-      "photo_kb": 500,
-      "years": 5,
-      "replicas": 3,
-      "peak_factor": 3
-     },
-     "expected": {
-      "write_qps": 23,
-      "peak_read_qps": 17361,
-      "read_write_ratio": 251,
-      "storage_tb_total": 5475,
-      "egress_gbps": 23
-     }
-    },
-    {
-     "input": {
-      "dau": 1000000,
-      "users_per_upload": 10,
-      "views_per_user": 20,
-      "photo_kb": 200,
-      "years": 1,
-      "replicas": 1,
-      "peak_factor": 2
-     },
-     "expected": {
-      "write_qps": 1,
-      "peak_read_qps": 462,
-      "read_write_ratio": 231,
-      "storage_tb_total": 7,
-      "egress_gbps": 0
-     }
-    },
-    {
-     "input": {
-      "dau": 86400000,
-      "users_per_upload": 1,
-      "views_per_user": 10,
-      "photo_kb": 100,
-      "years": 2,
-      "replicas": 3,
-      "peak_factor": 2
-     },
-     "expected": {
-      "write_qps": 1000,
-      "peak_read_qps": 20000,
-      "read_write_ratio": 10,
-      "storage_tb_total": 18921,
-      "egress_gbps": 8
-     }
-    }
-   ]
-  },
-  {
-   "type": "markdown",
-   "src": "02-console.md"
-  },
-  {
-   "type": "markdown",
-   "src": "03-recognise.md"
-  },
-  {
-   "type": "quiz",
-   "src": "quiz.json"
-  },
-  {
-   "type": "problems",
-   "slugs": [
-    "url-shortener"
-   ]
-  }
- ]
+  ]
 }

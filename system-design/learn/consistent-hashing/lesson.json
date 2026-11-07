@@ -1,50 +1,222 @@
 {
- "version": 1,
- "subject": "system-design",
- "topic": "consistent-hashing",
- "title": "Consistent Hashing",
- "blocks": [
-  {"type": "markdown", "src": "01-intro.md"},
-  {
-   "type": "trace",
-   "id": "mod-n-remap",
-   "title": "Naive hash % N — 3 servers become 4",
-   "source": "examples/mod_n_remap.py",
-   "function": "mod_n_remap",
-   "input": {"key_hashes": {"k1": 17, "k2": 58, "k3": 8, "k4": 91, "k5": 63, "k6": 25, "k7": 74, "k8": 36}, "n_before": 3, "n_after": 4},
-   "view": [
-    {"id": "owner", "type": "map", "var": "owner", "label": "owner (key → server)"},
-    {"id": "vars", "type": "vars", "vars": ["key", "new_server"]},
-    {"id": "moved", "type": "array", "var": "moved", "label": "moved keys"}
-   ],
-   "checks": [
-    {"input": {"key_hashes": {"k1": 17, "k2": 58, "k3": 8, "k4": 91, "k5": 63, "k6": 25, "k7": 74, "k8": 36}, "n_before": 3, "n_after": 4}, "expected": ["k1", "k2", "k3", "k4", "k5"]},
-    {"input": {"key_hashes": {"a": 0, "b": 12}, "n_before": 3, "n_after": 4}, "expected": []},
-    {"input": {"key_hashes": {"a": 5}, "n_before": 2, "n_after": 3}, "expected": ["a"]}
-   ]
-  },
-  {"type": "markdown", "src": "02-ring.md"},
-  {
-   "type": "trace",
-   "id": "ring-remap",
-   "title": "Hash ring 0..99 — node D joins at 65",
-   "source": "examples/ring_remap.py",
-   "function": "ring_remap",
-   "input": {"nodes": {"A": 20, "B": 50, "C": 85}, "key_pos": {"k1": 17, "k2": 58, "k3": 8, "k4": 91, "k5": 63, "k6": 25, "k7": 74, "k8": 36}, "new_node": "D", "new_pos": 65},
-   "view": [
-    {"id": "ring", "type": "array", "var": "ring", "label": "ring (node positions, clockwise)", "pointers": {"owner": "idx"}},
-    {"id": "key_pos", "type": "map", "var": "key_pos", "label": "key → position"},
-    {"id": "owner", "type": "map", "var": "owner", "label": "owner (key → node)"},
-    {"id": "vars", "type": "vars", "vars": ["key", "new_owner"]},
-    {"id": "moved", "type": "array", "var": "moved", "label": "moved keys"}
-   ],
-   "checks": [
-    {"input": {"nodes": {"A": 20, "B": 50, "C": 85}, "key_pos": {"k1": 17, "k2": 58, "k3": 8, "k4": 91, "k5": 63, "k6": 25, "k7": 74, "k8": 36}, "new_node": "D", "new_pos": 65}, "expected": ["k2", "k5"]},
-    {"input": {"nodes": {"A": 20, "B": 50, "C": 85}, "key_pos": {"x": 95, "y": 10}, "new_node": "D", "new_pos": 5}, "expected": ["x"]},
-    {"input": {"nodes": {"A": 50}, "key_pos": {"x": 10, "y": 70}, "new_node": "B", "new_pos": 20}, "expected": ["x", "y"]}
-   ]
-  },
-  {"type": "markdown", "src": "03-recognise.md"},
-  {"type": "quiz", "src": "quiz.json"}
- ]
+  "version": 1,
+  "subject": "system-design",
+  "topic": "consistent-hashing",
+  "title": "Consistent Hashing",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "mod-n-remap",
+      "title": "Naive hash % N — 3 servers become 4",
+      "source": "examples/mod_n_remap.py",
+      "function": "mod_n_remap",
+      "input": {
+        "key_hashes": {
+          "k1": 17,
+          "k2": 58,
+          "k3": 8,
+          "k4": 91,
+          "k5": 63,
+          "k6": 25,
+          "k7": 74,
+          "k8": 36
+        },
+        "n_before": 3,
+        "n_after": 4
+      },
+      "view": [
+        {
+          "id": "owner",
+          "type": "map",
+          "var": "owner",
+          "label": "owner (key → server)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "new_server"]
+        },
+        {
+          "id": "moved",
+          "type": "array",
+          "var": "moved",
+          "label": "moved keys"
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "key_hashes": {
+              "k1": 17,
+              "k2": 58,
+              "k3": 8,
+              "k4": 91,
+              "k5": 63,
+              "k6": 25,
+              "k7": 74,
+              "k8": 36
+            },
+            "n_before": 3,
+            "n_after": 4
+          },
+          "expected": ["k1", "k2", "k3", "k4", "k5"]
+        },
+        {
+          "input": {
+            "key_hashes": {
+              "a": 0,
+              "b": 12
+            },
+            "n_before": 3,
+            "n_after": 4
+          },
+          "expected": []
+        },
+        {
+          "input": {
+            "key_hashes": {
+              "a": 5
+            },
+            "n_before": 2,
+            "n_after": 3
+          },
+          "expected": ["a"]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-ring.md"
+    },
+    {
+      "type": "trace",
+      "id": "ring-remap",
+      "title": "Hash ring 0..99 — node D joins at 65",
+      "source": "examples/ring_remap.py",
+      "function": "ring_remap",
+      "input": {
+        "nodes": {
+          "A": 20,
+          "B": 50,
+          "C": 85
+        },
+        "key_pos": {
+          "k1": 17,
+          "k2": 58,
+          "k3": 8,
+          "k4": 91,
+          "k5": 63,
+          "k6": 25,
+          "k7": 74,
+          "k8": 36
+        },
+        "new_node": "D",
+        "new_pos": 65
+      },
+      "view": [
+        {
+          "id": "ring",
+          "type": "array",
+          "var": "ring",
+          "label": "ring (node positions, clockwise)",
+          "pointers": {
+            "owner": "idx"
+          }
+        },
+        {
+          "id": "key_pos",
+          "type": "map",
+          "var": "key_pos",
+          "label": "key → position"
+        },
+        {
+          "id": "owner",
+          "type": "map",
+          "var": "owner",
+          "label": "owner (key → node)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "new_owner"]
+        },
+        {
+          "id": "moved",
+          "type": "array",
+          "var": "moved",
+          "label": "moved keys"
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "nodes": {
+              "A": 20,
+              "B": 50,
+              "C": 85
+            },
+            "key_pos": {
+              "k1": 17,
+              "k2": 58,
+              "k3": 8,
+              "k4": 91,
+              "k5": 63,
+              "k6": 25,
+              "k7": 74,
+              "k8": 36
+            },
+            "new_node": "D",
+            "new_pos": 65
+          },
+          "expected": ["k2", "k5"]
+        },
+        {
+          "input": {
+            "nodes": {
+              "A": 20,
+              "B": 50,
+              "C": 85
+            },
+            "key_pos": {
+              "x": 95,
+              "y": 10
+            },
+            "new_node": "D",
+            "new_pos": 5
+          },
+          "expected": ["x"]
+        },
+        {
+          "input": {
+            "nodes": {
+              "A": 50
+            },
+            "key_pos": {
+              "x": 10,
+              "y": 70
+            },
+            "new_node": "B",
+            "new_pos": 20
+          },
+          "expected": ["x", "y"]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["key-value-store"]
+    }
+  ]
 }

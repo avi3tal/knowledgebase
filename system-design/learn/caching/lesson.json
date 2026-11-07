@@ -1,51 +1,167 @@
 {
- "version": 1,
- "subject": "system-design",
- "topic": "caching",
- "title": "Caching",
- "blocks": [
-  {"type": "markdown", "src": "01-intro.md"},
-  {
-   "type": "trace",
-   "id": "lru",
-   "title": "LRU cache of size 3 — hits, misses and evictions",
-   "source": "examples/lru_cache.py",
-   "function": "lru_hits_misses",
-   "input": {"requests": ["a", "b", "a", "c", "d", "a", "b", "c", "a"], "capacity": 3},
-   "view": [
-    {"id": "requests", "type": "array", "var": "requests", "label": "read stream", "pointers": {"now": "i"}},
-    {"id": "order", "type": "array", "var": "order", "label": "order (LRU → MRU)"},
-    {"id": "cache", "type": "map", "var": "cache", "label": "cache"},
-    {"id": "vars", "type": "vars", "vars": ["key", "hits", "misses", "victim"]}
-   ],
-   "checks": [
-    {"input": {"requests": ["a", "b", "a", "c", "d", "a", "b", "c", "a"], "capacity": 3}, "expected": [3, 6]},
-    {"input": {"requests": ["x", "x", "x"], "capacity": 1}, "expected": [2, 1]},
-    {"input": {"requests": ["a", "b", "c", "a"], "capacity": 2}, "expected": [0, 4]}
-   ]
-  },
-  {"type": "markdown", "src": "02-writes.md"},
-  {
-   "type": "trace",
-   "id": "cache-aside-stale",
-   "title": "Cache-aside without invalidation — counting stale reads",
-   "source": "examples/cache_aside.py",
-   "function": "cache_aside",
-   "input": {"db": {"a": 1, "b": 1}, "ops": ["r:a", "r:b", "w:a=2", "r:a", "r:a", "w:b=5", "r:b"], "invalidate": false},
-   "view": [
-    {"id": "ops", "type": "array", "var": "ops", "label": "operations", "pointers": {"op": "i"}},
-    {"id": "db", "type": "map", "var": "db", "label": "database"},
-    {"id": "cache", "type": "map", "var": "cache", "label": "cache"},
-    {"id": "vars", "type": "vars", "vars": ["key", "answer", "stale"]}
-   ],
-   "checks": [
-    {"input": {"db": {"a": 1, "b": 1}, "ops": ["r:a", "r:b", "w:a=2", "r:a", "r:a", "w:b=5", "r:b"], "invalidate": false}, "expected": 3},
-    {"input": {"db": {"a": 1, "b": 1}, "ops": ["r:a", "r:b", "w:a=2", "r:a", "r:a", "w:b=5", "r:b"], "invalidate": true}, "expected": 0},
-    {"input": {"db": {"a": 1}, "ops": ["w:a=3", "r:a"], "invalidate": false}, "expected": 0}
-   ]
-  },
-  {"type": "markdown", "src": "03-recognise.md"},
-  {"type": "quiz", "src": "quiz.json"},
-  {"type": "problems", "slugs": ["url-shortener"]}
- ]
+  "version": 1,
+  "subject": "system-design",
+  "topic": "caching",
+  "title": "Caching",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "lru",
+      "title": "LRU cache of size 3 — hits, misses and evictions",
+      "source": "examples/lru_cache.py",
+      "function": "lru_hits_misses",
+      "input": {
+        "requests": ["a", "b", "a", "c", "d", "a", "b", "c", "a"],
+        "capacity": 3
+      },
+      "view": [
+        {
+          "id": "requests",
+          "type": "array",
+          "var": "requests",
+          "label": "read stream",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "order",
+          "type": "array",
+          "var": "order",
+          "label": "order (LRU → MRU)"
+        },
+        {
+          "id": "cache",
+          "type": "map",
+          "var": "cache",
+          "label": "cache"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "hits", "misses", "victim"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "requests": ["a", "b", "a", "c", "d", "a", "b", "c", "a"],
+            "capacity": 3
+          },
+          "expected": [3, 6]
+        },
+        {
+          "input": {
+            "requests": ["x", "x", "x"],
+            "capacity": 1
+          },
+          "expected": [2, 1]
+        },
+        {
+          "input": {
+            "requests": ["a", "b", "c", "a"],
+            "capacity": 2
+          },
+          "expected": [0, 4]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-writes.md"
+    },
+    {
+      "type": "trace",
+      "id": "cache-aside-stale",
+      "title": "Cache-aside without invalidation — counting stale reads",
+      "source": "examples/cache_aside.py",
+      "function": "cache_aside",
+      "input": {
+        "db": {
+          "a": 1,
+          "b": 1
+        },
+        "ops": ["r:a", "r:b", "w:a=2", "r:a", "r:a", "w:b=5", "r:b"],
+        "invalidate": false
+      },
+      "view": [
+        {
+          "id": "ops",
+          "type": "array",
+          "var": "ops",
+          "label": "operations",
+          "pointers": {
+            "op": "i"
+          }
+        },
+        {
+          "id": "db",
+          "type": "map",
+          "var": "db",
+          "label": "database"
+        },
+        {
+          "id": "cache",
+          "type": "map",
+          "var": "cache",
+          "label": "cache"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "answer", "stale"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "db": {
+              "a": 1,
+              "b": 1
+            },
+            "ops": ["r:a", "r:b", "w:a=2", "r:a", "r:a", "w:b=5", "r:b"],
+            "invalidate": false
+          },
+          "expected": 3
+        },
+        {
+          "input": {
+            "db": {
+              "a": 1,
+              "b": 1
+            },
+            "ops": ["r:a", "r:b", "w:a=2", "r:a", "r:a", "w:b=5", "r:b"],
+            "invalidate": true
+          },
+          "expected": 0
+        },
+        {
+          "input": {
+            "db": {
+              "a": 1
+            },
+            "ops": ["w:a=3", "r:a"],
+            "invalidate": false
+          },
+          "expected": 0
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["url-shortener", "news-feed"]
+    }
+  ]
 }

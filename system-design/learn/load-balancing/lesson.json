@@ -1,50 +1,184 @@
 {
- "version": 1,
- "subject": "system-design",
- "topic": "load-balancing",
- "title": "Load Balancing",
- "blocks": [
-  {"type": "markdown", "src": "01-intro.md"},
-  {
-   "type": "trace",
-   "id": "round-robin",
-   "title": "Round robin — 3 servers, every third request is slow",
-   "source": "examples/balance.py",
-   "function": "balance",
-   "input": {"durations": [8, 1, 1, 8, 1, 1, 8, 1, 1], "servers": 3, "strategy": "round-robin"},
-   "view": [
-    {"id": "durations", "type": "array", "var": "durations", "label": "request durations (one arrives per tick)", "pointers": {"now": "i"}},
-    {"id": "active", "type": "array", "var": "active", "label": "active connections per server", "pointers": {"target": "target"}},
-    {"id": "assigned", "type": "array", "var": "assigned", "label": "server chosen per request"},
-    {"id": "vars", "type": "vars", "vars": ["target", "peak"]}
-   ],
-   "checks": [
-    {"input": {"durations": [8, 1, 1, 8, 1, 1, 8, 1, 1], "servers": 3, "strategy": "round-robin"}, "expected": {"assigned": [0, 1, 2, 0, 1, 2, 0, 1, 2], "peak": 3}},
-    {"input": {"durations": [3, 3, 3], "servers": 3, "strategy": "round-robin"}, "expected": {"assigned": [0, 1, 2], "peak": 1}},
-    {"input": {"durations": [1, 1, 1, 1], "servers": 2, "strategy": "round-robin"}, "expected": {"assigned": [0, 1, 0, 1], "peak": 1}}
-   ]
-  },
-  {
-   "type": "trace",
-   "id": "least-connections",
-   "title": "Least connections — the same request stream",
-   "source": "examples/balance.py",
-   "function": "balance",
-   "input": {"durations": [8, 1, 1, 8, 1, 1, 8, 1, 1], "servers": 3, "strategy": "least-connections"},
-   "view": [
-    {"id": "durations", "type": "array", "var": "durations", "label": "request durations (one arrives per tick)", "pointers": {"now": "i"}},
-    {"id": "active", "type": "array", "var": "active", "label": "active connections per server", "pointers": {"target": "target"}},
-    {"id": "assigned", "type": "array", "var": "assigned", "label": "server chosen per request"},
-    {"id": "vars", "type": "vars", "vars": ["target", "peak"]}
-   ],
-   "checks": [
-    {"input": {"durations": [8, 1, 1, 8, 1, 1, 8, 1, 1], "servers": 3, "strategy": "least-connections"}, "expected": {"assigned": [0, 1, 1, 1, 2, 2, 2, 0, 0], "peak": 2}},
-    {"input": {"durations": [1, 1, 1, 1], "servers": 2, "strategy": "least-connections"}, "expected": {"assigned": [0, 0, 0, 0], "peak": 1}},
-    {"input": {"durations": [5, 5, 1, 1], "servers": 2, "strategy": "least-connections"}, "expected": {"assigned": [0, 1, 0, 0], "peak": 2}}
-   ]
-  },
-  {"type": "markdown", "src": "02-compare.md"},
-  {"type": "markdown", "src": "03-recognise.md"},
-  {"type": "quiz", "src": "quiz.json"}
- ]
+  "version": 1,
+  "subject": "system-design",
+  "topic": "load-balancing",
+  "title": "Load Balancing",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "round-robin",
+      "title": "Round robin — 3 servers, every third request is slow",
+      "source": "examples/balance.py",
+      "function": "balance",
+      "input": {
+        "durations": [8, 1, 1, 8, 1, 1, 8, 1, 1],
+        "servers": 3,
+        "strategy": "round-robin"
+      },
+      "view": [
+        {
+          "id": "durations",
+          "type": "array",
+          "var": "durations",
+          "label": "request durations (one arrives per tick)",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "active",
+          "type": "array",
+          "var": "active",
+          "label": "active connections per server",
+          "pointers": {
+            "target": "target"
+          }
+        },
+        {
+          "id": "assigned",
+          "type": "array",
+          "var": "assigned",
+          "label": "server chosen per request"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["target", "peak"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "durations": [8, 1, 1, 8, 1, 1, 8, 1, 1],
+            "servers": 3,
+            "strategy": "round-robin"
+          },
+          "expected": {
+            "assigned": [0, 1, 2, 0, 1, 2, 0, 1, 2],
+            "peak": 3
+          }
+        },
+        {
+          "input": {
+            "durations": [3, 3, 3],
+            "servers": 3,
+            "strategy": "round-robin"
+          },
+          "expected": {
+            "assigned": [0, 1, 2],
+            "peak": 1
+          }
+        },
+        {
+          "input": {
+            "durations": [1, 1, 1, 1],
+            "servers": 2,
+            "strategy": "round-robin"
+          },
+          "expected": {
+            "assigned": [0, 1, 0, 1],
+            "peak": 1
+          }
+        }
+      ]
+    },
+    {
+      "type": "trace",
+      "id": "least-connections",
+      "title": "Least connections — the same request stream",
+      "source": "examples/balance.py",
+      "function": "balance",
+      "input": {
+        "durations": [8, 1, 1, 8, 1, 1, 8, 1, 1],
+        "servers": 3,
+        "strategy": "least-connections"
+      },
+      "view": [
+        {
+          "id": "durations",
+          "type": "array",
+          "var": "durations",
+          "label": "request durations (one arrives per tick)",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "active",
+          "type": "array",
+          "var": "active",
+          "label": "active connections per server",
+          "pointers": {
+            "target": "target"
+          }
+        },
+        {
+          "id": "assigned",
+          "type": "array",
+          "var": "assigned",
+          "label": "server chosen per request"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["target", "peak"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "durations": [8, 1, 1, 8, 1, 1, 8, 1, 1],
+            "servers": 3,
+            "strategy": "least-connections"
+          },
+          "expected": {
+            "assigned": [0, 1, 1, 1, 2, 2, 2, 0, 0],
+            "peak": 2
+          }
+        },
+        {
+          "input": {
+            "durations": [1, 1, 1, 1],
+            "servers": 2,
+            "strategy": "least-connections"
+          },
+          "expected": {
+            "assigned": [0, 0, 0, 0],
+            "peak": 1
+          }
+        },
+        {
+          "input": {
+            "durations": [5, 5, 1, 1],
+            "servers": 2,
+            "strategy": "least-connections"
+          },
+          "expected": {
+            "assigned": [0, 1, 0, 0],
+            "peak": 2
+          }
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-compare.md"
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["chat-system", "url-shortener"]
+    }
+  ]
 }
