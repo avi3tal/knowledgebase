@@ -3,6 +3,7 @@
 # traverses vertices reachable from s.
 from collections import defaultdict
 
+
 # This class represents a directed graph
 # using adjacency list representation
 class Graph:
@@ -42,7 +43,7 @@ class Graph:
 			# has not been visited, then mark it
 			# visited and enqueue it
 			for i in self.graph[s]:
-				if visited[i] == False:
+				if not visited[i]:
 					queue.append(i)
 					visited[i] = True
 
