@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "payments_per_day",
+      "formula": "10 * million",
+      "unit": ""
+    },
+    {
+      "name": "payment_qps",
+      "formula": "payments_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_payment_qps",
+      "formula": "payment_qps * 10",
+      "unit": "/s"
+    },
+    {
+      "name": "psp_in_flight",
+      "formula": "peak_payment_qps * 2",
+      "unit": ""
+    },
+    {
+      "name": "ledger_entries_per_day",
+      "formula": "payments_per_day * 6",
+      "unit": ""
+    },
+    {
+      "name": "ledger_storage_year",
+      "formula": "ledger_entries_per_day * 200 * 365 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "ledger_storage_7y",
+      "formula": "ledger_storage_year * 7",
+      "unit": "TB"
+    },
+    {
+      "name": "webhook_qps",
+      "formula": "payment_qps * 3",
+      "unit": "/s"
+    }
+  ]
+}

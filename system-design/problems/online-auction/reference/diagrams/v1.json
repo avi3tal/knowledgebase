@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: one app and one SQL database; watchers refresh the page to see new bids. Concurrent bids race on read-then-write, and polling watchers flood the database.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Bidder / watcher app",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "Auction app",
+      "x": 320,
+      "y": 240
+    },
+    {
+      "id": "db1",
+      "kind": "sql",
+      "label": "One SQL database",
+      "x": 600,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "app",
+      "label": "bid, view, refresh"
+    },
+    {
+      "from": "app",
+      "to": "db1",
+      "label": "read/write"
+    }
+  ],
+  "flows": []
+}

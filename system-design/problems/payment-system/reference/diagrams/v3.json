@@ -1,0 +1,175 @@
+{
+  "version": 3,
+  "why": "Compose P3 and P5: state changes leave through the outbox to Kafka; an idempotent poster writes balanced double-entry ledger entries (N2), and merchants get signed webhooks (F2).",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Merchant server (API client)",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "gw",
+      "kind": "api-gateway",
+      "label": "API gateway: auth, rate limits",
+      "x": 200,
+      "y": 240
+    },
+    {
+      "id": "pay_svc",
+      "kind": "service",
+      "label": "Payment service (state machine)",
+      "x": 400,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "Payments DB: payments, idempotency keys, outbox",
+      "x": 620,
+      "y": 240
+    },
+    {
+      "id": "psp",
+      "kind": "external",
+      "label": "PSP / card processor",
+      "x": 400,
+      "y": 440
+    },
+    {
+      "id": "retry_q",
+      "kind": "queue",
+      "label": "Retry queue (backoff + DLQ)",
+      "x": 620,
+      "y": 360
+    },
+    {
+      "id": "executor",
+      "kind": "worker",
+      "label": "Payment executor (retries, status checks)",
+      "x": 620,
+      "y": 460
+    },
+    {
+      "id": "relay",
+      "kind": "worker",
+      "label": "Outbox relay",
+      "x": 800,
+      "y": 240
+    },
+    {
+      "id": "stream",
+      "kind": "stream",
+      "label": "Kafka: payment events",
+      "x": 980,
+      "y": 240
+    },
+    {
+      "id": "ledger_svc",
+      "kind": "worker",
+      "label": "Ledger poster (idempotent)",
+      "x": 800,
+      "y": 130
+    },
+    {
+      "id": "ledger_db",
+      "kind": "sql",
+      "label": "Ledger DB: double-entry entries, accounts",
+      "x": 980,
+      "y": 120
+    },
+    {
+      "id": "webhook_worker",
+      "kind": "worker",
+      "label": "Merchant webhook dispatcher",
+      "x": 980,
+      "y": 360
+    },
+    {
+      "id": "merchant_hook",
+      "kind": "external",
+      "label": "Merchant webhook endpoint",
+      "x": 980,
+      "y": 460
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "gw",
+      "label": "POST /payments + Idempotency-Key"
+    },
+    {
+      "from": "gw",
+      "to": "pay_svc",
+      "label": "route"
+    },
+    {
+      "from": "pay_svc",
+      "to": "db",
+      "label": "key + payment + outbox (1 txn)"
+    },
+    {
+      "from": "pay_svc",
+      "to": "psp",
+      "label": "authorize / capture (key = payment_id)"
+    },
+    {
+      "from": "pay_svc",
+      "to": "retry_q",
+      "label": "timeouts, retryable errors"
+    },
+    {
+      "from": "retry_q",
+      "to": "executor",
+      "label": "due retries"
+    },
+    {
+      "from": "executor",
+      "to": "psp",
+      "label": "retry / status query"
+    },
+    {
+      "from": "executor",
+      "to": "db",
+      "label": "update state"
+    },
+    {
+      "from": "psp",
+      "to": "gw",
+      "label": "PSP webhook"
+    },
+    {
+      "from": "db",
+      "to": "relay",
+      "label": "outbox rows"
+    },
+    {
+      "from": "relay",
+      "to": "stream",
+      "label": "PaymentSucceeded, Refunded…"
+    },
+    {
+      "from": "stream",
+      "to": "ledger_svc",
+      "label": "payment events"
+    },
+    {
+      "from": "ledger_svc",
+      "to": "ledger_db",
+      "label": "balanced entries (unique event id)"
+    },
+    {
+      "from": "stream",
+      "to": "webhook_worker",
+      "label": "payment events"
+    },
+    {
+      "from": "webhook_worker",
+      "to": "merchant_hook",
+      "label": "signed webhook, retries"
+    }
+  ],
+  "flows": []
+}

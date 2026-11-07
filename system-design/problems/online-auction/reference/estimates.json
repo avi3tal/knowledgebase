@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "bids_per_day",
+      "formula": "10 * million",
+      "unit": ""
+    },
+    {
+      "name": "bid_qps",
+      "formula": "bids_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_bid_qps",
+      "formula": "bid_qps * 10",
+      "unit": "/s"
+    },
+    {
+      "name": "page_view_qps",
+      "formula": "50 * million * 30 / day",
+      "unit": "/s"
+    },
+    {
+      "name": "concurrent_watchers",
+      "formula": "2 * million",
+      "unit": ""
+    },
+    {
+      "name": "hot_auction_bids",
+      "formula": "50",
+      "unit": "/s"
+    },
+    {
+      "name": "fanout_msgs",
+      "formula": "hot_auction_bids * 10 * thousand",
+      "unit": "/s"
+    },
+    {
+      "name": "auctions_closing",
+      "formula": "1 * million / day",
+      "unit": "/s"
+    },
+    {
+      "name": "bid_storage_year",
+      "formula": "bids_per_day * 365 * 200 / 10**9",
+      "unit": "GB"
+    }
+  ]
+}

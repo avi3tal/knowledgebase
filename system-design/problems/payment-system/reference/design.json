@@ -1,0 +1,729 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "A merchant creates a payment: charge a customer's payment method for an amount and currency."
+      },
+      {
+        "id": "F2",
+        "text": "Merchants query payment status and receive webhooks on every state change."
+      },
+      {
+        "id": "F3",
+        "text": "Refunds (full or partial); merchant balances are tracked for payouts."
+      },
+      {
+        "id": "F4",
+        "text": "Reconcile daily with the processor's settlement reports."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Exactly-once effect: no retry (merchant, ours or the PSP's) ever charges twice."
+      },
+      {
+        "id": "N2",
+        "text": "Correctness over availability: every money movement is in a balanced, immutable ledger, auditable to the cent."
+      },
+      {
+        "id": "N3",
+        "text": "99.99% available payment API; p99 < 3 s including the processor."
+      },
+      {
+        "id": "N4",
+        "text": "Keep the financial history for 7 years."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "10M payments/day, ~10× peak on Black Friday; ~6 ledger entries per payment over its life."
+      },
+      {
+        "id": "A2",
+        "text": "Card data is tokenized by the processor (PSP); we never store card numbers."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Fraud scoring, currency conversion, card network internals, the merchant dashboard."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/payments",
+      "request": "amount, currency, payment_method (token), order_id; Idempotency-Key header",
+      "response": "201 {payment_id, status} | 202 pending",
+      "notes": "Replays return the stored response."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/payments/{id}",
+      "request": "",
+      "response": "200 {status, amount, refunds[]}",
+      "notes": "Read from the payments DB."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/payments/{id}/refunds",
+      "request": "amount?; Idempotency-Key header",
+      "response": "201 {refund_id, status}",
+      "notes": "Same state machine and PSP path."
+    },
+    {
+      "id": "E4",
+      "method": "POST",
+      "path": "/psp/webhooks",
+      "request": "signed processor event",
+      "response": "200",
+      "notes": "Deduped by PSP event id; moves the state machine."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "payments",
+      "fields": "payment_id (PK), merchant_id, amount, currency, status created|pending|unknown|succeeded|failed|refunded, psp_ref, attempts, version",
+      "store": "sql",
+      "why": "Transactional state machine; sharded by merchant_id."
+    },
+    {
+      "id": "D2",
+      "name": "idempotency_keys",
+      "fields": "(merchant_id, key) unique, request_hash, state, response, expires_at",
+      "store": "sql",
+      "why": "Same database and transaction as the payment row."
+    },
+    {
+      "id": "D3",
+      "name": "ledger_entries",
+      "fields": "entry_id, txn_id, account_id, direction debit|credit, amount, currency, source_event_id (unique), created_at",
+      "store": "sql",
+      "why": "Append-only double-entry ledger; debits = credits per txn_id; partitioned by month."
+    },
+    {
+      "id": "D4",
+      "name": "accounts",
+      "fields": "account_id, type customer_funds|merchant_balance|fees|psp_receivable, currency, cached_balance, as_of_entry",
+      "store": "sql",
+      "why": "Balances are derived from entries and cached."
+    },
+    {
+      "id": "D5",
+      "name": "outbox",
+      "fields": "event_id, payment_id, type, payload",
+      "store": "sql",
+      "why": "Committed with the state change; relayed to Kafka."
+    },
+    {
+      "id": "D6",
+      "name": "settlement files",
+      "fields": "raw PSP reports + reconciliation results per day",
+      "store": "blob",
+      "why": "Evidence for audits."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "A PSP call times out: unknown outcome",
+      "options": [
+        {
+          "name": "Treat as failed and let the merchant retry",
+          "pros": "simple",
+          "cons": "the customer may have been charged: a retry double charges unless the key is reused"
+        },
+        {
+          "name": "Mark 'unknown', query the PSP by our payment_id, wait for the webhook, retry only with the same key",
+          "pros": "no double charge; converges",
+          "cons": "the merchant sees 'pending' for a while"
+        }
+      ],
+      "choice": "Mark the payment unknown, return 202 pending, resolve by status query and webhook; retries reuse the same PSP idempotency key; reconciliation is the backstop",
+      "why": "N1: a timeout is not a failure. The only safe actions are ones that are idempotent at the PSP.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Getting payment state into the ledger",
+      "options": [
+        {
+          "name": "2PC across the payments DB and the ledger DB",
+          "pros": "atomic",
+          "cons": "coordinator blocking, poor availability, few tools support it"
+        },
+        {
+          "name": "Dual write from the service",
+          "pros": "simple",
+          "cons": "a crash between writes loses or duplicates a posting"
+        },
+        {
+          "name": "Transactional outbox → Kafka → idempotent ledger poster",
+          "pros": "no lost or double postings; services decoupled",
+          "cons": "the ledger lags by seconds"
+        }
+      ],
+      "choice": "Transactional outbox → Kafka → ledger poster with a unique source_event_id",
+      "why": "N2 needs every posting exactly once; a unique event id turns at-least-once delivery into exactly-once effect without a distributed transaction.",
+      "version": 3
+    },
+    {
+      "id": "DD3",
+      "title": "Correcting mistakes in the ledger",
+      "options": [
+        {
+          "name": "UPDATE or DELETE the wrong entries",
+          "pros": "quick",
+          "cons": "destroys the audit trail"
+        },
+        {
+          "name": "Post reversing entries plus new correct entries",
+          "pros": "history intact, auditable",
+          "cons": "more rows"
+        }
+      ],
+      "choice": "Never edit: post reversing and correcting entries",
+      "why": "N2 and N4: auditors must be able to replay every balance at any date.",
+      "version": 4
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The processor (latency and rate limits; mitigated with multiple PSPs and circuit breakers), hot merchant rows on one shard during a flash sale, and the ledger's hottest accounts (fees, PSP receivable), handled by sharding them into sub-accounts and summing.",
+    "failures": "PSP outage: circuit breaker, new payments routed to a second PSP, pending ones retried with backoff, DLQ after N tries for manual review. Lost webhook: executor status polling and reconciliation. Ledger DB down: events wait in Kafka, payments continue, postings catch up. Relay down: outbox rows accumulate, nothing is lost.",
+    "monitoring": "Authorization success/decline rate per PSP, p99 latency, payments stuck in pending/unknown > 5 min, retry queue depth and DLQ size, relay and poster lag, ledger imbalance (sum of entries must be exactly 0), reconciliation breaks per day.",
+    "scale": "Shard payments by merchant_id and the ledger by account and month; add executors for PSP concurrency; partition Kafka by payment_id to keep each payment's events ordered.",
+    "future": "Multi-currency with FX entries, smart routing across PSPs by cost and success rate, risk scoring before authorization, instant payouts."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Idempotent payment API",
+      "covers": [
+        "F1",
+        "N1"
+      ],
+      "problem": "Merchants retry after timeouts and network errors. The same request must have the same effect and get the same answer, even if the first attempt is still in flight; no duplicate charges.",
+      "options": [
+        {
+          "name": "No idempotency; rely on clients not retrying",
+          "pros": "nothing to build",
+          "cons": "every timeout risks a double charge"
+        },
+        {
+          "name": "Dedupe on a natural key (merchant, order_id)",
+          "pros": "no client change",
+          "cons": "a legitimate second charge for the same order is blocked; not every call has an order id"
+        },
+        {
+          "name": "Idempotency keys cached in Redis",
+          "pros": "fast",
+          "cons": "a failover loses keys exactly when retries spike; not atomic with the payment row"
+        },
+        {
+          "name": "Idempotency-Key table in Postgres, written in the payment's own transaction",
+          "pros": "atomic with the effect; durable; stores the response to replay",
+          "cons": "a unique-index write per request"
+        }
+      ],
+      "choice": "Idempotency-Key table in Postgres: (merchant_id, key) unique, with request hash, state and stored response, written in the same transaction as the payment row",
+      "why": "At ~1,200 payments/s peak an extra indexed insert is trivial, and only a key that commits atomically with the payment can guarantee N1. Same key + different body → 422; same key while in flight → 409; finished → replay the stored response.",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Merchant server (API client)",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "gw",
+            "kind": "api-gateway",
+            "label": "API gateway: auth, rate limits",
+            "x": 200,
+            "y": 240
+          },
+          {
+            "id": "pay_svc",
+            "kind": "service",
+            "label": "Payment service (state machine)",
+            "x": 400,
+            "y": 240
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Payments DB: payments, idempotency keys, outbox",
+            "x": 620,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "gw",
+            "label": "POST /payments + Idempotency-Key"
+          },
+          {
+            "from": "gw",
+            "to": "pay_svc",
+            "label": "route"
+          },
+          {
+            "from": "pay_svc",
+            "to": "db",
+            "label": "key + payment + outbox (1 txn)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Payment state machine and PSP calls with retries",
+      "covers": [
+        "F1",
+        "F2",
+        "N1",
+        "N3"
+      ],
+      "problem": "The external processor takes 1–3 s, fails transiently, and sometimes times out with the outcome unknown. Drive each payment to a final state without ever charging twice.",
+      "options": [
+        {
+          "name": "Call the PSP synchronously and retry blindly on errors",
+          "pros": "simple",
+          "cons": "a timeout + retry can charge twice; no record of what was attempted"
+        },
+        {
+          "name": "Persisted state machine; PSP called with our payment_id as its idempotency key; retryable errors to a backoff queue; unknowns resolved by status query and webhook",
+          "pros": "every retry is safe; crash-recoverable; no stuck payments",
+          "cons": "more states (pending, unknown) and a worker pool to run"
+        }
+      ],
+      "choice": "Persisted state machine (created → pending → succeeded/failed, plus unknown): call the PSP with our payment_id as its idempotency key; retryable errors and timeouts go to a backoff queue with a DLQ; webhooks and status queries settle unknowns",
+      "why": "~2,400 PSP calls are in flight at peak (1,200/s × 2 s), so timeouts are routine. Writing the state before each call and reusing one key means a retry can only ever repeat the same charge request, which the PSP deduplicates.",
+      "technologies": [
+        "postgresql",
+        "kafka"
+      ],
+      "patterns": [
+        "retries-dlq",
+        "idempotency",
+        "saga"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Merchant server (API client)",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "gw",
+            "kind": "api-gateway",
+            "label": "API gateway: auth, rate limits",
+            "x": 200,
+            "y": 240
+          },
+          {
+            "id": "pay_svc",
+            "kind": "service",
+            "label": "Payment service (state machine)",
+            "x": 400,
+            "y": 240
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Payments DB: payments, idempotency keys, outbox",
+            "x": 620,
+            "y": 240
+          },
+          {
+            "id": "psp",
+            "kind": "external",
+            "label": "PSP / card processor",
+            "x": 400,
+            "y": 440
+          },
+          {
+            "id": "retry_q",
+            "kind": "queue",
+            "label": "Retry queue (backoff + DLQ)",
+            "x": 620,
+            "y": 360
+          },
+          {
+            "id": "executor",
+            "kind": "worker",
+            "label": "Payment executor (retries, status checks)",
+            "x": 620,
+            "y": 460
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "gw",
+            "label": "POST /payments + Idempotency-Key"
+          },
+          {
+            "from": "gw",
+            "to": "pay_svc",
+            "label": "route"
+          },
+          {
+            "from": "pay_svc",
+            "to": "db",
+            "label": "key + payment + outbox (1 txn)"
+          },
+          {
+            "from": "pay_svc",
+            "to": "psp",
+            "label": "authorize / capture (key = payment_id)"
+          },
+          {
+            "from": "pay_svc",
+            "to": "retry_q",
+            "label": "timeouts, retryable errors"
+          },
+          {
+            "from": "retry_q",
+            "to": "executor",
+            "label": "due retries"
+          },
+          {
+            "from": "executor",
+            "to": "psp",
+            "label": "retry / status query"
+          },
+          {
+            "from": "executor",
+            "to": "db",
+            "label": "update state"
+          },
+          {
+            "from": "psp",
+            "to": "gw",
+            "label": "PSP webhook"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Double-entry ledger",
+      "covers": [
+        "F3",
+        "N2",
+        "N4"
+      ],
+      "problem": "Record every money movement (charge, fee, refund, payout) so that balances are provably correct, every cent is traceable, and history is never rewritten, for ~60M entries a day.",
+      "options": [
+        {
+          "name": "A mutable balance column per account",
+          "pros": "fast to read",
+          "cons": "no history; a bug silently corrupts money; nothing to audit"
+        },
+        {
+          "name": "Single-entry transaction log",
+          "pros": "history exists",
+          "cons": "no invariant to check: money can appear from nowhere"
+        },
+        {
+          "name": "Double-entry append-only ledger; balances derived and cached",
+          "pros": "every transaction balances (debits = credits); errors are visible; full audit trail",
+          "cons": "more rows; corrections are new reversing entries, never edits"
+        }
+      ],
+      "choice": "Double-entry, append-only ledger in its own Postgres: each transaction's debits equal its credits; posted from payment events by an idempotent poster; balances derived and cached per account",
+      "why": "N2 needs an invariant that can be checked mechanically: the sum of all entries is zero, per transaction and globally. 4.4 TB a year fits a partitioned Postgres; posting asynchronously keeps the PSP path fast, and a unique source_event_id makes posting exactly-once.",
+      "technologies": [
+        "postgresql",
+        "kafka"
+      ],
+      "patterns": [
+        "event-sourcing",
+        "outbox-pattern"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Payments DB: payments, idempotency keys, outbox",
+            "x": 620,
+            "y": 240
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox relay",
+            "x": 800,
+            "y": 240
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: payment events",
+            "x": 980,
+            "y": 240
+          },
+          {
+            "id": "ledger_svc",
+            "kind": "worker",
+            "label": "Ledger poster (idempotent)",
+            "x": 800,
+            "y": 130
+          },
+          {
+            "id": "ledger_db",
+            "kind": "sql",
+            "label": "Ledger DB: double-entry entries, accounts",
+            "x": 980,
+            "y": 120
+          }
+        ],
+        "edges": [
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "outbox rows"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "PaymentSucceeded, Refunded…"
+          },
+          {
+            "from": "stream",
+            "to": "ledger_svc",
+            "label": "payment events"
+          },
+          {
+            "from": "ledger_svc",
+            "to": "ledger_db",
+            "label": "balanced entries (unique event id)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Reconciliation with the processor",
+      "covers": [
+        "F4",
+        "N2"
+      ],
+      "problem": "Our records, the ledger and the processor's settlement must agree to the cent. Find and resolve every mismatch caused by lost webhooks, bugs or processor errors.",
+      "options": [
+        {
+          "name": "Trust our own records",
+          "pros": "nothing to build",
+          "cons": "a lost webhook or PSP error goes unnoticed until a merchant complains"
+        },
+        {
+          "name": "Trust PSP webhooks in real time",
+          "pros": "fast",
+          "cons": "webhooks are lost, duplicated and reordered"
+        },
+        {
+          "name": "Daily batch: match the PSP settlement file against the ledger, auto-fix known breaks, queue the rest",
+          "pros": "catches every class of error; independent of the online path",
+          "cons": "detects problems up to a day late"
+        }
+      ],
+      "choice": "Daily reconciliation job: download the PSP settlement file to S3, match line by line with ledger entries by psp_ref and amount, post correcting entries for known break types, report the rest to finance",
+      "why": "~10M lines a day is a small batch job. It is the only check that is independent of every online component, so it catches what idempotency and retries cannot (e.g. a charge the PSP made that we never recorded).",
+      "technologies": [
+        "object-storage",
+        "postgresql"
+      ],
+      "patterns": [
+        "idempotency",
+        "event-sourcing"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "recon_sched",
+            "kind": "scheduler",
+            "label": "Daily reconciliation trigger",
+            "x": 400,
+            "y": 40
+          },
+          {
+            "id": "recon",
+            "kind": "worker",
+            "label": "Reconciliation job",
+            "x": 620,
+            "y": 40
+          },
+          {
+            "id": "psp",
+            "kind": "external",
+            "label": "PSP / card processor",
+            "x": 400,
+            "y": 440
+          },
+          {
+            "id": "blob",
+            "kind": "blob",
+            "label": "S3: settlement files, recon reports",
+            "x": 800,
+            "y": 20
+          },
+          {
+            "id": "ledger_db",
+            "kind": "sql",
+            "label": "Ledger DB: double-entry entries, accounts",
+            "x": 980,
+            "y": 120
+          }
+        ],
+        "edges": [
+          {
+            "from": "recon_sched",
+            "to": "recon",
+            "label": "daily run"
+          },
+          {
+            "from": "recon",
+            "to": "psp",
+            "label": "download settlement file"
+          },
+          {
+            "from": "recon",
+            "to": "blob",
+            "label": "raw file + report"
+          },
+          {
+            "from": "recon",
+            "to": "ledger_db",
+            "label": "match entries, post corrections"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P5",
+      "title": "Events and merchant webhooks via the outbox",
+      "covers": [
+        "F2",
+        "N1"
+      ],
+      "problem": "Every state change must reach the ledger and the merchant's webhook exactly once in effect, even if the service crashes right after committing.",
+      "options": [
+        {
+          "name": "Write the DB, then publish to Kafka (dual write)",
+          "pros": "simple",
+          "cons": "a crash between the two loses or duplicates events"
+        },
+        {
+          "name": "Transactional outbox + relay to Kafka; consumers idempotent by event id",
+          "pros": "events commit atomically with state; at-least-once delivery with dedup",
+          "cons": "a relay to run; a little latency"
+        }
+      ],
+      "choice": "Transactional outbox in the payments DB, relayed to Kafka; the webhook dispatcher retries with backoff and signs each event; merchants dedupe by event id",
+      "why": "N1 applies to side effects too. The outbox makes 'state changed' and 'event exists' one commit; at-least-once delivery plus event ids is the honest guarantee to give merchants.",
+      "technologies": [
+        "kafka",
+        "postgresql"
+      ],
+      "patterns": [
+        "outbox-pattern",
+        "retries-dlq"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "pay_svc",
+            "kind": "service",
+            "label": "Payment service (state machine)",
+            "x": 400,
+            "y": 240
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Payments DB: payments, idempotency keys, outbox",
+            "x": 620,
+            "y": 240
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox relay",
+            "x": 800,
+            "y": 240
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: payment events",
+            "x": 980,
+            "y": 240
+          },
+          {
+            "id": "webhook_worker",
+            "kind": "worker",
+            "label": "Merchant webhook dispatcher",
+            "x": 980,
+            "y": 360
+          },
+          {
+            "id": "merchant_hook",
+            "kind": "external",
+            "label": "Merchant webhook endpoint",
+            "x": 980,
+            "y": 460
+          }
+        ],
+        "edges": [
+          {
+            "from": "pay_svc",
+            "to": "db",
+            "label": "key + payment + outbox (1 txn)"
+          },
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "outbox rows"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "PaymentSucceeded, Refunded…"
+          },
+          {
+            "from": "stream",
+            "to": "webhook_worker",
+            "label": "payment events"
+          },
+          {
+            "from": "webhook_worker",
+            "to": "merchant_hook",
+            "label": "signed webhook, retries"
+          }
+        ]
+      }
+    }
+  ]
+}

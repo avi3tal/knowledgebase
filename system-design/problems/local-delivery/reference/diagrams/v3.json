@@ -1,0 +1,235 @@
+{
+  "version": 3,
+  "why": "Compose P3: drivers report GPS into a Redis GEO index, and a dispatcher matches confirmed orders to drivers in short batches per warehouse (F3).",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Customer app",
+      "x": 40,
+      "y": 160
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer / API gateway",
+      "x": 200,
+      "y": 270
+    },
+    {
+      "id": "avail_svc",
+      "kind": "service",
+      "label": "Availability service",
+      "x": 400,
+      "y": 60
+    },
+    {
+      "id": "geo_cache",
+      "kind": "cache",
+      "label": "Redis: geo cell → warehouses",
+      "x": 600,
+      "y": 20
+    },
+    {
+      "id": "inv_cache",
+      "kind": "cache",
+      "label": "Redis: stock per warehouse",
+      "x": 600,
+      "y": 110
+    },
+    {
+      "id": "inv_db",
+      "kind": "sql",
+      "label": "Postgres: inventory + orders (by warehouse)",
+      "x": 600,
+      "y": 220
+    },
+    {
+      "id": "relay",
+      "kind": "worker",
+      "label": "Outbox / CDC relay",
+      "x": 800,
+      "y": 220
+    },
+    {
+      "id": "stream",
+      "kind": "stream",
+      "label": "Kafka: stock + order events",
+      "x": 980,
+      "y": 220
+    },
+    {
+      "id": "cache_updater",
+      "kind": "worker",
+      "label": "Stock cache updater",
+      "x": 800,
+      "y": 110
+    },
+    {
+      "id": "area_job",
+      "kind": "worker",
+      "label": "Service-area builder (isochrones)",
+      "x": 800,
+      "y": 20
+    },
+    {
+      "id": "maps",
+      "kind": "external",
+      "label": "Maps / routing API",
+      "x": 980,
+      "y": 60
+    },
+    {
+      "id": "order_svc",
+      "kind": "service",
+      "label": "Order service",
+      "x": 400,
+      "y": 180
+    },
+    {
+      "id": "psp",
+      "kind": "external",
+      "label": "Payment provider",
+      "x": 600,
+      "y": 320
+    },
+    {
+      "id": "driver",
+      "kind": "client",
+      "label": "Driver app",
+      "x": 40,
+      "y": 380
+    },
+    {
+      "id": "loc_svc",
+      "kind": "service",
+      "label": "Driver location service",
+      "x": 400,
+      "y": 420
+    },
+    {
+      "id": "driver_geo",
+      "kind": "cache",
+      "label": "Redis GEO: driver positions",
+      "x": 600,
+      "y": 420
+    },
+    {
+      "id": "dispatcher",
+      "kind": "worker",
+      "label": "Dispatcher (batched matching)",
+      "x": 800,
+      "y": 340
+    },
+    {
+      "id": "push",
+      "kind": "external",
+      "label": "Push notifications (APNs / FCM)",
+      "x": 980,
+      "y": 420
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "browse, order, track"
+    },
+    {
+      "from": "lb",
+      "to": "avail_svc",
+      "label": "GET /availability"
+    },
+    {
+      "from": "avail_svc",
+      "to": "geo_cache",
+      "label": "cell → warehouses"
+    },
+    {
+      "from": "avail_svc",
+      "to": "inv_cache",
+      "label": "stock lookup"
+    },
+    {
+      "from": "inv_db",
+      "to": "relay",
+      "label": "CDC / outbox"
+    },
+    {
+      "from": "relay",
+      "to": "stream",
+      "label": "StockChanged, OrderConfirmed"
+    },
+    {
+      "from": "stream",
+      "to": "cache_updater",
+      "label": "StockChanged"
+    },
+    {
+      "from": "cache_updater",
+      "to": "inv_cache",
+      "label": "set qty"
+    },
+    {
+      "from": "area_job",
+      "to": "maps",
+      "label": "isochrones"
+    },
+    {
+      "from": "area_job",
+      "to": "geo_cache",
+      "label": "rebuild service areas"
+    },
+    {
+      "from": "lb",
+      "to": "order_svc",
+      "label": "POST /orders"
+    },
+    {
+      "from": "order_svc",
+      "to": "inv_db",
+      "label": "conditional decrement + order (1 txn)"
+    },
+    {
+      "from": "order_svc",
+      "to": "psp",
+      "label": "authorize / void"
+    },
+    {
+      "from": "driver",
+      "to": "lb",
+      "label": "GPS every 5 s, accept job"
+    },
+    {
+      "from": "lb",
+      "to": "loc_svc",
+      "label": "location updates"
+    },
+    {
+      "from": "loc_svc",
+      "to": "driver_geo",
+      "label": "GEOADD + TTL"
+    },
+    {
+      "from": "stream",
+      "to": "dispatcher",
+      "label": "OrderConfirmed"
+    },
+    {
+      "from": "dispatcher",
+      "to": "driver_geo",
+      "label": "idle drivers near warehouse"
+    },
+    {
+      "from": "dispatcher",
+      "to": "inv_db",
+      "label": "record assignment"
+    },
+    {
+      "from": "dispatcher",
+      "to": "push",
+      "label": "job offer"
+    }
+  ],
+  "flows": []
+}

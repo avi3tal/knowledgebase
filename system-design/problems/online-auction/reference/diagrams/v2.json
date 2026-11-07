@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "why": "Compose P1: a load balancer, a cached read path for item pages, and a bid service whose conditional update makes the highest bid consistent (N1) with the bid row in the same transaction (N2).",
+  "nodes": [
+    {
+      "id": "auction_svc",
+      "kind": "service",
+      "label": "Auction service (create, view)",
+      "x": 400,
+      "y": 80
+    },
+    {
+      "id": "cache",
+      "kind": "cache",
+      "label": "Redis: auction page cache",
+      "x": 620,
+      "y": 80
+    },
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Bidder / watcher app",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer / API gateway",
+      "x": 200,
+      "y": 240
+    },
+    {
+      "id": "bid_svc",
+      "kind": "service",
+      "label": "Bid service",
+      "x": 400,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "Postgres: auctions, bids, outbox",
+      "x": 620,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "lb",
+      "to": "auction_svc",
+      "label": "view / create"
+    },
+    {
+      "from": "auction_svc",
+      "to": "cache",
+      "label": "read-through"
+    },
+    {
+      "from": "auction_svc",
+      "to": "db",
+      "label": "write / miss"
+    },
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "API + SSE"
+    },
+    {
+      "from": "lb",
+      "to": "bid_svc",
+      "label": "POST /bids"
+    },
+    {
+      "from": "bid_svc",
+      "to": "db",
+      "label": "CAS high bid + insert bid"
+    }
+  ],
+  "flows": []
+}

@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "why": "Naive start: one app updates a payments table and a balance column, and calls the processor inline. A timeout + retry double charges, a crash loses the record, and nobody can explain a balance.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Merchant server (API client)",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "Payment app",
+      "x": 320,
+      "y": 240
+    },
+    {
+      "id": "db1",
+      "kind": "sql",
+      "label": "payments table (balance column)",
+      "x": 560,
+      "y": 240
+    },
+    {
+      "id": "psp",
+      "kind": "external",
+      "label": "PSP / card processor",
+      "x": 400,
+      "y": 440
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "app",
+      "label": "POST /pay"
+    },
+    {
+      "from": "app",
+      "to": "db1",
+      "label": "UPDATE balance"
+    },
+    {
+      "from": "app",
+      "to": "psp",
+      "label": "charge"
+    }
+  ],
+  "flows": []
+}

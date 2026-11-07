@@ -1,0 +1,103 @@
+{
+  "version": 2,
+  "why": "Compose P1 and P2: a gateway, idempotency keys committed with the payment (N1), and a persisted state machine whose PSP calls reuse one key and retry through a backoff queue.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Merchant server (API client)",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "gw",
+      "kind": "api-gateway",
+      "label": "API gateway: auth, rate limits",
+      "x": 200,
+      "y": 240
+    },
+    {
+      "id": "pay_svc",
+      "kind": "service",
+      "label": "Payment service (state machine)",
+      "x": 400,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "Payments DB: payments, idempotency keys, outbox",
+      "x": 620,
+      "y": 240
+    },
+    {
+      "id": "psp",
+      "kind": "external",
+      "label": "PSP / card processor",
+      "x": 400,
+      "y": 440
+    },
+    {
+      "id": "retry_q",
+      "kind": "queue",
+      "label": "Retry queue (backoff + DLQ)",
+      "x": 620,
+      "y": 360
+    },
+    {
+      "id": "executor",
+      "kind": "worker",
+      "label": "Payment executor (retries, status checks)",
+      "x": 620,
+      "y": 460
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "gw",
+      "label": "POST /payments + Idempotency-Key"
+    },
+    {
+      "from": "gw",
+      "to": "pay_svc",
+      "label": "route"
+    },
+    {
+      "from": "pay_svc",
+      "to": "db",
+      "label": "key + payment + outbox (1 txn)"
+    },
+    {
+      "from": "pay_svc",
+      "to": "psp",
+      "label": "authorize / capture (key = payment_id)"
+    },
+    {
+      "from": "pay_svc",
+      "to": "retry_q",
+      "label": "timeouts, retryable errors"
+    },
+    {
+      "from": "retry_q",
+      "to": "executor",
+      "label": "due retries"
+    },
+    {
+      "from": "executor",
+      "to": "psp",
+      "label": "retry / status query"
+    },
+    {
+      "from": "executor",
+      "to": "db",
+      "label": "update state"
+    },
+    {
+      "from": "psp",
+      "to": "gw",
+      "label": "PSP webhook"
+    }
+  ],
+  "flows": []
+}

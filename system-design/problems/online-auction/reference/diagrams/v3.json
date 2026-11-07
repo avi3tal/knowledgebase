@@ -1,0 +1,146 @@
+{
+  "version": 3,
+  "why": "Compose P2: committed bids leave through the outbox to Kafka, a publisher forwards them to per-auction Pub/Sub channels, and push servers deliver them to watchers in under a second (F3, N3).",
+  "nodes": [
+    {
+      "id": "auction_svc",
+      "kind": "service",
+      "label": "Auction service (create, view)",
+      "x": 400,
+      "y": 80
+    },
+    {
+      "id": "cache",
+      "kind": "cache",
+      "label": "Redis: auction page cache",
+      "x": 620,
+      "y": 80
+    },
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Bidder / watcher app",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer / API gateway",
+      "x": 200,
+      "y": 240
+    },
+    {
+      "id": "bid_svc",
+      "kind": "service",
+      "label": "Bid service",
+      "x": 400,
+      "y": 240
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "Postgres: auctions, bids, outbox",
+      "x": 620,
+      "y": 240
+    },
+    {
+      "id": "relay",
+      "kind": "worker",
+      "label": "Outbox relay",
+      "x": 800,
+      "y": 310
+    },
+    {
+      "id": "stream",
+      "kind": "stream",
+      "label": "Kafka: bid + auction events",
+      "x": 980,
+      "y": 240
+    },
+    {
+      "id": "fanout",
+      "kind": "worker",
+      "label": "Fan-out publisher",
+      "x": 800,
+      "y": 420
+    },
+    {
+      "id": "pubsub",
+      "kind": "queue",
+      "label": "Redis Pub/Sub: auction:{id}",
+      "x": 620,
+      "y": 420
+    },
+    {
+      "id": "push_svc",
+      "kind": "service",
+      "label": "Push servers (SSE / WebSocket)",
+      "x": 400,
+      "y": 400
+    }
+  ],
+  "edges": [
+    {
+      "from": "lb",
+      "to": "auction_svc",
+      "label": "view / create"
+    },
+    {
+      "from": "auction_svc",
+      "to": "cache",
+      "label": "read-through"
+    },
+    {
+      "from": "auction_svc",
+      "to": "db",
+      "label": "write / miss"
+    },
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "API + SSE"
+    },
+    {
+      "from": "lb",
+      "to": "bid_svc",
+      "label": "POST /bids"
+    },
+    {
+      "from": "bid_svc",
+      "to": "db",
+      "label": "CAS high bid + insert bid"
+    },
+    {
+      "from": "lb",
+      "to": "push_svc",
+      "label": "SSE subscribe"
+    },
+    {
+      "from": "db",
+      "to": "relay",
+      "label": "outbox rows"
+    },
+    {
+      "from": "relay",
+      "to": "stream",
+      "label": "BidPlaced, AuctionClosed"
+    },
+    {
+      "from": "stream",
+      "to": "fanout",
+      "label": "BidPlaced"
+    },
+    {
+      "from": "fanout",
+      "to": "pubsub",
+      "label": "PUBLISH auction:{id}"
+    },
+    {
+      "from": "pubsub",
+      "to": "push_svc",
+      "label": "messages for subscribed auctions"
+    }
+  ],
+  "flows": []
+}

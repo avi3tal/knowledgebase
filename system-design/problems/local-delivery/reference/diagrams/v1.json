@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: one app and one SQL database. Every page view computes distances and reads stock from the database, and checkout checks then decrements stock, so two customers can buy the last unit.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Customer app",
+      "x": 40,
+      "y": 160
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "Delivery app",
+      "x": 320,
+      "y": 240
+    },
+    {
+      "id": "db1",
+      "kind": "sql",
+      "label": "One SQL database",
+      "x": 600,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "app",
+      "label": "browse, order"
+    },
+    {
+      "from": "app",
+      "to": "db1",
+      "label": "read stock, decrement"
+    }
+  ],
+  "flows": []
+}

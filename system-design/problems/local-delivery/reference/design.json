@@ -1,0 +1,711 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Show the items available for delivery to the customer's address, from nearby warehouses."
+      },
+      {
+        "id": "F2",
+        "text": "Place an order for a cart and pay; one warehouse fulfils the order."
+      },
+      {
+        "id": "F3",
+        "text": "Dispatch: assign each order to a driver who picks it up and delivers it."
+      },
+      {
+        "id": "F4",
+        "text": "Show an ETA at checkout and track the order until delivery."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "No overselling: an order is confirmed only if every item is in stock at its warehouse (strongly consistent per warehouse); browsing may be seconds stale."
+      },
+      {
+        "id": "N2",
+        "text": "Availability reads p99 < 100 ms; read-heavy (~1,000 reads per order)."
+      },
+      {
+        "id": "N3",
+        "text": "Deliveries within ~30 minutes: only warehouses within ~30 min travel serve an address."
+      },
+      {
+        "id": "N4",
+        "text": "Browsing stays available even if ordering is degraded."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "500 warehouses, ~5k SKUs each; 10M DAU with ~20 availability views each; 500k orders/day."
+      },
+      {
+        "id": "A2",
+        "text": "20k active drivers sending GPS every 5 s."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Warehouse replenishment, pricing and promotions, driver payroll."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "GET",
+      "path": "/availability?lat=&lng=&category=",
+      "request": "location, category or query",
+      "response": "200 {warehouse_ids, items[{sku, name, price, in_stock}]}",
+      "notes": "Served from Redis."
+    },
+    {
+      "id": "E2",
+      "method": "POST",
+      "path": "/orders",
+      "request": "lines[{sku, qty}], address, payment_token; Idempotency-Key header",
+      "response": "201 {order_id, warehouse_id, eta} | 409 {out_of_stock: [sku]}",
+      "notes": "One warehouse-shard transaction."
+    },
+    {
+      "id": "E3",
+      "method": "GET",
+      "path": "/orders/{id}/track",
+      "request": "",
+      "response": "200 {status, driver_position, eta}",
+      "notes": "Polled every ~10 s."
+    },
+    {
+      "id": "E4",
+      "method": "POST",
+      "path": "/drivers/{id}/location",
+      "request": "lat, lng, ts",
+      "response": "204",
+      "notes": "Every 5 s from the driver app."
+    },
+    {
+      "id": "E5",
+      "method": "POST",
+      "path": "/drivers/{id}/jobs/{order_id}/accept",
+      "request": "",
+      "response": "200 | 409 already taken",
+      "notes": "Offer acceptance."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "inventory",
+      "fields": "(warehouse_id, sku) PK, qty, version",
+      "store": "sql",
+      "why": "Authoritative stock; sharded by warehouse so a cart is a single-shard transaction."
+    },
+    {
+      "id": "D2",
+      "name": "orders",
+      "fields": "order_id, customer_id, warehouse_id, lines, status pending_payment|confirmed|packed|out_for_delivery|delivered|cancelled, driver_id, idempotency_key (unique)",
+      "store": "sql",
+      "why": "Same shard as the warehouse's inventory."
+    },
+    {
+      "id": "D3",
+      "name": "service areas",
+      "fields": "geohash6 cell → [warehouse_id, travel_minutes]",
+      "store": "cache",
+      "why": "Precomputed from isochrones; read on every availability call."
+    },
+    {
+      "id": "D4",
+      "name": "stock cache",
+      "fields": "stock:{warehouse_id} hash sku → qty",
+      "store": "cache",
+      "why": "In-memory copy of all inventory (~250 MB), fed by CDC."
+    },
+    {
+      "id": "D5",
+      "name": "driver positions",
+      "fields": "GEO set drivers:{city}, status per driver with TTL",
+      "store": "cache",
+      "why": "Nearby-driver queries for dispatch and tracking."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Stock taken by an order whose payment fails",
+      "options": [
+        {
+          "name": "Authorize payment first, then decrement",
+          "pros": "no stock taken for declined cards",
+          "cons": "a paid order can still fail on stock: a void is needed anyway"
+        },
+        {
+          "name": "Decrement first (pending_payment), then authorize; compensate on failure; sweeper releases stale pending orders",
+          "pros": "a customer never pays for something out of stock",
+          "cons": "stock is briefly held by orders that may not complete"
+        }
+      ],
+      "choice": "Decrement first, then authorize; a compensating increment on decline or timeout, and a sweeper that releases pending orders older than 10 minutes; capture after packing",
+      "why": "N1 is the promise customers notice. Holding a unit for a few seconds of card authorization is cheap, and the saga's compensation keeps stock honest.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "How stale availability may be",
+      "options": [
+        {
+          "name": "Read stock from the database on every view",
+          "pros": "exact",
+          "cons": "~12k reads/s on the database that must take orders"
+        },
+        {
+          "name": "CDC-fed cache, ~1 s behind; order decrement is the real check",
+          "pros": "fast and cheap; correctness kept",
+          "cons": "occasional 409 at checkout for the last unit"
+        }
+      ],
+      "choice": "CDC-fed Redis cache; show 'only a few left' below a threshold; the conditional decrement decides",
+      "why": "Separating the read model from the write model (CQRS) puts the 1,000:1 read load on memory, while N1 is enforced where it must be.",
+      "version": 2
+    },
+    {
+      "id": "DD3",
+      "title": "Carts that no single warehouse can fill",
+      "options": [
+        {
+          "name": "Split the order across warehouses",
+          "pros": "more items sellable",
+          "cons": "two drivers, two ETAs, complex refunds"
+        },
+        {
+          "name": "Pick the closest warehouse that has the whole cart; otherwise suggest substitutes",
+          "pros": "one trip, one ETA",
+          "cons": "some carts can't be completed as-is"
+        }
+      ],
+      "choice": "One warehouse per order; suggest substitutes for missing items",
+      "why": "The 30-minute promise (N3) and the one-driver cost model favour single-warehouse orders.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Drivers at a busy warehouse (the real-world constraint: show longer ETAs or pause new orders), hot SKUs on one warehouse shard, the Redis availability cache, and the maps/routing API quota.",
+    "failures": "Redis down: availability falls back to read replicas of the inventory DB with a rate limit; orders still use the primary. Relay lag: the stock cache and dispatch lag, but orders stay correct. Dispatcher down: confirmed orders queue in Kafka and are assigned on recovery. Maps API down: fall back to distance-based ETA.",
+    "monitoring": "Availability p99 and cache lag, 409 out-of-stock rate at checkout, pending_payment orders older than 10 min, order → assignment time, ETA error, on-time delivery %, idle vs busy drivers per warehouse.",
+    "scale": "New cities add warehouses: shard by warehouse, add Redis memory (~0.5 KB per SKU per warehouse), partition Kafka by warehouse_id, and run one dispatcher partition per region.",
+    "future": "Predictive restocking from demand, dynamic delivery fees by driver supply, batching three or more orders per trip, substitutions chosen by the customer."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Nearby availability",
+      "covers": [
+        "F1",
+        "N2",
+        "N3"
+      ],
+      "problem": "For any address, answer 'what can be delivered here in 30 minutes, and is it in stock?' at ~2,300 reads/s (peaks ~12k) in < 100 ms, across 500 warehouses × 5k SKUs.",
+      "options": [
+        {
+          "name": "Per request: compute distance to every warehouse, then query stock in Postgres",
+          "pros": "always fresh, simple",
+          "cons": "straight-line distance ignores roads; every page view hits the inventory database"
+        },
+        {
+          "name": "Precomputed service areas: geohash cell → warehouses within 30 min; stock served from a CDC-fed Redis copy",
+          "pros": "an O(1) geo lookup and memory-speed stock reads; the DB only takes orders",
+          "cons": "stock shown can be ~1 s stale; isochrones must be rebuilt when warehouses or traffic patterns change"
+        },
+        {
+          "name": "Push every stock change to every open app",
+          "pros": "very fresh",
+          "cons": "fan-out of every decrement to thousands of screens for no correctness gain"
+        }
+      ],
+      "choice": "Precomputed service areas (geohash cell → warehouses within 30 minutes of travel) plus a Redis copy of stock per warehouse, kept fresh from CDC events",
+      "why": "All inventory is ~250 MB, so it fits in memory, and reads outnumber orders ~1,000:1. Travel time, not distance, defines the promise, so service areas are computed offline from a routing API. Slight staleness is safe because the order's conditional decrement (P2) is the real check.",
+      "technologies": [
+        "redis",
+        "kafka"
+      ],
+      "patterns": [
+        "geo-indexing",
+        "cqrs"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Customer app",
+            "x": 40,
+            "y": 160
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer / API gateway",
+            "x": 200,
+            "y": 270
+          },
+          {
+            "id": "avail_svc",
+            "kind": "service",
+            "label": "Availability service",
+            "x": 400,
+            "y": 60
+          },
+          {
+            "id": "geo_cache",
+            "kind": "cache",
+            "label": "Redis: geo cell → warehouses",
+            "x": 600,
+            "y": 20
+          },
+          {
+            "id": "inv_cache",
+            "kind": "cache",
+            "label": "Redis: stock per warehouse",
+            "x": 600,
+            "y": 110
+          },
+          {
+            "id": "inv_db",
+            "kind": "sql",
+            "label": "Postgres: inventory + orders (by warehouse)",
+            "x": 600,
+            "y": 220
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox / CDC relay",
+            "x": 800,
+            "y": 220
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: stock + order events",
+            "x": 980,
+            "y": 220
+          },
+          {
+            "id": "cache_updater",
+            "kind": "worker",
+            "label": "Stock cache updater",
+            "x": 800,
+            "y": 110
+          },
+          {
+            "id": "area_job",
+            "kind": "worker",
+            "label": "Service-area builder (isochrones)",
+            "x": 800,
+            "y": 20
+          },
+          {
+            "id": "maps",
+            "kind": "external",
+            "label": "Maps / routing API",
+            "x": 980,
+            "y": 60
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "browse, order, track"
+          },
+          {
+            "from": "lb",
+            "to": "avail_svc",
+            "label": "GET /availability"
+          },
+          {
+            "from": "avail_svc",
+            "to": "geo_cache",
+            "label": "cell → warehouses"
+          },
+          {
+            "from": "avail_svc",
+            "to": "inv_cache",
+            "label": "stock lookup"
+          },
+          {
+            "from": "inv_db",
+            "to": "relay",
+            "label": "CDC / outbox"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "StockChanged, OrderConfirmed"
+          },
+          {
+            "from": "stream",
+            "to": "cache_updater",
+            "label": "StockChanged"
+          },
+          {
+            "from": "cache_updater",
+            "to": "inv_cache",
+            "label": "set qty"
+          },
+          {
+            "from": "area_job",
+            "to": "maps",
+            "label": "isochrones"
+          },
+          {
+            "from": "area_job",
+            "to": "geo_cache",
+            "label": "rebuild service areas"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Order placement without overselling",
+      "covers": [
+        "F2",
+        "N1"
+      ],
+      "problem": "Confirm a cart only if every line is in stock at one warehouse, even when two customers race for the last unit, and never leave stock taken by an order that wasn't paid.",
+      "options": [
+        {
+          "name": "Check stock, then decrement in the app",
+          "pros": "simple",
+          "cons": "race: both customers see 1 and both orders are confirmed"
+        },
+        {
+          "name": "Redis DECR as the source of truth",
+          "pros": "very fast",
+          "cons": "a second truth to keep in sync with the DB; failover can lose decrements; multi-line carts aren't atomic"
+        },
+        {
+          "name": "One Postgres transaction on the warehouse shard: conditional decrement per line + the order row",
+          "pros": "atomic across all lines, durable, no read-modify-write window",
+          "cons": "one hot SKU contends on one row; every order is a DB write"
+        }
+      ],
+      "choice": "One Postgres transaction on the warehouse's shard: a conditional decrement (qty >= n) for every line plus the order row; then authorize payment, compensating with an increment if it fails",
+      "why": "~30 orders/s at peak is trivial for Postgres, and a cart only touches one warehouse, so sharding by warehouse keeps every order a single-shard transaction. The conditional decrement makes overselling impossible by construction.",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "optimistic-concurrency",
+        "saga",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Customer app",
+            "x": 40,
+            "y": 160
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer / API gateway",
+            "x": 200,
+            "y": 270
+          },
+          {
+            "id": "order_svc",
+            "kind": "service",
+            "label": "Order service",
+            "x": 400,
+            "y": 180
+          },
+          {
+            "id": "inv_db",
+            "kind": "sql",
+            "label": "Postgres: inventory + orders (by warehouse)",
+            "x": 600,
+            "y": 220
+          },
+          {
+            "id": "psp",
+            "kind": "external",
+            "label": "Payment provider",
+            "x": 600,
+            "y": 320
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "browse, order, track"
+          },
+          {
+            "from": "lb",
+            "to": "order_svc",
+            "label": "POST /orders"
+          },
+          {
+            "from": "order_svc",
+            "to": "inv_db",
+            "label": "conditional decrement + order (1 txn)"
+          },
+          {
+            "from": "order_svc",
+            "to": "psp",
+            "label": "authorize / void"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Dispatch and driver assignment",
+      "covers": [
+        "F3",
+        "N3"
+      ],
+      "problem": "Assign each confirmed order to a driver so it leaves the warehouse as soon as it's packed, with ~20k active drivers reporting GPS every 5 s (~4k updates/s).",
+      "options": [
+        {
+          "name": "Drivers poll for open jobs and grab them",
+          "pros": "no dispatcher",
+          "cons": "races between drivers; no global optimisation; unfair"
+        },
+        {
+          "name": "Greedy: nearest idle driver at order time",
+          "pros": "simple, instant",
+          "cons": "assigns too early (the order isn't packed); misses batching two orders into one trip"
+        },
+        {
+          "name": "Batched matching every ~15 s per warehouse over a live location index",
+          "pros": "considers pack time, driver return time and batching; good overall on-time rate",
+          "cons": "adds up to one batch interval of delay; a matching algorithm to own"
+        }
+      ],
+      "choice": "Drivers' GPS in a Redis GEO index; a dispatcher consumes OrderConfirmed events and runs batched matching per warehouse every ~15 s, offering jobs by push with a timeout and re-offer",
+      "why": "Packing takes several minutes, so a 15-second batch costs nothing visible but lets the dispatcher group nearby orders and pick drivers who are about to return. 4k location writes/s is easy for Redis GEO with a TTL per driver.",
+      "technologies": [
+        "redis",
+        "kafka"
+      ],
+      "patterns": [
+        "geo-indexing",
+        "outbox-pattern"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "driver",
+            "kind": "client",
+            "label": "Driver app",
+            "x": 40,
+            "y": 380
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer / API gateway",
+            "x": 200,
+            "y": 270
+          },
+          {
+            "id": "loc_svc",
+            "kind": "service",
+            "label": "Driver location service",
+            "x": 400,
+            "y": 420
+          },
+          {
+            "id": "driver_geo",
+            "kind": "cache",
+            "label": "Redis GEO: driver positions",
+            "x": 600,
+            "y": 420
+          },
+          {
+            "id": "inv_db",
+            "kind": "sql",
+            "label": "Postgres: inventory + orders (by warehouse)",
+            "x": 600,
+            "y": 220
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox / CDC relay",
+            "x": 800,
+            "y": 220
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: stock + order events",
+            "x": 980,
+            "y": 220
+          },
+          {
+            "id": "dispatcher",
+            "kind": "worker",
+            "label": "Dispatcher (batched matching)",
+            "x": 800,
+            "y": 340
+          },
+          {
+            "id": "push",
+            "kind": "external",
+            "label": "Push notifications (APNs / FCM)",
+            "x": 980,
+            "y": 420
+          }
+        ],
+        "edges": [
+          {
+            "from": "driver",
+            "to": "lb",
+            "label": "GPS every 5 s, accept job"
+          },
+          {
+            "from": "lb",
+            "to": "loc_svc",
+            "label": "location updates"
+          },
+          {
+            "from": "loc_svc",
+            "to": "driver_geo",
+            "label": "GEOADD + TTL"
+          },
+          {
+            "from": "inv_db",
+            "to": "relay",
+            "label": "CDC / outbox"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "StockChanged, OrderConfirmed"
+          },
+          {
+            "from": "stream",
+            "to": "dispatcher",
+            "label": "OrderConfirmed"
+          },
+          {
+            "from": "dispatcher",
+            "to": "driver_geo",
+            "label": "idle drivers near warehouse"
+          },
+          {
+            "from": "dispatcher",
+            "to": "inv_db",
+            "label": "record assignment"
+          },
+          {
+            "from": "dispatcher",
+            "to": "push",
+            "label": "job offer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "ETA and order tracking",
+      "covers": [
+        "F4",
+        "N3"
+      ],
+      "problem": "Show an honest ETA at checkout and live tracking afterwards, combining warehouse pack time and travel time.",
+      "options": [
+        {
+          "name": "Static ETA from straight-line distance",
+          "pros": "free",
+          "cons": "wrong in traffic and when the warehouse is busy"
+        },
+        {
+          "name": "Pack-time estimate per warehouse + routing API travel time, refreshed on driver movement; client polls every ~10 s",
+          "pros": "accurate, cheap enough",
+          "cons": "a maps API dependency and quota"
+        }
+      ],
+      "choice": "ETA = recent pack time at the warehouse + routing-API travel time, recomputed when the driver moves; the app polls the tracking endpoint every ~10 s",
+      "why": "Tracking needs updates every few seconds, not milliseconds, so polling a cached ETA is simpler than holding connections. Pack time dominates on busy evenings, so it must be measured per warehouse, not assumed.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "geo-indexing"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Customer app",
+            "x": 40,
+            "y": 160
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer / API gateway",
+            "x": 200,
+            "y": 270
+          },
+          {
+            "id": "eta_svc",
+            "kind": "service",
+            "label": "Tracking / ETA service",
+            "x": 400,
+            "y": 300
+          },
+          {
+            "id": "driver_geo",
+            "kind": "cache",
+            "label": "Redis GEO: driver positions",
+            "x": 600,
+            "y": 420
+          },
+          {
+            "id": "maps",
+            "kind": "external",
+            "label": "Maps / routing API",
+            "x": 980,
+            "y": 60
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "browse, order, track"
+          },
+          {
+            "from": "lb",
+            "to": "eta_svc",
+            "label": "GET /orders/{id}/track"
+          },
+          {
+            "from": "eta_svc",
+            "to": "driver_geo",
+            "label": "driver position"
+          },
+          {
+            "from": "eta_svc",
+            "to": "maps",
+            "label": "travel time"
+          }
+        ]
+      }
+    }
+  ]
+}

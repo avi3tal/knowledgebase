@@ -1,0 +1,391 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Local inventory under a geographic promise: precompute 'who can serve this place' as a geo lookup, serve stock from a CDC-fed in-memory copy, keep the authoritative conditional decrement in one shard per location, and treat matching couriers as a batched assignment over a live location index.",
+  "checks": [
+    {
+      "id": "req-availability",
+      "type": "requirement",
+      "label": "Discovery use case captured",
+      "keywords": [
+        "available",
+        "availability",
+        "in stock",
+        "nearby",
+        "browse",
+        "catalog",
+        "near me"
+      ],
+      "tips": {
+        "nudge": "A customer opens the app at home. What must the first screen get right?",
+        "hint": "Add a functional requirement for showing what can actually be delivered to this address.",
+        "show": "F1: Show the items available for delivery to the customer's address, from warehouses that can reach it within 30 minutes."
+      }
+    },
+    {
+      "id": "req-order",
+      "type": "requirement",
+      "label": "Purchase use case captured",
+      "keywords": [
+        "order",
+        "checkout",
+        "purchase",
+        "buy",
+        "cart"
+      ],
+      "tips": {
+        "nudge": "What turns a cart into a delivery?",
+        "hint": "Add a requirement for placing an order and paying.",
+        "show": "F2: Place an order for a cart of items and pay; the order is fulfilled by one warehouse."
+      }
+    },
+    {
+      "id": "req-dispatch",
+      "type": "requirement",
+      "label": "Fulfilment use case captured",
+      "keywords": [
+        "dispatch",
+        "driver",
+        "courier",
+        "assign",
+        "deliver"
+      ],
+      "tips": {
+        "nudge": "The bag is packed. Who takes it, and how is that decided?",
+        "hint": "Add a requirement for assigning orders to drivers.",
+        "show": "F3: Assign each order to a driver who picks it up at the warehouse and delivers it."
+      }
+    },
+    {
+      "id": "req-oversell",
+      "type": "requirement",
+      "label": "Inventory correctness stated",
+      "sections": [
+        "non_functional"
+      ],
+      "keywords": [
+        "oversell",
+        "over-sell",
+        "out of stock",
+        "in stock",
+        "consisten",
+        "never sell",
+        "never confirm"
+      ],
+      "tips": {
+        "nudge": "Two customers buy the last bottle of milk. What must not happen?",
+        "hint": "State a non-functional requirement for inventory correctness at order time.",
+        "show": "N1: No overselling: an order is confirmed only if every item is in stock at its warehouse (strong consistency per warehouse); browsing may be seconds stale."
+      }
+    },
+    {
+      "id": "req-fast",
+      "type": "requirement",
+      "label": "Speed expectations stated",
+      "sections": [
+        "non_functional",
+        "assumptions"
+      ],
+      "keywords": [
+        "30 min",
+        "minutes",
+        "latency",
+        "ms",
+        "fast",
+        "eta"
+      ],
+      "tips": {
+        "nudge": "What is the product's promise, and what does the app need to feel instant?",
+        "hint": "Add non-functional requirements for the delivery promise and availability latency.",
+        "show": "N2: Availability reads p99 < 100 ms; N3: deliveries within ~30 minutes, so only warehouses within ~30 min travel serve an address."
+      }
+    },
+    {
+      "id": "est-read-qps",
+      "type": "estimate",
+      "label": "Read throughput estimated",
+      "keywords": [
+        "availab",
+        "read",
+        "browse",
+        "view",
+        "catalog"
+      ],
+      "unit": "/s",
+      "min": 500,
+      "max": 100000,
+      "tips": {
+        "nudge": "Start from daily users and how often they look at items.",
+        "hint": "read_qps = DAU × views per user / 86,400 s.",
+        "show": "availability_qps = 10M × 20 / day ≈ 2,300 /s (peak ×5 ≈ 12k /s)."
+      }
+    },
+    {
+      "id": "est-order-qps",
+      "type": "estimate",
+      "label": "Write throughput estimated",
+      "keywords": [
+        "order"
+      ],
+      "unit": "/s",
+      "min": 1,
+      "max": 1000,
+      "tips": {
+        "nudge": "How many orders per day?",
+        "hint": "order_qps = orders per day / 86,400 s, with an evening peak.",
+        "show": "order_qps = 500k / day ≈ 6 /s (peak ×5 ≈ 30 /s): tiny. The hard part is correctness, not volume."
+      }
+    },
+    {
+      "id": "est-inventory-size",
+      "type": "estimate",
+      "label": "Inventory data size estimated",
+      "keywords": [
+        "inventory",
+        "stock",
+        "size",
+        "storage"
+      ],
+      "unit": "MB",
+      "min": 10,
+      "max": 100000,
+      "tips": {
+        "nudge": "Warehouses × SKUs per warehouse: is that big?",
+        "hint": "inventory rows = warehouses × SKUs; × bytes per row.",
+        "show": "inventory_size = 500 warehouses × 5k SKUs × 100 B ≈ 250 MB: fits in memory, so cache all of it."
+      }
+    },
+    {
+      "id": "est-location",
+      "type": "estimate",
+      "label": "Driver location load estimated",
+      "keywords": [
+        "location",
+        "gps",
+        "driver",
+        "position",
+        "ping"
+      ],
+      "unit": "/s",
+      "min": 100,
+      "max": 100000,
+      "tips": {
+        "nudge": "Every active driver reports where they are. How often, and how many drivers?",
+        "hint": "updates/s = active drivers / seconds between pings.",
+        "show": "driver_location_qps = 20k drivers / 5 s ≈ 4,000 /s."
+      }
+    },
+    {
+      "id": "api-availability",
+      "type": "endpoint",
+      "label": "Read endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "availab",
+        "item",
+        "catalog",
+        "inventory",
+        "stock",
+        "product"
+      ],
+      "tips": {
+        "nudge": "What does the app ask for on the home screen?",
+        "hint": "A GET with the delivery location (and category/search) returning available items.",
+        "show": "GET /availability?lat=&lng=&category= → {warehouse_ids, items[{sku, name, price, in_stock}]}"
+      }
+    },
+    {
+      "id": "api-order",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "order",
+        "checkout"
+      ],
+      "tips": {
+        "nudge": "What does checkout send, and how do you make a retry safe?",
+        "hint": "A POST with the cart lines, address and payment token, plus an idempotency key.",
+        "show": "POST /orders {lines[{sku, qty}], address, payment_token} + Idempotency-Key → 201 {order_id, warehouse_id, eta} | 409 out of stock"
+      }
+    },
+    {
+      "id": "data-inventory",
+      "type": "entity",
+      "label": "Stock modelled",
+      "keywords": [
+        "inventory",
+        "stock",
+        "quantity",
+        "qty"
+      ],
+      "tips": {
+        "nudge": "Stock lives somewhere specific. What is the key?",
+        "hint": "One row per (warehouse, SKU) with a quantity you can decrement safely.",
+        "show": "inventory(warehouse_id, sku, qty, version) PK (warehouse_id, sku) in Postgres, sharded by warehouse."
+      }
+    },
+    {
+      "id": "part-availability",
+      "type": "part",
+      "label": "Nearby availability designed as its own part",
+      "keywords": [
+        "availab",
+        "nearby",
+        "geo",
+        "service area",
+        "browse",
+        "catalog"
+      ],
+      "tips": {
+        "nudge": "'What can I get delivered here?' joins geography and stock. Give it its own part.",
+        "hint": "Compare computing distances per request with precomputed service areas per geo cell, and DB reads with an in-memory copy of stock.",
+        "show": "Part 'Nearby availability': geohash cell → warehouses within 30 min (precomputed isochrones) in Redis; stock per warehouse cached in Redis, kept fresh by CDC events."
+      }
+    },
+    {
+      "id": "part-oversell",
+      "type": "part",
+      "label": "Order placement without overselling designed as its own part",
+      "keywords": [
+        "oversell",
+        "over-sell",
+        "order placement",
+        "decrement",
+        "reserv",
+        "inventory"
+      ],
+      "tips": {
+        "nudge": "Two orders race for the last unit. Treat that as its own sub-problem.",
+        "hint": "Compare check-then-write, Redis counters, and a conditional decrement inside a DB transaction.",
+        "show": "Part 'Order placement': one Postgres transaction on the warehouse shard: UPDATE inventory SET qty = qty - :n WHERE warehouse_id=:w AND sku=:s AND qty >= :n for every line, plus the order row; any line fails → roll back → 409."
+      }
+    },
+    {
+      "id": "part-dispatch",
+      "type": "part",
+      "label": "Driver assignment designed as its own part",
+      "keywords": [
+        "dispatch",
+        "driver",
+        "courier",
+        "assign",
+        "matching"
+      ],
+      "tips": {
+        "nudge": "Many orders, many drivers, a 30-minute promise. Give matching its own part.",
+        "hint": "Compare greedy nearest-driver at order time with batched matching every few seconds per warehouse.",
+        "show": "Part 'Dispatch': drivers report GPS to a Redis GEO index; a dispatcher consumes OrderConfirmed events and matches ready-soon orders to nearby idle drivers in short batches, then offers the job by push."
+      }
+    },
+    {
+      "id": "comp-cache",
+      "type": "component",
+      "label": "Read path can absorb the read load",
+      "kinds": [
+        "cache",
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Availability is read ~1,000 times per order. Where should those reads go?",
+        "hint": "Put an in-memory copy in front of the inventory database.",
+        "show": "Redis: geo cell → warehouses, and stock per (warehouse, SKU), updated from CDC."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Customers and drivers both call you. What spreads that traffic?",
+        "hint": "Stateless services behind something that distributes requests.",
+        "show": "Load balancer / API gateway in front of availability, order, location and tracking services."
+      }
+    },
+    {
+      "id": "comp-dispatcher",
+      "type": "component",
+      "label": "Something matches orders to drivers",
+      "kinds": [
+        "worker",
+        "service",
+        "scheduler"
+      ],
+      "keywords": [
+        "dispatch",
+        "assign",
+        "match"
+      ],
+      "tips": {
+        "nudge": "No customer request decides which driver goes. What does?",
+        "hint": "Add a component dedicated to assignment.",
+        "show": "A dispatcher worker that consumes confirmed orders and assigns drivers from the location index."
+      }
+    },
+    {
+      "id": "dd-payment-failure",
+      "type": "decision",
+      "label": "Stock taken by unpaid orders handled",
+      "keywords": [
+        "payment fail",
+        "compensat",
+        "release",
+        "restock",
+        "reserv",
+        "abandon",
+        "void"
+      ],
+      "tips": {
+        "nudge": "Stock is decremented, then the card is declined. What now?",
+        "hint": "Decide the order of 'take stock' and 'charge card', and how you undo one if the other fails.",
+        "show": "Decrement first (pending_payment), then authorize; on decline or timeout run a compensating increment; a sweeper releases pending orders older than 10 min. Capture only after packing."
+      }
+    },
+    {
+      "id": "dd-staleness",
+      "type": "decision",
+      "label": "Freshness of what customers see decided",
+      "keywords": [
+        "stale",
+        "fresh",
+        "cdc",
+        "invalidat",
+        "cache"
+      ],
+      "tips": {
+        "nudge": "The cache says 1 left; the database says 0. Is that a bug?",
+        "hint": "Decide how stale availability may be and what protects correctness.",
+        "show": "Cache fed by CDC is ~1 s behind; that's acceptable because the order's conditional decrement is the real check. Show 'only a few left' instead of exact counts."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks and single points of failure named",
+      "tips": {
+        "nudge": "Saturday 9 pm, one warehouse near a stadium. What saturates first?",
+        "hint": "Walk the order and dispatch paths for one busy warehouse.",
+        "show": "Drivers at a busy warehouse (the real constraint), hot SKUs on one warehouse shard, the Redis availability cache, and the maps/routing API quota."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How do you know you're breaking the 30-minute promise before customers complain?",
+        "hint": "List metrics for availability, orders and delivery.",
+        "show": "Availability p99 and cache lag, 409 out-of-stock rate at checkout, order → assignment time, ETA error, on-time delivery %, idle vs busy drivers per warehouse."
+      }
+    }
+  ]
+}

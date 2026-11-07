@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Contended single value with many watchers: make every write a conditional update in one source of truth, record it append-only in the same transaction, then fan the committed change out asynchronously through pub/sub to long-lived connections; time-driven state changes are guarded by the write path itself, not by a timer.",
+  "checks": [
+    {
+      "id": "req-bid",
+      "type": "requirement",
+      "label": "Core write use case captured",
+      "keywords": [
+        "bid",
+        "offer"
+      ],
+      "tips": {
+        "nudge": "What is the one action that changes an auction?",
+        "hint": "Write a functional requirement for placing a bid and when it is accepted.",
+        "show": "F2: Place a bid; it is accepted only if it beats the current highest bid by the minimum increment and the auction is open."
+      }
+    },
+    {
+      "id": "req-watch",
+      "type": "requirement",
+      "label": "Live experience captured",
+      "keywords": [
+        "real-time",
+        "realtime",
+        "real time",
+        "live",
+        "watch",
+        "push",
+        "instantly",
+        "within 1"
+      ],
+      "tips": {
+        "nudge": "Someone has the auction page open in the last minute. What should they see?",
+        "hint": "Add a requirement for seeing new highest bids as they happen.",
+        "show": "F3: Watchers see the current highest bid update live (within ~1 s) without refreshing."
+      }
+    },
+    {
+      "id": "req-close",
+      "type": "requirement",
+      "label": "End of an auction captured",
+      "keywords": [
+        "close",
+        "end time",
+        "ends",
+        "winner",
+        "expire",
+        "finish"
+      ],
+      "tips": {
+        "nudge": "What happens when the clock runs out?",
+        "hint": "Add a requirement for ending the auction and deciding the winner.",
+        "show": "F4: The auction closes at its end time; later bids are rejected; the highest bidder wins and both parties are notified."
+      }
+    },
+    {
+      "id": "req-consistency",
+      "type": "requirement",
+      "label": "Correctness guarantee for bids stated",
+      "sections": [
+        "non_functional"
+      ],
+      "keywords": [
+        "consisten",
+        "highest bid is never",
+        "never lost",
+        "lost update",
+        "race",
+        "concurren",
+        "linearizab",
+        "serializ"
+      ],
+      "tips": {
+        "nudge": "Two bidders submit at the same millisecond. What must never happen?",
+        "hint": "State the consistency guarantee for the highest bid as a non-functional requirement.",
+        "show": "N1: Strong consistency per auction: concurrent bids are ordered, exactly one is the highest, and an accepted bid is never overwritten by a lower one."
+      }
+    },
+    {
+      "id": "req-durable",
+      "type": "requirement",
+      "label": "Durability and traceability stated",
+      "sections": [
+        "non_functional"
+      ],
+      "keywords": [
+        "durab",
+        "audit",
+        "history",
+        "never lose",
+        "persist",
+        "dispute"
+      ],
+      "tips": {
+        "nudge": "A seller claims a bid was ignored. What do you need to show them?",
+        "hint": "Add a non-functional requirement about keeping every bid.",
+        "show": "N2: Durable: an acknowledged bid is never lost, and every bid is kept in an immutable audit log for disputes."
+      }
+    },
+    {
+      "id": "est-bid-qps",
+      "type": "estimate",
+      "label": "Write throughput estimated",
+      "keywords": [
+        "bid"
+      ],
+      "unit": "/s",
+      "min": 20,
+      "max": 10000,
+      "tips": {
+        "nudge": "Start from bids per day.",
+        "hint": "bid_qps = bids per day / 86,400 s, then a peak factor.",
+        "show": "bid_qps = 10M / day ≈ 120 /s; peak ×10 ≈ 1,200 /s; a hot auction alone can see ~100 /s at the end."
+      }
+    },
+    {
+      "id": "est-fanout",
+      "type": "estimate",
+      "label": "Real-time delivery load estimated",
+      "keywords": [
+        "fanout",
+        "fan_out",
+        "fan-out",
+        "push",
+        "broadcast",
+        "deliver"
+      ],
+      "unit": "/s",
+      "min": 10000,
+      "max": 50000000,
+      "tips": {
+        "nudge": "One bid on a popular auction has to reach how many screens?",
+        "hint": "Messages per second = bids per second on hot auctions × watchers per auction.",
+        "show": "fanout_msgs = 50 bids/s × 10k watchers ≈ 500k messages/s for one hot auction."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Bid history storage over a year estimated",
+      "keywords": [
+        "storage",
+        "bytes",
+        "size",
+        "history",
+        "audit"
+      ],
+      "unit": "GB",
+      "min": 50,
+      "max": 50000,
+      "tips": {
+        "nudge": "Every bid is kept. How much is that per year?",
+        "hint": "Bids per day × 365 × bytes per bid.",
+        "show": "bid_storage_year = 10M × 365 × 200 B ≈ 730 GB/year."
+      }
+    },
+    {
+      "id": "api-bid",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "bid"
+      ],
+      "tips": {
+        "nudge": "What does the client send when someone clicks 'Bid'?",
+        "hint": "A POST on the auction with an amount, safe to retry, answering accepted or outbid.",
+        "show": "POST /auctions/{id}/bids {amount} + Idempotency-Key → 201 {bid_id, high_bid} | 409 {current_high_bid}"
+      }
+    },
+    {
+      "id": "api-watch",
+      "type": "endpoint",
+      "label": "Live updates endpoint defined",
+      "method": "GET",
+      "keywords": [
+        "stream",
+        "subscribe",
+        "sse",
+        "socket",
+        "events",
+        "watch",
+        "live"
+      ],
+      "tips": {
+        "nudge": "How does the browser receive updates it didn't ask for?",
+        "hint": "A long-lived GET (SSE) or a WebSocket upgrade per auction.",
+        "show": "GET /auctions/{id}/stream (SSE, or a WebSocket) → events {high_bid, bidder_alias, bid_count, ends_at}"
+      }
+    },
+    {
+      "id": "data-bids",
+      "type": "entity",
+      "label": "Bids modelled",
+      "keywords": [
+        "bid",
+        "amount"
+      ],
+      "tips": {
+        "nudge": "What do you store for the auction, and what for each bid?",
+        "hint": "An auction row with the current high bid and a version, plus an append-only bids table.",
+        "show": "auctions(id, seller_id, status, ends_at, high_bid, high_bidder, version); bids(id, auction_id, bidder_id, amount, status, created_at), append-only."
+      }
+    },
+    {
+      "id": "part-bid",
+      "type": "part",
+      "label": "Concurrent writes designed as their own part",
+      "keywords": [
+        "bid placement",
+        "place a bid",
+        "concurren",
+        "highest",
+        "conflict",
+        "consisten",
+        "race"
+      ],
+      "tips": {
+        "nudge": "Two bids of $105 and $110 arrive together on a $100 auction. Treat that as its own sub-problem.",
+        "hint": "Compare a row lock, an optimistic compare-and-set on the high bid, and serializing bids per auction through a partitioned log.",
+        "show": "Part 'Bid placement': a conditional UPDATE auctions SET high_bid=… WHERE id=… AND status='open' AND now() < ends_at AND :amount >= high_bid + increment; insert the bid and an outbox row in the same transaction."
+      }
+    },
+    {
+      "id": "part-fanout",
+      "type": "part",
+      "label": "Live updates designed as their own part",
+      "keywords": [
+        "real-time",
+        "realtime",
+        "fan-out",
+        "fanout",
+        "push",
+        "watcher",
+        "broadcast",
+        "live"
+      ],
+      "tips": {
+        "nudge": "A hot auction has 10k watchers. Give delivering its updates its own part.",
+        "hint": "Compare polling, long polling, and push over SSE/WebSockets with a pub/sub channel per auction.",
+        "show": "Part 'Real-time fan-out': push servers hold SSE connections and subscribe to Redis Pub/Sub channel auction:{id}; a publisher forwards BidPlaced events from Kafka to the channel."
+      }
+    },
+    {
+      "id": "part-close",
+      "type": "part",
+      "label": "Ending auctions designed as its own part",
+      "keywords": [
+        "close",
+        "closing",
+        "end time",
+        "schedul",
+        "timer",
+        "expir",
+        "winner"
+      ],
+      "tips": {
+        "nudge": "Ten million auctions each end at their own second. What ends them?",
+        "hint": "Compare a periodic scan, per-auction timers/delayed messages, and a time-indexed poller; decide what actually rejects late bids.",
+        "show": "Part 'Auction close': late bids are rejected by the bid's own now() < ends_at predicate; a scheduler polls an ends_at index every second and a closer worker finalises the winner and emits AuctionClosed."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Millions of open connections and thousands of API calls: what spreads them?",
+        "hint": "Stateless services and push servers behind something that distributes requests.",
+        "show": "Load balancer / API gateway in front of the auction, bid and push services (sticky for SSE/WebSocket connections)."
+      }
+    },
+    {
+      "id": "comp-cache",
+      "type": "component",
+      "label": "Read path can absorb page views",
+      "kinds": [
+        "cache",
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Item pages are viewed far more than they are bid on.",
+        "hint": "Put something in front of the database for auction pages.",
+        "show": "Redis (and a CDN for images) for auction pages; live price comes from the push channel."
+      }
+    },
+    {
+      "id": "comp-closer",
+      "type": "component",
+      "label": "Something ends auctions on time",
+      "kinds": [
+        "scheduler",
+        "worker"
+      ],
+      "keywords": [
+        "close",
+        "end",
+        "schedul",
+        "timer",
+        "expir",
+        "due"
+      ],
+      "tips": {
+        "nudge": "No user request arrives at the moment an auction ends. What acts then?",
+        "hint": "Add a background component driven by end times.",
+        "show": "A close scheduler that polls auctions due by ends_at, and a closer worker that marks them closed and emits AuctionClosed."
+      }
+    },
+    {
+      "id": "edge-realtime",
+      "type": "edge",
+      "label": "Updates reach the connection holders",
+      "from_kinds": [
+        "queue",
+        "stream",
+        "cache"
+      ],
+      "to_kinds": [
+        "service"
+      ],
+      "to_keywords": [
+        "push",
+        "sse",
+        "websocket",
+        "socket",
+        "real-time",
+        "realtime",
+        "connection",
+        "live"
+      ],
+      "tips": {
+        "nudge": "The bid service and the server holding a watcher's connection are different machines. How does the update cross?",
+        "hint": "Connect a pub/sub component to the servers that hold the live connections.",
+        "show": "Redis Pub/Sub channel auction:{id} → push servers (SSE/WebSocket) → watchers."
+      }
+    },
+    {
+      "id": "dd-end-race",
+      "type": "decision",
+      "label": "Bids at the last moment handled",
+      "keywords": [
+        "sniping",
+        "snipe",
+        "last second",
+        "last-second",
+        "end time",
+        "late bid",
+        "clock",
+        "soft close",
+        "extension"
+      ],
+      "tips": {
+        "nudge": "A bid lands 5 ms after the end while the closer runs. Accepted or not, and who decides?",
+        "hint": "Decide whose clock defines the end and whether late bidding extends the auction.",
+        "show": "The database clock in the bid's conditional update is the single judge (now() < ends_at); the closer only finalises. Optional soft close: a bid in the last 2 minutes extends ends_at by 2 minutes."
+      }
+    },
+    {
+      "id": "dd-hot-auction",
+      "type": "decision",
+      "label": "A very popular auction handled",
+      "keywords": [
+        "hot",
+        "contention",
+        "serializ",
+        "per-auction",
+        "partition",
+        "single writer"
+      ],
+      "tips": {
+        "nudge": "One celebrity item gets hundreds of bids per second. Where does that hurt?",
+        "hint": "Compare row contention on one auction row with serializing that auction's bids through one partition.",
+        "show": "Row CAS handles ~100s of bids/s per auction; beyond that route bids by auction_id to a Kafka partition with a single writer that applies them in order and pushes results."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks and single points of failure named",
+      "tips": {
+        "nudge": "Which component sees the most load in the last minute of a hot auction?",
+        "hint": "Walk one hot auction's bid and fan-out paths and name what saturates.",
+        "show": "The hot auction row (row contention), the push tier for 10k+ watchers of one auction, the Pub/Sub node owning that channel, and the closer when many auctions end on the same second."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How would you know watchers are seeing stale prices?",
+        "hint": "List metrics for bids, fan-out and closing.",
+        "show": "Bid p99 and 409 rate, outbox/relay lag, bid → push delivery lag, open connections per push server, auctions overdue to close, closer lag."
+      }
+    }
+  ]
+}

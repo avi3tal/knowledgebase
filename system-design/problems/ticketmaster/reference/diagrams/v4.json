@@ -1,0 +1,240 @@
+{
+  "version": 4,
+  "why": "Compose P4: payment goes through an external PSP with idempotency keys and a webhook; confirmed bookings leave through the outbox to issue tickets (F4, N5).",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Fan app / browser",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "label": "CDN: static + event pages",
+      "x": 200,
+      "y": 80
+    },
+    {
+      "id": "gw",
+      "kind": "api-gateway",
+      "label": "API gateway: LB, auth, admission token",
+      "x": 200,
+      "y": 280
+    },
+    {
+      "id": "event_svc",
+      "kind": "service",
+      "label": "Event service (browse, seat map)",
+      "x": 400,
+      "y": 170
+    },
+    {
+      "id": "cache",
+      "kind": "cache",
+      "label": "Redis: event + seat-map cache",
+      "x": 620,
+      "y": 130
+    },
+    {
+      "id": "search",
+      "kind": "search",
+      "label": "Elasticsearch: events",
+      "x": 620,
+      "y": 220
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "Postgres: events, seats, bookings, outbox",
+      "x": 620,
+      "y": 330
+    },
+    {
+      "id": "relay",
+      "kind": "worker",
+      "label": "Outbox / CDC relay",
+      "x": 760,
+      "y": 420
+    },
+    {
+      "id": "stream",
+      "kind": "stream",
+      "label": "Kafka: booking + event changes",
+      "x": 960,
+      "y": 330
+    },
+    {
+      "id": "indexer",
+      "kind": "worker",
+      "label": "Search indexer",
+      "x": 840,
+      "y": 220
+    },
+    {
+      "id": "booking_svc",
+      "kind": "service",
+      "label": "Booking service (holds, bookings)",
+      "x": 400,
+      "y": 330
+    },
+    {
+      "id": "queue_svc",
+      "kind": "service",
+      "label": "Waiting-room service",
+      "x": 400,
+      "y": 40
+    },
+    {
+      "id": "wr_redis",
+      "kind": "cache",
+      "label": "Redis: waiting room (ZSET by arrival)",
+      "x": 620,
+      "y": 40
+    },
+    {
+      "id": "admitter",
+      "kind": "worker",
+      "label": "Admitter: N fans/s → signed token",
+      "x": 840,
+      "y": 40
+    },
+    {
+      "id": "psp",
+      "kind": "external",
+      "label": "Payment provider (Stripe)",
+      "x": 400,
+      "y": 460
+    },
+    {
+      "id": "ticket_worker",
+      "kind": "worker",
+      "label": "Ticket issuer (e-ticket, email)",
+      "x": 960,
+      "y": 450
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "cdn",
+      "label": "GET pages"
+    },
+    {
+      "from": "client",
+      "to": "gw",
+      "label": "API"
+    },
+    {
+      "from": "gw",
+      "to": "event_svc",
+      "label": "browse / seat map"
+    },
+    {
+      "from": "event_svc",
+      "to": "cache",
+      "label": "read-through"
+    },
+    {
+      "from": "event_svc",
+      "to": "search",
+      "label": "search"
+    },
+    {
+      "from": "event_svc",
+      "to": "db",
+      "label": "cache miss"
+    },
+    {
+      "from": "db",
+      "to": "relay",
+      "label": "CDC"
+    },
+    {
+      "from": "relay",
+      "to": "stream",
+      "label": "publish"
+    },
+    {
+      "from": "stream",
+      "to": "indexer",
+      "label": "event changes"
+    },
+    {
+      "from": "indexer",
+      "to": "search",
+      "label": "index"
+    },
+    {
+      "from": "gw",
+      "to": "booking_svc",
+      "label": "POST /holds, /bookings"
+    },
+    {
+      "from": "booking_svc",
+      "to": "db",
+      "label": "conditional UPDATE seats"
+    },
+    {
+      "from": "gw",
+      "to": "queue_svc",
+      "label": "join / poll position"
+    },
+    {
+      "from": "queue_svc",
+      "to": "wr_redis",
+      "label": "ZADD / ZRANK"
+    },
+    {
+      "from": "admitter",
+      "to": "wr_redis",
+      "label": "pop next N, mark admitted"
+    },
+    {
+      "from": "booking_svc",
+      "to": "psp",
+      "label": "charge (idempotency key)"
+    },
+    {
+      "from": "psp",
+      "to": "gw",
+      "label": "payment webhook"
+    },
+    {
+      "from": "stream",
+      "to": "ticket_worker",
+      "label": "BookingConfirmed"
+    }
+  ],
+  "flows": [
+    {
+      "name": "hold",
+      "path": [
+        "client",
+        "gw",
+        "booking_svc",
+        "db"
+      ]
+    },
+    {
+      "name": "pay",
+      "path": [
+        "booking_svc",
+        "psp",
+        "gw",
+        "booking_svc",
+        "db"
+      ]
+    },
+    {
+      "name": "ticket",
+      "path": [
+        "db",
+        "relay",
+        "stream",
+        "ticket_worker"
+      ]
+    }
+  ]
+}

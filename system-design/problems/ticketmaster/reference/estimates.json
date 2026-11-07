@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "dau",
+      "formula": "10 * million",
+      "unit": ""
+    },
+    {
+      "name": "browse_qps",
+      "formula": "dau * 20 / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_browse_qps",
+      "formula": "browse_qps * 5",
+      "unit": "/s"
+    },
+    {
+      "name": "booking_qps",
+      "formula": "1 * million / day",
+      "unit": "/s"
+    },
+    {
+      "name": "onsale_fans",
+      "formula": "10 * million",
+      "unit": ""
+    },
+    {
+      "name": "onsale_arrival_qps",
+      "formula": "onsale_fans / 600",
+      "unit": "/s"
+    },
+    {
+      "name": "onsale_seats",
+      "formula": "50 * thousand",
+      "unit": ""
+    },
+    {
+      "name": "fans_per_seat",
+      "formula": "onsale_fans / onsale_seats",
+      "unit": ""
+    },
+    {
+      "name": "onsale_booking_qps",
+      "formula": "onsale_seats / 600",
+      "unit": "/s"
+    },
+    {
+      "name": "seat_rows_year",
+      "formula": "100 * thousand * 5 * thousand",
+      "unit": ""
+    },
+    {
+      "name": "seat_storage_year",
+      "formula": "seat_rows_year * 200 / 10**9",
+      "unit": "GB"
+    }
+  ]
+}

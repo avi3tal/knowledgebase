@@ -1,0 +1,381 @@
+{
+  "version": 1,
+  "flags": {
+    "needs_lb": true
+  },
+  "pattern": "Exactly-once effects over unreliable calls: persist intent and state before every external side effect, make every hop idempotent with a key, publish through an outbox, record value as balanced append-only entries, and reconcile against the outside world as the final safety net.",
+  "checks": [
+    {
+      "id": "req-pay",
+      "type": "requirement",
+      "label": "Core use case captured",
+      "keywords": [
+        "charge",
+        "pay",
+        "accept a payment",
+        "collect"
+      ],
+      "tips": {
+        "nudge": "What does a merchant call you for?",
+        "hint": "Write a functional requirement for charging a customer on behalf of a merchant.",
+        "show": "F1: A merchant creates a payment: charge a customer's card for an amount and currency, and get back its status."
+      }
+    },
+    {
+      "id": "req-exactly-once",
+      "type": "requirement",
+      "label": "Retry safety stated",
+      "sections": [
+        "non_functional"
+      ],
+      "keywords": [
+        "double charge",
+        "double-charge",
+        "charged twice",
+        "exactly once",
+        "exactly-once",
+        "idempot",
+        "duplicate",
+        "at most once"
+      ],
+      "tips": {
+        "nudge": "The merchant's request times out and they retry. What must never happen to the customer?",
+        "hint": "State a non-functional requirement about retries and duplicate charges.",
+        "show": "N1: Exactly-once effect: retries from the merchant, from us or from the PSP never charge a customer twice."
+      }
+    },
+    {
+      "id": "req-correct",
+      "type": "requirement",
+      "label": "Money correctness stated",
+      "sections": [
+        "non_functional"
+      ],
+      "keywords": [
+        "ledger",
+        "balance",
+        "audit",
+        "never lose",
+        "to the cent",
+        "consisten",
+        "durab",
+        "correct"
+      ],
+      "tips": {
+        "nudge": "Finance asks: where did every cent go? What property answers that?",
+        "hint": "Add a non-functional requirement about correctness and auditability of money movements.",
+        "show": "N2: Correctness over availability: every money movement is durably recorded in a balanced, immutable ledger; balances are auditable to the cent (7-year retention)."
+      }
+    },
+    {
+      "id": "req-recon",
+      "type": "requirement",
+      "label": "Agreement with the outside world addressed",
+      "keywords": [
+        "reconcil",
+        "settlement",
+        "match",
+        "agree with"
+      ],
+      "tips": {
+        "nudge": "Your records say $1,000,000 settled yesterday. Who else has an opinion on that?",
+        "hint": "Add a requirement for comparing your records with the processor's.",
+        "show": "F4: Reconcile daily with the processor's settlement reports and flag any mismatch."
+      }
+    },
+    {
+      "id": "est-payment-qps",
+      "type": "estimate",
+      "label": "Payment throughput estimated",
+      "keywords": [
+        "payment",
+        "charge",
+        "transaction",
+        "txn"
+      ],
+      "unit": "/s",
+      "min": 20,
+      "max": 10000,
+      "tips": {
+        "nudge": "Start from payments per day.",
+        "hint": "payment_qps = payments per day / 86,400 s; then a peak factor for Black Friday.",
+        "show": "payment_qps = 10M / day ≈ 120 /s; peak ×10 ≈ 1,200 /s. Small: correctness, not throughput, drives this design."
+      }
+    },
+    {
+      "id": "est-ledger-storage",
+      "type": "estimate",
+      "label": "Ledger size over a year or the retention period estimated",
+      "keywords": [
+        "ledger",
+        "storage",
+        "entries",
+        "bytes"
+      ],
+      "unit": "TB",
+      "min": 0.5,
+      "max": 200,
+      "tips": {
+        "nudge": "Each payment produces several ledger entries, kept for years.",
+        "hint": "entries/day = payments × entries per payment; × bytes × 365 (× retention years).",
+        "show": "ledger_storage_year = 10M × 6 entries × 200 B × 365 ≈ 4.4 TB/year (≈ 30 TB over 7 years)."
+      }
+    },
+    {
+      "id": "est-inflight",
+      "type": "estimate",
+      "label": "Concurrency of slow external calls estimated",
+      "keywords": [
+        "in_flight",
+        "inflight",
+        "in-flight",
+        "concurren",
+        "outstanding",
+        "open_calls"
+      ],
+      "unit": "",
+      "min": 100,
+      "max": 100000,
+      "tips": {
+        "nudge": "The processor takes 1–3 s per call. How many calls are open at once?",
+        "hint": "Little's law: concurrent = rate × latency.",
+        "show": "psp_in_flight = 1,200 /s × 2 s ≈ 2,400 concurrent calls: size worker pools and timeouts for that."
+      }
+    },
+    {
+      "id": "api-pay",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "payment",
+        "charge",
+        "pay"
+      ],
+      "tips": {
+        "nudge": "What does the merchant's server send, and how does it retry safely?",
+        "hint": "A POST with amount, currency and a payment-method token, plus a retry key.",
+        "show": "POST /payments {amount, currency, payment_method, order_id} + Idempotency-Key → 201 {payment_id, status} (202 if pending)"
+      }
+    },
+    {
+      "id": "api-refund",
+      "type": "endpoint",
+      "label": "Reversal endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "refund",
+        "reverse",
+        "reversal"
+      ],
+      "tips": {
+        "nudge": "How does money go back to the customer?",
+        "hint": "A POST on the payment, also idempotent, possibly partial.",
+        "show": "POST /payments/{id}/refunds {amount?} + Idempotency-Key → 201 {refund_id, status}"
+      }
+    },
+    {
+      "id": "data-ledger",
+      "type": "entity",
+      "label": "Money movements modelled",
+      "keywords": [
+        "ledger",
+        "entries",
+        "debit",
+        "credit",
+        "journal"
+      ],
+      "tips": {
+        "nudge": "A 'balance' column alone can't explain itself. What do you store instead?",
+        "hint": "Model money movement as immutable entries against accounts.",
+        "show": "ledger_entries(entry_id, txn_id, account_id, direction debit|credit, amount, currency, created_at), append-only; every txn's debits equal its credits."
+      }
+    },
+    {
+      "id": "part-idempotency",
+      "type": "part",
+      "label": "Retry safety designed as its own part",
+      "keywords": [
+        "idempot",
+        "dedup",
+        "duplicate",
+        "retry-safe",
+        "retries from"
+      ],
+      "tips": {
+        "nudge": "The merchant retries after a timeout. Give 'same request, same effect' its own part.",
+        "hint": "Compare natural keys, a Redis cache of keys, and a key table in the same transaction as the payment.",
+        "show": "Part 'Idempotent API': (merchant_id, Idempotency-Key) unique in Postgres with the request hash and stored response, written in the payment's transaction; replays return the stored response, in-flight duplicates get 409."
+      }
+    },
+    {
+      "id": "part-psp",
+      "type": "part",
+      "label": "External processor integration designed as its own part",
+      "keywords": [
+        "psp",
+        "processor",
+        "state machine",
+        "external",
+        "provider",
+        "acquirer"
+      ],
+      "tips": {
+        "nudge": "The processor can be slow, fail, or time out with the outcome unknown. Give that its own part.",
+        "hint": "Compare a blind synchronous retry with a persisted state machine, PSP idempotency keys, and a retry queue with backoff.",
+        "show": "Part 'Payment state machine + PSP': persist created → pending before calling the PSP with our payment_id as its idempotency key; timeouts become 'unknown' and are resolved by status query/webhook; retryable errors go to a backoff queue with a DLQ."
+      }
+    },
+    {
+      "id": "part-ledger",
+      "type": "part",
+      "label": "Bookkeeping designed as its own part",
+      "keywords": [
+        "ledger",
+        "bookkeeping",
+        "balance",
+        "accounting"
+      ],
+      "choice_keywords": [
+        "double",
+        "debit"
+      ],
+      "tips": {
+        "nudge": "Where does the truth about who owes whom live? Give it its own part.",
+        "hint": "Compare a mutable balance column with an append-only, double-entry ledger.",
+        "show": "Part 'Ledger': double-entry, append-only entries (debits = credits per transaction) in their own Postgres, posted idempotently from payment events; balances are derived and cached."
+      }
+    },
+    {
+      "id": "part-recon",
+      "type": "part",
+      "label": "Agreement with the processor designed as its own part",
+      "keywords": [
+        "reconcil",
+        "settlement"
+      ],
+      "tips": {
+        "nudge": "Webhooks get lost, and processors make mistakes. What catches both?",
+        "hint": "Compare trusting your own records, trusting webhooks, and a batch comparison against settlement files.",
+        "show": "Part 'Reconciliation': a daily job downloads the PSP settlement file to S3, matches it line by line with ledger entries by psp_ref, auto-resolves known breaks and queues the rest for finance."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread and protected at the edge",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Merchants authenticate, and one merchant's bug can flood you. Where is that handled?",
+        "hint": "Put an entry point in front of the payment service.",
+        "show": "API gateway: TLS, merchant auth, per-merchant rate limits, load balancing to stateless payment service instances."
+      }
+    },
+    {
+      "id": "edge-psp",
+      "type": "edge",
+      "label": "Card data and network access delegated",
+      "from_kinds": [
+        "service",
+        "worker"
+      ],
+      "to_kinds": [
+        "external"
+      ],
+      "to_keywords": [
+        "psp",
+        "processor",
+        "stripe",
+        "adyen",
+        "acquir",
+        "bank",
+        "card",
+        "provider"
+      ],
+      "tips": {
+        "nudge": "Do you connect to Visa yourself?",
+        "hint": "Connect your service to an outside processor that talks to card networks.",
+        "show": "Payment service → PSP / card processor (authorize, capture, refund) with an idempotency key."
+      }
+    },
+    {
+      "id": "comp-recon",
+      "type": "component",
+      "label": "Something checks the books against the outside",
+      "kinds": [
+        "scheduler",
+        "worker"
+      ],
+      "keywords": [
+        "reconcil",
+        "recon",
+        "settlement"
+      ],
+      "tips": {
+        "nudge": "No request arrives to check yesterday's totals. What runs it?",
+        "hint": "Add a scheduled batch component.",
+        "show": "A daily reconciliation job (scheduler → worker) comparing PSP settlement files with the ledger."
+      }
+    },
+    {
+      "id": "dd-timeout",
+      "type": "decision",
+      "label": "Unknown outcomes handled",
+      "keywords": [
+        "timeout",
+        "unknown",
+        "uncertain",
+        "in doubt",
+        "time out"
+      ],
+      "tips": {
+        "nudge": "The PSP call times out. Did the customer get charged?",
+        "hint": "Decide what state a timed-out payment enters and how it is resolved.",
+        "show": "Never blindly re-charge: mark the payment 'unknown', query the PSP by idempotency key/payment_id, accept the webhook, and only retry with the same key; reconciliation is the backstop."
+      }
+    },
+    {
+      "id": "dd-ledger-posting",
+      "type": "decision",
+      "label": "How payments reach the ledger decided",
+      "keywords": [
+        "posting",
+        "post to the ledger",
+        "outbox",
+        "dual write",
+        "dual-write",
+        "ledger write"
+      ],
+      "tips": {
+        "nudge": "The payment row commits, then the process crashes before the ledger write. What now?",
+        "hint": "Compare a distributed transaction, a dual write, and the transactional outbox.",
+        "show": "Transactional outbox in the payments DB → relay → Kafka → ledger poster that is idempotent by event id. No 2PC, no lost or doubled postings."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure behaviour described",
+      "tips": {
+        "nudge": "The processor is down for ten minutes on Black Friday. What happens?",
+        "hint": "Walk the PSP outage, a lost webhook, and a ledger outage.",
+        "show": "PSP down: circuit breaker, fail over to a second PSP for new payments, pending ones retried with backoff; lost webhook: status polling + reconciliation; ledger down: events wait in Kafka, payments continue."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "key": "monitoring",
+      "label": "Operability covered",
+      "tips": {
+        "nudge": "How do you know money is going missing before finance does?",
+        "hint": "List business and system metrics, including ledger invariants.",
+        "show": "Success/decline rate per PSP, p99 latency, payments stuck pending/unknown, retry queue depth and DLQ, relay lag, ledger imbalance (must be 0), reconciliation breaks."
+      }
+    }
+  ]
+}

@@ -1,0 +1,706 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Browse and search events by performer, city and date; view an event page."
+      },
+      {
+        "id": "F2",
+        "text": "View the seat map of an event with current availability."
+      },
+      {
+        "id": "F3",
+        "text": "Hold selected seats for 10 minutes while paying; holds lapse automatically."
+      },
+      {
+        "id": "F4",
+        "text": "Book: pay for held seats and receive a confirmed booking and e-ticket."
+      },
+      {
+        "id": "F5",
+        "text": "Hot on-sales go through a waiting room that admits fans in arrival order."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "No double booking: each seat is sold at most once (strong consistency on inventory)."
+      },
+      {
+        "id": "N2",
+        "text": "Browse is read-heavy (~100 reads per booking), p99 < 200 ms, highly available."
+      },
+      {
+        "id": "N3",
+        "text": "Survive on-sale spikes: ~10M fans for 50k seats within minutes, admitted fairly."
+      },
+      {
+        "id": "N4",
+        "text": "A hold expires after 10 minutes without any manual release."
+      },
+      {
+        "id": "N5",
+        "text": "Payments are exactly-once from the fan's point of view: retries never double charge."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "10M daily users, ~20 page views each; ~1M tickets sold per day."
+      },
+      {
+        "id": "A2",
+        "text": "~100k events per year, ~5k seats on average, 80k for the largest stadiums."
+      },
+      {
+        "id": "A3",
+        "text": "Card data is handled by an external payment provider (PSP)."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Resale marketplace, dynamic pricing and venue management tools."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "GET",
+      "path": "/events?q=&city=&from=&to=",
+      "request": "query, filters, cursor",
+      "response": "200 {events[], next_cursor}",
+      "notes": "Served from the search index; cacheable."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/events/{id}/seats",
+      "request": "",
+      "response": "200 {sections[], seats[{id, status}]}",
+      "notes": "Seat map snapshot, cached for a few seconds."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/events/{id}/holds",
+      "request": "seat_ids[], admission token (header)",
+      "response": "201 {hold_id, expires_at} | 409 seats taken",
+      "notes": "All-or-nothing; requires an admission token during an on-sale."
+    },
+    {
+      "id": "E4",
+      "method": "POST",
+      "path": "/bookings",
+      "request": "hold_id, payment_token; Idempotency-Key header",
+      "response": "202 {booking_id, status: pending}",
+      "notes": "Confirmation arrives via the PSP webhook; the client polls GET /bookings/{id}."
+    },
+    {
+      "id": "E5",
+      "method": "POST",
+      "path": "/events/{id}/queue",
+      "request": "",
+      "response": "200 {position, eta} | 200 {admission_token}",
+      "notes": "Join or poll the waiting room."
+    },
+    {
+      "id": "E6",
+      "method": "POST",
+      "path": "/webhooks/psp",
+      "request": "signed payment event",
+      "response": "200",
+      "notes": "Idempotent by PSP event id."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "events",
+      "fields": "event_id (PK), name, performer, venue_id, starts_at, on_sale_at",
+      "store": "sql",
+      "why": "Relational, small; indexed into Elasticsearch through CDC."
+    },
+    {
+      "id": "D2",
+      "name": "seats",
+      "fields": "(event_id, seat_id) PK, section, price, status available|held|sold, hold_id, held_until, booking_id, version",
+      "store": "sql",
+      "why": "The inventory and the source of truth for holds; partitioned by event_id so one event lives on one shard."
+    },
+    {
+      "id": "D3",
+      "name": "bookings",
+      "fields": "booking_id (PK), user_id, event_id, seat_ids, amount, status pending|confirmed|failed|refunded, idempotency_key (unique), psp_payment_id",
+      "store": "sql",
+      "why": "Same database as seats, so confirming a booking and selling its seats is one transaction."
+    },
+    {
+      "id": "D4",
+      "name": "outbox",
+      "fields": "id, aggregate_id, type, payload, created_at",
+      "store": "sql",
+      "why": "Written in the booking transaction; the relay publishes it to Kafka."
+    },
+    {
+      "id": "D5",
+      "name": "waiting room",
+      "fields": "ZSET queue:{event_id} member=session score=arrival_ts; admitted set",
+      "store": "cache",
+      "why": "Ordered by arrival, rank lookups in O(log n); losing it pauses admission but loses no sales."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "How expired holds become available again",
+      "options": [
+        {
+          "name": "Cron sweeper that resets expired rows",
+          "pros": "seat map rows always tidy",
+          "cons": "correctness depends on a job's timing"
+        },
+        {
+          "name": "Redis key TTL",
+          "pros": "automatic",
+          "cons": "the DB still needs its own guard; two sources of truth"
+        },
+        {
+          "name": "Lazy expiry: free means available OR held_until < now()",
+          "pros": "correct without any job; one source of truth",
+          "cons": "seat-map queries must apply the same predicate"
+        }
+      ],
+      "choice": "Lazy expiry in the conditional update, plus an optional sweeper for tidiness",
+      "why": "N4 must hold even if a job is late. Encoding expiry in the WHERE clause of the hold and of the seat-map query makes the timeout exact without a release step.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Payment retries, duplicate webhooks and late success",
+      "options": [
+        {
+          "name": "Trust the client to call once",
+          "pros": "simple",
+          "cons": "double charges on retry"
+        },
+        {
+          "name": "Idempotency key on our API and on the PSP call; webhook dedup by event id; refund if the hold was lost",
+          "pros": "every retry is safe; late success is handled",
+          "cons": "a refund path to build and monitor"
+        }
+      ],
+      "choice": "Idempotency keys end to end, webhook dedup, and an automatic refund when a payment succeeds after its hold expired",
+      "why": "N5: the PSP and the client both retry. Extending the hold while a booking is pending makes late success rare, and the refund path makes it harmless.",
+      "version": 4
+    },
+    {
+      "id": "DD3",
+      "title": "Hot event on one shard",
+      "options": [
+        {
+          "name": "Shard seats by seat_id",
+          "pros": "spreads writes",
+          "cons": "a multi-seat hold becomes a cross-shard transaction"
+        },
+        {
+          "name": "Shard by event_id and meter load with the waiting room",
+          "pros": "holds stay single-shard transactions",
+          "cons": "one hot event is bounded by one primary"
+        }
+      ],
+      "choice": "Shard by event_id; the admission rate is set from what one primary sustains",
+      "why": "A primary handles thousands of short conditional updates per second; with 50k seats, ~500 admitted fans/s is plenty, so one shard per event is enough.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "One hot event's seat rows on a single Postgres primary (bounded by the admission rate), the waiting-room Redis during the arrival spike, and PSP rate limits during checkout bursts (spread across PSP accounts or a second provider).",
+    "failures": "Cache down: reads fall back to the database behind the gateway and admission rate. Waiting-room Redis down: pause admissions, keep sales in flight. PSP down: bookings stay pending, holds are extended briefly, then released and the fan is told to retry. Webhook lost: a reconciliation job polls the PSP for pending bookings.",
+    "monitoring": "Hold success vs 409 rate, hold-to-booking conversion, holds expired, booking p99, pending bookings older than 5 min, PSP error rate, queue length and admission rate, CDC/relay lag, cache hit ratio.",
+    "scale": "More events: more event shards and search replicas. Bigger on-sales: the waiting room absorbs any number of fans; only the admission rate is tied to the inventory database.",
+    "future": "Bot detection and verified-fan presale codes, best-available seat selection, a resale marketplace with transfers."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Browse and search: the read path",
+      "covers": [
+        "F1",
+        "F2",
+        "N2"
+      ],
+      "problem": "Serve ~2,300 browse/search requests per second (peaks ~12k) with low latency, plus seat maps that change every second during a sale, without loading the inventory database.",
+      "options": [
+        {
+          "name": "Query Postgres for everything (LIKE / joins)",
+          "pros": "one system, always fresh",
+          "cons": "full-text search and seat maps compete with bookings for the same database"
+        },
+        {
+          "name": "Search index + CDN/Redis caches, seat map cached for seconds",
+          "pros": "search scales separately, pages served from memory or the edge",
+          "cons": "seat map is slightly stale; an indexing pipeline to run"
+        },
+        {
+          "name": "Push live seat availability to every viewer",
+          "pros": "fresh seat maps",
+          "cons": "fan-out of every seat change to thousands of viewers; heavy for little gain"
+        }
+      ],
+      "choice": "Search index (Elasticsearch fed by CDC) + CDN and Redis caches; seat map cached for a few seconds",
+      "why": "Reads outnumber bookings ~100:1 on normal days. A slightly stale seat map is fine because the hold (P2) is the authoritative check: at worst a fan clicks a seat that was just taken and gets a 409.",
+      "technologies": [
+        "elasticsearch",
+        "redis"
+      ],
+      "patterns": [
+        "cqrs"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Fan app / browser",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN: static + event pages",
+            "x": 200,
+            "y": 80
+          },
+          {
+            "id": "gw",
+            "kind": "api-gateway",
+            "label": "API gateway: LB, auth, admission token",
+            "x": 200,
+            "y": 280
+          },
+          {
+            "id": "event_svc",
+            "kind": "service",
+            "label": "Event service (browse, seat map)",
+            "x": 400,
+            "y": 170
+          },
+          {
+            "id": "cache",
+            "kind": "cache",
+            "label": "Redis: event + seat-map cache",
+            "x": 620,
+            "y": 130
+          },
+          {
+            "id": "search",
+            "kind": "search",
+            "label": "Elasticsearch: events",
+            "x": 620,
+            "y": 220
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: events, seats, bookings, outbox",
+            "x": 620,
+            "y": 330
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox / CDC relay",
+            "x": 760,
+            "y": 420
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: booking + event changes",
+            "x": 960,
+            "y": 330
+          },
+          {
+            "id": "indexer",
+            "kind": "worker",
+            "label": "Search indexer",
+            "x": 840,
+            "y": 220
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "GET pages"
+          },
+          {
+            "from": "client",
+            "to": "gw",
+            "label": "API"
+          },
+          {
+            "from": "gw",
+            "to": "event_svc",
+            "label": "browse / seat map"
+          },
+          {
+            "from": "event_svc",
+            "to": "cache",
+            "label": "read-through"
+          },
+          {
+            "from": "event_svc",
+            "to": "search",
+            "label": "search"
+          },
+          {
+            "from": "event_svc",
+            "to": "db",
+            "label": "cache miss"
+          },
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "CDC"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "publish"
+          },
+          {
+            "from": "stream",
+            "to": "indexer",
+            "label": "event changes"
+          },
+          {
+            "from": "indexer",
+            "to": "search",
+            "label": "index"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Seat hold without double booking",
+      "covers": [
+        "F3",
+        "N1",
+        "N4"
+      ],
+      "problem": "Many fans try to hold the same seats at the same moment. Exactly one must win, the hold must lapse after 10 minutes if unpaid, and a seat must never be sold twice.",
+      "options": [
+        {
+          "name": "SELECT … FOR UPDATE kept open while the fan pays",
+          "pros": "simple, strongly consistent",
+          "cons": "row locks held for minutes of user think time; connections exhausted; deadlocks"
+        },
+        {
+          "name": "Redis SET NX with a 10-minute TTL per seat",
+          "pros": "fast, expiry is automatic",
+          "cons": "a second system to keep in sync with the DB; a Redis failover can drop holds, so the DB still needs a guard"
+        },
+        {
+          "name": "Atomic conditional UPDATE with a held_until column in Postgres",
+          "pros": "one source of truth, short transactions, all-or-nothing per request, expiry checked at read time",
+          "cons": "every hold is a DB write; one hot event concentrates on one shard"
+        }
+      ],
+      "choice": "Atomic conditional UPDATE with a held_until expiry in Postgres (status + version per seat row)",
+      "why": "Holds peak at a few hundred per second once the waiting room (P3) meters fans in, which one Postgres primary per event shard handles easily. Keeping the lease in the same row as the sale removes any dual-write between a lock store and the database.",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "distributed-locking",
+        "optimistic-concurrency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Fan app / browser",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "gw",
+            "kind": "api-gateway",
+            "label": "API gateway: LB, auth, admission token",
+            "x": 200,
+            "y": 280
+          },
+          {
+            "id": "booking_svc",
+            "kind": "service",
+            "label": "Booking service (holds, bookings)",
+            "x": 400,
+            "y": 330
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: events, seats, bookings, outbox",
+            "x": 620,
+            "y": 330
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "gw",
+            "label": "API"
+          },
+          {
+            "from": "gw",
+            "to": "booking_svc",
+            "label": "POST /holds, /bookings"
+          },
+          {
+            "from": "booking_svc",
+            "to": "db",
+            "label": "conditional UPDATE seats"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Virtual waiting room for on-sales",
+      "covers": [
+        "F5",
+        "N3"
+      ],
+      "problem": "About 10M fans arrive within minutes for 50k seats (≈17k arrivals/s). The hold path must see a steady, bounded rate, and fans should be admitted roughly in arrival order.",
+      "options": [
+        {
+          "name": "Autoscale everything",
+          "pros": "no new component",
+          "cons": "the bottleneck is one event's seat rows, which don't scale out; cold starts lag the spike"
+        },
+        {
+          "name": "Rate limit with 429 and let clients retry",
+          "pros": "cheap",
+          "cons": "retry storms, rewards bots and fast refreshers, unfair"
+        },
+        {
+          "name": "Virtual queue: sorted set by arrival, admitter issues signed tokens at N/s",
+          "pros": "bounded, predictable load; fair; fans see their position",
+          "cons": "a new stateful component; a token must be checked on every hold and booking call"
+        }
+      ],
+      "choice": "Virtual waiting room: Redis sorted set by arrival time, an admitter that issues signed short-lived admission tokens at a fixed rate, enforced at the gateway",
+      "why": "Supply is 50k seats, so only ~a few hundred holds per second are useful. Admitting ~500 fans/s keeps the hold path at its design load while 10M fans wait on a cheap CDN-served page that polls its position.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "backpressure",
+        "rate-limiting"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Fan app / browser",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN: static + event pages",
+            "x": 200,
+            "y": 80
+          },
+          {
+            "id": "gw",
+            "kind": "api-gateway",
+            "label": "API gateway: LB, auth, admission token",
+            "x": 200,
+            "y": 280
+          },
+          {
+            "id": "queue_svc",
+            "kind": "service",
+            "label": "Waiting-room service",
+            "x": 400,
+            "y": 40
+          },
+          {
+            "id": "wr_redis",
+            "kind": "cache",
+            "label": "Redis: waiting room (ZSET by arrival)",
+            "x": 620,
+            "y": 40
+          },
+          {
+            "id": "admitter",
+            "kind": "worker",
+            "label": "Admitter: N fans/s → signed token",
+            "x": 840,
+            "y": 40
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "GET pages"
+          },
+          {
+            "from": "client",
+            "to": "gw",
+            "label": "API"
+          },
+          {
+            "from": "gw",
+            "to": "queue_svc",
+            "label": "join / poll position"
+          },
+          {
+            "from": "queue_svc",
+            "to": "wr_redis",
+            "label": "ZADD / ZRANK"
+          },
+          {
+            "from": "admitter",
+            "to": "wr_redis",
+            "label": "pop next N, mark admitted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Payment and booking confirmation",
+      "covers": [
+        "F4",
+        "N1",
+        "N5"
+      ],
+      "problem": "Charge the fan through an external provider that can be slow, fail, or report twice, and turn a hold into sold seats exactly once, then issue the ticket.",
+      "options": [
+        {
+          "name": "Charge synchronously inside the DB transaction",
+          "pros": "simple to explain",
+          "cons": "an external call inside a transaction holds locks for seconds; a timeout leaves the outcome unknown"
+        },
+        {
+          "name": "Pending booking + PSP charge with an idempotency key, confirmed by webhook, outbox event for the ticket",
+          "pros": "no locks across the network; retries are safe; ticketing is asynchronous",
+          "cons": "more states to handle (pending, failed, late success → refund)"
+        }
+      ],
+      "choice": "Pending booking + PSP charge with an idempotency key, confirmed by the PSP webhook; seats flipped to sold with a conditional update; outbox event issues the ticket",
+      "why": "At ~80 bookings/s at peak the PSP round trip (1–3 s) dominates, so it must not hold DB locks. Idempotency keys make client and PSP retries harmless, and the outbox guarantees a ticket for every committed sale.",
+      "technologies": [
+        "kafka",
+        "postgresql"
+      ],
+      "patterns": [
+        "idempotency",
+        "outbox-pattern"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "gw",
+            "kind": "api-gateway",
+            "label": "API gateway: LB, auth, admission token",
+            "x": 200,
+            "y": 280
+          },
+          {
+            "id": "booking_svc",
+            "kind": "service",
+            "label": "Booking service (holds, bookings)",
+            "x": 400,
+            "y": 330
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: events, seats, bookings, outbox",
+            "x": 620,
+            "y": 330
+          },
+          {
+            "id": "psp",
+            "kind": "external",
+            "label": "Payment provider (Stripe)",
+            "x": 400,
+            "y": 460
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox / CDC relay",
+            "x": 760,
+            "y": 420
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: booking + event changes",
+            "x": 960,
+            "y": 330
+          },
+          {
+            "id": "ticket_worker",
+            "kind": "worker",
+            "label": "Ticket issuer (e-ticket, email)",
+            "x": 960,
+            "y": 450
+          }
+        ],
+        "edges": [
+          {
+            "from": "gw",
+            "to": "booking_svc",
+            "label": "POST /holds, /bookings"
+          },
+          {
+            "from": "booking_svc",
+            "to": "db",
+            "label": "conditional UPDATE seats"
+          },
+          {
+            "from": "booking_svc",
+            "to": "psp",
+            "label": "charge (idempotency key)"
+          },
+          {
+            "from": "psp",
+            "to": "gw",
+            "label": "payment webhook"
+          },
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "CDC"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "publish"
+          },
+          {
+            "from": "stream",
+            "to": "ticket_worker",
+            "label": "BookingConfirmed"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,413 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Scarce inventory under contention: make the claim on an item an atomic, expiring lease in the source of truth, gate a stampede with admission control before it reaches the database, and finish with an idempotent external payment that confirms the lease.",
+  "checks": [
+    {
+      "id": "req-browse",
+      "type": "requirement",
+      "label": "Discovery use case captured",
+      "keywords": [
+        "browse",
+        "search",
+        "discover",
+        "find event",
+        "view event",
+        "list event"
+      ],
+      "tips": {
+        "nudge": "Before anyone buys, what do most visitors actually do?",
+        "hint": "Add a functional requirement for finding events and looking at one.",
+        "show": "F1: Browse and search events by name, performer, city and date; view an event page."
+      }
+    },
+    {
+      "id": "req-hold",
+      "type": "requirement",
+      "label": "Seat selection use case captured",
+      "keywords": [
+        "hold",
+        "reserve",
+        "select seat",
+        "pick seat",
+        "choose seat",
+        "lock"
+      ],
+      "tips": {
+        "nudge": "A fan picks seats, then types card details for a few minutes. What protects the seats meanwhile?",
+        "hint": "Add a requirement for temporarily reserving chosen seats with a time limit.",
+        "show": "F3: Hold the selected seats for 10 minutes while the fan pays; the hold lapses automatically."
+      }
+    },
+    {
+      "id": "req-book",
+      "type": "requirement",
+      "label": "Purchase use case captured",
+      "keywords": [
+        "book",
+        "purchase",
+        "buy",
+        "pay",
+        "checkout",
+        "confirm"
+      ],
+      "tips": {
+        "nudge": "What turns a held seat into a ticket?",
+        "hint": "Add a requirement for paying and getting a confirmed ticket.",
+        "show": "F4: Pay for held seats and receive a confirmed booking and e-ticket."
+      }
+    },
+    {
+      "id": "req-no-double",
+      "type": "requirement",
+      "label": "Correctness guarantee for inventory stated",
+      "sections": [
+        "non_functional"
+      ],
+      "keywords": [
+        "double",
+        "oversell",
+        "over-sell",
+        "at most once",
+        "sold once",
+        "strong consisten",
+        "strongly consisten",
+        "twice"
+      ],
+      "tips": {
+        "nudge": "Which failure would end up in the news?",
+        "hint": "State the consistency guarantee for seats as a non-functional requirement.",
+        "show": "N1: No double booking: each seat is sold at most once (strong consistency on inventory, even under contention)."
+      }
+    },
+    {
+      "id": "req-spike",
+      "type": "requirement",
+      "label": "Traffic shape of a big sale addressed",
+      "sections": [
+        "non_functional",
+        "assumptions"
+      ],
+      "keywords": [
+        "spike",
+        "surge",
+        "burst",
+        "on-sale",
+        "onsale",
+        "on sale",
+        "flash",
+        "fair",
+        "waiting room",
+        "million users"
+      ],
+      "tips": {
+        "nudge": "What happens at 10:00:00 when a stadium tour goes on sale?",
+        "hint": "Add a non-functional requirement about sudden demand far above supply, and fairness.",
+        "show": "N3: Survive on-sale spikes (≈10M fans for 50k seats within minutes) and admit fans fairly, roughly first come first served."
+      }
+    },
+    {
+      "id": "est-browse-qps",
+      "type": "estimate",
+      "label": "Everyday read throughput estimated",
+      "keywords": [
+        "browse",
+        "read",
+        "view",
+        "search",
+        "page"
+      ],
+      "unit": "/s",
+      "min": 500,
+      "max": 50000,
+      "tips": {
+        "nudge": "Start from daily users and the pages each one views.",
+        "hint": "browse_qps = DAU × page views per user / seconds per day.",
+        "show": "browse_qps = 10M × 20 / day ≈ 2,300 /s (peak ×5 ≈ 12k /s)."
+      }
+    },
+    {
+      "id": "est-onsale",
+      "type": "estimate",
+      "label": "Load of a single hot on-sale estimated",
+      "keywords": [
+        "onsale",
+        "on_sale",
+        "on-sale",
+        "spike",
+        "surge",
+        "rush",
+        "arrival"
+      ],
+      "unit": "/s",
+      "min": 5000,
+      "max": 2000000,
+      "tips": {
+        "nudge": "How many fans arrive for one hot event, and over how long?",
+        "hint": "Arrival rate = fans who show up / the window they arrive in.",
+        "show": "onsale_arrival_qps = 10M fans / 600 s ≈ 17k /s, against only 50k seats (200 fans per seat)."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Inventory storage per year estimated",
+      "keywords": [
+        "storage",
+        "seat",
+        "inventory",
+        "bytes",
+        "size"
+      ],
+      "unit": "GB",
+      "min": 10,
+      "max": 5000,
+      "tips": {
+        "nudge": "The seat table is the big one. How many seat rows per year?",
+        "hint": "Seat rows = events per year × seats per event; × bytes per row.",
+        "show": "seat_storage_year = 100k events × 5k seats × 200 B ≈ 100 GB/year: fits a sharded or even single Postgres."
+      }
+    },
+    {
+      "id": "api-hold",
+      "type": "endpoint",
+      "label": "Seat reservation endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "hold",
+        "reserv",
+        "lock"
+      ],
+      "tips": {
+        "nudge": "What does the client send when the fan clicks 'reserve these seats'?",
+        "hint": "A POST that names the event and seats and returns a hold with an expiry, or a conflict.",
+        "show": "POST /events/{id}/holds {seat_ids} → 201 {hold_id, expires_at} | 409 seats taken"
+      }
+    },
+    {
+      "id": "api-book",
+      "type": "endpoint",
+      "label": "Purchase endpoint defined",
+      "method": "POST",
+      "keywords": [
+        "booking",
+        "book",
+        "purchase",
+        "order",
+        "checkout",
+        "payment"
+      ],
+      "tips": {
+        "nudge": "How does a hold become a paid booking, and what if the client retries?",
+        "hint": "A POST that references the hold and a payment token; make it safe to retry.",
+        "show": "POST /bookings {hold_id, payment_token} + Idempotency-Key → 202 {booking_id, status: pending}"
+      }
+    },
+    {
+      "id": "data-seats",
+      "type": "entity",
+      "label": "Inventory modelled",
+      "keywords": [
+        "seat",
+        "ticket",
+        "inventory"
+      ],
+      "tips": {
+        "nudge": "What row must exist per seat per event so that two fans can't both get it?",
+        "hint": "Model one row per (event, seat) with a status and who holds it until when.",
+        "show": "seats(event_id, seat_id, status available|held|sold, hold_id, held_until, booking_id, version) in Postgres."
+      }
+    },
+    {
+      "id": "part-hold",
+      "type": "part",
+      "label": "Inventory contention designed as its own part",
+      "keywords": [
+        "hold",
+        "double",
+        "reserv",
+        "lock",
+        "contention",
+        "seat inventory",
+        "oversell"
+      ],
+      "tips": {
+        "nudge": "Two fans click the same seat in the same millisecond. Treat that as its own sub-problem.",
+        "hint": "Compare a DB row lock held for 10 minutes, a Redis lock with a TTL, and an atomic conditional update with an expiry column.",
+        "show": "Part 'Seat hold, no double booking': UPDATE seats SET status='held', held_until=now()+10m WHERE status='available' OR held_until < now(); all-or-nothing per request; expiry is checked lazily, so nothing has to release a hold."
+      }
+    },
+    {
+      "id": "part-waiting-room",
+      "type": "part",
+      "label": "Demand far above supply designed as its own part",
+      "keywords": [
+        "waiting",
+        "queue",
+        "admission",
+        "admit",
+        "virtual",
+        "spike",
+        "surge",
+        "on-sale",
+        "onsale"
+      ],
+      "tips": {
+        "nudge": "200 fans per seat arrive at once. Should all of them reach the booking service?",
+        "hint": "Compare autoscaling, rate limiting with 429s, and a virtual queue that admits fans at a fixed rate.",
+        "show": "Part 'Virtual waiting room': fans join a Redis sorted set by arrival time; an admitter lets N per second through with a signed, short-lived token that the gateway checks on hold/booking calls."
+      }
+    },
+    {
+      "id": "part-browse",
+      "type": "part",
+      "label": "Read path designed as its own part",
+      "keywords": [
+        "browse",
+        "search",
+        "read path",
+        "event page",
+        "catalog",
+        "discovery"
+      ],
+      "tips": {
+        "nudge": "Most traffic is people looking, not buying. Give that its own part.",
+        "hint": "Compare querying the database directly with a search index plus caches/CDN.",
+        "show": "Part 'Browse and search': Elasticsearch fed by CDC for search, CDN + Redis for event pages, seat maps cached for a few seconds (the hold is the real check)."
+      }
+    },
+    {
+      "id": "part-payment",
+      "type": "part",
+      "label": "Payment designed as its own part",
+      "keywords": [
+        "payment",
+        "pay",
+        "checkout",
+        "psp",
+        "confirm",
+        "charge"
+      ],
+      "tips": {
+        "nudge": "Paying talks to a third party that can be slow, fail, or answer twice. Give it its own part.",
+        "hint": "Compare charging inside the DB transaction with a pending booking that a PSP webhook confirms.",
+        "show": "Part 'Payment and confirmation': booking created pending with an idempotency key, PSP charge, webhook confirms → seats sold, outbox event issues the ticket."
+      }
+    },
+    {
+      "id": "comp-cache",
+      "type": "component",
+      "label": "Read path can absorb the read load",
+      "kinds": [
+        "cache",
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Event pages are identical for everyone. Why compute them per request?",
+        "hint": "Put something in front of the database for event pages and seat maps.",
+        "show": "CDN for static/event pages, Redis for event details and a seat-map snapshot with a short TTL."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread and gated at the edge",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Where would you check that a fan was admitted from the queue?",
+        "hint": "Put an entry point in front of the services that balances load and can enforce admission.",
+        "show": "API gateway / load balancer: routes to stateless services and rejects hold/booking calls without a valid admission token."
+      }
+    },
+    {
+      "id": "edge-psp",
+      "type": "edge",
+      "label": "Money handled by the right party",
+      "from_kinds": [
+        "service",
+        "worker"
+      ],
+      "to_kinds": [
+        "external"
+      ],
+      "to_keywords": [
+        "psp",
+        "payment",
+        "stripe",
+        "adyen",
+        "processor",
+        "provider",
+        "bank",
+        "card"
+      ],
+      "tips": {
+        "nudge": "Do you want card numbers in your database?",
+        "hint": "Delegate the charge to an outside provider and connect your booking service to it.",
+        "show": "Booking service → payment provider (Stripe/Adyen): create a charge with an idempotency key; the PSP calls back via webhook."
+      }
+    },
+    {
+      "id": "dd-hold-expiry",
+      "type": "decision",
+      "label": "How unpaid seats come back decided",
+      "keywords": [
+        "expir",
+        "ttl",
+        "timeout",
+        "release",
+        "lapse",
+        "sweeper"
+      ],
+      "tips": {
+        "nudge": "A fan closes the tab mid-checkout. When and how does the seat become available again?",
+        "hint": "Compare a cron sweeper, a Redis key TTL and checking the expiry at read time.",
+        "show": "Lazy expiry: a seat is free if status='available' OR held_until < now(); an optional sweeper tidies rows for the seat map. No job is needed for correctness."
+      }
+    },
+    {
+      "id": "dd-payment-retry",
+      "type": "decision",
+      "label": "Retries and late payment results handled",
+      "keywords": [
+        "idempot",
+        "retry",
+        "webhook",
+        "late",
+        "duplicate"
+      ],
+      "tips": {
+        "nudge": "The PSP times out, the client retries, then the webhook arrives after the hold has expired. What happens?",
+        "hint": "Decide on idempotency keys and what to do with a payment that succeeds too late.",
+        "show": "Idempotency key per booking on our API and on the PSP call; confirming re-checks the hold with a conditional update; if the seats were lost, refund automatically."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "key": "bottlenecks",
+      "label": "Bottlenecks and single points of failure named",
+      "tips": {
+        "nudge": "Which single row or shard gets hammered during a hot on-sale?",
+        "hint": "Walk the hold path for one event and name what saturates.",
+        "show": "One event's seats on one shard (contention), the waiting-room Redis, the PSP rate limits; mitigations: admission rate, partition by event, multi-PSP."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "key": "failures",
+      "label": "Failure behaviour described",
+      "tips": {
+        "nudge": "The PSP is down for 2 minutes during a sale. What do fans see?",
+        "hint": "Describe what happens when the cache, the queue store and the PSP fail.",
+        "show": "Cache down → reads fall back to the DB behind the waiting room; PSP down → bookings stay pending, holds extended briefly, then released; queue Redis down → pause admissions, not sales in flight."
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "dau",
+      "formula": "10 * million",
+      "unit": ""
+    },
+    {
+      "name": "availability_qps",
+      "formula": "dau * 20 / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_availability_qps",
+      "formula": "availability_qps * 5",
+      "unit": "/s"
+    },
+    {
+      "name": "orders_per_day",
+      "formula": "500 * thousand",
+      "unit": ""
+    },
+    {
+      "name": "order_qps",
+      "formula": "orders_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_order_qps",
+      "formula": "order_qps * 5",
+      "unit": "/s"
+    },
+    {
+      "name": "inventory_rows",
+      "formula": "500 * 5 * thousand",
+      "unit": ""
+    },
+    {
+      "name": "inventory_size",
+      "formula": "inventory_rows * 100 / 10**6",
+      "unit": "MB"
+    },
+    {
+      "name": "driver_location_qps",
+      "formula": "20 * thousand / 5",
+      "unit": "/s"
+    }
+  ]
+}

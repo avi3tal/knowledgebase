@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: one app and one SQL database for browsing, holds and payments. It works for a small venue, but browse traffic and an on-sale stampede both land on the same database, and nothing stops two fans buying the same seat.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Fan app / browser",
+      "x": 40,
+      "y": 240
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "Ticketing app",
+      "x": 320,
+      "y": 240
+    },
+    {
+      "id": "db1",
+      "kind": "sql",
+      "label": "One SQL database",
+      "x": 600,
+      "y": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "app",
+      "label": "browse, hold, pay"
+    },
+    {
+      "from": "app",
+      "to": "db1",
+      "label": "read/write"
+    }
+  ],
+  "flows": []
+}

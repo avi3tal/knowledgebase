@@ -1,0 +1,652 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Sellers create an auction: item, starting price, minimum increment, end time."
+      },
+      {
+        "id": "F2",
+        "text": "Place a bid; it is accepted only if it beats the current highest bid by the increment while the auction is open."
+      },
+      {
+        "id": "F3",
+        "text": "Watchers see the current highest bid update live, without refreshing."
+      },
+      {
+        "id": "F4",
+        "text": "The auction closes at its end time; later bids are rejected; the winner and seller are notified."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Strong consistency per auction: concurrent bids are ordered and the highest bid is never lost or overwritten by a lower one."
+      },
+      {
+        "id": "N2",
+        "text": "Durable: an acknowledged bid is never lost; every bid is kept in an audit history."
+      },
+      {
+        "id": "N3",
+        "text": "Live updates reach watchers within ~1 s; item pages are read-heavy and cached."
+      },
+      {
+        "id": "N4",
+        "text": "Auctions close within ~1 s of their end time."
+      },
+      {
+        "id": "N5",
+        "text": "10M active auctions, ~1,200 bids/s at peak, up to ~100 bids/s on a single hot auction."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "10M bids/day; 1M auctions end per day; 2M concurrent watchers; a hot auction has ~10k watchers."
+      },
+      {
+        "id": "A2",
+        "text": "~200 B per bid record."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Payment and shipping after the auction, search ranking, fraud models."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/auctions",
+      "request": "item, start_price, increment, ends_at",
+      "response": "201 {auction_id}",
+      "notes": "Seller only."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/auctions/{id}",
+      "request": "",
+      "response": "200 {item, high_bid, bid_count, ends_at, status}",
+      "notes": "Cached; the live price arrives over the stream."
+    },
+    {
+      "id": "E3",
+      "method": "POST",
+      "path": "/auctions/{id}/bids",
+      "request": "amount; Idempotency-Key header",
+      "response": "201 {bid_id, high_bid} | 409 {current_high_bid} | 410 closed",
+      "notes": "The conditional update decides."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "/auctions/{id}/stream",
+      "request": "Last-Event-ID",
+      "response": "SSE events {high_bid, bid_count, ends_at, status}",
+      "notes": "Long-lived; WebSocket also fine."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "auctions",
+      "fields": "auction_id (PK), seller_id, status open|closed, starts_at, ends_at (indexed), increment, high_bid, high_bidder, version",
+      "store": "sql",
+      "why": "The single row a bid's conditional update targets; sharded by auction_id."
+    },
+    {
+      "id": "D2",
+      "name": "bids",
+      "fields": "bid_id (PK), auction_id, bidder_id, amount, status accepted|rejected, idempotency_key (unique), created_at",
+      "store": "sql",
+      "why": "Append-only history in the same shard and transaction as the auction row."
+    },
+    {
+      "id": "D3",
+      "name": "outbox",
+      "fields": "id, auction_id, type BidPlaced|AuctionClosed, payload",
+      "store": "sql",
+      "why": "Events published only after commit."
+    },
+    {
+      "id": "D4",
+      "name": "bid archive",
+      "fields": "auction_id/date partitioned files of bid events",
+      "store": "blob",
+      "why": "Cheap long-term audit history."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Bids at the last moment (sniping) and whose clock decides",
+      "options": [
+        {
+          "name": "The closer's clock decides; bids before it runs win",
+          "pros": "simple",
+          "cons": "results depend on job timing; different servers' clocks disagree"
+        },
+        {
+          "name": "The DB clock in the bid's conditional update decides (now() < ends_at)",
+          "pros": "one clock, one place; the closer can't change the outcome",
+          "cons": "users far away see the end slightly earlier"
+        },
+        {
+          "name": "Soft close: a bid in the last 2 minutes extends ends_at",
+          "pros": "removes the sniping advantage",
+          "cons": "auctions end at unpredictable times"
+        }
+      ],
+      "choice": "The DB clock in the conditional update is the single judge of the end time; soft close is a per-auction product option",
+      "why": "N4 and N1 together: correctness can't depend on when the closer runs. Keeping the end check inside the same statement as the high-bid update makes it atomic.",
+      "version": 4
+    },
+    {
+      "id": "DD2",
+      "title": "One very hot auction",
+      "options": [
+        {
+          "name": "Row CAS on the auction row",
+          "pros": "simple, synchronous answer",
+          "cons": "contention beyond a few hundred bids/s on one row"
+        },
+        {
+          "name": "Route that auction's bids to one Kafka partition with a single writer",
+          "pros": "no contention, strict order, scales a single auction",
+          "cons": "asynchronous acceptance; clients wait for a result event"
+        }
+      ],
+      "choice": "Row CAS by default; switch an auction to a per-auction partition with a single writer only if it crosses ~500 bids/s",
+      "why": "Even record-breaking auctions see ~100 bids/s at the end, well within row CAS. The single-writer log is the escape hatch, not the default.",
+      "version": 2
+    },
+    {
+      "id": "DD3",
+      "title": "Watchers who reconnect",
+      "options": [
+        {
+          "name": "Send nothing until the next bid",
+          "pros": "simple",
+          "cons": "a reconnecting watcher shows a stale price"
+        },
+        {
+          "name": "Send a snapshot on connect, then deltas; SSE Last-Event-ID",
+          "pros": "always correct after reconnect",
+          "cons": "a snapshot read per connect"
+        }
+      ],
+      "choice": "Snapshot on connect from the cache, then deltas from the channel",
+      "why": "Pub/Sub is fire-and-forget, so missed messages are normal; the snapshot makes them harmless.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The hottest auction's row (row contention, escape hatch: per-auction single writer), push servers and the Pub/Sub node owning a channel with 10k+ subscribers, and the closer when many auctions end on the same second (popular end times like 9 pm).",
+    "failures": "Pub/Sub or a push server down: watchers reconnect and get a snapshot, bids are unaffected. Relay lag: live updates and notifications delay, bids still correct. Closer down: auctions stay open in the UI longer but no late bid is accepted; the closer catches up idempotently.",
+    "monitoring": "Bid p99 and 409/410 rates, relay lag, bid → watcher delivery lag, open connections per push server, auctions overdue to close, closer and notifier lag.",
+    "scale": "Shard auctions and bids by auction_id; add push servers behind the load balancer; partition Kafka by auction_id; Redis Cluster for Pub/Sub channels.",
+    "future": "Proxy (automatic) bidding up to a maximum, reserve prices, buy-it-now, fraud detection on the bid stream."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Bid placement under concurrency",
+      "covers": [
+        "F2",
+        "N1",
+        "N2"
+      ],
+      "problem": "Accept a bid only if it beats the current highest bid while hundreds of bidders race on the same auction, never letting a lower bid overwrite a higher one.",
+      "options": [
+        {
+          "name": "Read the high bid, compare in the app, then write",
+          "pros": "trivial",
+          "cons": "lost updates: two bidders both read $100 and both 'win'"
+        },
+        {
+          "name": "Pessimistic lock: SELECT … FOR UPDATE on the auction row",
+          "pros": "obviously correct",
+          "cons": "every bid queues on the lock; long transactions block others"
+        },
+        {
+          "name": "Optimistic compare-and-set: conditional UPDATE on high_bid",
+          "pros": "one short statement, no read-modify-write window, losers learn the new price at once",
+          "cons": "a very hot auction contends on one row"
+        },
+        {
+          "name": "Serialize per auction through a partitioned log with a single writer",
+          "pros": "no contention, natural ordering, scales the hottest auction",
+          "cons": "asynchronous acceptance; a second system on the critical path"
+        }
+      ],
+      "choice": "Optimistic compare-and-set: conditional UPDATE of the auction's high bid in Postgres, inserting the bid and an outbox row in the same transaction",
+      "why": "Peak is ~1,200 bids/s across all auctions and ~100/s on the hottest one: a single short conditional UPDATE per bid handles that on one primary per shard. Doing it in the same transaction as the bid insert makes the audit log and the high bid agree by construction.",
+      "technologies": [
+        "postgresql"
+      ],
+      "patterns": [
+        "optimistic-concurrency",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Bidder / watcher app",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer / API gateway",
+            "x": 200,
+            "y": 240
+          },
+          {
+            "id": "bid_svc",
+            "kind": "service",
+            "label": "Bid service",
+            "x": 400,
+            "y": 240
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: auctions, bids, outbox",
+            "x": 620,
+            "y": 240
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "API + SSE"
+          },
+          {
+            "from": "lb",
+            "to": "bid_svc",
+            "label": "POST /bids"
+          },
+          {
+            "from": "bid_svc",
+            "to": "db",
+            "label": "CAS high bid + insert bid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Real-time fan-out to watchers",
+      "covers": [
+        "F3",
+        "N3"
+      ],
+      "problem": "Deliver each accepted bid to every watcher of that auction within ~1 s: up to 10k watchers on a hot auction and ~2M open connections overall.",
+      "options": [
+        {
+          "name": "Clients poll every second",
+          "pros": "stateless, simple",
+          "cons": "2M watchers → 2M requests/s, almost all returning 'no change'"
+        },
+        {
+          "name": "Long polling",
+          "pros": "works everywhere",
+          "cons": "a reconnect per update; heavy at 50 updates/s"
+        },
+        {
+          "name": "Push over SSE/WebSockets; push servers subscribe to a pub/sub channel per auction",
+          "pros": "one message per update per watcher, sub-second",
+          "cons": "stateful connection tier; reconnect and catch-up logic"
+        }
+      ],
+      "choice": "Push over SSE/WebSockets: push servers subscribe to a Redis Pub/Sub channel per auction; a publisher forwards committed BidPlaced events from Kafka",
+      "why": "Updates are one-way (server → watcher), so SSE is enough and WebSockets are optional. Publishing only after commit (outbox → Kafka) means watchers never see a bid that was rolled back. Pub/Sub channels per auction mean each push server receives only the auctions its clients watch.",
+      "technologies": [
+        "websockets-sse",
+        "redis",
+        "kafka"
+      ],
+      "patterns": [
+        "real-time-push",
+        "fan-out",
+        "outbox-pattern"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Bidder / watcher app",
+            "x": 40,
+            "y": 240
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer / API gateway",
+            "x": 200,
+            "y": 240
+          },
+          {
+            "id": "bid_svc",
+            "kind": "service",
+            "label": "Bid service",
+            "x": 400,
+            "y": 240
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: auctions, bids, outbox",
+            "x": 620,
+            "y": 240
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox relay",
+            "x": 800,
+            "y": 310
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: bid + auction events",
+            "x": 980,
+            "y": 240
+          },
+          {
+            "id": "fanout",
+            "kind": "worker",
+            "label": "Fan-out publisher",
+            "x": 800,
+            "y": 420
+          },
+          {
+            "id": "pubsub",
+            "kind": "queue",
+            "label": "Redis Pub/Sub: auction:{id}",
+            "x": 620,
+            "y": 420
+          },
+          {
+            "id": "push_svc",
+            "kind": "service",
+            "label": "Push servers (SSE / WebSocket)",
+            "x": 400,
+            "y": 400
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "API + SSE"
+          },
+          {
+            "from": "lb",
+            "to": "push_svc",
+            "label": "SSE subscribe"
+          },
+          {
+            "from": "bid_svc",
+            "to": "db",
+            "label": "CAS high bid + insert bid"
+          },
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "outbox rows"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "BidPlaced, AuctionClosed"
+          },
+          {
+            "from": "stream",
+            "to": "fanout",
+            "label": "BidPlaced"
+          },
+          {
+            "from": "fanout",
+            "to": "pubsub",
+            "label": "PUBLISH auction:{id}"
+          },
+          {
+            "from": "pubsub",
+            "to": "push_svc",
+            "label": "messages for subscribed auctions"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Closing auctions on time",
+      "covers": [
+        "F4",
+        "N4"
+      ],
+      "problem": "About 1M auctions end each day, each at its own second. Close them within ~1 s, reject any bid after the end, and notify winner and seller exactly once.",
+      "options": [
+        {
+          "name": "Cron scan every minute for ended auctions",
+          "pros": "simple",
+          "cons": "up to a minute late; the scan grows with the table"
+        },
+        {
+          "name": "A delayed message / timer per auction",
+          "pros": "precise",
+          "cons": "millions of timers to keep in sync with edits and cancellations"
+        },
+        {
+          "name": "Bid predicate enforces the end; a scheduler polls an ends_at index every second and a closer finalises",
+          "pros": "correctness doesn't depend on the timer; the poll is an index range scan",
+          "cons": "finalisation can lag by a second or two under load"
+        }
+      ],
+      "choice": "The bid's conditional update enforces now() < ends_at; a close scheduler polls the ends_at index every second and a closer worker finalises the winner and emits AuctionClosed",
+      "why": "~12 auctions end per second on average, so a 1-second index poll is cheap. Putting the end check in the bid's own predicate means a late or slow closer can delay the notification but can never let a late bid win.",
+      "technologies": [
+        "postgresql",
+        "kafka"
+      ],
+      "patterns": [
+        "outbox-pattern",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "scheduler",
+            "kind": "scheduler",
+            "label": "Close scheduler (due by ends_at)",
+            "x": 800,
+            "y": 20
+          },
+          {
+            "id": "closer",
+            "kind": "worker",
+            "label": "Auction closer",
+            "x": 980,
+            "y": 90
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: auctions, bids, outbox",
+            "x": 620,
+            "y": 240
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox relay",
+            "x": 800,
+            "y": 310
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: bid + auction events",
+            "x": 980,
+            "y": 240
+          },
+          {
+            "id": "notifier",
+            "kind": "worker",
+            "label": "Notifier (winner, outbid)",
+            "x": 980,
+            "y": 165
+          }
+        ],
+        "edges": [
+          {
+            "from": "scheduler",
+            "to": "db",
+            "label": "poll due auctions"
+          },
+          {
+            "from": "scheduler",
+            "to": "closer",
+            "label": "close jobs"
+          },
+          {
+            "from": "closer",
+            "to": "db",
+            "label": "close + pick winner"
+          },
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "outbox rows"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "BidPlaced, AuctionClosed"
+          },
+          {
+            "from": "stream",
+            "to": "notifier",
+            "label": "AuctionClosed, Outbid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Durable bid history and audit",
+      "covers": [
+        "N2"
+      ],
+      "problem": "Never lose an acknowledged bid and keep an immutable history of every bid (≈730 GB a year) for disputes, fraud review and analytics.",
+      "options": [
+        {
+          "name": "Only keep the current high bid on the auction row",
+          "pros": "tiny",
+          "cons": "no history; disputes and shill-bidding checks are impossible"
+        },
+        {
+          "name": "Append-only bids table in the same transaction, archived from Kafka to object storage",
+          "pros": "history agrees with the high bid; old data leaves the hot database cheaply",
+          "cons": "an archiving pipeline to run"
+        }
+      ],
+      "choice": "Append-only bids table written in the same transaction as the high-bid update; an archiver copies the event stream to object storage",
+      "why": "A synchronous replica commit makes an acknowledged bid durable. Archiving closed auctions' bids to S3 keeps the hot database small while the full history stays queryable for audits.",
+      "technologies": [
+        "postgresql",
+        "kafka",
+        "object-storage"
+      ],
+      "patterns": [
+        "event-sourcing"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "bid_svc",
+            "kind": "service",
+            "label": "Bid service",
+            "x": 400,
+            "y": 240
+          },
+          {
+            "id": "db",
+            "kind": "sql",
+            "label": "Postgres: auctions, bids, outbox",
+            "x": 620,
+            "y": 240
+          },
+          {
+            "id": "relay",
+            "kind": "worker",
+            "label": "Outbox relay",
+            "x": 800,
+            "y": 310
+          },
+          {
+            "id": "stream",
+            "kind": "stream",
+            "label": "Kafka: bid + auction events",
+            "x": 980,
+            "y": 240
+          },
+          {
+            "id": "archiver",
+            "kind": "worker",
+            "label": "Audit archiver",
+            "x": 980,
+            "y": 360
+          },
+          {
+            "id": "blob",
+            "kind": "blob",
+            "label": "S3: bid audit archive",
+            "x": 980,
+            "y": 460
+          }
+        ],
+        "edges": [
+          {
+            "from": "bid_svc",
+            "to": "db",
+            "label": "CAS high bid + insert bid"
+          },
+          {
+            "from": "db",
+            "to": "relay",
+            "label": "outbox rows"
+          },
+          {
+            "from": "relay",
+            "to": "stream",
+            "label": "BidPlaced, AuctionClosed"
+          },
+          {
+            "from": "stream",
+            "to": "archiver",
+            "label": "all bid events"
+          },
+          {
+            "from": "archiver",
+            "to": "blob",
+            "label": "append audit files"
+          }
+        ]
+      }
+    }
+  ]
+}
