@@ -28,7 +28,6 @@ algo/
     cases.json        language-neutral test cases
 templates/            problem/attempt templates per type & language
 tools/                `kb` CLI: generate problems/attempts, run & evaluate
-archive/              leftovers that are not (yet) a problem type
 ```
 
 - A **problem** is defined once; you can practise it many times as new **attempts**
