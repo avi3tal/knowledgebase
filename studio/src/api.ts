@@ -3,7 +3,8 @@ import type { Json, Trace } from "./trace";
 export interface Topic {
   id: string;
   name: string;
-  kind: "pattern" | "fundamental";
+  kind: string;
+  group?: string;
   order?: number;
   usage: string;
   ds: string[];

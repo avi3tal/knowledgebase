@@ -1,4 +1,4 @@
-# System Design Console: spec (draft for approval)
+# System Design Console: spec (approved 2026-11-07)
 
 **Goal:** practise system design the way it's actually done in an interview. The student
 *drives* the design: writes requirements and assumptions, sketches estimates, defines APIs and
@@ -112,8 +112,26 @@ shows the new parts highlighted, like the "NEW" badge in the inspiration.
 4. Unlock `system-design` in the catalog: the lessons for `sd-framework`, `back-of-envelope`,
    `caching` and `consistent-hashing` first.
 
-**Open questions for you:**
-- **Diagram editing:** is a structured editor plus JSON tab enough, or do you want free
-  drag-and-drop positioning? Positioning would be stored, but the rubric ignores it.
-- **AI review:** should it be on by default after each stage, or only when you ask for it (to
-  save tokens)?
+## 7. Decisions (2026-11-07)
+
+- **Canvas: a Visio-like window.**
+  - The palette is our fixed set of shapes (the `kind` vocabulary), each with its own icon and colour.
+  - Drag shapes onto the canvas, move them, connect port to port, label edges, delete.
+  - Positions (`x`, `y`) are stored in `diagrams/vN.json`; the rubric ignores them.
+  - A JSON tab stays for power users. Built with SVG and pointer events, so there is no new dependency.
+- **Mistakes are allowed.** Checks never block saving. Bad structure is caught by **smell rules** in
+  the rubric, for example:
+  - the client wired straight to a database;
+  - a single database under a read-heavy NFR;
+  - a queue with no consumer;
+  - a service with no path from the client.
+- **Tips on demand, deterministic, in levels:** nudge → hint → show. They come from the rubric.
+  Tip usage is recorded in `progress/` so feedback can account for it.
+- **Hybrid classroom.** The studio is the whiteboard and the dashboard; your own editor is the
+  workbench.
+  - Every attempt has an "open in VS Code" link (`vscode://file/…`) and a copyable `./kb` command.
+  - `.vscode/tasks.json` runs the kb checks on the attempt you have open.
+  - The studio never spawns processes.
+- **AI review is on demand only.** The `/review` skill runs the deterministic checks first, then writes
+  structured feedback (strengths, issues with examples, tips, next step) to `attempts/<dir>/review.md`,
+  which the studio shows. Nothing calls AI automatically.

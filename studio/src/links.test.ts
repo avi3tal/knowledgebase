@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { linkTarget, resolveRepoPath } from "./links";
-import { parseRoute } from "./route";
+import { parseRoute, tabOf } from "./route";
 
 describe("links", () => {
   const md = "algo/problems/two-sum/README.md";
@@ -32,11 +32,27 @@ describe("links", () => {
 
 describe("routes", () => {
   it.each([
-    ["", { page: "dashboard", subject: "algo" }],
+    ["", { page: "home", subject: "algo" }],
     ["#/learn/algo/sliding-window", { page: "lesson", subject: "algo", topic: "sliding-window" }],
     ["#/problem/algo/two-sum", { page: "problem", subject: "algo", slug: "two-sum" }],
-    ["#/learn/algo/../../etc", { page: "dashboard", subject: "algo" }],
+    ["#/learn/algo/../../etc", { page: "home", subject: "algo" }],
+    ["#/home/ood", { page: "home", subject: "ood" }],
+    ["#/progress/algo", { page: "dashboard", subject: "algo" }],
   ])("parses %s", (hash, want) => {
     expect(parseRoute(hash)).toEqual(want);
+  });
+});
+
+describe("tabs", () => {
+  it.each([
+    ["#/home/algo", "learn"],
+    ["#/learn/algo/sliding-window", "learn"],
+    ["#/topic/ood/solid", "learn"],
+    ["#/problem/algo/two-sum", "problems"],
+    ["#/problems/algo", "problems"],
+    ["#/map/system-design", "map"],
+    ["#/progress/algo", "progress"],
+  ])("%s belongs to the %s tab", (hash, tab) => {
+    expect(tabOf(parseRoute(hash))).toBe(tab);
   });
 });

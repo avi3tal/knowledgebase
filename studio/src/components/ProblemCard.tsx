@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import type { ProblemCardData } from "../api";
+import { RootContext } from "../context";
 import { Markdown } from "./Markdown";
 import { ResourceList } from "./Resources";
 
@@ -31,6 +32,8 @@ export function ProblemCard({
 }) {
   const [open, setOpen] = useState(initiallyOpen);
   const practice = p.attempts.filter((a) => !a.name.includes("_legacy"));
+  const root = useContext(RootContext);
+  const dir = `${root}/${p.readme_path.replace(/\/README\.md$/, "")}`;
   return (
     <div className="card">
       <div className="card-head" onClick={() => setOpen((o) => !o)}>
@@ -48,13 +51,14 @@ export function ProblemCard({
           const r = a.last_run;
           const ok = r && !r.error && r.total > 0 && r.passed === r.total;
           return (
-            <span
+            <a
               key={a.name}
               className={`attempt ${!r ? "" : ok ? "ok" : "fail"}`}
-              title={r ? `${r.ts}${r.fit ? " · ≈" + r.fit : ""}` : "not run"}
+              href={`vscode://file${dir}/attempts/${a.name}`}
+              title={`open in VS Code${r ? ` · last run ${r.ts}${r.fit ? " · ≈" + r.fit : ""}` : " · not run"}`}
             >
               {a.name} {r ? `${r.passed}/${r.total}` : ""}
-            </span>
+            </a>
           );
         })}
       </div>
@@ -64,6 +68,9 @@ export function ProblemCard({
           text={`./kb attempt ${p.slug} --lang python${pattern ? ` --pattern ${pattern}` : ""}`}
         />
         <Copy text={`./kb run ${p.slug}`} />
+        <a className="open-editor" href={`vscode://file${dir}`}>
+          ⧉ open in VS Code
+        </a>
         {practice.length > 0 && (
           <span className="muted">{practice.length} practice attempt(s)</span>
         )}

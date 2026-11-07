@@ -305,6 +305,16 @@ def test_studio_api(studio: str, progress: Path) -> None:
         urllib.request.urlopen(bad)
     assert e.value.code == 400
 
+    for headers in (
+        {"Content-Type": "application/json", "Origin": "https://evil.example"},  # another site
+        {"Content-Type": "text/plain"},  # a "simple" cross-site request without preflight
+    ):
+        forged = urllib.request.Request(f"{studio}/api/quiz", body.encode(), headers)
+        with pytest.raises(urllib.error.HTTPError) as e:
+            urllib.request.urlopen(forged)
+        assert e.value.code == 403
+    assert len(history.quiz_answers()) == 1
+
 
 # ------------------------------------------------------------------ new views (tree/grid/heap/intervals/callstack)
 

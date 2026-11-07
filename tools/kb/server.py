@@ -27,6 +27,18 @@ from kb.schema import ProblemError
 
 DIST = ROOT / "studio" / "dist"
 MAX_BODY = 4096
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "[::1]"}
+
+
+def local_request(headers: Any) -> bool:
+    """Writes must come from the studio itself: a local Host (blocks DNS rebinding), a local or absent
+    Origin (blocks other sites posting to 127.0.0.1), and a JSON content type (forces a CORS preflight,
+    which this server never grants)."""
+    host = (headers.get("Host") or "").rsplit(":", 1)[0]
+    origin = headers.get("Origin")
+    origin_host = urlparse(origin).hostname if origin else None
+    json_body = (headers.get("Content-Type") or "").split(";")[0].strip() == "application/json"
+    return host in LOCAL_HOSTS and (origin is None or origin_host in {"127.0.0.1", "localhost", "::1"}) and json_body
 
 
 def subjects_payload() -> dict[str, Any]:
@@ -123,6 +135,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802 - http.server API
         if urlparse(self.path).path != "/api/quiz":
             return self._error(HTTPStatus.NOT_FOUND, "unknown endpoint")
+        if not local_request(self.headers):
+            return self._error(HTTPStatus.FORBIDDEN, "writes are only accepted from the local studio")
         length = int(self.headers.get("Content-Length") or 0)
         if length <= 0 or length > MAX_BODY:
             return self._error(HTTPStatus.BAD_REQUEST, "bad body")

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   Feedback,
   Graph,
@@ -10,17 +10,21 @@ import type {
   TopicPageData,
 } from "./api";
 import { api } from "./api";
+import { SUBJECT_ICON, SUBJECT_SHORT, topicIcon } from "./catalog";
 import { Dashboard } from "./components/Dashboard";
 import { LessonView } from "./components/LessonView";
 import { ProblemCard } from "./components/ProblemCard";
 import { ProblemsPage } from "./components/ProblemsPage";
+import { SearchPalette } from "./components/SearchPalette";
+import { SubjectHome } from "./components/SubjectHome";
 import { SubjectMap } from "./components/SubjectMap";
 import { TopicPage } from "./components/TopicPage";
 import { RootContext } from "./context";
-import type { Route } from "./route";
-import { parseRoute } from "./route";
+import type { Route, Tab } from "./route";
+import { TAB_HREF, parseRoute, tabOf } from "./route";
 
 type Page =
+  | { kind: "home"; data: Feedback | null }
   | { kind: "lesson"; data: Lesson }
   | { kind: "problem"; data: ProblemCardData }
   | { kind: "problems"; data: ProblemRow[] }
@@ -38,8 +42,26 @@ function useRoute(): Route {
   return route;
 }
 
+type Theme = "light" | "dark";
+
+function useTheme(): [Theme, () => void] {
+  const [theme, setTheme] = useState<Theme>(() =>
+    localStorage.getItem("kb-theme") === "dark" ? "dark" : "light",
+  );
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("kb-theme", theme);
+  }, [theme]);
+  return [theme, useCallback(() => setTheme((t) => (t === "light" ? "dark" : "light")), [])];
+}
+
 function load(route: Route): Promise<Page> {
   switch (route.page) {
+    case "home":
+      return api.feedback(route.subject).then(
+        (data) => ({ kind: "home", data }),
+        () => ({ kind: "home", data: null }),
+      );
     case "lesson":
       return api.lesson(route.subject, route.topic).then((data) => ({ kind: "lesson", data }));
     case "problem":
@@ -55,14 +77,20 @@ function load(route: Route): Promise<Page> {
   }
 }
 
-const byOrder = (a: Subject["topics"][number], b: Subject["topics"][number]) =>
-  a.kind === b.kind ? (a.order ?? 99) - (b.order ?? 99) : a.kind === "pattern" ? -1 : 1;
+const TABS: { tab: Tab; label: string; icon: string; open?: boolean }[] = [
+  { tab: "learn", label: "Learn", icon: "📖" },
+  { tab: "problems", label: "Problems", icon: "🧪", open: true },
+  { tab: "map", label: "Knowledge map", icon: "🗺️" },
+  { tab: "progress", label: "Progress", icon: "📈", open: true },
+];
 
 export function App() {
   const route = useRoute();
+  const [theme, toggleTheme] = useTheme();
   const [subjects, setSubjects] = useState<SubjectsResponse | null>(null);
   const [page, setPage] = useState<Page | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     api.subjects().then(setSubjects, (e: unknown) => setError(String(e)));
@@ -75,88 +103,108 @@ export function App() {
     window.scrollTo(0, 0);
   }, [route]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearching((s) => !s);
+      } else if (e.key === "/" && !(e.target instanceof HTMLInputElement)) {
+        e.preventDefault();
+        setSearching(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const current = subjects?.subjects.find((s) => s.id === route.subject);
-  const activeTopic = route.page === "lesson" || route.page === "topic" ? route.topic : null;
+  const tab = tabOf(route);
+  const locked = current?.status === "locked";
 
   return (
     <RootContext.Provider value={subjects?.root ?? ""}>
-      <div className="layout">
-        <nav className="sidebar">
-          <a className="brand" href="#/">
-            kb studio
-          </a>
-          {subjects?.subjects
-            .filter((s) => s.status !== "locked")
-            .map((s) => (
-              <div key={s.id}>
-                <div className="subject">{s.title}</div>
-                <a href="#/" className={`topic ${route.page === "dashboard" ? "active" : ""}`}>
-                  📊 Progress
-                </a>
-                <a
-                  href={`#/problems/${s.id}`}
-                  className={`topic ${route.page === "problems" ? "active" : ""}`}
-                >
-                  📚 All problems
-                </a>
-                <a
-                  href={`#/map/${s.id}`}
-                  className={`topic ${route.page === "map" && route.subject === s.id ? "active" : ""}`}
-                >
-                  🗺️ Knowledge map
-                </a>
-                <div className="subject">Patterns & topics</div>
-                {[...s.topics].sort(byOrder).map((t) => (
-                  <a
-                    key={t.id}
-                    href={t.has_lesson ? `#/learn/${s.id}/${t.id}` : `#/topic/${s.id}/${t.id}`}
-                    className={`topic ${activeTopic === t.id && route.subject === s.id ? "active" : ""} ${t.has_lesson ? "" : "no-lesson"}`}
-                    title={t.usage}
-                  >
-                    {t.order ? `${t.order}. ` : ""}
-                    {t.name}
-                    {t.has_lesson && <span className="dot">●</span>}
-                  </a>
-                ))}
-              </div>
-            ))}
-          {subjects?.subjects.some((s) => s.status === "locked") && (
-            <div className="subject">Coming next</div>
-          )}
-          {subjects?.subjects
-            .filter((s) => s.status === "locked")
-            .map((s) => (
-              <a
-                key={s.id}
-                href={`#/map/${s.id}`}
-                className={`topic no-lesson ${route.subject === s.id ? "active" : ""}`}
-                title="Locked: topic map and resources only, lessons coming"
-              >
-                🔒 {s.title} <span className="muted">{s.topics.length}</span>
-              </a>
-            ))}
+      <header className="topbar">
+        <a className="brand" href="#/">
+          <span className="brand-mark">kb</span> studio
+        </a>
+        <nav className="subject-tabs">
+          {subjects?.subjects.map((s) => (
+            <a
+              key={s.id}
+              href={TAB_HREF.learn(s.id)}
+              className={`subject-tab ${s.id === route.subject ? "on" : ""} ${s.status === "locked" ? "locked" : ""}`}
+              title={s.status === "locked" ? "Lessons coming — map and resources ready" : s.title}
+            >
+              <span>{SUBJECT_ICON[s.id] ?? "📘"}</span> {SUBJECT_SHORT[s.id] ?? s.title}
+              {s.status === "locked" && <span className="lock">🔒</span>}
+            </a>
+          ))}
         </nav>
-        <main className="content">
-          {error && <ErrorBox msg={error} route={route} />}
-          {!error && !page && <p className="muted">loading…</p>}
-          {page?.kind === "dashboard" && <Dashboard data={page.data} />}
-          {page?.kind === "lesson" && <LessonView lesson={page.data} />}
-          {page?.kind === "problem" && <ProblemCard p={page.data} open />}
-          {page?.kind === "topic" && <TopicPage data={page.data} />}
-          {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
-          {page?.kind === "problems" && (
-            <ProblemsPage
-              subject={route.subject}
-              rows={page.data}
-              names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-            />
-          )}
-        </main>
-      </div>
+        <span className="grow" />
+        <button className="search-trigger" onClick={() => setSearching(true)}>
+          🔍 Search <kbd>⌘K</kbd>
+        </button>
+        <button
+          className="icon-btn"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+        >
+          {theme === "light" ? "🌙" : "☀️"}
+        </button>
+      </header>
+      <nav className="subtabs">
+        {TABS.filter((t) => !(locked && t.open)).map((t) => (
+          <a
+            key={t.tab}
+            href={TAB_HREF[t.tab](route.subject)}
+            className={`subtab ${t.tab === tab ? "on" : ""}`}
+          >
+            {t.icon} {t.label}
+          </a>
+        ))}
+      </nav>
+      <main className="content" key={window.location.hash}>
+        {current && <Crumbs route={route} subject={current} page={page} />}
+        {error && <ErrorBox msg={error} route={route} />}
+        {!error && !page && <div className="loader" aria-label="loading" />}
+        {page?.kind === "home" && current && <SubjectHome subject={current} feedback={page.data} />}
+        {page?.kind === "dashboard" && <Dashboard data={page.data} />}
+        {page?.kind === "lesson" && <LessonView lesson={page.data} />}
+        {page?.kind === "problem" && <ProblemCard p={page.data} open />}
+        {page?.kind === "topic" && <TopicPage data={page.data} />}
+        {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
+        {page?.kind === "problems" && (
+          <ProblemsPage
+            subject={route.subject}
+            rows={page.data}
+            names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+          />
+        )}
+      </main>
+      {searching && subjects && (
+        <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />
+      )}
     </RootContext.Provider>
   );
 }
 
+/** Breadcrumbs for detail pages (lesson, topic, problem) back to the subject's grid. */
+function Crumbs({ route, subject, page }: { route: Route; subject: Subject; page: Page | null }) {
+  let leaf: string | null = null;
+  if (route.page === "lesson" || route.page === "topic") {
+    const t = subject.topics.find((x) => x.id === route.topic);
+    leaf = t ? `${topicIcon(t)} ${t.name}` : route.topic;
+  } else if (route.page === "problem") {
+    leaf = page?.kind === "problem" ? page.data.title : route.slug;
+  }
+  if (!leaf) return null;
+  const parent = route.page === "problem" ? ["problems", "Problems"] : ["home", "Learn"];
+  return (
+    <div className="crumbs">
+      <a href={`#/${parent[0]}/${subject.id}`}>{parent[1]}</a> <span>›</span> <b>{leaf}</b>
+    </div>
+  );
+}
 function ErrorBox({ msg, route }: { msg: string; route: Route }) {
   const missingLesson = route.page === "lesson" && msg.includes("404");
   return (
