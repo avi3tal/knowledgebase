@@ -102,6 +102,7 @@ export function DiagramCanvas({
   onSelect,
   onRename,
   handle,
+  reservedIds,
 }: {
   diagram: Diagram;
   /** @deprecated the stencil lives outside the canvas now; ignored */
@@ -116,6 +117,8 @@ export function DiagramCanvas({
   /** double-click on a shape or arrow: the inspector should focus its label */
   onRename?: () => void;
   handle?: Ref<CanvasHandle>;
+  /** ids new shapes must not take (see addNode) */
+  reservedIds?: string[];
 }) {
   const editable = Boolean(onChange);
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, "");
@@ -315,7 +318,13 @@ export function DiagramCanvas({
 
   const drop = (kind: string, at: Point) => {
     if (!editable) return;
-    const [next, id] = addNode(diagram, kind, snap(at.x - NODE_W / 2), snap(at.y - NODE_H / 2));
+    const [next, id] = addNode(
+      diagram,
+      kind,
+      snap(at.x - NODE_W / 2),
+      snap(at.y - NODE_H / 2),
+      reservedIds,
+    );
     change(next);
     setSel({ type: "node", id });
     wrapRef.current?.focus({ preventScroll: true });

@@ -56,6 +56,7 @@ export function HighLevelEditor({
   onNewVersion,
   onDeleteVersion,
   saveError,
+  reservedIds,
   mode,
   setMode,
   selection,
@@ -72,6 +73,8 @@ export function HighLevelEditor({
   onNewVersion: () => void;
   onDeleteVersion: (v: number) => void;
   saveError?: string;
+  /** node ids of the parts: a new shape here must not silently merge with one of them */
+  reservedIds?: string[];
   mode: "canvas" | "json";
   setMode: (m: "canvas" | "json") => void;
   selection: Selection;
@@ -187,6 +190,7 @@ export function HighLevelEditor({
             onSelect={onSelect}
             onRename={onRename}
             handle={canvasRef}
+            reservedIds={reservedIds}
           />
         </div>
       ) : (

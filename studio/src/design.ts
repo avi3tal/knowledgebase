@@ -237,11 +237,18 @@ export function cloneLatest(diagrams: Diagram[]): Diagram {
 
 // ---------------------------------------------------------------- diagram edits
 
-export function addNode(d: Diagram, kind: string, x: number, y: number): [Diagram, string] {
-  const id = nextNodeId(
-    kind,
-    d.nodes.map((n) => n.id),
-  );
+/**
+ * `reserved`: ids used elsewhere (other parts, the high-level versions) so a new shape never takes one
+ * by accident; compose merges by id, so sharing an id must be a deliberate "link to existing".
+ */
+export function addNode(
+  d: Diagram,
+  kind: string,
+  x: number,
+  y: number,
+  reserved: Iterable<string> = [],
+): [Diagram, string] {
+  const id = nextNodeId(kind, [...d.nodes.map((n) => n.id), ...reserved]);
   const node: DiagramNode = {
     id,
     kind,

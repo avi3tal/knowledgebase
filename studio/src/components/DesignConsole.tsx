@@ -595,6 +595,7 @@ export function DesignConsole({
             onNewVersion={newVersion}
             onDeleteVersion={deleteVersion}
             saveError={saver.errors[`diagram:${shown}`]}
+            reservedIds={parts.flatMap((p) => p.diagram.nodes.map((n) => n.id))}
             mode={mode}
             setMode={(m) => {
               setMode(m);

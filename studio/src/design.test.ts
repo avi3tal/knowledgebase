@@ -587,3 +587,18 @@ describe("stageLabel", () => {
     expect(stageLabel("parts", ["parts"])).toBe("Decompose");
   });
 });
+
+describe("addNode with reserved ids", () => {
+  it("never reuses an id from another part, so compose keeps distinct components", () => {
+    const empty: Diagram = { version: 1, why: "", nodes: [], edges: [] };
+    const [p1, a] = addNode(empty, "service", 0, 0);
+    const [p2, b] = addNode(empty, "service", 0, 0, [a]);
+    expect(a).not.toBe(b);
+    const parts = [p1, p2].map((d, i) => ({
+      ...newPart([]),
+      id: `P${i + 1}`,
+      diagram: { nodes: d.nodes, edges: [] },
+    }));
+    expect(composeDiagram(empty, parts).nodes).toHaveLength(2);
+  });
+});

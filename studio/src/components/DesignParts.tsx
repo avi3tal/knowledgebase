@@ -146,6 +146,12 @@ export function PartsEditor({
               onSelect={onSelect}
               onRename={onRename}
               handle={canvasRef}
+              reservedIds={[
+                ...(latest?.nodes ?? []).map((n) => n.id),
+                ...parts
+                  .filter((p) => p.id !== part.id)
+                  .flatMap((p) => p.diagram.nodes.map((n) => n.id)),
+              ]}
             />
           </div>
           <div className={`part-drawer ${drawer ? "open" : ""}`}>
