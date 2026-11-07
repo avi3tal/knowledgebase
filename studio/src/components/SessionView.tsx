@@ -2,7 +2,17 @@ import { useContext, useState } from "react";
 import type { Session, SessionItem, SessionStatus } from "../api";
 import { api } from "../api";
 import { RootContext } from "../context";
-import { FOCUS_INFO, STATUS_LABEL, actionsFor, runCommand, scoreBand } from "../sessions";
+import { designHref, problemHref } from "../route";
+import {
+  FOCUS_INFO,
+  STATUS_LABEL,
+  actionsFor,
+  createdAttempt,
+  isDesignItem,
+  latestConsoleHref,
+  runCommand,
+  scoreBand,
+} from "../sessions";
 import { Ring } from "./Ring";
 
 const STATE_LABEL: Record<SessionItem["state"], string> = {
@@ -117,6 +127,18 @@ export function SessionView({ initial }: { initial: Session }) {
               item={it}
               index={i}
               onStart={(lang) => act(api.startAttempt(s.id, it.id, lang))}
+              onStartDesign={() => {
+                const before = it.attempts;
+                api.startAttempt(s.id, it.id, "design").then(
+                  (next) => {
+                    setS(next);
+                    const after = next.items.find((x) => x.id === it.id)?.attempts ?? [];
+                    const created = createdAttempt(before, after);
+                    if (created) window.location.hash = designHref(it.subject, it.slug, created);
+                  },
+                  (e: unknown) => setError(String(e)),
+                );
+              }}
             />
           ))}
         </div>
@@ -135,11 +157,15 @@ function ItemRow({
   item,
   index,
   onStart,
+  onStartDesign,
 }: {
   item: SessionItem;
   index: number;
   onStart: (lang: "python" | "go") => void;
+  onStartDesign: () => void;
 }) {
+  const design = isDesignItem(item);
+  const consoleHref = latestConsoleHref(item);
   const root = useContext(RootContext);
   const [copied, setCopied] = useState<string | null>(null);
   const copy = (text: string) => {
@@ -153,7 +179,7 @@ function ItemRow({
       <div className="item-num">{index + 1}</div>
       <div className="item-main">
         <div className="item-title">
-          <a href={`#/problem/${item.subject}/${item.slug}`}>{item.title ?? item.slug}</a>
+          <a href={problemHref(item.subject, item.slug)}>{item.title ?? item.slug}</a>
           {item.difficulty && <span className={`badge ${item.difficulty}`}>{item.difficulty}</span>}
           <span className={`state ${item.state}`}>{STATE_LABEL[item.state]}</span>
         </div>
@@ -173,8 +199,21 @@ function ItemRow({
               {copied === runCommand(latest, root) ? "copied ✓" : runCommand(latest, root)}
             </code>
           )}
-          <button onClick={() => onStart("python")}>＋ Python attempt</button>
-          <button onClick={() => onStart("go")}>＋ Go attempt</button>
+          {design ? (
+            <>
+              {consoleHref && (
+                <a className="button-link primary" href={consoleHref}>
+                  ▶ Open console
+                </a>
+              )}
+              <button onClick={onStartDesign}>＋ New design attempt</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => onStart("python")}>＋ Python attempt</button>
+              <button onClick={() => onStart("go")}>＋ Go attempt</button>
+            </>
+          )}
         </div>
       </div>
       <div className={`item-score ${scoreBand(item.score)}`}>

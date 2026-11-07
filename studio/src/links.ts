@@ -1,3 +1,5 @@
+import { problemHref } from "./route";
+
 // Resolve relative links inside repo markdown to in-app routes or VS Code file links.
 
 export function resolveRepoPath(fromFile: string, href: string): string {
@@ -20,6 +22,6 @@ export function linkTarget(fromFile: string, href: string, root: string): LinkTa
   const lesson = /^([a-z0-9-]+)\/learn\/([a-z0-9-]+)\//.exec(path);
   if (lesson) return { kind: "route", href: `#/learn/${lesson[1]}/${lesson[2]}` };
   const problem = /^([a-z0-9-]+)\/problems\/([a-z0-9-]+)(\/README\.md)?$/.exec(path);
-  if (problem) return { kind: "route", href: `#/problem/${problem[1]}/${problem[2]}` };
+  if (problem) return { kind: "route", href: problemHref(problem[1]!, problem[2]!) };
   return { kind: "file", href: `vscode://file${root}/${path}`, path };
 }

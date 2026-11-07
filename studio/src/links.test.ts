@@ -1,6 +1,47 @@
 import { describe, expect, it } from "vitest";
 import { linkTarget, resolveRepoPath } from "./links";
-import { parseRoute, tabOf } from "./route";
+import { designHref, parseRoute, problemHref, tabOf } from "./route";
+
+describe("design routes", () => {
+  it.each([
+    [
+      "#/design/system-design/url-shortener",
+      { page: "design", subject: "system-design", slug: "url-shortener" },
+    ],
+    [
+      "#/design/system-design/url-shortener/2026-11-07_design_practice-2",
+      {
+        page: "console",
+        subject: "system-design",
+        slug: "url-shortener",
+        attempt: "2026-11-07_design_practice-2",
+      },
+    ],
+    ["#/design/ood/parking-lot", { page: "design", subject: "ood", slug: "parking-lot" }],
+    ["#/design/system-design/url-shortener/..", { page: "home", subject: "system-design" }],
+    ["#/design/system-design/url-shortener/a.b", { page: "home", subject: "system-design" }],
+    ["#/design/system-design/../x", { page: "home", subject: "algo" }],
+    ["#/design/Bad/x", { page: "home", subject: "algo" }],
+  ])("parses %s", (hash, want) => {
+    expect(parseRoute(hash)).toEqual(want);
+  });
+
+  it("builds hrefs and links design subjects to the console", () => {
+    expect(designHref("ood", "parking-lot")).toBe("#/design/ood/parking-lot");
+    expect(designHref("system-design", "x", "2026_a")).toBe("#/design/system-design/x/2026_a");
+    expect(problemHref("system-design", "x")).toBe("#/design/system-design/x");
+    expect(problemHref("ood", "x")).toBe("#/design/ood/x");
+    expect(problemHref("algo", "two-sum")).toBe("#/problem/algo/two-sum");
+  });
+
+  it("routes markdown links to design problems into the design page", () => {
+    const from = "system-design/learn/caching/01-intro.md";
+    expect(linkTarget(from, "../../problems/url-shortener/README.md", "/r")).toEqual({
+      kind: "route",
+      href: "#/design/system-design/url-shortener",
+    });
+  });
+});
 
 describe("links", () => {
   const md = "algo/problems/two-sum/README.md";
@@ -52,6 +93,8 @@ describe("tabs", () => {
     ["#/problems/algo", "problems"],
     ["#/map/system-design", "map"],
     ["#/progress/algo", "progress"],
+    ["#/design/system-design/url-shortener", "problems"],
+    ["#/design/system-design/url-shortener/2026-11-07_design_practice", "problems"],
   ])("%s belongs to the %s tab", (hash, tab) => {
     expect(tabOf(parseRoute(hash))).toBe(tab);
   });

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { ProblemRow } from "../api";
+import { problemHref } from "../route";
 
 const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 } as const;
 const STATUS_LABEL = { solved: "✓ solved", failing: "✗ failing", untried: "· untried" } as const;
@@ -84,7 +85,7 @@ export function ProblemsPage(props: {
           {shown.map((r) => (
             <tr key={r.slug}>
               <td>
-                <a href={`#/problem/${subject}/${r.slug}`}>{r.title}</a>
+                <a href={problemHref(subject, r.slug)}>{r.title}</a>
                 {r.legacy_failing && (
                   <span className="tag warn" title="an old solution of yours has a known bug">
                     legacy bug

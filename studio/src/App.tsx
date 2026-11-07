@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type {
+  DesignAttempt,
+  DesignProblemData,
   Feedback,
   Graph,
   Lesson,
@@ -24,7 +26,19 @@ import { SubjectMap } from "./components/SubjectMap";
 import { TopicPage } from "./components/TopicPage";
 import { RootContext } from "./context";
 import type { Route, Tab } from "./route";
-import { TAB_HREF, parseRoute, tabOf } from "./route";
+import { TAB_HREF, designHref, parseRoute, tabOf } from "./route";
+import { DesignConsole } from "./components/DesignConsole";
+import { DesignProblemPage } from "./components/DesignProblemPage";
+
+/** True when a key press is going into a text field (so global hotkeys must not steal it). */
+function isTyping(t: EventTarget | null): boolean {
+  return (
+    t instanceof HTMLInputElement ||
+    t instanceof HTMLTextAreaElement ||
+    t instanceof HTMLSelectElement ||
+    (t instanceof HTMLElement && t.isContentEditable)
+  );
+}
 
 type Page =
   | { kind: "home"; data: Feedback | null }
@@ -35,7 +49,9 @@ type Page =
   | { kind: "map"; data: Graph }
   | { kind: "dashboard"; data: Feedback }
   | { kind: "sessions"; data: Session[] }
-  | { kind: "session"; data: Session };
+  | { kind: "session"; data: Session }
+  | { kind: "design"; data: DesignProblemData }
+  | { kind: "console"; data: { problem: DesignProblemData; attempt: DesignAttempt } };
 
 function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
@@ -79,6 +95,13 @@ function load(route: Route): Promise<Page> {
       return api.graph(route.subject).then((data) => ({ kind: "map", data }));
     case "sessions":
       return api.sessions().then((data) => ({ kind: "sessions", data }));
+    case "design":
+      return api.design(route.subject, route.slug).then((data) => ({ kind: "design", data }));
+    case "console":
+      return Promise.all([
+        api.design(route.subject, route.slug),
+        api.designAttempt(route.subject, route.slug, route.attempt),
+      ]).then(([problem, attempt]) => ({ kind: "console", data: { problem, attempt } }));
     case "session":
       return api.session(route.id).then((data) => ({ kind: "session", data }));
     default:
@@ -117,7 +140,7 @@ export function App() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearching((s) => !s);
-      } else if (e.key === "/" && !(e.target instanceof HTMLInputElement)) {
+      } else if (e.key === "/" && !isTyping(e.target)) {
         e.preventDefault();
         setSearching(true);
       }
@@ -175,7 +198,10 @@ export function App() {
           </a>
         ))}
       </nav>
-      <main className="content" key={window.location.hash}>
+      <main
+        className={`content ${route.page === "console" ? "wide" : ""}`}
+        key={window.location.hash}
+      >
         {current && <Crumbs route={route} subject={current} page={page} />}
         {error && <ErrorBox msg={error} route={route} />}
         {!error && !page && <div className="loader" aria-label="loading" />}
@@ -187,6 +213,19 @@ export function App() {
         {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
         {page?.kind === "lesson" && <LessonView lesson={page.data} />}
         {page?.kind === "problem" && <ProblemCard p={page.data} open />}
+        {page?.kind === "design" && (
+          <DesignProblemPage
+            p={page.data}
+            names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+          />
+        )}
+        {page?.kind === "console" && (
+          <DesignConsole
+            key={page.data.attempt.name}
+            problem={page.data.problem}
+            initial={page.data.attempt}
+          />
+        )}
         {page?.kind === "topic" && <TopicPage data={page.data} />}
         {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
         {page?.kind === "problems" && (
@@ -212,9 +251,24 @@ function Crumbs({ route, subject, page }: { route: Route; subject: Subject; page
     leaf = t ? `${topicIcon(t)} ${t.name}` : route.topic;
   } else if (route.page === "problem") {
     leaf = page?.kind === "problem" ? page.data.title : route.slug;
+  } else if (route.page === "design") {
+    leaf = page?.kind === "design" ? page.data.title : route.slug;
+  } else if (route.page === "console") {
+    return (
+      <div className="crumbs">
+        <a href={`#/problems/${subject.id}`}>Problems</a> <span>›</span>
+        <a href={designHref(subject.id, route.slug)}>
+          {page?.kind === "console" ? page.data.problem.title : route.slug}
+        </a>{" "}
+        <span>›</span> <b>{route.attempt}</b>
+      </div>
+    );
   }
   if (!leaf) return null;
-  const parent = route.page === "problem" ? ["problems", "Problems"] : ["home", "Learn"];
+  const parent =
+    route.page === "problem" || route.page === "design"
+      ? ["problems", "Problems"]
+      : ["home", "Learn"];
   return (
     <div className="crumbs">
       <a href={`#/${parent[0]}/${subject.id}`}>{parent[1]}</a> <span>›</span> <b>{leaf}</b>

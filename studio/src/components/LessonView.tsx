@@ -1,4 +1,5 @@
 import type { Lesson } from "../api";
+import { designHref } from "../route";
 import { isTrace } from "../trace";
 import { Markdown } from "./Markdown";
 import { ProblemCard } from "./ProblemCard";
@@ -62,6 +63,38 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
                 {b.problems.map((p) => (
                   <ProblemCard key={p.slug} p={p} pattern={lesson.topic} />
                 ))}
+              </section>
+            );
+          case "design-problems":
+            return (
+              <section key={i}>
+                <h2>Practice in the design console</h2>
+                <p className="muted">
+                  Scope → estimates → API → versioned diagrams → deep dives → wrap-up, with live
+                  rubric checks and tips on demand.
+                </p>
+                <div className="cards design-cards">
+                  {b.problems.map((p, k) => (
+                    <a
+                      key={p.slug}
+                      className="topic-card design-card"
+                      href={designHref(lesson.subject, p.slug)}
+                      style={{ ["--i" as string]: k }}
+                    >
+                      <div className="tc-head">
+                        <span className="tc-icon">{lesson.subject === "ood" ? "🧩" : "🏗️"}</span>
+                        <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
+                      </div>
+                      <div className="tc-name">{p.title}</div>
+                      <div className="tc-foot">
+                        {p.minutes ? <span className="tc-pill">⏱ {p.minutes} min</span> : null}
+                        <span className={`tc-pill ${p.attempts.length ? "lesson" : ""}`}>
+                          {p.attempts.length} attempt{p.attempts.length === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </section>
             );
         }
