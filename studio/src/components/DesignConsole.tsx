@@ -22,6 +22,7 @@ import {
   linkTargets,
   partToDiagram,
   sortVersions,
+  stageLabel,
 } from "../design";
 import { designHref } from "../route";
 import { runCommand } from "../sessions";
