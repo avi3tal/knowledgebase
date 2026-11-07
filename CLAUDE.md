@@ -4,7 +4,9 @@
 - Tooling (`tools/`, generator + runner CLI): **Python 3, stdlib only**.
 - Solutions: **Python** or **Go**. Go code lives under the root `go.mod` (module `knowledgebase`);
   each attempt dir is its own package and is tested with `go test` (table-driven, reads `cases.json`).
-- v1 scope: problem type **algo** only.
+- Subjects: **algo** (coding problems, Python/Go), **system-design** and **ood** (design problems in the
+  studio's design console; format and API contract in `system-design/FORMAT.md`, checker `tools/kb/design.py`,
+  `kb sd validate` is the content gate). k8s later.
 - Learning studio (approved 2026-11-06): **React + TypeScript (strict) + Vite** app in `studio/`,
   package manager **yarn** (v4, `nodeLinker: node-modules`). The Python `kb` CLI is its local
   backend (`kb studio`, stdlib HTTP server on 127.0.0.1) and the only thing that touches files.
@@ -12,7 +14,7 @@
   writes lesson content once (stored in the repo) and does code review only when asked.
 
 ## Layout rules
-- Top level = type (`algo/`, later `system-design/`, `k8s/`). Never organise by source or by year.
+- Top level = type (`algo/`, `system-design/`, `ood/`, later `k8s/`). Never organise by source or by year.
 - **Content vs private data.** The repo ships content only (problems, lessons, resources, tools) so
   anyone can clone it and learn. Everything a learner produces lives in their private, git-ignored
   workspace `_workspace/` (`KB_WORKSPACE` overrides; Go attempts must stay inside the repo):

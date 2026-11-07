@@ -11,7 +11,8 @@ and, if you want AI help, your own Claude Code and API keys.
 
 ## Layout
 
-The top level is organised by **type** (only `algo` for now; `system-design`, `k8s` later).
+The top level is organised by **subject**: `algo/` (coding patterns and problems), `system-design/` and
+`ood/` (lessons + design-console case studies); `k8s` later.
 
 ```
 resources/            sources.json (registry + verdicts), refs/ (curated references), README.md, ROADMAP.md
@@ -62,6 +63,23 @@ make studio            # build the UI and serve it on http://127.0.0.1:8765
   "kb: debug Python/Go attempt". `Cmd+Shift+B` runs the "kb: run current attempt" task.
 - **New lessons:** `/learn algo two-pointers` in Claude Code writes the content once and kb does
   the rest. `/learn feedback` summarises your progress.
+
+## System design and OOD console
+
+Design problems (`system-design/problems/`, `ood/problems/`) open in the studio's console: scope →
+estimates (live calculator) → API & data → a **Visio-like canvas** with versions v1 → vN (each with a
+"why", diffs highlighted) → deep dives with trade-offs → wrap-up → signatures. A rubric checklist
+updates as you work; structural **smells** (client talking to a DB, a queue nobody reads, one DB under
+a read-heavy load, an interface nothing implements…) are flagged; tips come on demand (nudge → hint
+→ show). **Check** records a run; **Submit** unlocks the reference walkthrough and diagrams. No AI.
+
+```sh
+./kb sd list [--subject ood]               # case studies
+./kb sd attempt url-shortener              # or start it from the studio
+./kb run _workspace/attempts/system-design/url-shortener/<attempt>   # checklist + smells in the terminal
+./kb sd tip url-shortener comp-cache --level hint
+./kb sd validate                           # content gate for authors (reference must pass every check)
+```
 
 ## Study sessions
 
