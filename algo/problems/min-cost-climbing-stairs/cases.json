@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"cost": [10, 15, 20]}, "expected": 15},
+  {"name": "example 2", "args": {"cost": [1, 100, 1, 1, 1, 100, 1, 1, 100, 1]}, "expected": 6},
+  {"name": "two steps", "args": {"cost": [5, 3]}, "expected": 3},
+  {"name": "all zero", "args": {"cost": [0, 0, 0, 0]}, "expected": 0},
+  {"name": "all equal", "args": {"cost": [4, 4, 4, 4, 4]}, "expected": 8},
+  {"name": "skip the expensive ones", "args": {"cost": [1, 50, 1, 50, 1, 50, 1]}, "expected": 4},
+  {"name": "greedy trap", "args": {"cost": [0, 1, 2, 2]}, "expected": 2},
+  {"name": "larger", "args": {"cost": [12, 7, 33, 2, 18, 9, 4, 27, 3, 15, 8, 21, 6, 11, 30, 1]}, "expected": 51}
+]

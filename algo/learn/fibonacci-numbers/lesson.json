@@ -1,0 +1,143 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "fibonacci-numbers",
+ "title": "Fibonacci Numbers",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "staircase-memo",
+   "title": "Top-down — staircase with a memo (watch the cache hits cut the recursion)",
+   "source": "examples/staircase_memo.py",
+   "function": "count_ways_memo",
+   "input": {
+    "n": 5
+   },
+   "view": [
+    {
+     "id": "stack",
+     "type": "callstack"
+    },
+    {
+     "id": "memo",
+     "type": "map",
+     "var": "memo"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "k"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "n": 5
+     },
+     "expected": 13
+    },
+    {
+     "input": {
+      "n": 4
+     },
+     "expected": 7
+    },
+    {
+     "input": {
+      "n": 1
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "n": 10
+     },
+     "expected": 274
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "staircase-bottom-up",
+   "title": "Bottom-up — staircase in a 1-D array",
+   "source": "examples/staircase_bottom_up.py",
+   "function": "count_ways",
+   "input": {
+    "n": 7
+   },
+   "view": [
+    {
+     "id": "dp",
+     "type": "array",
+     "var": "dp",
+     "pointers": {
+      "i": "i"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "one",
+      "two",
+      "three"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "n": 7
+     },
+     "expected": 44
+    },
+    {
+     "input": {
+      "n": 5
+     },
+     "expected": 13
+    },
+    {
+     "input": {
+      "n": 0
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "n": 10
+     },
+     "expected": 274
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "fibonacci-number",
+    "min-cost-climbing-stairs",
+    "number-factors",
+    "house-robber",
+    "house-robber-ii"
+   ]
+  }
+ ]
+}

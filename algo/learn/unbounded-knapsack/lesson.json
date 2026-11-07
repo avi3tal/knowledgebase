@@ -1,0 +1,244 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "unbounded-knapsack",
+ "title": "Unbounded Knapsack",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "rod-table",
+   "title": "Bottom-up table — rod cutting (the take branch reads its own row)",
+   "source": "examples/rod_cutting_table.py",
+   "function": "rod_cutting",
+   "input": {
+    "lengths": [
+     1,
+     2,
+     3
+    ],
+    "prices": [
+     2,
+     6,
+     7
+    ],
+    "n": 5
+   },
+   "view": [
+    {
+     "id": "dp",
+     "type": "grid",
+     "var": "dp",
+     "cells": {
+      "cur": [
+       "i",
+       "r"
+      ]
+     },
+     "row_labels": "pieces",
+     "col_labels": "rod"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "size",
+      "price",
+      "skip",
+      "take"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "lengths": [
+       1,
+       2,
+       3
+      ],
+      "prices": [
+       2,
+       6,
+       7
+      ],
+      "n": 5
+     },
+     "expected": 14
+    },
+    {
+     "input": {
+      "lengths": [
+       1,
+       2,
+       3,
+       4
+      ],
+      "prices": [
+       1,
+       5,
+       8,
+       9
+      ],
+      "n": 8
+     },
+     "expected": 21
+    },
+    {
+     "input": {
+      "lengths": [
+       2,
+       3
+      ],
+      "prices": [
+       5,
+       9
+      ],
+      "n": 7
+     },
+     "expected": 19
+    },
+    {
+     "input": {
+      "lengths": [
+       3,
+       4
+      ],
+      "prices": [
+       4,
+       6
+      ],
+      "n": 2
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "rod-1d",
+   "title": "One row — rod length left-to-right",
+   "source": "examples/rod_cutting_1d.py",
+   "function": "rod_cutting_1d",
+   "input": {
+    "lengths": [
+     1,
+     2,
+     3
+    ],
+    "prices": [
+     2,
+     6,
+     7
+    ],
+    "n": 5
+   },
+   "view": [
+    {
+     "id": "dp",
+     "type": "array",
+     "var": "dp",
+     "pointers": {
+      "r": "r"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "size",
+      "price"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "lengths": [
+       1,
+       2,
+       3
+      ],
+      "prices": [
+       2,
+       6,
+       7
+      ],
+      "n": 5
+     },
+     "expected": 14
+    },
+    {
+     "input": {
+      "lengths": [
+       1,
+       2,
+       3,
+       4
+      ],
+      "prices": [
+       1,
+       5,
+       8,
+       9
+      ],
+      "n": 8
+     },
+     "expected": 21
+    },
+    {
+     "input": {
+      "lengths": [
+       2,
+       3
+      ],
+      "prices": [
+       5,
+       9
+      ],
+      "n": 7
+     },
+     "expected": 19
+    },
+    {
+     "input": {
+      "lengths": [
+       3,
+       4
+      ],
+      "prices": [
+       4,
+       6
+      ],
+      "n": 2
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "coin-change-ii",
+    "coin-change",
+    "maximum-ribbon-cut",
+    "perfect-squares"
+   ]
+  }
+ ]
+}

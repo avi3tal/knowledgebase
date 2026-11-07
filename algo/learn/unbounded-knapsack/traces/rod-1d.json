@@ -1,0 +1,879 @@
+{
+ "version": 1,
+ "title": "One row — rod length left-to-right",
+ "code": [
+  "def rod_cutting_1d(lengths: list[int], prices: list[int], n: int) -> int:",
+  "    dp = [0] * (n + 1)",
+  "    for i in range(len(lengths)):",
+  "        size, price = lengths[i], prices[i]",
+  "        for r in range(size, n + 1):",
+  "            dp[r] = max(dp[r], dp[r - size] + price)",
+  "    return dp[n]"
+ ],
+ "view": [
+  {
+   "id": "dp",
+   "type": "array",
+   "var": "dp",
+   "pointers": {
+    "r": "r"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "size",
+    "price"
+   ]
+  }
+ ],
+ "input": {
+  "lengths": [
+   1,
+   2,
+   3
+  ],
+  "prices": [
+   2,
+   6,
+   7
+  ],
+  "n": 5
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "one row replaces the whole table",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      0,
+      0
+     ],
+     "pointers": {
+      "r": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      0
+     ],
+     "pointers": {
+      "r": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      0
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      6,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      6,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      8,
+      10
+     ],
+     "pointers": {
+      "r": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      10
+     ],
+     "pointers": {
+      "r": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      10
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "keep the rod whole, or cut one more piece of this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "LEFT to right, so dp[r - size] may already use this size",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      2,
+      6,
+      8,
+      12,
+      14
+     ],
+     "pointers": {
+      "r": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7
+     }
+    }
+   }
+  }
+ ],
+ "result": 14
+}

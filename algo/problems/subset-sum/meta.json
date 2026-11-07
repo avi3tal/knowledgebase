@@ -1,0 +1,47 @@
+{
+  "title": "Subset Sum",
+  "slug": "subset-sum",
+  "type": "algo",
+  "difficulty": "easy",
+  "patterns": [
+    "knapsack-0-1"
+  ],
+  "sources": [
+    {
+      "name": "geeksforgeeks",
+      "url": "https://www.geeksforgeeks.org/problems/subset-sum-problem-1611555638/1"
+    }
+  ],
+  "kind": "function",
+  "function": "isSubsetSum",
+  "params": [
+    {
+      "name": "nums",
+      "type": "int[]"
+    },
+    {
+      "name": "target",
+      "type": "int"
+    }
+  ],
+  "returns": "bool",
+  "comparator": "exact",
+  "expected_complexity": {
+    "time": "O(n * S)",
+    "space": "O(S)"
+  },
+  "bench": {
+    "args": {
+      "nums": "[2 * x for x in int_array(n, 1, 10)]",
+      "target": "5 * n + 1"
+    },
+    "sizes": [
+      16,
+      32,
+      64,
+      128,
+      256,
+      512
+    ]
+  }
+}

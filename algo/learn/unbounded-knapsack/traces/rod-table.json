@@ -1,0 +1,5437 @@
+{
+ "version": 1,
+ "title": "Bottom-up table — rod cutting (the take branch reads its own row)",
+ "code": [
+  "def rod_cutting(lengths: list[int], prices: list[int], n: int) -> int:",
+  "    pieces = list(zip(lengths, prices, strict=True))  # (length, price) per row",
+  "    rod = range(n + 1)  # one column per rod length 0..n",
+  "    dp = [[0] * len(rod) for _ in range(len(pieces) + 1)]",
+  "    for i, (size, price) in enumerate(pieces, start=1):",
+  "        for r in rod[1:]:",
+  "            skip = dp[i - 1][r]",
+  "            take = dp[i][r - size] + price if size <= r else 0",
+  "            dp[i][r] = max(skip, take)",
+  "    return dp[-1][n]"
+ ],
+ "view": [
+  {
+   "id": "dp",
+   "type": "grid",
+   "var": "dp",
+   "cells": {
+    "cur": [
+     "i",
+     "r"
+    ]
+   },
+   "row_labels": "pieces",
+   "col_labels": "rod"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "size",
+    "price",
+    "skip",
+    "take"
+   ]
+  }
+ ],
+ "input": {
+  "lengths": [
+   1,
+   2,
+   3
+  ],
+  "prices": [
+   2,
+   6,
+   7
+  ],
+  "n": 5
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "row 0 = no piece sizes, so every cell is 0",
+   "state": {
+    "dp": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "row 0 = no piece sizes, so every cell is 0",
+   "state": {
+    "dp": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "row 0 = no piece sizes, so every cell is 0",
+   "state": {
+    "dp": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "row 0 = no piece sizes, so every cell is 0",
+   "state": {
+    "dp": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "row 0 = no piece sizes, so every cell is 0",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": null,
+      "price": null,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": null,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 1,
+      "price": 2,
+      "skip": 0,
+      "take": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 0,
+      "take": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 0,
+      "take": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 2,
+      "take": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 2,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 2,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 2,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 4,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 4,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 4,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 4,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 6,
+      "take": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 6,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 6,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 6,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 8,
+      "take": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 8,
+      "take": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 8,
+      "take": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 8,
+      "take": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 10,
+      "take": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 10,
+      "take": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 2,
+      "price": 6,
+      "skip": 10,
+      "take": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 10,
+      "take": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 10,
+      "take": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 2,
+      "take": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 2,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 2,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 2,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 6,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 6,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 6,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 6,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 8,
+      "take": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       0,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 8,
+      "take": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 8,
+      "take": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 8,
+      "take": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 12,
+      "take": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       0,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 12,
+      "take": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       4
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 12,
+      "take": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 12,
+      "take": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "skip: never cut this size, so use the row above",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 14,
+      "take": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "take one piece: the SAME row, so it can repeat",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 14,
+      "take": 13
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "keep the better of the two",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 14,
+      "take": 13
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "all sizes allowed, full rod",
+   "state": {
+    "dp": {
+     "rows": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       2,
+       4,
+       6,
+       8,
+       10
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ],
+      [
+       0,
+       2,
+       6,
+       8,
+       12,
+       14
+      ]
+     ],
+     "cells": {
+      "cur": [
+       3,
+       5
+      ]
+     },
+     "marked": [],
+     "row_labels": [
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       6
+      ],
+      [
+       3,
+       7
+      ]
+     ],
+     "col_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "vars": {
+     "values": {
+      "size": 3,
+      "price": 7,
+      "skip": 14,
+      "take": 13
+     }
+    }
+   }
+  }
+ ],
+ "result": 14
+}

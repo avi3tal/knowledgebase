@@ -1,0 +1,1854 @@
+{
+ "version": 1,
+ "title": "Top-down — staircase with a memo (watch the cache hits cut the recursion)",
+ "code": [
+  "def count_ways_memo(n: int) -> int:",
+  "    memo: dict[int, int] = {}",
+  "",
+  "    def ways(k: int) -> int:",
+  "        if k < 0:",
+  "            return 0",
+  "        if k == 0:",
+  "            return 1",
+  "        if k in memo:",
+  "            return memo[k]",
+  "        memo[k] = ways(k - 1) + ways(k - 2) + ways(k - 3)",
+  "        return memo[k]",
+  "",
+  "    return ways(n)"
+ ],
+ "view": [
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "memo",
+   "type": "map",
+   "var": "memo"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "k"
+   ]
+  }
+ ],
+ "input": {
+  "n": 5
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "memo[k] = number of ways to climb k stairs, filled the first time k is solved",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 0
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "exactly at the top — one way (take no more steps)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 0
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": -1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "overshot the top — not a valid way",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": -1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": -2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": -2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "overshot the top — not a valid way",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": -2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "k": -2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "last step was 1, 2 or 3: add three answers",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 0
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "exactly at the top — one way (take no more steps)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 0
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": -1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "overshot the top — not a valid way",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": -1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "last step was 1, 2 or 3: add three answers",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "cache hit — this subtree is not explored again",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 0
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "exactly at the top — one way (take no more steps)",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 0
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "last step was 1, 2 or 3: add three answers",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "cache hit — this subtree is not explored again",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "cache hit — this subtree is not explored again",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 1
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "last step was 1, 2 or 3: add three answers",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 4
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "cache hit — this subtree is not explored again",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 3
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "cache hit — this subtree is not explored again",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 2
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "last step was 1, 2 or 3: add three answers",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      },
+      {
+       "fn": "ways",
+       "args": {
+        "k": 5
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ],
+      [
+       5,
+       13
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "count_ways_memo",
+       "args": {
+        "n": 5
+       }
+      }
+     ]
+    },
+    "memo": {
+     "entries": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       3,
+       4
+      ],
+      [
+       4,
+       7
+      ],
+      [
+       5,
+       13
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "k": null
+     }
+    }
+   }
+  }
+ ],
+ "result": 13
+}

@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "You can climb 1 or 2 stairs at a time. How many distinct ways are there to reach stair n?",
+   "options": [
+    "fibonacci-numbers",
+    "unbounded-knapsack",
+    "backtracking"
+   ],
+   "answer": "fibonacci-numbers",
+   "why": "The last move came from n−1 or n−2, so ways(n) = ways(n−1) + ways(n−2), with no budget dimension. Different orders of steps are different ways, which is why it isn't the unbounded-knapsack combination count."
+  },
+  {
+   "id": "q2",
+   "prompt": "Houses stand in a row with some money in each. You can't rob two neighbours. Maximise the loot.",
+   "options": [
+    "fibonacci-numbers",
+    "knapsack-0-1",
+    "greedy"
+   ],
+   "answer": "fibonacci-numbers",
+   "why": "best(i) = max(best(i−1), best(i−2) + money[i]) only looks back two positions. It looks like take/skip knapsack, but there's no capacity. Greedy (richest house first) fails on [2, 1, 1, 2]."
+  },
+  {
+   "id": "q3",
+   "prompt": "Count the ways to make an amount from unlimited coins of given values, where {1, 2} and {2, 1} count once.",
+   "options": [
+    "unbounded-knapsack",
+    "fibonacci-numbers",
+    "knapsack-0-1"
+   ],
+   "answer": "unbounded-knapsack",
+   "why": "Order doesn't matter → count combinations: unbounded knapsack with the coins in the outer loop. A Fibonacci-style recurrence over the amount alone would count every order separately."
+  },
+  {
+   "id": "q4",
+   "prompt": "A message of digits is encoded with 1 → A … 26 → Z. Count the ways to decode it.",
+   "options": [
+    "fibonacci-numbers",
+    "backtracking",
+    "subsets"
+   ],
+   "answer": "fibonacci-numbers",
+   "why": "The last letter used either the last digit or the last two digits, so ways(i) = ways(i−1) [if valid] + ways(i−2) [if valid]: a two-step look-back over one position. You count the decodings, you don't list them, so backtracking is overkill."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given an array of positive numbers, decide whether some of them (each at most once) sum exactly to S.",
+   "options": [
+    "knapsack-0-1",
+    "fibonacci-numbers",
+    "unbounded-knapsack"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "The state needs a budget (the remaining sum) as well as the position, and each number is used at most once → 0/1 knapsack. Fibonacci-style DP only has the position."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given a string, find the length of its longest palindromic subsequence.",
+   "options": [
+    "palindromic-subsequence",
+    "fibonacci-numbers",
+    "longest-common-substring"
+   ],
+   "answer": "palindromic-subsequence",
+   "why": "The state is a range [i..j] of the string, a 2-D interval DP, not a single position looking back a fixed few steps."
+  },
+  {
+   "id": "q7",
+   "prompt": "Count the ways to write n as an ordered sum of 1, 3 and 4.",
+   "options": [
+    "fibonacci-numbers",
+    "unbounded-knapsack",
+    "subsets"
+   ],
+   "answer": "fibonacci-numbers",
+   "why": "Ordered sums: the last term is 1, 3 or 4, so f(n) = f(n−1) + f(n−3) + f(n−4). That's a staircase with steps {1, 3, 4}. Unbounded knapsack would count each multiset once."
+  }
+ ]
+}

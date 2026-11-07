@@ -1,0 +1,993 @@
+{
+ "version": 1,
+ "title": "One row — capacity right-to-left",
+ "code": [
+  "def knapsack_1d(weights: list[int], profits: list[int], capacity: int) -> int:",
+  "    dp = [0] * (capacity + 1)",
+  "    for i in range(len(weights)):",
+  "        w, p = weights[i], profits[i]",
+  "        for c in range(capacity, w - 1, -1):",
+  "            dp[c] = max(dp[c], dp[c - w] + p)",
+  "    return dp[capacity]"
+ ],
+ "view": [
+  {
+   "id": "dp",
+   "type": "array",
+   "var": "dp",
+   "pointers": {
+    "c": "c"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "i",
+    "w",
+    "p"
+   ]
+  }
+ ],
+ "input": {
+  "weights": [
+   1,
+   2,
+   3
+  ],
+  "profits": [
+   6,
+   10,
+   12
+  ],
+  "capacity": 5
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "one row replaces the whole table",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "c": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": null,
+      "w": null,
+      "p": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "c": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": null,
+      "p": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "c": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "c": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      6
+     ],
+     "pointers": {
+      "c": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      6
+     ],
+     "pointers": {
+      "c": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 0,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 1,
+      "p": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      6
+     ],
+     "pointers": {
+      "c": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      16
+     ],
+     "pointers": {
+      "c": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      6,
+      16
+     ],
+     "pointers": {
+      "c": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      6,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      6,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 1,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 2,
+      "p": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      16
+     ],
+     "pointers": {
+      "c": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      22
+     ],
+     "pointers": {
+      "c": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      16,
+      22
+     ],
+     "pointers": {
+      "c": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      18,
+      22
+     ],
+     "pointers": {
+      "c": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      18,
+      22
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "skip (old dp[c]) vs take (old dp[c - w] + p): item i used once",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      18,
+      22
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "RIGHT to left, so dp[c - w] is still the previous item's row",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      18,
+      22
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      6,
+      10,
+      16,
+      18,
+      22
+     ],
+     "pointers": {
+      "c": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "i": 2,
+      "w": 3,
+      "p": 12
+     }
+    }
+   }
+  }
+ ],
+ "result": 22
+}

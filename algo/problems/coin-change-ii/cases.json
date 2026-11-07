@@ -1,0 +1,12 @@
+[
+  {"name": "example 1", "args": {"amount": 5, "coins": [1, 2, 5]}, "expected": 4},
+  {"name": "example 2", "args": {"amount": 3, "coins": [2]}, "expected": 0},
+  {"name": "example 3", "args": {"amount": 10, "coins": [10]}, "expected": 1},
+  {"name": "amount 0", "args": {"amount": 0, "coins": [7]}, "expected": 1},
+  {"name": "order doesn't matter", "args": {"amount": 4, "coins": [1, 2]}, "expected": 3},
+  {"name": "no coin fits", "args": {"amount": 3, "coins": [5, 10]}, "expected": 0},
+  {"name": "single coin 1", "args": {"amount": 9, "coins": [1]}, "expected": 1},
+  {"name": "US coins", "args": {"amount": 100, "coins": [1, 5, 10, 25, 50]}, "expected": 292},
+  {"name": "unsorted coins", "args": {"amount": 12, "coins": [5, 3, 2]}, "expected": 5},
+  {"name": "larger", "args": {"amount": 200, "coins": [3, 7, 11, 13]}, "expected": 566}
+]

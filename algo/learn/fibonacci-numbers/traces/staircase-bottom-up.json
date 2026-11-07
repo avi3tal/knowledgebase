@@ -1,0 +1,1055 @@
+{
+ "version": 1,
+ "title": "Bottom-up — staircase in a 1-D array",
+ "code": [
+  "def count_ways(n: int) -> int:",
+  "    dp = [0] * (n + 1)",
+  "    dp[0] = 1",
+  "    for i in range(1, n + 1):",
+  "        one = dp[i - 1]",
+  "        two = dp[i - 2] if i >= 2 else 0",
+  "        three = dp[i - 3] if i >= 3 else 0",
+  "        dp[i] = one + two + three",
+  "    return dp[n]"
+ ],
+ "view": [
+  {
+   "id": "dp",
+   "type": "array",
+   "var": "dp",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "one",
+    "two",
+    "three"
+   ]
+  }
+ ],
+ "input": {
+  "n": 7
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "dp[i] = number of ways to reach stair i",
+   "state": {
+    "dp": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": null,
+      "two": null,
+      "three": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "one way to stand at the bottom: do nothing",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": null,
+      "two": null,
+      "three": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": null,
+      "two": null,
+      "three": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": null,
+      "three": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 0,
+      "three": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 0,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 0,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 0,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 0,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 1,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 1,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 1,
+      "two": 1,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 2,
+      "two": 1,
+      "three": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 2,
+      "two": 1,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 2,
+      "two": 1,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 2,
+      "two": 1,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 4,
+      "two": 1,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 4,
+      "two": 2,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 4,
+      "two": 2,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 4,
+      "two": 2,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 7,
+      "two": 2,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 7,
+      "two": 4,
+      "three": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 7,
+      "two": 4,
+      "three": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 7,
+      "two": 4,
+      "three": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 7,
+      "two": 4,
+      "three": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 13,
+      "two": 4,
+      "three": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 13,
+      "two": 7,
+      "three": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 13,
+      "two": 7,
+      "three": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 13,
+      "two": 7,
+      "three": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 13,
+      "two": 7,
+      "three": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "arrive with a 1-step from stair i-1",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 24,
+      "two": 7,
+      "three": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 24,
+      "two": 13,
+      "three": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 24,
+      "two": 13,
+      "three": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "each answer only needs the previous three — that's the Fibonacci shape",
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      44
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 24,
+      "two": 13,
+      "three": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "dp": {
+     "values": [
+      1,
+      1,
+      2,
+      4,
+      7,
+      13,
+      24,
+      44
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "one": 24,
+      "two": 13,
+      "three": 7
+     }
+    }
+   }
+  }
+ ],
+ "result": 44
+}

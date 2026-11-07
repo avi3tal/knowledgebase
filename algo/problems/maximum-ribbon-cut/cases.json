@@ -1,0 +1,12 @@
+[
+  {"name": "example 1", "args": {"lengths": [2, 3, 5], "total": 5}, "expected": 2},
+  {"name": "example 2", "args": {"lengths": [2, 3], "total": 7}, "expected": 3},
+  {"name": "example 3", "args": {"lengths": [3, 5, 7], "total": 13}, "expected": 3},
+  {"name": "impossible", "args": {"lengths": [3, 5], "total": 7}, "expected": -1},
+  {"name": "total 0", "args": {"lengths": [4], "total": 0}, "expected": 0},
+  {"name": "single length divides", "args": {"lengths": [4], "total": 12}, "expected": 3},
+  {"name": "single length doesn't divide", "args": {"lengths": [4], "total": 10}, "expected": -1},
+  {"name": "smallest piece can't finish", "args": {"lengths": [2, 5], "total": 9}, "expected": 3},
+  {"name": "piece longer than ribbon", "args": {"lengths": [10, 20], "total": 5}, "expected": -1},
+  {"name": "larger", "args": {"lengths": [7, 11, 13], "total": 101}, "expected": 13}
+]

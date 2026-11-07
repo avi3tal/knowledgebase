@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "A rod of length n can be cut into pieces; each piece length has a price. Pieces of the same length can be cut as many times as you like. Maximise revenue.",
+   "options": ["unbounded-knapsack", "knapsack-0-1", "greedy"],
+   "answer": "unbounded-knapsack",
+   "why": "Each piece size is reusable and the rod length is the budget → unbounded knapsack (the take branch stays on the same size). Best price per unit length (greedy) fails when leftovers can't be sold well."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given coin denominations (unlimited supply) and an amount, return the fewest coins that make it, or −1.",
+   "options": ["unbounded-knapsack", "greedy", "fibonacci-numbers"],
+   "answer": "unbounded-knapsack",
+   "why": "Reusable items plus an exact budget plus 'fewest' → unbounded knapsack with min and ∞ for impossible. Greedy only works for canonical coin systems; [1, 3, 4] → 6 breaks it."
+  },
+  {
+   "id": "q3",
+   "prompt": "Count the ways to write n as an ordered sum of 1s, 3s and 4s (1 + 3 and 3 + 1 are different).",
+   "options": ["fibonacci-numbers", "unbounded-knapsack", "backtracking"],
+   "answer": "fibonacci-numbers",
+   "why": "Order matters, so look at the last term: f(n) = f(n−1) + f(n−3) + f(n−4). That's a Fibonacci-style recurrence over n. The unbounded-knapsack loop (items outside) would count each combination once and miss orderings."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given an array of positive numbers, can you pick some of them (each at most once) to sum exactly to S?",
+   "options": ["knapsack-0-1", "unbounded-knapsack", "subsets"],
+   "answer": "knapsack-0-1",
+   "why": "'Each at most once' decides it: 0/1 knapsack, the 1-D row walked right to left. Unbounded would let a number repeat, and listing all subsets is exponential."
+  },
+  {
+   "id": "q5",
+   "prompt": "Cut a ribbon of length n into pieces of the allowed lengths (each reusable) so the number of pieces is as large as possible; nothing may be left over.",
+   "options": ["unbounded-knapsack", "greedy", "knapsack-0-1"],
+   "answer": "unbounded-knapsack",
+   "why": "Reusable lengths plus an exact-fill budget → unbounded knapsack with max and −∞ for unreachable lengths. Always cutting the shortest piece can leave a remainder that nothing fits."
+  },
+  {
+   "id": "q6",
+   "prompt": "Return the least number of perfect squares (1, 4, 9, …) that sum to n.",
+   "options": ["unbounded-knapsack", "greedy", "math"],
+   "answer": "unbounded-knapsack",
+   "why": "The squares are coins you can reuse; 'fewest that sum exactly to n' is coin change → unbounded knapsack. Taking the largest square first fails (18 = 9 + 9, not 16 + 1 + 1)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given distinct positive candidates (each reusable), return all unique combinations that sum to a target.",
+   "options": ["backtracking", "unbounded-knapsack", "subsets"],
+   "answer": "backtracking",
+   "why": "'Return all combinations' means you must enumerate them, so a counting/optimising table isn't enough. Build combinations incrementally and prune when the sum overshoots: that's backtracking (Combination Sum)."
+  }
+ ]
+}

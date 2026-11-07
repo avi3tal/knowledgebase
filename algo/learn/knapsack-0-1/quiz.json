@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given an array of positive integers, decide whether it can be split into two groups with equal sums.",
+   "options": [
+    "knapsack-0-1",
+    "subsets",
+    "greedy"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "Each number goes to one side, once, and the target (total / 2) is a small integer → a boolean 0/1 knapsack row. You don't need to list the subsets, and greedy balancing fails on inputs like [8, 7, 6, 5, 4]."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given coin denominations with an unlimited supply of each, count the combinations that make a given amount.",
+   "options": [
+    "unbounded-knapsack",
+    "knapsack-0-1",
+    "fibonacci-numbers"
+   ],
+   "answer": "unbounded-knapsack",
+   "why": "Unlimited supply means items are reused → unbounded knapsack: the take branch reads the same row and the 1-D loop runs left to right. Counting combinations (not orders) means coins in the outer loop, not a Fibonacci recurrence over the amount."
+  },
+  {
+   "id": "q3",
+   "prompt": "Put a + or a − in front of every number in an array. How many sign choices make the expression equal a target?",
+   "options": [
+    "knapsack-0-1",
+    "backtracking",
+    "unbounded-knapsack"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "Binary choice per number, each used once, and a count → the + numbers form a subset with sum (total + target) / 2, so it's count of subset sum. Backtracking would enumerate 2ⁿ sign patterns, and nothing is reused."
+  },
+  {
+   "id": "q4",
+   "prompt": "List every combination of positive candidates (each used at most once) that sums to a target. A partial sum that passes the target can't recover.",
+   "options": [
+    "backtracking",
+    "knapsack-0-1",
+    "subsets"
+   ],
+   "answer": "backtracking",
+   "why": "You must output the combinations themselves, not a yes/no, a count or a best value, so a DP table doesn't help. Building them incrementally and abandoning a path once it overshoots is backtracking; generating every subset first (Subsets) wastes the pruning."
+  },
+  {
+   "id": "q5",
+   "prompt": "Items have weights and values, and you may take any fraction of an item. Maximise the value that fits in a capacity.",
+   "options": [
+    "greedy",
+    "knapsack-0-1",
+    "unbounded-knapsack"
+   ],
+   "answer": "greedy",
+   "why": "Fractions are allowed → fractional knapsack: sort by value per unit of weight and take greedily. The DP is only needed when items are whole (0/1)."
+  },
+  {
+   "id": "q6",
+   "prompt": "Split an array into two groups so that the absolute difference of their sums is as small as possible.",
+   "options": [
+    "knapsack-0-1",
+    "greedy",
+    "two-pointers"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "One group's sum s decides everything (difference = total − 2s). Fill a boolean subset-sum row up to total / 2 and take the largest reachable s. Putting each number on the lighter side is a greedy that fails."
+  },
+  {
+   "id": "q7",
+   "prompt": "Each day you either work (earning that day's pay) or rest, and you can't work two days in a row. Maximise total pay.",
+   "options": [
+    "fibonacci-numbers",
+    "knapsack-0-1",
+    "greedy"
+   ],
+   "answer": "fibonacci-numbers",
+   "why": "There's no capacity dimension: the best answer for day i only depends on the answers for days i−1 and i−2 → a Fibonacci-style 1-D recurrence (it's House Robber)."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given n tasks with a duration and a reward each, pick tasks to do within T hours (each task at most once) for the biggest total reward.",
+   "options": [
+    "knapsack-0-1",
+    "unbounded-knapsack",
+    "merge-intervals"
+   ],
+   "answer": "knapsack-0-1",
+   "why": "Weights (durations), profits (rewards), a capacity (T) and each item at most once is the classic 0/1 knapsack. There are no start/end times to overlap, and tasks aren't repeatable."
+  }
+ ]
+}

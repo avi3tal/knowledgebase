@@ -1,0 +1,254 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "knapsack-0-1",
+ "title": "0/1 Knapsack",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "knapsack-table",
+   "title": "Bottom-up table — classic 0/1 knapsack",
+   "source": "examples/knapsack_table.py",
+   "function": "knapsack",
+   "input": {
+    "weights": [
+     1,
+     2,
+     3
+    ],
+    "profits": [
+     6,
+     10,
+     12
+    ],
+    "capacity": 5
+   },
+   "view": [
+    {
+     "id": "dp",
+     "type": "grid",
+     "var": "dp",
+     "cells": {
+      "cur": [
+       "i",
+       "c"
+      ]
+     },
+     "row_labels": "items",
+     "col_labels": "caps"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "w",
+      "p",
+      "skip",
+      "take"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "weights": [
+       1,
+       2,
+       3
+      ],
+      "profits": [
+       6,
+       10,
+       12
+      ],
+      "capacity": 5
+     },
+     "expected": 22
+    },
+    {
+     "input": {
+      "weights": [
+       1,
+       2,
+       3,
+       5
+      ],
+      "profits": [
+       1,
+       6,
+       10,
+       16
+      ],
+      "capacity": 7
+     },
+     "expected": 22
+    },
+    {
+     "input": {
+      "weights": [
+       1,
+       2,
+       3,
+       5
+      ],
+      "profits": [
+       1,
+       6,
+       10,
+       16
+      ],
+      "capacity": 6
+     },
+     "expected": 17
+    },
+    {
+     "input": {
+      "weights": [
+       4,
+       5
+      ],
+      "profits": [
+       10,
+       20
+      ],
+      "capacity": 3
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-space-and-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "knapsack-1d",
+   "title": "One row — capacity right-to-left",
+   "source": "examples/knapsack_1d.py",
+   "function": "knapsack_1d",
+   "input": {
+    "weights": [
+     1,
+     2,
+     3
+    ],
+    "profits": [
+     6,
+     10,
+     12
+    ],
+    "capacity": 5
+   },
+   "view": [
+    {
+     "id": "dp",
+     "type": "array",
+     "var": "dp",
+     "pointers": {
+      "c": "c"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "i",
+      "w",
+      "p"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "weights": [
+       1,
+       2,
+       3
+      ],
+      "profits": [
+       6,
+       10,
+       12
+      ],
+      "capacity": 5
+     },
+     "expected": 22
+    },
+    {
+     "input": {
+      "weights": [
+       1,
+       2,
+       3,
+       5
+      ],
+      "profits": [
+       1,
+       6,
+       10,
+       16
+      ],
+      "capacity": 7
+     },
+     "expected": 22
+    },
+    {
+     "input": {
+      "weights": [
+       1,
+       2,
+       3,
+       5
+      ],
+      "profits": [
+       1,
+       6,
+       10,
+       16
+      ],
+      "capacity": 6
+     },
+     "expected": 17
+    },
+    {
+     "input": {
+      "weights": [
+       4,
+       5
+      ],
+      "profits": [
+       10,
+       20
+      ],
+      "capacity": 3
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "subset-sum",
+    "equal-subset-sum-partition",
+    "count-of-subset-sum",
+    "minimum-subset-sum-difference",
+    "target-sum"
+   ]
+  }
+ ]
+}
