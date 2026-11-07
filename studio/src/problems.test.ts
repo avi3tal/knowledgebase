@@ -56,3 +56,48 @@ describe("filterProblems", () => {
     expect(parseRoute("#/problems/algo")).toEqual({ page: "problems", subject: "algo" });
   });
 });
+
+describe("progress groups", () => {
+  it("groups practised or taught topics of any subject by catalog group", async () => {
+    const { progressGroups } = await import("./components/Dashboard");
+    const fb = (id: string, problems: number, has_lesson: boolean) => ({
+      id,
+      name: id,
+      kind: "concept",
+      has_lesson,
+      problems: Array.from({ length: problems }, () => ({}) as never),
+      counts: { solved: 0, failing: 0, untried: problems },
+      quiz_accuracy: null,
+      last_practiced: null,
+      review_due: null,
+      advice: [],
+    });
+    const topic = (id: string, group: string) => ({
+      id,
+      name: id,
+      kind: "concept",
+      group,
+      usage: "",
+      ds: [],
+      samples: [],
+      has_lesson: false,
+    });
+    const groups = progressGroups(
+      {
+        subject: "system-design",
+        today: "2026-11-07",
+        unmapped_tags: [],
+        topics: [fb("caching", 0, true), fb("url-shortener", 1, false), fb("cdn", 0, false)],
+      },
+      [
+        topic("caching", "building-blocks"),
+        topic("url-shortener", "case-studies"),
+        topic("cdn", "building-blocks"),
+      ],
+    );
+    expect(groups.map((g) => [g.group, g.tiles.map((t) => t.id)])).toEqual([
+      ["building-blocks", ["caching"]],
+      ["case-studies", ["url-shortener"]],
+    ]);
+  });
+});

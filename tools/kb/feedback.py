@@ -102,7 +102,7 @@ def compute(subject: str, problems_dir: Path, today: dt.date | None = None) -> d
                 "quiz_accuracy": accuracy,
                 "last_practiced": last,
                 "review_due": review.isoformat() if review else None,
-                "advice": _advice(t, probs, accuracy, review, today, learn.has_lesson(subject, t["id"])),
+                "advice": _advice(t, probs, accuracy, review, today, learn.has_lesson(subject, t["id"]), subject),
             }
         )
     return {"subject": subject, "today": today.isoformat(), "topics": topics, "unmapped_tags": sorted(unmapped)}
@@ -115,6 +115,7 @@ def _advice(
     review: dt.date | None,
     today: dt.date,
     has_lesson: bool,
+    subject: str = "algo",
 ) -> list[str]:
     tips: list[str] = []
     if accuracy is not None and accuracy < QUIZ_TARGET:
@@ -136,7 +137,8 @@ def _advice(
         tips.append("Next up: " + ", ".join(untried[:3]))
     if not probs and topic["kind"] == "pattern":
         tips.append(
-            "No problems yet" + (" — open the lesson." if has_lesson else " — ask Claude: /learn algo " + topic["id"])
+            "No problems yet"
+            + (" — open the lesson." if has_lesson else f" — ask Claude: /learn {subject} {topic['id']}")
         )
     return tips
 

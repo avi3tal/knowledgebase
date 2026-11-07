@@ -206,7 +206,9 @@ export function App() {
         {error && <ErrorBox msg={error} route={route} />}
         {!error && !page && <div className="loader" aria-label="loading" />}
         {page?.kind === "home" && current && <SubjectHome subject={current} feedback={page.data} />}
-        {page?.kind === "dashboard" && <Dashboard data={page.data} />}
+        {page?.kind === "dashboard" && (
+          <Dashboard data={page.data} topics={current?.topics ?? []} />
+        )}
         {page?.kind === "sessions" && subjects && (
           <SessionsPage sessions={page.data} subjects={subjects.subjects} />
         )}
@@ -233,6 +235,7 @@ export function App() {
             subject={route.subject}
             rows={page.data}
             names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+            lessons={new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))}
           />
         )}
       </main>

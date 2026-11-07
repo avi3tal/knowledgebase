@@ -138,7 +138,7 @@ export interface ProblemStatus {
 export interface TopicFeedback {
   id: string;
   name: string;
-  kind: "pattern" | "fundamental";
+  kind: string;
   has_lesson: boolean;
   problems: ProblemStatus[];
   counts: Record<"solved" | "failing" | "untried", number>;

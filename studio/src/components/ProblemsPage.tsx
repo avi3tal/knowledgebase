@@ -30,8 +30,10 @@ export function ProblemsPage(props: {
   subject: string;
   rows: ProblemRow[];
   names: Record<string, string>;
+  /** Topic ids that have a lesson; others link to their topic page. */
+  lessons?: Set<string>;
 }) {
-  const { subject, rows, names } = props;
+  const { subject, rows, names, lessons } = props;
   const [f, setF] = useState<ProblemFilters>({ topic: "", difficulty: "", status: "", query: "" });
   const shown = useMemo(() => filterProblems(rows, f), [rows, f]);
   const topics = useMemo(() => [...new Set(rows.flatMap((r) => r.topics))].sort(), [rows]);
@@ -98,7 +100,15 @@ export function ProblemsPage(props: {
               </td>
               <td className="muted small">
                 {r.topics.map((t) => (
-                  <a key={t} href={`#/learn/${subject}/${t}`} className="topic-link">
+                  <a
+                    key={t}
+                    href={
+                      lessons && !lessons.has(t)
+                        ? `#/topic/${subject}/${t}`
+                        : `#/learn/${subject}/${t}`
+                    }
+                    className="topic-link"
+                  >
                     {names[t] ?? t}
                   </a>
                 ))}
