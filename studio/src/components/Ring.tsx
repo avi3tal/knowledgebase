@@ -4,11 +4,13 @@ export function Ring({
   failing = 0,
   total,
   size = 44,
+  label,
 }: {
   solved: number;
   failing?: number;
   total: number;
   size?: number;
+  label?: string;
 }) {
   const r = size / 2 - 4;
   const c = 2 * Math.PI * r;
@@ -37,7 +39,7 @@ export function Ring({
       {failing > 0 && arc(failing, frac(solved), "failing")}
       {solved > 0 && arc(solved, 0, "solved")}
       <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle">
-        {total > 0 ? `${solved}/${total}` : "–"}
+        {label ?? (total > 0 ? `${solved}/${total}` : "–")}
       </text>
     </svg>
   );

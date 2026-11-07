@@ -5,10 +5,12 @@ export type Route =
   | { page: "problem"; subject: string; slug: string }
   | { page: "problems"; subject: string }
   | { page: "topic"; subject: string; topic: string }
-  | { page: "map"; subject: string };
+  | { page: "map"; subject: string }
+  | { page: "sessions"; subject: string }
+  | { page: "session"; subject: string; id: string };
 
 /** The subject's sub-tabs; every page belongs to exactly one. */
-export type Tab = "learn" | "problems" | "map" | "progress";
+export type Tab = "learn" | "problems" | "map" | "progress" | "sessions";
 
 const ID = /^[a-z0-9-]+$/;
 
@@ -25,6 +27,9 @@ export function parseRoute(hash: string): Route {
     return { page: "topic", subject, topic: id };
   if (kind === "map" && ID.test(subject)) return { page: "map", subject };
   if (kind === "progress") return { page: "dashboard", subject: s };
+  if (kind === "sessions") return { page: "sessions", subject: "algo" };
+  if (kind === "session" && ID.test(subject))
+    return { page: "session", subject: "algo", id: subject };
   return { page: "home", subject: "algo" };
 }
 
@@ -37,6 +42,9 @@ export function tabOf(route: Route): Tab {
       return "map";
     case "dashboard":
       return "progress";
+    case "sessions":
+    case "session":
+      return "sessions";
     default:
       return "learn";
   }
@@ -47,4 +55,5 @@ export const TAB_HREF: Record<Tab, (subject: string) => string> = {
   problems: (s) => `#/problems/${s}`,
   map: (s) => `#/map/${s}`,
   progress: (s) => `#/progress/${s}`,
+  sessions: () => "#/sessions",
 };

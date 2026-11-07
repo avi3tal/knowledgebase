@@ -56,3 +56,16 @@ describe("tabs", () => {
     expect(tabOf(parseRoute(hash))).toBe(tab);
   });
 });
+
+describe("session routes", () => {
+  it("parses sessions pages into their own tab", () => {
+    expect(parseRoute("#/sessions")).toEqual({ page: "sessions", subject: "algo" });
+    expect(parseRoute("#/session/2026-11-07-x")).toEqual({
+      page: "session",
+      subject: "algo",
+      id: "2026-11-07-x",
+    });
+    expect(tabOf(parseRoute("#/session/abc"))).toBe("sessions");
+    expect(parseRoute("#/session/../x").page).toBe("home");
+  });
+});

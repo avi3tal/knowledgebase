@@ -160,6 +160,67 @@ export interface ProblemRow {
   complexity_miss: boolean;
 }
 
+export type SessionStatus = "planned" | "active" | "done" | "abandoned";
+export type Focus = "weak" | "new" | "review" | "mixed";
+export interface SessionItem {
+  id: string;
+  kind: string;
+  subject: string;
+  slug: string;
+  title?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  topic?: string | null;
+  why?: string | null;
+  attempts: string[];
+  attempt_paths: string[];
+  score: number | null;
+  state: "todo" | "started" | "attempted" | "solved";
+  last_run: RunRecord | null;
+}
+export interface Session {
+  id: string;
+  title: string;
+  created: string;
+  generator: "kb" | "claude";
+  scope: {
+    subject?: string;
+    topics?: string[];
+    difficulty?: string[];
+    count?: number;
+    minutes?: number | null;
+  };
+  target: { focus: Focus; goal?: string | null };
+  rationale: string[];
+  status: SessionStatus;
+  history: { ts: string; status: SessionStatus }[];
+  materials: { subject: string; topic: string; why?: string; name: string; has_lesson: boolean }[];
+  items: SessionItem[];
+  completion: number;
+  score: number | null;
+  overall: number;
+}
+export interface SessionSpec {
+  subject: string;
+  topics: string[];
+  difficulty: string[];
+  count: number;
+  focus: Focus;
+  goal: string;
+  title: string;
+  minutes: number | null;
+}
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = (await res.json()) as T & { error?: string };
+  if (!res.ok) throw new Error(data.error ?? `${path}: ${res.status}`);
+  return data;
+}
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(path);
   if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
@@ -175,6 +236,13 @@ export const api = {
   problems: (subject: string) => get<ProblemRow[]>(`/api/problems/${subject}`),
   topic: (subject: string, topic: string) => get<TopicPageData>(`/api/topic/${subject}/${topic}`),
   graph: (subject: string) => get<Graph>(`/api/graph/${subject}`),
+  sessions: () => get<Session[]>("/api/sessions"),
+  session: (id: string) => get<Session>(`/api/session/${id}`),
+  newSession: (spec: SessionSpec) => post<Session>("/api/sessions", spec),
+  setStatus: (id: string, status: SessionStatus) =>
+    post<Session>(`/api/session/${id}/status`, { status }),
+  startAttempt: (id: string, item: string, lang: "python" | "go") =>
+    post<Session>(`/api/session/${id}/attempt`, { item, lang }),
   async answer(subject: string, topic: string, item: string, choice: string): Promise<QuizResult> {
     const res = await fetch("/api/quiz", {
       method: "POST",

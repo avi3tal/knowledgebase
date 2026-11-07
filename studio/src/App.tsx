@@ -5,6 +5,7 @@ import type {
   Lesson,
   ProblemCardData,
   ProblemRow,
+  Session,
   Subject,
   SubjectsResponse,
   TopicPageData,
@@ -16,6 +17,8 @@ import { LessonView } from "./components/LessonView";
 import { ProblemCard } from "./components/ProblemCard";
 import { ProblemsPage } from "./components/ProblemsPage";
 import { SearchPalette } from "./components/SearchPalette";
+import { SessionView } from "./components/SessionView";
+import { SessionsPage } from "./components/SessionsPage";
 import { SubjectHome } from "./components/SubjectHome";
 import { SubjectMap } from "./components/SubjectMap";
 import { TopicPage } from "./components/TopicPage";
@@ -30,7 +33,9 @@ type Page =
   | { kind: "problems"; data: ProblemRow[] }
   | { kind: "topic"; data: TopicPageData }
   | { kind: "map"; data: Graph }
-  | { kind: "dashboard"; data: Feedback };
+  | { kind: "dashboard"; data: Feedback }
+  | { kind: "sessions"; data: Session[] }
+  | { kind: "session"; data: Session };
 
 function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
@@ -72,6 +77,10 @@ function load(route: Route): Promise<Page> {
       return api.topic(route.subject, route.topic).then((data) => ({ kind: "topic", data }));
     case "map":
       return api.graph(route.subject).then((data) => ({ kind: "map", data }));
+    case "sessions":
+      return api.sessions().then((data) => ({ kind: "sessions", data }));
+    case "session":
+      return api.session(route.id).then((data) => ({ kind: "session", data }));
     default:
       return api.feedback(route.subject).then((data) => ({ kind: "dashboard", data }));
   }
@@ -132,7 +141,7 @@ export function App() {
             <a
               key={s.id}
               href={TAB_HREF.learn(s.id)}
-              className={`subject-tab ${s.id === route.subject ? "on" : ""} ${s.status === "locked" ? "locked" : ""}`}
+              className={`subject-tab ${s.id === route.subject && tab !== "sessions" ? "on" : ""} ${s.status === "locked" ? "locked" : ""}`}
               title={s.status === "locked" ? "Lessons coming — map and resources ready" : s.title}
             >
               <span>{SUBJECT_ICON[s.id] ?? "📘"}</span> {SUBJECT_SHORT[s.id] ?? s.title}
@@ -141,6 +150,9 @@ export function App() {
           ))}
         </nav>
         <span className="grow" />
+        <a href="#/sessions" className={`sessions-link ${tab === "sessions" ? "on" : ""}`}>
+          🎯 Sessions
+        </a>
         <button className="search-trigger" onClick={() => setSearching(true)}>
           🔍 Search <kbd>⌘K</kbd>
         </button>
@@ -152,7 +164,7 @@ export function App() {
           {theme === "light" ? "🌙" : "☀️"}
         </button>
       </header>
-      <nav className="subtabs">
+      <nav className={`subtabs ${tab === "sessions" ? "hidden" : ""}`}>
         {TABS.filter((t) => !(locked && t.open)).map((t) => (
           <a
             key={t.tab}
@@ -169,6 +181,10 @@ export function App() {
         {!error && !page && <div className="loader" aria-label="loading" />}
         {page?.kind === "home" && current && <SubjectHome subject={current} feedback={page.data} />}
         {page?.kind === "dashboard" && <Dashboard data={page.data} />}
+        {page?.kind === "sessions" && subjects && (
+          <SessionsPage sessions={page.data} subjects={subjects.subjects} />
+        )}
+        {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
         {page?.kind === "lesson" && <LessonView lesson={page.data} />}
         {page?.kind === "problem" && <ProblemCard p={page.data} open />}
         {page?.kind === "topic" && <TopicPage data={page.data} />}
