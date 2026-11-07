@@ -21,6 +21,13 @@ const LEVEL = 62;
 const R = 17;
 const GROUP_COLORS = ["var(--warn)", "var(--ok)", "var(--accent)", "var(--bad)"];
 
+/** Node radius / slot width that fit the longest label (tuples in heaps, e.g. "[9,6]"). */
+export function nodeSize(labels: string[]): { r: number; slot: number } {
+  const longest = Math.max(1, ...labels.map((l) => l.length));
+  const r = Math.min(34, Math.max(R, 6 + longest * 3.6));
+  return { r, slot: Math.max(SLOT, 2 * r + 10) };
+}
+
 function TreeSvg({
   state,
   pointers = {},
@@ -30,10 +37,11 @@ function TreeSvg({
 }) {
   const placed = layoutTree(state);
   if (placed.length === 0) return <span className="muted">empty</span>;
+  const { r: radius, slot } = nodeSize(placed.map((p) => show(p.val)));
   const pos = new Map(placed.map((p) => [p.id, p]));
-  const cx = (x: number) => x * SLOT + SLOT / 2;
-  const cy = (d: number) => d * LEVEL + R + 22;
-  const width = placed.length * SLOT;
+  const cx = (x: number) => x * slot + slot / 2;
+  const cy = (d: number) => d * LEVEL + radius + 22;
+  const width = placed.length * slot;
   const height = (Math.max(...placed.map((p) => p.depth)) + 1) * LEVEL + 20;
   const groupOf = new Map<number, number>();
   Object.values(state.groups ?? {}).forEach((ids, g) => ids.forEach((id) => groupOf.set(id, g)));
@@ -64,7 +72,7 @@ function TreeSvg({
             <circle
               cx={cx(p.x)}
               cy={cy(p.depth)}
-              r={R}
+              r={radius}
               className={labels ? "pointed" : ""}
               style={
                 g === undefined
@@ -72,13 +80,18 @@ function TreeSvg({
                   : { stroke: GROUP_COLORS[g % GROUP_COLORS.length], strokeWidth: 3 }
               }
             />
-            <text x={cx(p.x)} y={cy(p.depth) + 4} textAnchor="middle">
+            <text
+              x={cx(p.x)}
+              y={cy(p.depth) + 4}
+              textAnchor="middle"
+              className={radius > R ? "long" : ""}
+            >
               {show(p.val)}
             </text>
             {labels && (
               <text
                 x={cx(p.x)}
-                y={cy(p.depth) - R - 6}
+                y={cy(p.depth) - radius - 6}
                 textAnchor="middle"
                 className="node-pointer"
               >
