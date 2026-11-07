@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "In a non-empty array every element appears twice except for one. Find that one in O(n) time and O(1) extra space.",
+   "options": [
+    "bitwise-xor",
+    "arrays-hashing",
+    "sorting"
+   ],
+   "answer": "bitwise-xor",
+   "why": "'Twice except one' + O(1) space → XOR fold: x ^ x = 0 cancels every pair. A counter is O(n) space, and sorting is O(n log n)."
+  },
+  {
+   "id": "q2",
+   "prompt": "Exactly two elements appear once and all others appear twice. Return the two singles in O(n) time and O(1) space.",
+   "options": [
+    "bitwise-xor",
+    "arrays-hashing",
+    "cyclic-sort"
+   ],
+   "answer": "bitwise-xor",
+   "why": "The fold gives a ^ b; any set bit of it splits the array into two groups, each with one single → Bitwise XOR. There's no 1..n range for cyclic sort."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given a positive integer, return the number you get by flipping every bit of its binary representation (no leading zeros).",
+   "options": [
+    "bitwise-xor",
+    "math",
+    "strings"
+   ],
+   "answer": "bitwise-xor",
+   "why": "'Flip every bit' → XOR with a mask of all 1s as wide as the number. Building a binary string, flipping characters and parsing it back works, but it is the slow, clunky route."
+  },
+  {
+   "id": "q4",
+   "prompt": "Every element appears three times except one, which appears once. Find the single element in O(n) time and O(1) space.",
+   "options": [
+    "bit-manipulation",
+    "bitwise-xor",
+    "arrays-hashing"
+   ],
+   "answer": "bit-manipulation",
+   "why": "XOR cancels pairs, not triples → count each bit column modulo 3 (general Bit Manipulation). A counter breaks the O(1) space limit."
+  },
+  {
+   "id": "q5",
+   "prompt": "An array of length n holds values in 1..n; several values are missing and several are repeated. Return all the missing values in O(n) time and O(1) extra space.",
+   "options": [
+    "cyclic-sort",
+    "bitwise-xor",
+    "arrays-hashing"
+   ],
+   "answer": "cyclic-sort",
+   "why": "Several unknowns → the XOR fold mixes them into one number. Values in 1..n with mutation allowed → Cyclic Sort, then scan."
+  },
+  {
+   "id": "q6",
+   "prompt": "String t is string s shuffled, with one extra letter added. Return the extra letter.",
+   "options": [
+    "bitwise-xor",
+    "arrays-hashing",
+    "sorting"
+   ],
+   "answer": "bitwise-xor",
+   "why": "Two collections that match except for one item → XOR all character codes of both, and the extra one survives. A counter works, but it costs a map."
+  },
+  {
+   "id": "q7",
+   "prompt": "Return the k most frequent elements of an integer array.",
+   "options": [
+    "top-k-elements",
+    "bitwise-xor",
+    "arrays-hashing"
+   ],
+   "answer": "top-k-elements",
+   "why": "Arbitrary frequencies, and the k largest by count → Top 'K' Elements (count, then a heap of size k). XOR only tells you about odd versus even counts."
+  }
+ ]
+}

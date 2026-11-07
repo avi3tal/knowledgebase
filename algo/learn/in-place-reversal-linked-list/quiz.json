@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given the head of a linked list, reverse the nodes in groups of k and return the new head; a final group shorter than k stays as it is.",
+   "options": [
+    "in-place-reversal-linked-list",
+    "linked-list",
+    "fast-slow-pointers"
+   ],
+   "answer": "in-place-reversal-linked-list",
+   "why": "'Reverse' + blocks of a linked list → In-place Reversal, run once per block with two reconnections. Dummy-head splicing alone doesn't turn arrows around."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given the head of a linked list and k, rotate the list to the right by k places.",
+   "options": [
+    "in-place-reversal-linked-list",
+    "two-pointers",
+    "fast-slow-pointers"
+   ],
+   "answer": "in-place-reversal-linked-list",
+   "why": "Rearranging a linked list in place by rewiring next pointers → the In-place Reversal family (close the list into a ring, cut it at length − k). Two Pointers' rotate-by-reversals works on arrays, not lists."
+  },
+  {
+   "id": "q3",
+   "prompt": "Return true if a singly linked list reads the same forwards and backwards, using O(1) extra space.",
+   "options": [
+    "in-place-reversal-linked-list",
+    "fast-slow-pointers",
+    "stack"
+   ],
+   "answer": "in-place-reversal-linked-list",
+   "why": "To compare without a stack you must walk the second half backwards → reverse it in place. Fast/slow only finds where the second half starts, and a stack costs O(n)."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given the head of a linked list, return the middle node; with two middles, return the second.",
+   "options": [
+    "fast-slow-pointers",
+    "in-place-reversal-linked-list",
+    "linked-list"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "Finding a position without changing any links → Fast & Slow Pointers. Nothing is reversed."
+  },
+  {
+   "id": "q5",
+   "prompt": "Merge two sorted linked lists into one sorted list by splicing their nodes.",
+   "options": [
+    "linked-list",
+    "in-place-reversal-linked-list",
+    "k-way-merge"
+   ],
+   "answer": "linked-list",
+   "why": "Splicing two lists in order with a dummy head → Linked List Basics. Pointers are redirected, but nothing is turned around, and with only 2 lists there's no heap."
+  },
+  {
+   "id": "q6",
+   "prompt": "Reverse the characters of a string in place, given as an array of characters.",
+   "options": [
+    "two-pointers",
+    "in-place-reversal-linked-list",
+    "stack"
+   ],
+   "answer": "two-pointers",
+   "why": "An array has indices at both ends → swap from the outside in with Two Pointers. There are no next pointers to flip."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given the head of a linked list and positions left <= right, reverse the nodes from position left to position right in one pass.",
+   "options": [
+    "in-place-reversal-linked-list",
+    "fast-slow-pointers",
+    "two-pointers"
+   ],
+   "answer": "in-place-reversal-linked-list",
+   "why": "Reverse a sub-list → the prev/curr/next flip run (right − left + 1) times, plus two reconnections at the borders."
+  }
+ ]
+}

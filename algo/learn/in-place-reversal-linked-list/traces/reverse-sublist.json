@@ -1,0 +1,1774 @@
+{
+ "version": 1,
+ "title": "Reverse the sub-list from position 2 to 6",
+ "code": [
+  "def reverse_sublist(head, p: int, q: int):",
+  "    if p == q:",
+  "        return head",
+  "    before, curr = None, head",
+  "    for _ in range(p - 1):",
+  "        before, curr = curr, curr.next",
+  "    sub_tail = curr",
+  "    prev = None",
+  "    for _ in range(q - p + 1):",
+  "        nxt = curr.next",
+  "        curr.next = prev",
+  "        prev, curr = curr, nxt",
+  "    if before is not None:",
+  "        before.next = prev",
+  "    else:",
+  "        head = prev",
+  "    sub_tail.next = curr",
+  "    return head"
+ ],
+ "view": [
+  {
+   "id": "list",
+   "type": "linkedlist",
+   "var": "head",
+   "pointers": {
+    "before": "before",
+    "prev": "prev",
+    "curr": "curr",
+    "next": "nxt",
+    "sub_tail": "sub_tail"
+   }
+  }
+ ],
+ "input": {
+  "head": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "p": 2,
+  "q": 6
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": null,
+      "prev": null,
+      "curr": null,
+      "next": null,
+      "sub_tail": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": null,
+      "prev": null,
+      "curr": 0,
+      "next": null,
+      "sub_tail": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "walk to node p; `before` is the node just in front of it",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": null,
+      "prev": null,
+      "curr": 0,
+      "next": null,
+      "sub_tail": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": null,
+      "curr": 1,
+      "next": null,
+      "sub_tail": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "walk to node p; `before` is the node just in front of it",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": null,
+      "curr": 1,
+      "next": null,
+      "sub_tail": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "node p becomes the TAIL of the reversed part — remember it",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": null,
+      "curr": 1,
+      "next": null,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "reverse exactly q - p + 1 links",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": null,
+      "curr": 1,
+      "next": null,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "save the rest of the list before cutting the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 2
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": null,
+      "curr": 1,
+      "next": 2,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "flip: curr now points backwards",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": null,
+      "curr": 1,
+      "next": 2,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "step both pointers forward",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 1,
+      "curr": 2,
+      "next": 2,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "reverse exactly q - p + 1 links",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 1,
+      "curr": 2,
+      "next": 2,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "save the rest of the list before cutting the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 3
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 1,
+      "curr": 2,
+      "next": 3,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "flip: curr now points backwards",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 1,
+      "curr": 2,
+      "next": 3,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "step both pointers forward",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 2,
+      "curr": 3,
+      "next": 3,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "reverse exactly q - p + 1 links",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 2,
+      "curr": 3,
+      "next": 3,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "save the rest of the list before cutting the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 4
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 2,
+      "curr": 3,
+      "next": 4,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "flip: curr now points backwards",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 2,
+      "curr": 3,
+      "next": 4,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "step both pointers forward",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 3,
+      "curr": 4,
+      "next": 4,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "reverse exactly q - p + 1 links",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 3,
+      "curr": 4,
+      "next": 4,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "save the rest of the list before cutting the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 5
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 3,
+      "curr": 4,
+      "next": 5,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "flip: curr now points backwards",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 3,
+      "curr": 4,
+      "next": 5,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "step both pointers forward",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 4,
+      "curr": 5,
+      "next": 5,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "reverse exactly q - p + 1 links",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 4,
+      "curr": 5,
+      "next": 5,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "save the rest of the list before cutting the link",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 6
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 4,
+      "curr": 5,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "flip: curr now points backwards",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 4
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 4,
+      "curr": 5,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "step both pointers forward",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 4
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 5,
+      "curr": 6,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "reverse exactly q - p + 1 links",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 1
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 4
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 5,
+      "curr": 6,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "reconnect: the node before p points to the new front (old node q)",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 4
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 5,
+      "curr": 6,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "reconnect: old node p points to the node after q",
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 6
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 4
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 5,
+      "curr": 6,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "list": {
+     "nodes": [
+      {
+       "id": 0,
+       "val": 1,
+       "next": 5
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "next": 6
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "next": 1
+      },
+      {
+       "id": 3,
+       "val": 4,
+       "next": 2
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "next": 3
+      },
+      {
+       "id": 5,
+       "val": 6,
+       "next": 4
+      },
+      {
+       "id": 6,
+       "val": 7,
+       "next": 7
+      },
+      {
+       "id": 7,
+       "val": 8,
+       "next": null
+      }
+     ],
+     "pointers": {
+      "before": 0,
+      "prev": 5,
+      "curr": 6,
+      "next": 6,
+      "sub_tail": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  1,
+  6,
+  5,
+  4,
+  3,
+  2,
+  7,
+  8
+ ]
+}

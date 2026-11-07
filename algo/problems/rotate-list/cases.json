@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"head": [1, 2, 3, 4, 5], "k": 2}, "expected": [4, 5, 1, 2, 3]},
+  {"name": "example 2 — k larger than n", "args": {"head": [0, 1, 2], "k": 4}, "expected": [2, 0, 1]},
+  {"name": "empty list", "args": {"head": [], "k": 3}, "expected": []},
+  {"name": "k = 0", "args": {"head": [1, 2, 3], "k": 0}, "expected": [1, 2, 3]},
+  {"name": "k = n", "args": {"head": [1, 2, 3], "k": 3}, "expected": [1, 2, 3]},
+  {"name": "single node", "args": {"head": [9], "k": 5}, "expected": [9]},
+  {"name": "k = n - 1", "args": {"head": [1, 2, 3, 4], "k": 3}, "expected": [2, 3, 4, 1]},
+  {"name": "k a multiple of n plus one", "args": {"head": [1, 2, 3], "k": 7}, "expected": [3, 1, 2]}
+]

@@ -1,0 +1,211 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "cyclic-sort",
+ "title": "Cyclic Sort",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "cyclic-sort",
+   "title": "Place every value at its home index \u2014 sort 1..n in place",
+   "source": "examples/cyclic_sort.py",
+   "function": "cyclic_sort",
+   "input": {
+    "nums": [
+     4,
+     7,
+     2,
+     6,
+     1,
+     5,
+     3
+    ]
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums",
+     "pointers": {
+      "i": "i",
+      "home": "j"
+     }
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       4,
+       7,
+       2,
+       6,
+       1,
+       5,
+       3
+      ]
+     },
+     "expected": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       3,
+       1,
+       5,
+       4,
+       2
+      ]
+     },
+     "expected": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       1
+      ]
+     },
+     "expected": [
+      1
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       2,
+       1
+      ]
+     },
+     "expected": [
+      1,
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "corrupt-pair",
+   "title": "Place, then scan \u2014 find the duplicated and the missing number",
+   "source": "examples/corrupt_pair.py",
+   "function": "find_corrupt_pair",
+   "input": {
+    "nums": [
+     3,
+     1,
+     2,
+     5,
+     2
+    ]
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums",
+     "pointers": {
+      "i": "i",
+      "home": "j",
+      "scan": "k"
+     }
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       3,
+       1,
+       2,
+       5,
+       2
+      ]
+     },
+     "expected": [
+      2,
+      4
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       3,
+       1,
+       2,
+       3,
+       6,
+       4
+      ]
+     },
+     "expected": [
+      3,
+      5
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       1,
+       1
+      ]
+     },
+     "expected": [
+      1,
+      2
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       2,
+       2
+      ]
+     },
+     "expected": [
+      2,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "missing-number",
+    "find-all-missing-numbers",
+    "find-all-duplicates",
+    "first-missing-positive"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given a list of time ranges [start, end] in random order, combine every group of overlapping ranges and return the result.",
+   "options": [
+    "merge-intervals",
+    "sorting",
+    "greedy"
+   ],
+   "answer": "merge-intervals",
+   "why": "Ranges + 'overlapping' + combine → Merge Intervals: sort by start, then extend the last kept interval. Sorting is only the first step, and nothing is being chosen or discarded as in greedy."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given meeting times [start, end], return the minimum number of conference rooms so that no two overlapping meetings share a room.",
+   "options": [
+    "merge-intervals",
+    "top-k-elements",
+    "greedy"
+   ],
+   "answer": "merge-intervals",
+   "why": "'How many intervals overlap at once' → Merge Intervals with a min-heap of end times. The heap holds running meetings, not the k largest of anything."
+  },
+  {
+   "id": "q3",
+   "prompt": "Two lists of closed intervals are each sorted and pairwise disjoint. Return their intersection.",
+   "options": [
+    "merge-intervals",
+    "two-pointers",
+    "k-way-merge"
+   ],
+   "answer": "merge-intervals",
+   "why": "The items are ranges and the question is overlap → Merge Intervals (intersect variant: [max starts, min ends], advance the one that ends first). It borrows the two-pointer move, but the logic is interval overlap."
+  },
+  {
+   "id": "q4",
+   "prompt": "Given intervals, return the minimum number you must remove so that the rest don't overlap.",
+   "options": [
+    "greedy",
+    "merge-intervals",
+    "dynamic-programming"
+   ],
+   "answer": "greedy",
+   "why": "'Keep the most non-overlapping' is interval scheduling → Greedy: sort by END and keep each interval that starts after the last kept end. Merging by start answers a different question."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given an array of positive integers and a target, return the length of the shortest contiguous subarray whose sum is at least the target.",
+   "options": [
+    "sliding-window",
+    "merge-intervals",
+    "two-pointers"
+   ],
+   "answer": "sliding-window",
+   "why": "'Shortest contiguous subarray' with a monotone sum → Sliding Window. The window is a range of positions, not a list of given ranges to merge."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given a sorted list of non-overlapping booking slots and one new booking, insert it and merge if needed, in O(n) time.",
+   "options": [
+    "merge-intervals",
+    "modified-binary-search",
+    "sorting"
+   ],
+   "answer": "merge-intervals",
+   "why": "Sorted disjoint intervals + one new interval → three-phase sweep (before, overlapping, after). Binary search can find the position, but the merge still costs O(n)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Tasks have prerequisites such as 'task B can start only after task A is done'. Return a valid order to run all tasks.",
+   "options": [
+    "topological-sort",
+    "merge-intervals",
+    "greedy"
+   ],
+   "answer": "topological-sort",
+   "why": "'X before Y' order constraints form a dependency graph → Topological Sort. There are no time ranges on a line to overlap."
+  }
+ ]
+}

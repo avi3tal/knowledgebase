@@ -1,0 +1,2456 @@
+{
+ "version": 1,
+ "title": "Counting overlaps with a heap of end times — maximum CPU load",
+ "code": [
+  "def max_cpu_load(jobs: list[list[int]]) -> int:",
+  "    jobs = sorted(jobs)",
+  "    running: list[tuple[int, int]] = []",
+  "    load = best = 0",
+  "    for i in range(len(jobs)):",
+  "        start, end, job_load = jobs[i]",
+  "        while running and running[0][0] <= start:",
+  "            _, done_load = heapq.heappop(running)",
+  "            load -= done_load",
+  "        heapq.heappush(running, (end, job_load))",
+  "        load += job_load",
+  "        best = max(best, load)",
+  "    return best"
+ ],
+ "view": [
+  {
+   "id": "jobs",
+   "type": "intervals",
+   "lanes": {
+    "jobs": "jobs"
+   },
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "running",
+   "type": "heap",
+   "var": "running"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "start",
+    "end",
+    "job_load",
+    "load",
+    "best"
+   ]
+  }
+ ],
+ "input": {
+  "jobs": [
+   [
+    1,
+    4,
+    3
+   ],
+   [
+    2,
+    5,
+    4
+   ],
+   [
+    3,
+    6,
+    2
+   ],
+   [
+    7,
+    9,
+    6
+   ],
+   [
+    8,
+    10,
+    1
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "sort by start time so we meet jobs in the order they begin",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "job_load": null,
+      "load": null,
+      "best": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "min-heap of (end, load) for the jobs still running",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "job_load": null,
+      "load": null,
+      "best": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "job_load": null,
+      "load": 0,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "job_load": null,
+      "load": 0,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 4,
+      "job_load": 3,
+      "load": 0,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 4,
+      "job_load": 3,
+      "load": 0,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the new job joins the running set",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 4,
+      "job_load": 3,
+      "load": 0,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 4,
+      "job_load": 3,
+      "load": 3,
+      "best": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the heap holds exactly the overlapping jobs — record the peak",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 4,
+      "job_load": 3,
+      "load": 3,
+      "best": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 4,
+      "job_load": 3,
+      "load": 3,
+      "best": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 5,
+      "job_load": 4,
+      "load": 3,
+      "best": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 5,
+      "job_load": 4,
+      "load": 3,
+      "best": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the new job joins the running set",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 5,
+      "job_load": 4,
+      "load": 3,
+      "best": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 5,
+      "job_load": 4,
+      "load": 7,
+      "best": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the heap holds exactly the overlapping jobs — record the peak",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 5,
+      "job_load": 4,
+      "load": 7,
+      "best": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 5,
+      "job_load": 4,
+      "load": 7,
+      "best": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 6,
+      "job_load": 2,
+      "load": 7,
+      "best": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 6,
+      "job_load": 2,
+      "load": 7,
+      "best": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the new job joins the running set",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 6,
+      "job_load": 2,
+      "load": 7,
+      "best": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 6,
+      "job_load": 2,
+      "load": 9,
+      "best": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the heap holds exactly the overlapping jobs — record the peak",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 6,
+      "job_load": 2,
+      "load": 9,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 6,
+      "job_load": 2,
+      "load": 9,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 9,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       4,
+       3
+      ],
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 9,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "evict it and drop its load",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 9,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       5,
+       4
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "evict it and drop its load",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 2,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       6,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 2,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "evict it and drop its load",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 2,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 0,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 0,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the new job joins the running set",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 0,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the heap holds exactly the overlapping jobs — record the peak",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 7,
+      "end": 9,
+      "job_load": 6,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 8,
+      "end": 10,
+      "job_load": 1,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "the earliest-ending job finished before this one starts",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 8,
+      "end": 10,
+      "job_load": 1,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the new job joins the running set",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ],
+      [
+       10,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 8,
+      "end": 10,
+      "job_load": 1,
+      "load": 6,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ],
+      [
+       10,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 8,
+      "end": 10,
+      "job_load": 1,
+      "load": 7,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the heap holds exactly the overlapping jobs — record the peak",
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ],
+      [
+       10,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 8,
+      "end": 10,
+      "job_load": 1,
+      "load": 7,
+      "best": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "jobs": {
+     "lanes": {
+      "jobs": [
+       [
+        1,
+        4
+       ],
+       [
+        2,
+        5
+       ],
+       [
+        3,
+        6
+       ],
+       [
+        7,
+        9
+       ],
+       [
+        8,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "running": {
+     "values": [
+      [
+       9,
+       6
+      ],
+      [
+       10,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "start": 8,
+      "end": 10,
+      "job_load": 1,
+      "load": 7,
+      "best": 9
+     }
+    }
+   }
+  }
+ ],
+ "result": 9
+}

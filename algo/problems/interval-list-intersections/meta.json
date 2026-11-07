@@ -1,0 +1,40 @@
+{
+  "title": "Interval List Intersections",
+  "slug": "interval-list-intersections",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": [
+    "merge-intervals",
+    "two-pointers"
+  ],
+  "sources": [
+    {
+      "name": "leetcode",
+      "url": "https://leetcode.com/problems/interval-list-intersections/"
+    }
+  ],
+  "kind": "function",
+  "function": "intervalIntersection",
+  "params": [
+    {
+      "name": "firstList",
+      "type": "int[][]"
+    },
+    {
+      "name": "secondList",
+      "type": "int[][]"
+    }
+  ],
+  "returns": "int[][]",
+  "comparator": "exact",
+  "expected_complexity": {
+    "time": "O(n)",
+    "space": "O(n)"
+  },
+  "bench": {
+    "args": {
+      "firstList": "[[2 * k, 2 * k + 1] for k in sorted_int_array(n, 0, 10**12)]",
+      "secondList": "[[2 * k + 1, 2 * k + 2] for k in sorted_int_array(n, 0, 10**12)]"
+    }
+  }
+}

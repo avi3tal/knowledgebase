@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "An array of n integers contains values in 1..n; some appear twice and others are missing. Return every missing value in O(n) time without extra space (the output doesn't count).",
+   "options": [
+    "cyclic-sort",
+    "arrays-hashing",
+    "bitwise-xor"
+   ],
+   "answer": "cyclic-sort",
+   "why": "Values in 1..n + all missing values + O(1) extra space → Cyclic Sort, then scan for slots that don't hold their own value. A set costs O(n); XOR merges several unknowns into one number."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given an unsorted integer array (values may be negative or huge), return the smallest positive integer that is missing. O(n) time, O(1) extra space.",
+   "options": [
+    "cyclic-sort",
+    "sorting",
+    "arrays-hashing"
+   ],
+   "answer": "cyclic-sort",
+   "why": "The answer is in 1..n+1, so only values in 1..n need homes → Cyclic Sort, skipping out-of-range values. Sorting is O(n log n) and a set is O(n) space."
+  },
+  {
+   "id": "q3",
+   "prompt": "An array of n + 1 integers holds values in 1..n. Find the repeated value without modifying the array and with O(1) extra space.",
+   "options": [
+    "fast-slow-pointers",
+    "cyclic-sort",
+    "bitwise-xor"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "Read-only rules out swapping (Cyclic Sort). The value may repeat more than twice, which breaks XOR pairing. Treat i → nums[i] as a linked list and find the cycle entry with Floyd."
+  },
+  {
+   "id": "q4",
+   "prompt": "An array holds n distinct numbers from 0..n. Return the one that is missing, using O(1) extra space and leaving the array as it is.",
+   "options": [
+    "bitwise-xor",
+    "cyclic-sort",
+    "arrays-hashing"
+   ],
+   "answer": "bitwise-xor",
+   "why": "Exactly one missing value and a read-only array → XOR indices 0..n with all values, so everything present cancels. Cyclic sort also works but has to modify the array."
+  },
+  {
+   "id": "q5",
+   "prompt": "Every value of an array of length n is in 1..n. One number was overwritten by a copy of another. Return [duplicate, missing].",
+   "options": [
+    "cyclic-sort",
+    "arrays-hashing",
+    "two-pointers"
+   ],
+   "answer": "cyclic-sort",
+   "why": "1..n range + duplicate AND missing + modify in place → Cyclic Sort: the extra copy ends up parked in the missing value's slot. A counter works, with O(n) space."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given an integer array, return true if any value appears at least twice. Values range from -10^9 to 10^9.",
+   "options": [
+    "arrays-hashing",
+    "cyclic-sort",
+    "sorting"
+   ],
+   "answer": "arrays-hashing",
+   "why": "No range tied to the length means no value has a home index, so Cyclic Sort can't apply → a hash set (Arrays & Hashing). Sorting works in O(n log n)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Sort an array of integers in ascending order; the values are arbitrary 32-bit integers.",
+   "options": [
+    "sorting",
+    "cyclic-sort",
+    "top-k-elements"
+   ],
+   "answer": "sorting",
+   "why": "Cyclic sort needs values that map one-to-one onto indices (1..n). Arbitrary values → a comparison sort."
+  }
+ ]
+}

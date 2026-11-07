@@ -1,0 +1,120 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "bitwise-xor",
+ "title": "Bitwise XOR",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "single-number",
+   "title": "Pairs cancel out \u2014 find the number that appears once",
+   "source": "examples/single_number.py",
+   "function": "single_number",
+   "input": {
+    "nums": [
+     5,
+     3,
+     6,
+     9,
+     6,
+     3,
+     5
+    ]
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums",
+     "pointers": {
+      "i": "i"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "x",
+      "acc"
+     ]
+    },
+    {
+     "id": "binary",
+     "type": "map",
+     "var": "binary"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       5,
+       3,
+       6,
+       9,
+       6,
+       3,
+       5
+      ]
+     },
+     "expected": 9
+    },
+    {
+     "input": {
+      "nums": [
+       2,
+       2,
+       1
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "nums": [
+       4,
+       1,
+       2,
+       1,
+       2
+      ]
+     },
+     "expected": 4
+    },
+    {
+     "input": {
+      "nums": [
+       1
+      ]
+     },
+     "expected": 1
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "swap-without-temp",
+    "complement-of-base-10",
+    "flip-and-invert-image",
+    "two-single-numbers"
+   ]
+  }
+ ]
+}

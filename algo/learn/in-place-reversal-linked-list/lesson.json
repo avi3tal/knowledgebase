@@ -1,0 +1,173 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "in-place-reversal-linked-list",
+ "title": "In-place Reversal of a LinkedList",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "reverse-sublist",
+   "title": "Reverse the sub-list from position 2 to 6",
+   "source": "examples/reverse_sublist.py",
+   "function": "reverse_sublist",
+   "input": {
+    "head": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "p": 2,
+    "q": 6
+   },
+   "types": {
+    "head": "ListNode"
+   },
+   "returns": "ListNode",
+   "view": [
+    {
+     "id": "list",
+     "type": "linkedlist",
+     "var": "head",
+     "pointers": {
+      "before": "before",
+      "prev": "prev",
+      "curr": "curr",
+      "next": "nxt",
+      "sub_tail": "sub_tail"
+     }
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "head": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8
+      ],
+      "p": 2,
+      "q": 6
+     },
+     "expected": [
+      1,
+      6,
+      5,
+      4,
+      3,
+      2,
+      7,
+      8
+     ]
+    },
+    {
+     "input": {
+      "head": [
+       1,
+       2,
+       3,
+       4,
+       5
+      ],
+      "p": 1,
+      "q": 5
+     },
+     "expected": [
+      5,
+      4,
+      3,
+      2,
+      1
+     ]
+    },
+    {
+     "input": {
+      "head": [
+       1,
+       2,
+       3
+      ],
+      "p": 2,
+      "q": 2
+     },
+     "expected": [
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "input": {
+      "head": [
+       1,
+       2,
+       3,
+       4
+      ],
+      "p": 1,
+      "q": 2
+     },
+     "expected": [
+      2,
+      1,
+      3,
+      4
+     ]
+    },
+    {
+     "input": {
+      "head": [
+       1,
+       2,
+       3,
+       4
+      ],
+      "p": 3,
+      "q": 4
+     },
+     "expected": [
+      1,
+      2,
+      4,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "reverse-linked-list",
+    "palindrome-linked-list",
+    "reorder-list",
+    "rotate-list",
+    "reverse-every-k-group"
+   ]
+  }
+ ]
+}

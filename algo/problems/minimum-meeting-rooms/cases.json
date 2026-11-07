@@ -1,0 +1,11 @@
+[
+  {"name": "example 1", "args": {"intervals": [[0, 30], [5, 10], [15, 20]]}, "expected": 2},
+  {"name": "example 2", "args": {"intervals": [[7, 10], [2, 4]]}, "expected": 1},
+  {"name": "single", "args": {"intervals": [[1, 5]]}, "expected": 1},
+  {"name": "back to back reuses the room", "args": {"intervals": [[1, 3], [3, 5], [5, 7]]}, "expected": 1},
+  {"name": "all at once", "args": {"intervals": [[1, 10], [2, 9], [3, 8], [4, 7]]}, "expected": 4},
+  {"name": "peak in the middle", "args": {"intervals": [[1, 4], [2, 5], [7, 9], [3, 6], [8, 10]]}, "expected": 3},
+  {"name": "same start", "args": {"intervals": [[2, 3], [2, 4], [2, 5]]}, "expected": 3},
+  {"name": "nested and staggered", "args": {"intervals": [[1, 20], [2, 5], [6, 10], [4, 7], [11, 15], [14, 19]]}, "expected": 3},
+  {"name": "room freed exactly in time", "args": {"intervals": [[9, 10], [4, 9], [4, 17]]}, "expected": 2}
+]

@@ -1,0 +1,620 @@
+{
+ "version": 1,
+ "title": "Place every value at its home index — sort 1..n in place",
+ "code": [
+  "def cyclic_sort(nums: list[int]) -> list[int]:",
+  "    i = 0",
+  "    while i < len(nums):",
+  "        j = nums[i] - 1",
+  "        if nums[i] != nums[j]:",
+  "            nums[i], nums[j] = nums[j], nums[i]",
+  "        else:",
+  "            i += 1",
+  "    return nums"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "i": "i",
+    "home": "j"
+   }
+  }
+ ],
+ "input": {
+  "nums": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      7,
+      2,
+      6,
+      1,
+      5,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": null
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      7,
+      2,
+      6,
+      1,
+      5,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 3
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "swap it home; don't move i — re-check what landed here",
+   "state": {
+    "nums": {
+     "values": [
+      6,
+      7,
+      2,
+      4,
+      1,
+      5,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 3
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      6,
+      7,
+      2,
+      4,
+      1,
+      5,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 5
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "swap it home; don't move i — re-check what landed here",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      7,
+      2,
+      4,
+      1,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 5
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      7,
+      2,
+      4,
+      1,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 4
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "swap it home; don't move i — re-check what landed here",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      7,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 4
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      7,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 0,
+      "home": 0
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      7,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "home": 0
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      7,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "home": 6
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "swap it home; don't move i — re-check what landed here",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      2,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 1,
+      "home": 6
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      3,
+      2,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 1,
+      "home": 2
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "swap it home; don't move i — re-check what landed here",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 1,
+      "home": 2
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 1,
+      "home": 1
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 2,
+      "home": 1
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 2,
+      "home": 2
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 3,
+      "home": 2
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 3,
+      "home": 3
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 4,
+      "home": 3
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 4,
+      "home": 4
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 5,
+      "home": 4
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 5,
+      "home": 5
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 6,
+      "home": 5
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "value v belongs at index v - 1 — j is the home of nums[i]",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 6,
+      "home": 6
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "nums[i] is at its home — move on",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 7,
+      "home": 6
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "every swap placed one value for good, so at most n - 1 swaps in total",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {
+      "i": 7,
+      "home": 6
+     },
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7
+ ]
+}

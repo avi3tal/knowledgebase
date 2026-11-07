@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"head": [1, 2, 3, 4, 5], "k": 2}, "expected": [2, 1, 4, 3, 5]},
+  {"name": "example 2", "args": {"head": [1, 2, 3, 4, 5], "k": 3}, "expected": [3, 2, 1, 4, 5]},
+  {"name": "k = 1 leaves it unchanged", "args": {"head": [1, 2, 3], "k": 1}, "expected": [1, 2, 3]},
+  {"name": "k = n reverses everything", "args": {"head": [1, 2, 3, 4], "k": 4}, "expected": [4, 3, 2, 1]},
+  {"name": "single node", "args": {"head": [1], "k": 1}, "expected": [1]},
+  {"name": "exact multiple", "args": {"head": [1, 2, 3, 4, 5, 6], "k": 3}, "expected": [3, 2, 1, 6, 5, 4]},
+  {"name": "short tail stays", "args": {"head": [1, 2, 3, 4, 5, 6, 7, 8], "k": 3}, "expected": [3, 2, 1, 6, 5, 4, 7, 8]},
+  {"name": "k larger than n", "args": {"head": [1, 2], "k": 3}, "expected": [1, 2]}
+]

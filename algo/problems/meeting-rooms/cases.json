@@ -1,0 +1,11 @@
+[
+  {"name": "example 1 — conflict", "args": {"intervals": [[0, 30], [5, 10], [15, 20]]}, "expected": false},
+  {"name": "example 2 — no conflict", "args": {"intervals": [[7, 10], [2, 4]]}, "expected": true},
+  {"name": "empty", "args": {"intervals": []}, "expected": true},
+  {"name": "single meeting", "args": {"intervals": [[1, 5]]}, "expected": true},
+  {"name": "touching ends are fine", "args": {"intervals": [[1, 3], [3, 6], [6, 8]]}, "expected": true},
+  {"name": "one inside another", "args": {"intervals": [[1, 10], [2, 3]]}, "expected": false},
+  {"name": "conflict only between non-neighbours in input order", "args": {"intervals": [[10, 12], [1, 4], [6, 9], [3, 5]]}, "expected": false},
+  {"name": "same start", "args": {"intervals": [[2, 4], [2, 3]]}, "expected": false},
+  {"name": "unsorted, all disjoint", "args": {"intervals": [[13, 15], [1, 2], [8, 11], [3, 7]]}, "expected": true}
+]

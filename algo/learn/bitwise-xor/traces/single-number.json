@@ -1,0 +1,1525 @@
+{
+ "version": 1,
+ "title": "Pairs cancel out — find the number that appears once",
+ "code": [
+  "def single_number(nums: list[int]) -> int:",
+  "    acc = 0",
+  "    binary = {\"x\": \"----\", \"acc\": format(acc, \"04b\")}",
+  "    for i in range(len(nums)):",
+  "        x = nums[i]",
+  "        binary[\"x\"] = format(x, \"04b\")",
+  "        acc ^= x",
+  "        binary[\"acc\"] = format(acc, \"04b\")",
+  "    return acc"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "x",
+    "acc"
+   ]
+  },
+  {
+   "id": "binary",
+   "type": "map",
+   "var": "binary"
+  }
+ ],
+ "input": {
+  "nums": [
+   5,
+   3,
+   6,
+   9,
+   6,
+   3,
+   5
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "x ^ 0 = x, so 0 is the neutral start",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": []
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "----"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "----"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "----"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 5
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 5
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "0101"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 5
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "0101"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 5
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "0101"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 5
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "0101"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 6
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "0101"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 6
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "0110"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 6
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "0110"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 6
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "0110"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 6
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "0110"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "0110"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 9,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 9,
+      "acc": 0
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "1001"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 9,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "1001"
+      ],
+      [
+       "acc",
+       "0000"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 9,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "1001"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 9,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "1001"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "1001"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 15
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 15
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "1111"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 6,
+      "acc": 15
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "1111"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 15
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0110"
+      ],
+      [
+       "acc",
+       "1111"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 15
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "1111"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 12
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "1111"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 12
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "1100"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "acc": 12
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "1100"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 12
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0011"
+      ],
+      [
+       "acc",
+       "1100"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "XOR works bit by bit — compare the columns of x and acc",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 12
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "1100"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "each column flips where x has a 1; a second copy of x flips it back",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "1100"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "pairs cancelled (x ^ x = 0) and order didn't matter — only the single is left",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      3,
+      6,
+      9,
+      6,
+      3,
+      5
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 5,
+      "acc": 9
+     }
+    },
+    "binary": {
+     "entries": [
+      [
+       "x",
+       "0101"
+      ],
+      [
+       "acc",
+       "1001"
+      ]
+     ]
+    }
+   }
+  }
+ ],
+ "result": 9
+}

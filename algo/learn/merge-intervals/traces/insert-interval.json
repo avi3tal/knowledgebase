@@ -1,0 +1,1235 @@
+{
+ "version": 1,
+ "title": "One sweep over a sorted list — insert [4, 8] and merge",
+ "code": [
+  "def insert(intervals: list[list[int]], new: list[int]) -> list[list[int]]:",
+  "    merged: list[list[int]] = []",
+  "    start, end = new",
+  "    i, n = 0, len(intervals)",
+  "    while i < n and intervals[i][1] < start:",
+  "        merged.append(intervals[i])",
+  "        i += 1",
+  "    while i < n and intervals[i][0] <= end:",
+  "        start = min(start, intervals[i][0])",
+  "        end = max(end, intervals[i][1])",
+  "        i += 1",
+  "    merged.append([start, end])",
+  "    while i < n:",
+  "        merged.append(intervals[i])",
+  "        i += 1",
+  "    return merged"
+ ],
+ "view": [
+  {
+   "id": "iv",
+   "type": "intervals",
+   "lanes": {
+    "input": "intervals",
+    "merged": "merged"
+   },
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "start",
+    "end"
+   ]
+  }
+ ],
+ "input": {
+  "intervals": [
+   [
+    1,
+    2
+   ],
+   [
+    3,
+    5
+   ],
+   [
+    6,
+    7
+   ],
+   [
+    8,
+    10
+   ],
+   [
+    12,
+    16
+   ]
+  ],
+  "new": [
+   4,
+   8
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": []
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "the new interval grows as it swallows overlapping ones",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": []
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": []
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "phase 1 — ends before the new interval starts: no overlap",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": []
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "copy it unchanged",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "phase 1 — ends before the new interval starts: no overlap",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "phase 2 — starts before the new interval ends: overlap",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 4,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "absorb it: stretch the new interval to cover both",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "phase 2 — starts before the new interval ends: overlap",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "absorb it: stretch the new interval to cover both",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "phase 2 — starts before the new interval ends: overlap",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "absorb it: stretch the new interval to cover both",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "phase 2 — starts before the new interval ends: overlap",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "no more overlaps — the grown interval is final",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "phase 3 — everything left starts after the new interval ends",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        10
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 5
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "phase 3 — everything left starts after the new interval ends",
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 5
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "iv": {
+     "lanes": {
+      "input": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ],
+      "merged": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        10
+       ],
+       [
+        12,
+        16
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 5
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 10
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  [
+   1,
+   2
+  ],
+  [
+   3,
+   10
+  ],
+  [
+   12,
+   16
+  ]
+ ]
+}
