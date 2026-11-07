@@ -1,0 +1,3997 @@
+{
+ "version": 1,
+ "title": "Post-order: return the subtree sum, record the tilt",
+ "code": [
+  "def find_tilt(root) -> int:",
+  "    tilt = 0",
+  "",
+  "    def subtree_sum(node) -> int:",
+  "        nonlocal tilt",
+  "        if node is None:",
+  "            return 0",
+  "        left = subtree_sum(node.left)",
+  "        right = subtree_sum(node.right)",
+  "        tilt += abs(left - right)",
+  "        return left + right + node.val",
+  "",
+  "    subtree_sum(root)",
+  "    return tilt"
+ ],
+ "view": [
+  {
+   "id": "tree",
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "node": "node"
+   }
+  },
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "left",
+    "right",
+    "tilt"
+   ]
+  }
+ ],
+ "input": {
+  "root": [
+   4,
+   2,
+   9,
+   3,
+   5,
+   null,
+   7
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "post-order: both children have answered before we use them",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "RECORD this node's tilt in the outer variable",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "RETURN what the parent needs: this subtree's total",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 3
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(3)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 3,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "post-order: both children have answered before we use them",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "RECORD this node's tilt in the outer variable",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "RETURN what the parent needs: this subtree's total",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(5)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "post-order: both children have answered before we use them",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 3,
+      "right": 5,
+      "tilt": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "RECORD this node's tilt in the outer variable",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 3,
+      "right": 5,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "RETURN what the parent needs: this subtree's total",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(2)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 3,
+      "right": 5,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 10,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "an empty subtree sums to 0",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": null
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "post-order: both children have answered before we use them",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "RECORD this node's tilt in the outer variable",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "RETURN what the parent needs: this subtree's total",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(7)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 0,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "post-order: both children have answered before we use them",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 7,
+      "tilt": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "RECORD this node's tilt in the outer variable",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 7,
+      "tilt": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "RETURN what the parent needs: this subtree's total",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(9)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 0,
+      "right": 7,
+      "tilt": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "post-order: both children have answered before we use them",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 10,
+      "right": 16,
+      "tilt": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "RECORD this node's tilt in the outer variable",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 10,
+      "right": 16,
+      "tilt": 15
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "RETURN what the parent needs: this subtree's total",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      },
+      {
+       "fn": "subtree_sum",
+       "args": {
+        "node": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": 10,
+      "right": 16,
+      "tilt": 15
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 15
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 4,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 2,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 9,
+       "left": null,
+       "right": 5
+      },
+      {
+       "id": 3,
+       "val": 3,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 4,
+       "val": 5,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 5,
+       "val": 7,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {}
+    },
+    "stack": {
+     "frames": [
+      {
+       "fn": "find_tilt",
+       "args": {
+        "root": "node(4)"
+       }
+      }
+     ]
+    },
+    "vars": {
+     "values": {
+      "left": null,
+      "right": null,
+      "tilt": 15
+     }
+    }
+   }
+  }
+ ],
+ "result": 15
+}

@@ -1,0 +1,397 @@
+{
+ "version": 1,
+ "title": "Euclid's algorithm — gcd and lcm",
+ "code": [
+  "def gcd_lcm(x: int, y: int) -> list[int]:",
+  "    a, b = x, y",
+  "    while b:",
+  "        remainder = a % b",
+  "        a, b = b, remainder",
+  "    gcd = a",
+  "    lcm = x // gcd * y",
+  "    return [gcd, lcm]"
+ ],
+ "view": [
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "a",
+    "b",
+    "remainder",
+    "gcd",
+    "lcm"
+   ]
+  }
+ ],
+ "input": {
+  "x": 144,
+  "y": 89
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "a": 144,
+      "b": 89,
+      "remainder": null,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 144,
+      "b": 89,
+      "remainder": 55,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 89,
+      "b": 55,
+      "remainder": 55,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 89,
+      "b": 55,
+      "remainder": 34,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 55,
+      "b": 34,
+      "remainder": 34,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 55,
+      "b": 34,
+      "remainder": 21,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 34,
+      "b": 21,
+      "remainder": 21,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 34,
+      "b": 21,
+      "remainder": 13,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 21,
+      "b": 13,
+      "remainder": 13,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 21,
+      "b": 13,
+      "remainder": 8,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 13,
+      "b": 8,
+      "remainder": 8,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 13,
+      "b": 8,
+      "remainder": 5,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 8,
+      "b": 5,
+      "remainder": 5,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 8,
+      "b": 5,
+      "remainder": 3,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 3,
+      "remainder": 3,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 3,
+      "remainder": 2,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 3,
+      "b": 2,
+      "remainder": 2,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 3,
+      "b": 2,
+      "remainder": 1,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 1,
+      "remainder": 1,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "gcd(a, b) = gcd(b, a mod b) — any common divisor also divides the remainder",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 1,
+      "remainder": 0,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "shift: the old divisor becomes the dividend",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 0,
+      "remainder": 0,
+      "gcd": null,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "b hit 0 — gcd(a, 0) = a",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 0,
+      "remainder": 0,
+      "gcd": 1,
+      "lcm": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "lcm = x * y / gcd; divide first to keep the numbers small",
+   "state": {
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 0,
+      "remainder": 0,
+      "gcd": 1,
+      "lcm": 12816
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 0,
+      "remainder": 0,
+      "gcd": 1,
+      "lcm": 12816
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  1,
+  12816
+ ]
+}

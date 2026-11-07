@@ -1,0 +1,1611 @@
+{
+ "version": 1,
+ "title": "KMP prefix function — is the string one block repeated?",
+ "code": [
+  "def is_repeated_block(s: str) -> bool:",
+  "    n = len(s)",
+  "    if n == 0:",
+  "        return False",
+  "    lps = [0] * n",
+  "    k = 0",
+  "    for i in range(1, n):",
+  "        while k > 0 and s[i] != s[k]:",
+  "            k = lps[k - 1]",
+  "        if s[i] == s[k]:",
+  "            k += 1",
+  "        lps[i] = k",
+  "    period = n - lps[-1]",
+  "    return lps[-1] > 0 and n % period == 0"
+ ],
+ "view": [
+  {
+   "id": "s",
+   "type": "array",
+   "var": "s",
+   "pointers": {
+    "i": "i",
+    "k": "k"
+   }
+  },
+  {
+   "id": "lps",
+   "type": "array",
+   "var": "lps",
+   "label": "lps (longest border of s[:i+1])",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "k",
+    "period"
+   ]
+  }
+ ],
+ "input": {
+  "s": "abaababaab"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": null,
+      "k": null
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": null,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "lps[i] = longest proper prefix of s[:i+1] that is also its suffix",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": null,
+      "k": null
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": null,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": null,
+      "k": 0
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 0,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 1,
+      "k": 0
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 0,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 2,
+      "k": 0
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 0,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 2,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 2,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 3,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "mismatch — fall back to the next shorter prefix that is also a suffix",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 3,
+      "k": 0
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 0,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 3,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 3,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 4,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 4,
+      "k": 2
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 2,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 4,
+      "k": 2
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 2,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 5,
+      "k": 2
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 2,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 5,
+      "k": 3
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 3,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 5,
+      "k": 3
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 3,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 6,
+      "k": 3
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 3,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "mismatch — fall back to the next shorter prefix that is also a suffix",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 6,
+      "k": 1
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 1,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 6,
+      "k": 2
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 2,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 6,
+      "k": 2
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 2,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 7,
+      "k": 2
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 2,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 7,
+      "k": 3
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 3,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 7,
+      "k": 3
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 7
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 3,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 8,
+      "k": 3
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 3,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 8,
+      "k": 4
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      0,
+      0
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 4,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 8,
+      "k": 4
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      4,
+      0
+     ],
+     "pointers": {
+      "i": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 4,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 9,
+      "k": 4
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      4,
+      0
+     ],
+     "pointers": {
+      "i": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 4,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the matched prefix grows by one",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 9,
+      "k": 5
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      4,
+      0
+     ],
+     "pointers": {
+      "i": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 5,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 9,
+      "k": 5
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "i": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 5,
+      "period": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "shortest period = n minus the longest border",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 9,
+      "k": 5
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "i": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 5,
+      "period": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "repeated iff that period tiles s exactly",
+   "state": {
+    "s": {
+     "values": [
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+     ],
+     "pointers": {
+      "i": 9,
+      "k": 5
+     },
+     "window": null
+    },
+    "lps": {
+     "values": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      3,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "i": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "k": 5,
+      "period": 5
+     }
+    }
+   }
+  }
+ ],
+ "result": true
+}

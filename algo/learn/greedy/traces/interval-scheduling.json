@@ -1,0 +1,1050 @@
+{
+ "version": 1,
+ "title": "Interval scheduling — sort by end, take what fits",
+ "code": [
+  "def max_meetings(meetings: list[list[int]]) -> int:",
+  "    meetings = sorted(",
+  "        meetings, key=lambda m: m[1]",
+  "    )",
+  "    chosen: list[list[int]] = []",
+  "    last_end = float(\"-inf\")",
+  "    for i in range(len(meetings)):",
+  "        start, end = meetings[i]",
+  "        if start >= last_end:",
+  "            chosen.append(meetings[i])",
+  "            last_end = end",
+  "    return len(chosen)"
+ ],
+ "view": [
+  {
+   "id": "lanes",
+   "type": "intervals",
+   "lanes": {
+    "sorted by end": "meetings",
+    "chosen": "chosen"
+   },
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "start",
+    "end",
+    "last_end"
+   ]
+  }
+ ],
+ "input": {
+  "meetings": [
+   [
+    0,
+    7
+   ],
+   [
+    2,
+    4
+   ],
+   [
+    5,
+    8
+   ],
+   [
+    1,
+    3
+   ],
+   [
+    3,
+    5
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        0,
+        7
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        5,
+        8
+       ],
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ],
+      "chosen": []
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "last_end": null
+     }
+    }
+   }
+  },
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": []
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "last_end": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": []
+     },
+     "pointers": {
+      "i": null
+     }
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "last_end": "-∞"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": []
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": null,
+      "end": null,
+      "last_end": "-∞"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": []
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 3,
+      "last_end": "-∞"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "it fits after the last chosen meeting — take it, never undo",
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 3,
+      "last_end": "-∞"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the only state the greedy needs to remember",
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 0
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 3,
+      "last_end": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 1,
+      "end": 3,
+      "last_end": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 1
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 4,
+      "last_end": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 2,
+      "end": 4,
+      "last_end": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 5,
+      "last_end": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "it fits after the last chosen meeting — take it, never undo",
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 5,
+      "last_end": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the only state the greedy needs to remember",
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 2
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 5,
+      "last_end": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 3,
+      "end": 5,
+      "last_end": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 3
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 0,
+      "end": 7,
+      "last_end": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 0,
+      "end": 7,
+      "last_end": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 5,
+      "end": 8,
+      "last_end": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "it fits after the last chosen meeting — take it, never undo",
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        5,
+        8
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 5,
+      "end": 8,
+      "last_end": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the only state the greedy needs to remember",
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        5,
+        8
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 5,
+      "end": 8,
+      "last_end": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "lanes": {
+     "lanes": {
+      "sorted by end": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        0,
+        7
+       ],
+       [
+        5,
+        8
+       ]
+      ],
+      "chosen": [
+       [
+        1,
+        3
+       ],
+       [
+        3,
+        5
+       ],
+       [
+        5,
+        8
+       ]
+      ]
+     },
+     "pointers": {
+      "i": 4
+     }
+    },
+    "vars": {
+     "values": {
+      "start": 5,
+      "end": 8,
+      "last_end": 8
+     }
+    }
+   }
+  }
+ ],
+ "result": 3
+}

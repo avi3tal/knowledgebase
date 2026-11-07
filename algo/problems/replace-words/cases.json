@@ -1,0 +1,12 @@
+[
+  {"name": "example cattle", "args": {"dictionary": ["cat", "bat", "rat"], "sentence": "the cattle was rattled by the battery"}, "expected": "the cat was rat by the bat"},
+  {"name": "example single letters", "args": {"dictionary": ["a", "b", "c"], "sentence": "aadsfasf absbs bbab cadsfafs"}, "expected": "a a b c"},
+  {"name": "shortest root wins", "args": {"dictionary": ["a", "aa", "aaa"], "sentence": "aaaa aa"}, "expected": "a a"},
+  {"name": "shortest root wins regardless of order", "args": {"dictionary": ["catt", "cat", "ca"], "sentence": "cattle cat"}, "expected": "ca ca"},
+  {"name": "empty dictionary", "args": {"dictionary": [], "sentence": "hello world"}, "expected": "hello world"},
+  {"name": "root longer than word", "args": {"dictionary": ["catt"], "sentence": "cat"}, "expected": "cat"},
+  {"name": "root equals word", "args": {"dictionary": ["cat"], "sentence": "cat cat"}, "expected": "cat cat"},
+  {"name": "single word replaced", "args": {"dictionary": ["re"], "sentence": "replace"}, "expected": "re"},
+  {"name": "no match mid-walk", "args": {"dictionary": ["abc"], "sentence": "abd abcd ab"}, "expected": "abd abc ab"},
+  {"name": "mixed", "args": {"dictionary": ["ab", "abc", "x"], "sentence": "abcd ab xyz yx"}, "expected": "ab ab x yx"}
+]

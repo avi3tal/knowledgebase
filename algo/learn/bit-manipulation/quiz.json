@@ -1,0 +1,12 @@
+{
+ "items": [
+  {"id": "q1", "prompt": "Count the 1 bits of a 32-bit integer, in time proportional to the number of 1 bits.", "options": ["bit-manipulation", "bitwise-xor", "math"], "answer": "bit-manipulation", "why": "n & (n − 1) clears the lowest set bit, so the loop runs once per set bit (Kernighan)."},
+  {"id": "q2", "prompt": "Every number in the array appears twice except one. Find it in O(1) space.", "options": ["bit-manipulation", "bitwise-xor", "arrays-hashing"], "answer": "bitwise-xor", "why": "Pairs cancel under XOR (a ^ a = 0), so one running XOR leaves the single number. That's the Bitwise XOR pattern."},
+  {"id": "q3", "prompt": "Every number appears three times except one. Find it in O(1) extra space.", "options": ["bit-manipulation", "bitwise-xor", "arrays-hashing"], "answer": "bit-manipulation", "why": "Triples don't cancel under XOR. Count each bit position across all numbers, mod 3, and rebuild the single value (watch the sign bit)."},
+  {"id": "q4", "prompt": "Decide in O(1) whether a positive integer is a power of two.", "options": ["bit-manipulation", "math", "modified-binary-search"], "answer": "bit-manipulation", "why": "A power of two has exactly one set bit, so n > 0 and n & (n − 1) == 0. Repeated division would be O(log n)."},
+  {"id": "q5", "prompt": "Return all subsets of a list of distinct integers.", "options": ["bit-manipulation", "subsets", "backtracking"], "answer": "subsets", "why": "Producing every subset is the Subsets pattern (build level by level). Looping masks 0..2ⁿ−1 is just another way to write it."},
+  {"id": "q6", "prompt": "Visit all of 15 cities exactly once with minimum total distance.", "options": ["bit-manipulation", "dynamic-programming", "backtracking"], "answer": "dynamic-programming", "why": "Overlapping subproblems over (visited set, last city) → bitmask DP in O(2ⁿ · n²). The mask is only the state encoding."},
+  {"id": "q7", "prompt": "Given up to 1000 lowercase words, find the maximum product of the lengths of two words that share no letter.", "options": ["bit-manipulation", "arrays-hashing", "trie"], "answer": "bit-manipulation", "why": "Each word's letter set fits in a 26-bit mask, so the 'disjoint?' test per pair is a single AND."},
+  {"id": "q8", "prompt": "Add two 32-bit integers without using + or −.", "options": ["bit-manipulation", "math", "bitwise-xor"], "answer": "bit-manipulation", "why": "a ^ b is the sum without carries and (a & b) << 1 is the carry. Loop until the carry is 0, masking to 32 bits."}
+ ]
+}

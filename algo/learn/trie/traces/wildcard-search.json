@@ -1,0 +1,1399 @@
+{
+ "version": 1,
+ "title": "DFS in a trie — match a pattern with '.' wildcards",
+ "code": [
+  "def wildcard_search(words: list[str], pattern: str) -> bool:",
+  "    root: dict = {}",
+  "    for word in words:",
+  "        node = root",
+  "        for ch in word:",
+  "            node = node.setdefault(ch, {})",
+  "        node[\"$\"] = True",
+  "",
+  "    def match(node: dict, i: int) -> bool:",
+  "        if i == len(pattern):",
+  "            return \"$\" in node",
+  "        ch = pattern[i]",
+  "        if ch == \".\":",
+  "            for key, child in node.items():",
+  "                if key != \"$\" and match(child, i + 1):",
+  "                    return True",
+  "            return False",
+  "        return ch in node and match(node[ch], i + 1)",
+  "",
+  "    return match(root, 0)"
+ ],
+ "view": [
+  {
+   "id": "stack",
+   "type": "callstack"
+  },
+  {
+   "id": "node",
+   "type": "map",
+   "var": "node",
+   "label": "node (children of the current prefix)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "pattern",
+    "i",
+    "ch",
+    "key"
+   ]
+  }
+ ],
+ "input": {
+  "words": [
+   "bad",
+   "bed",
+   "mad"
+  ],
+  "pattern": ".ed"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": null,
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "b",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "a",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "build the trie first; '$' marks the end of a word",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "$",
+       true
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "b",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "b",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "e",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "e",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "build the trie first; '$' marks the end of a word",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "$",
+       true
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "m",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "m",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "a",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "build the trie first; '$' marks the end of a word",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "$",
+       true
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ],
+      [
+       "m",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 0,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ],
+      [
+       "m",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 0,
+      "ch": ".",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ],
+      [
+       "m",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 0,
+      "ch": ".",
+      "key": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ],
+      [
+       "e",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 1,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ],
+      [
+       "e",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 1,
+      "ch": "e",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"d\": {\"$\": true}}",
+        "i": 2
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "d",
+       {
+        "$": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 2,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"d\": {\"$\": true}}",
+        "i": 2
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"$\": true}",
+        "i": 3
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "$",
+       true
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 3,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "pattern used up — matched only if a word ends exactly here",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"d\": {\"$\": true}}",
+        "i": 2
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"$\": true}",
+        "i": 3
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "$",
+       true
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 3,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "a normal letter — exactly one child to follow",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"d\": {\"$\": true}}",
+        "i": 2
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "d",
+       {
+        "$": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 2,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "a normal letter — exactly one child to follow",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"a\": {\"d\": {\"$\": true}}, \"e\"...",
+        "i": 1
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ],
+      [
+       "e",
+       {
+        "d": {
+         "$": true
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 1,
+      "ch": "e",
+      "key": null
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ],
+      [
+       "m",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 0,
+      "ch": ".",
+      "key": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "wildcard — try every child, stop at the first that matches",
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      },
+      {
+       "fn": "match",
+       "args": {
+        "node": "{\"b\": {\"a\": {\"d\": {\"$\": true}...",
+        "i": 0
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "b",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        },
+        "e": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ],
+      [
+       "m",
+       {
+        "a": {
+         "d": {
+          "$": true
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": 0,
+      "ch": ".",
+      "key": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "stack": {
+     "frames": [
+      {
+       "fn": "wildcard_search",
+       "args": {
+        "words": "[\"bad\", \"bed\", \"mad\"]",
+        "pattern": ".ed"
+       }
+      }
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "$",
+       true
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "pattern": ".ed",
+      "i": null,
+      "ch": "d",
+      "key": null
+     }
+    }
+   }
+  }
+ ],
+ "result": true
+}

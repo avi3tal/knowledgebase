@@ -1,0 +1,1176 @@
+{
+ "version": 1,
+ "title": "Insertion sort — slide each element into the sorted prefix",
+ "code": [
+  "def insertion_sort(nums: list[int]) -> list[int]:",
+  "    nums = list(nums)",
+  "    for i in range(1, len(nums)):",
+  "        key = nums[i]",
+  "        j = i - 1",
+  "        while j >= 0 and nums[j] > key:",
+  "            nums[j + 1] = nums[j]",
+  "            j -= 1",
+  "        nums[j + 1] = key",
+  "    return nums"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "i": "i",
+    "j": "j"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "i",
+    "j"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   5,
+   2,
+   4,
+   6,
+   1,
+   3
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      2,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": null,
+      "j": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "i": null,
+      "j": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      2,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "j": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "i": 1,
+      "j": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "the next element to place; nums[0..i-1] is already sorted",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      2,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "j": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 2,
+      "i": 1,
+      "j": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      2,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 2,
+      "i": 1,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      5,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 2,
+      "i": 1,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      5,
+      5,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 2,
+      "i": 1,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "drop key into the gap — the prefix nums[0..i] is sorted now",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      5,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 1,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 2,
+      "i": 1,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      5,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 2,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 2,
+      "i": 2,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "the next element to place; nums[0..i-1] is already sorted",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      5,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 2,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 4,
+      "i": 2,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      5,
+      4,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 2,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 4,
+      "i": 2,
+      "j": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      5,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 2,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 4,
+      "i": 2,
+      "j": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      5,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 2,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 4,
+      "i": 2,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "drop key into the gap — the prefix nums[0..i] is sorted now",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 2,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 4,
+      "i": 2,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 3,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 4,
+      "i": 3,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "the next element to place; nums[0..i-1] is already sorted",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 3,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 6,
+      "i": 3,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 3,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 6,
+      "i": 3,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "drop key into the gap — the prefix nums[0..i] is sorted now",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 3,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 6,
+      "i": 3,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 6,
+      "i": 4,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "the next element to place; nums[0..i-1] is already sorted",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      1,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      6,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      5,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      4,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "drop key into the gap — the prefix nums[0..i] is sorted now",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 4,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 4,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 5,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 1,
+      "i": 5,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "the next element to place; nums[0..i-1] is already sorted",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 5,
+      "j": -1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      3
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      5,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "a larger element shifts one step right to open a gap",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      4,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "drop key into the gap — the prefix nums[0..i] is sorted now",
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {
+      "i": 5,
+      "j": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": 3,
+      "i": 5,
+      "j": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ]
+}

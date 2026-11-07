@@ -1,0 +1,2265 @@
+{
+ "version": 1,
+ "title": "Dict-based union-find — the smallest letter represents each group",
+ "code": [
+  "def smallest_equivalent(s1: str, s2: str, base: str) -> str:",
+  "    parent: dict[str, str] = {}",
+  "",
+  "    def find(x: str) -> str:",
+  "        parent.setdefault(x, x)",
+  "        while parent[x] != x:",
+  "            x = parent[x]",
+  "        return x",
+  "",
+  "    for a, b in zip(s1, s2, strict=True):",
+  "        root_a, root_b = find(a), find(b)",
+  "        if root_a != root_b:",
+  "            small, big = min(root_a, root_b), max(root_a, root_b)",
+  "            parent[big] = small",
+  "    return \"\".join(find(c) for c in base)"
+ ],
+ "view": [
+  {
+   "id": "parent",
+   "type": "map",
+   "var": "parent",
+   "label": "parent (letter → parent letter)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "a",
+    "b",
+    "root_a",
+    "root_b",
+    "x"
+   ]
+  }
+ ],
+ "input": {
+  "s1": "parker",
+  "s2": "morris",
+  "base": "parser"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "a": null,
+      "b": null,
+      "root_a": null,
+      "root_b": null,
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "a": "p",
+      "b": "m",
+      "root_a": null,
+      "root_b": null,
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "p"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "p",
+      "b": "m",
+      "root_a": null,
+      "root_b": null,
+      "x": "p"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "p"
+      ],
+      [
+       "m",
+       "m"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "p",
+      "b": "m",
+      "root_a": null,
+      "root_b": null,
+      "x": "m"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "p"
+      ],
+      [
+       "m",
+       "m"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "p",
+      "b": "m",
+      "root_a": "p",
+      "root_b": "m",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the smaller letter becomes the root — it represents the group",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "p",
+      "b": "m",
+      "root_a": "p",
+      "root_b": "m",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "a",
+      "b": "o",
+      "root_a": "p",
+      "root_b": "m",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "a",
+      "b": "o",
+      "root_a": "p",
+      "root_b": "m",
+      "x": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "o"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "a",
+      "b": "o",
+      "root_a": "p",
+      "root_b": "m",
+      "x": "o"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "o"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "a",
+      "b": "o",
+      "root_a": "a",
+      "root_b": "o",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the smaller letter becomes the root — it represents the group",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "a",
+      "b": "o",
+      "root_a": "a",
+      "root_b": "o",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "r",
+      "root_a": "a",
+      "root_b": "o",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "r",
+      "root_a": "a",
+      "root_b": "o",
+      "x": "r"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "r",
+      "root_a": "a",
+      "root_b": "o",
+      "x": "r"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "r",
+      "root_a": "r",
+      "root_b": "r",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "k",
+      "b": "r",
+      "root_a": "r",
+      "root_b": "r",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ],
+      [
+       "k",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "k",
+      "b": "r",
+      "root_a": "r",
+      "root_b": "r",
+      "x": "k"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ],
+      [
+       "k",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "k",
+      "b": "r",
+      "root_a": "r",
+      "root_b": "r",
+      "x": "r"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "r"
+      ],
+      [
+       "k",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "k",
+      "b": "r",
+      "root_a": "k",
+      "root_b": "r",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the smaller letter becomes the root — it represents the group",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "k",
+      "b": "r",
+      "root_a": "k",
+      "root_b": "r",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "e",
+      "b": "i",
+      "root_a": "k",
+      "root_b": "r",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "e",
+      "b": "i",
+      "root_a": "k",
+      "root_b": "r",
+      "x": "e"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "i"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "e",
+      "b": "i",
+      "root_a": "k",
+      "root_b": "r",
+      "x": "i"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "i"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "e",
+      "b": "i",
+      "root_a": "e",
+      "root_b": "i",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the smaller letter becomes the root — it represents the group",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "e",
+      "b": "i",
+      "root_a": "e",
+      "root_b": "i",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "e",
+      "root_b": "i",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "e",
+      "root_b": "i",
+      "x": "r"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "e",
+      "root_b": "i",
+      "x": "k"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "s"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "e",
+      "root_b": "i",
+      "x": "s"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "s"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the smaller letter becomes the root — it represents the group",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "p"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "m"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "r"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "k"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "s"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "k"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "e"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "letters join lazily — a dict instead of an array",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "r"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": "k"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "each letter's root is the smallest equivalent",
+   "state": {
+    "parent": {
+     "entries": [
+      [
+       "p",
+       "m"
+      ],
+      [
+       "m",
+       "m"
+      ],
+      [
+       "a",
+       "a"
+      ],
+      [
+       "o",
+       "a"
+      ],
+      [
+       "r",
+       "k"
+      ],
+      [
+       "k",
+       "k"
+      ],
+      [
+       "e",
+       "e"
+      ],
+      [
+       "i",
+       "e"
+      ],
+      [
+       "s",
+       "k"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "a": "r",
+      "b": "s",
+      "root_a": "k",
+      "root_b": "s",
+      "x": null
+     }
+    }
+   }
+  }
+ ],
+ "result": "makkek"
+}

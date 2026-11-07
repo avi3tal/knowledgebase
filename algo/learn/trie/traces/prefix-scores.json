@@ -1,0 +1,3270 @@
+{
+ "version": 1,
+ "title": "Trie with counts — sum of prefix scores",
+ "code": [
+  "def prefix_scores(words: list[str]) -> list[int]:",
+  "    root: dict = {}",
+  "    for word in words:",
+  "        node = root",
+  "        for ch in word:",
+  "            node = node.setdefault(ch, {\"#\": 0})",
+  "            node[\"#\"] += 1",
+  "    scores = []",
+  "    for word in words:",
+  "        node, score = root, 0",
+  "        for ch in word:",
+  "            node = node[ch]",
+  "            score += node[\"#\"]",
+  "        scores.append(score)",
+  "    return scores"
+ ],
+ "view": [
+  {
+   "id": "root",
+   "type": "map",
+   "var": "root",
+   "label": "root (letter → subtree; '#' = words through this prefix)"
+  },
+  {
+   "id": "node",
+   "type": "map",
+   "var": "node",
+   "label": "node (current prefix)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "word",
+    "ch",
+    "score",
+    "scores"
+   ]
+  }
+ ],
+ "input": {
+  "words": [
+   "abc",
+   "ab",
+   "b",
+   "bc"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": []
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "word": null,
+      "ch": null,
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": []
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": null,
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": []
+    },
+    "node": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "a",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 0
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "a",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "a",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 0
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 0
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "a",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 1,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ],
+      [
+       "b",
+       {
+        "#": 1,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "a",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 1,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "a",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 1,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 1,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 0
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "step into the child for ch, creating it if missing",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 0
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "one more word passes through this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": null,
+      "scores": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": null,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": null,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": 0,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "a",
+      "score": 0,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "a",
+      "score": 0,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "a",
+      "score": 2,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "b",
+      "score": 2,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "b",
+      "score": 2,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "b",
+      "score": 4,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": 4,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": 4,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": 5,
+      "scores": []
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "every prefix of the word has been scored",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "abc",
+      "ch": "c",
+      "score": 5,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "c",
+      "score": 5,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "c",
+      "score": 0,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "a",
+      "score": 0,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "a",
+      "score": 0,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "a",
+      "score": 2,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": 2,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": 2,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": 4,
+      "scores": [
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "every prefix of the word has been scored",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "ab",
+      "ch": "b",
+      "score": 4,
+      "scores": [
+       5,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": 4,
+      "scores": [
+       5,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": 0,
+      "scores": [
+       5,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": 0,
+      "scores": [
+       5,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": 2,
+      "scores": [
+       5,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "every prefix of the word has been scored",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "b",
+      "ch": "b",
+      "score": 2,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": 2,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": 0,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": 0,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "b",
+      "score": 2,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       2
+      ],
+      [
+       "c",
+       {
+        "#": 1
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": 2,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": 2,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "query: add how many words share this prefix",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": 3,
+      "scores": [
+       5,
+       4,
+       2
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "every prefix of the word has been scored",
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": 3,
+      "scores": [
+       5,
+       4,
+       2,
+       3
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "root": {
+     "entries": [
+      [
+       "a",
+       {
+        "#": 2,
+        "b": {
+         "#": 2,
+         "c": {
+          "#": 1
+         }
+        }
+       }
+      ],
+      [
+       "b",
+       {
+        "#": 2,
+        "c": {
+         "#": 1
+        }
+       }
+      ]
+     ]
+    },
+    "node": {
+     "entries": [
+      [
+       "#",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "word": "bc",
+      "ch": "c",
+      "score": 3,
+      "scores": [
+       5,
+       4,
+       2,
+       3
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  5,
+  4,
+  2,
+  3
+ ]
+}

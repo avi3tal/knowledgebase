@@ -1,0 +1,12 @@
+{
+ "items": [
+  {"id": "q1", "prompt": "An array never changes; answer 10^5 queries \"what is the sum of nums[l..r]?\".", "options": ["prefix-sum", "sliding-window", "two-pointers"], "answer": "prefix-sum", "why": "Many arbitrary range sums on a static array → build prefix sums once and answer each query with one subtraction."},
+  {"id": "q2", "prompt": "Count the contiguous subarrays whose sum equals k; the array contains negative numbers.", "options": ["prefix-sum", "sliding-window", "two-pointers"], "answer": "prefix-sum", "why": "Negatives break the shrink rule of a window → prefix sums + a hash map counting earlier prefixes equal to prefix − k."},
+  {"id": "q3", "prompt": "All values are positive. Find the length of the shortest contiguous subarray whose sum is at least target.", "options": ["prefix-sum", "sliding-window", "modified-binary-search"], "answer": "sliding-window", "why": "Positive values make the window sum monotone → grow and shrink a dynamic window in O(n) time and O(1) space."},
+  {"id": "q4", "prompt": "Apply 10^5 operations \"add v to every element in positions l..r\", then print the final array.", "options": ["prefix-sum", "merge-intervals", "heaps"], "answer": "prefix-sum", "why": "Range updates read once at the end → a difference array (D[l] += v, D[r+1] −= v), then one prefix-sum pass."},
+  {"id": "q5", "prompt": "A matrix is fixed; answer many queries for the sum of a sub-rectangle.", "options": ["prefix-sum", "dynamic-programming", "islands"], "answer": "prefix-sum", "why": "2-D prefix sums → every rectangle sum is 4 lookups (inclusion–exclusion)."},
+  {"id": "q6", "prompt": "In a binary array, find the longest contiguous subarray with as many 0s as 1s.", "options": ["prefix-sum", "sliding-window", "two-pointers"], "answer": "prefix-sum", "why": "Count 0 as −1, then it's the longest zero-sum subarray → map each prefix balance to its FIRST index."},
+  {"id": "q7", "prompt": "In a sorted array, find two numbers that add up to a target.", "options": ["prefix-sum", "two-pointers", "modified-binary-search"], "answer": "two-pointers", "why": "A pair of elements, not a range, in sorted order → move two pointers inward from both ends."},
+  {"id": "q8", "prompt": "Return the maximum sum of any k consecutive elements.", "options": ["prefix-sum", "sliding-window", "top-k-elements"], "answer": "sliding-window", "why": "A fixed size k → slide a running sum: O(1) extra space. Prefix sums work too but store an extra array."}
+ ]
+}

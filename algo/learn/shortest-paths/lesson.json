@@ -1,0 +1,52 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "shortest-paths",
+ "title": "Shortest Paths (Dijkstra, 0-1 BFS, Bellman-Ford)",
+ "blocks": [
+  {"type": "markdown", "src": "01-intro.md"},
+  {
+   "type": "trace",
+   "id": "dijkstra-route",
+   "title": "Dijkstra — cheapest route with path reconstruction",
+   "source": "examples/cheapest_route.py",
+   "function": "cheapest_route",
+   "input": {"n": 5, "roads": [[0, 1, 4], [0, 2, 1], [2, 1, 2], [1, 3, 1], [2, 3, 5], [3, 4, 3]], "src": 0, "dst": 4},
+   "view": [
+    {"id": "heap", "type": "heap", "var": "heap", "label": "heap of (distance, node)"},
+    {"id": "dist", "type": "map", "var": "dist", "label": "dist (node → best distance so far)"},
+    {"id": "prev", "type": "map", "var": "prev", "label": "prev (node → previous node on the best route)"},
+    {"id": "vars", "type": "vars", "vars": ["d", "node", "nxt", "w", "route"]}
+   ],
+   "checks": [
+    {"input": {"n": 5, "roads": [[0, 1, 4], [0, 2, 1], [2, 1, 2], [1, 3, 1], [2, 3, 5], [3, 4, 3]], "src": 0, "dst": 4}, "expected": [7, [0, 2, 1, 3, 4]]},
+    {"input": {"n": 3, "roads": [[0, 1, 5]], "src": 0, "dst": 2}, "expected": [-1, []]},
+    {"input": {"n": 2, "roads": [[0, 1, 3]], "src": 1, "dst": 1}, "expected": [0, [1]]},
+    {"input": {"n": 4, "roads": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [0, 3, 5]], "src": 0, "dst": 3}, "expected": [3, [0, 1, 2, 3]]}
+   ]
+  },
+  {"type": "markdown", "src": "02-variants.md"},
+  {
+   "type": "trace",
+   "id": "zero-one-bfs",
+   "title": "0-1 BFS — fewest obstacles to remove",
+   "source": "examples/min_obstacles.py",
+   "function": "min_obstacles",
+   "input": {"grid": [[0, 1, 1], [1, 1, 0], [1, 1, 0]]},
+   "view": [
+    {"id": "grid", "type": "grid", "var": "grid", "label": "grid (1 = obstacle)", "cells": {"cur": ["r", "c"], "next": ["nr", "nc"]}},
+    {"id": "dist", "type": "grid", "var": "dist", "label": "dist (obstacles removed to reach the cell)", "cells": {"cur": ["r", "c"]}},
+    {"id": "queue", "type": "array", "var": "queue", "label": "deque (front = cheapest)"}
+   ],
+   "checks": [
+    {"input": {"grid": [[0, 1, 1], [1, 1, 0], [1, 1, 0]]}, "expected": 2},
+    {"input": {"grid": [[0, 1, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 0, 1, 0]]}, "expected": 0},
+    {"input": {"grid": [[0]]}, "expected": 0},
+    {"input": {"grid": [[0, 1], [1, 1]]}, "expected": 2}
+   ]
+  },
+  {"type": "markdown", "src": "03-recognise.md"},
+  {"type": "quiz", "src": "quiz.json"},
+  {"type": "problems", "slugs": ["network-delay-time", "cheapest-flights-within-k-stops", "swim-in-rising-water"]}
+ ]
+}

@@ -1,0 +1,11 @@
+[
+  {"name": "example oath", "args": {"board": ["oaan", "etae", "ihkr", "iflv"], "words": ["oath", "pea", "eat", "rain"]}, "expected": ["eat", "oath"]},
+  {"name": "cannot reuse a cell", "args": {"board": ["ab", "cd"], "words": ["abcb"]}, "expected": []},
+  {"name": "short words both directions", "args": {"board": ["ab"], "words": ["ba", "ab", "a", "aba"]}, "expected": ["ba", "ab", "a"]},
+  {"name": "single cell", "args": {"board": ["a"], "words": ["a"]}, "expected": ["a"]},
+  {"name": "single cell miss", "args": {"board": ["a"], "words": ["b", "aa"]}, "expected": []},
+  {"name": "same letters, no reuse", "args": {"board": ["aa"], "words": ["aaa", "aa"]}, "expected": ["aa"]},
+  {"name": "shared prefixes", "args": {"board": ["abc", "def"], "words": ["abc", "ab", "abcf", "fed", "adeb", "abd"]}, "expected": ["abc", "ab", "abcf", "fed", "adeb"]},
+  {"name": "word found along two paths reported once", "args": {"board": ["aba", "bab"], "words": ["ab"]}, "expected": ["ab"]},
+  {"name": "only the reversed row matches", "args": {"board": ["xyz", "uvw"], "words": ["abc", "zyx"]}, "expected": ["zyx"]}
+]

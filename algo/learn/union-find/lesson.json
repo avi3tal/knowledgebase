@@ -1,0 +1,50 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "union-find",
+ "title": "Union-Find (Disjoint Set Union)",
+ "blocks": [
+  {"type": "markdown", "src": "01-intro.md"},
+  {
+   "type": "trace",
+   "id": "valid-tree",
+   "title": "Union by size + path halving — is the graph a tree?",
+   "source": "examples/valid_tree.py",
+   "function": "valid_tree",
+   "input": {"n": 6, "edges": [[0, 1], [2, 3], [1, 3], [4, 5], [5, 1]]},
+   "view": [
+    {"id": "parent", "type": "array", "var": "parent", "label": "parent (index → parent; a root points at itself)", "pointers": {"a": "a", "b": "b", "x": "x", "root_a": "root_a", "root_b": "root_b"}},
+    {"id": "size", "type": "array", "var": "size", "label": "size (meaningful at roots)"},
+    {"id": "vars", "type": "vars", "vars": ["a", "b", "root_a", "root_b"]}
+   ],
+   "checks": [
+    {"input": {"n": 6, "edges": [[0, 1], [2, 3], [1, 3], [4, 5], [5, 1]]}, "expected": true},
+    {"input": {"n": 5, "edges": [[0, 1], [1, 2], [2, 3], [1, 3]]}, "expected": false},
+    {"input": {"n": 4, "edges": [[0, 1], [2, 3], [0, 1]]}, "expected": false},
+    {"input": {"n": 1, "edges": []}, "expected": true}
+   ]
+  },
+  {"type": "markdown", "src": "02-variants.md"},
+  {
+   "type": "trace",
+   "id": "smallest-equivalent",
+   "title": "Dict-based union-find — the smallest letter represents each group",
+   "source": "examples/smallest_equivalent.py",
+   "function": "smallest_equivalent",
+   "input": {"s1": "parker", "s2": "morris", "base": "parser"},
+   "view": [
+    {"id": "parent", "type": "map", "var": "parent", "label": "parent (letter → parent letter)"},
+    {"id": "vars", "type": "vars", "vars": ["a", "b", "root_a", "root_b", "x"]}
+   ],
+   "checks": [
+    {"input": {"s1": "parker", "s2": "morris", "base": "parser"}, "expected": "makkek"},
+    {"input": {"s1": "hello", "s2": "world", "base": "hold"}, "expected": "hdld"},
+    {"input": {"s1": "leetcode", "s2": "programs", "base": "sourcecode"}, "expected": "aauaaaaada"},
+    {"input": {"s1": "", "s2": "", "base": "abc"}, "expected": "abc"}
+   ]
+  },
+  {"type": "markdown", "src": "03-recognise.md"},
+  {"type": "quiz", "src": "quiz.json"},
+  {"type": "problems", "slugs": ["number-of-provinces", "redundant-connection", "number-of-islands-ii"]}
+ ]
+}

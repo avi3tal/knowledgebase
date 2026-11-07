@@ -1,0 +1,114 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given the root of a binary tree, decide whether every node's key is larger than all keys in its left subtree and smaller than all keys in its right subtree.",
+   "options": [
+    "trees",
+    "modified-binary-search",
+    "bfs"
+   ],
+   "answer": "trees",
+   "why": "It's the BST invariant over whole subtrees → carry (lo, hi) bounds down, or check that the in-order walk is strictly increasing."
+  },
+  {
+   "id": "q2",
+   "prompt": "Return the average value of the nodes on each level of a binary tree.",
+   "options": [
+    "trees",
+    "bfs",
+    "dfs"
+   ],
+   "answer": "bfs",
+   "why": "\"Each level\" → level-order traversal with a queue, processing one level's size at a time."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given the root of a BST, return its k-th smallest key.",
+   "options": [
+    "trees",
+    "top-k-elements",
+    "modified-binary-search"
+   ],
+   "answer": "trees",
+   "why": "The tree is already a BST, so an in-order walk yields sorted keys. Stop at the k-th one, O(h + k). A heap would ignore the ordering you already have."
+  },
+  {
+   "id": "q4",
+   "prompt": "Return the largest sum of any path between two nodes of a binary tree (the path need not pass through the root; values may be negative).",
+   "options": [
+    "trees",
+    "dfs",
+    "dynamic-programming"
+   ],
+   "answer": "trees",
+   "why": "The answer can sit anywhere and combines both children → post-order that returns a one-sided gain and records the two-sided candidate."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given a list of words, answer many queries of the form \"how many words start with this prefix?\".",
+   "options": [
+    "trees",
+    "trie",
+    "arrays-hashing"
+   ],
+   "answer": "trie",
+   "why": "Shared-prefix queries over many strings → a trie, where each node is a prefix and stores how many words pass through it."
+  },
+  {
+   "id": "q6",
+   "prompt": "Return every root-to-leaf path whose values add up to a target.",
+   "options": [
+    "trees",
+    "dfs",
+    "subsets"
+   ],
+   "answer": "dfs",
+   "why": "Enumerating root-to-leaf paths with a growing/shrinking path list is the DFS-with-backtracking template."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given a BST and two keys in it, find the deepest node that has both keys in its subtree.",
+   "options": [
+    "trees",
+    "union-find",
+    "bfs"
+   ],
+   "answer": "trees",
+   "why": "LCA in a BST → walk down from the root: both smaller go left, both larger go right, otherwise this node splits them. O(h)."
+  },
+  {
+   "id": "q8",
+   "prompt": "Numbers arrive one by one; after each, report the k-th largest seen so far.",
+   "options": [
+    "trees",
+    "top-k-elements",
+    "two-heaps"
+   ],
+   "answer": "top-k-elements",
+   "why": "Streaming k-th largest → a size-k min-heap. A hand-rolled balanced BST would work but isn't the expected tool."
+  },
+  {
+   "id": "q9",
+   "prompt": "Decide whether a binary tree is height-balanced (subtree heights differ by at most one at every node) in a single pass.",
+   "options": [
+    "trees",
+    "bfs",
+    "recursion"
+   ],
+   "answer": "trees",
+   "why": "\"At every node, compare the children\" → a post-order that returns a summary (the height) to the parent, instead of recomputing heights from every node."
+  },
+  {
+   "id": "q10",
+   "prompt": "Edges between computers are added one at a time; after each addition, report how many separate networks there are.",
+   "options": [
+    "trees",
+    "union-find",
+    "dfs"
+   ],
+   "answer": "union-find",
+   "why": "Incremental connectivity → union-find over parent pointers. Re-running a traversal after every edge is too slow."
+  }
+ ]
+}

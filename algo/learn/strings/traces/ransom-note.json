@@ -1,0 +1,546 @@
+{
+ "version": 1,
+ "title": "Character counts — build the note from magazine letters",
+ "code": [
+  "def can_construct(note: str, magazine: str) -> bool:",
+  "    counts: dict[str, int] = {}",
+  "    for ch in magazine:",
+  "        counts[ch] = counts.get(ch, 0) + 1",
+  "    for ch in note:",
+  "        if counts.get(ch, 0) == 0:",
+  "            return False",
+  "        counts[ch] -= 1",
+  "    return True"
+ ],
+ "view": [
+  {
+   "id": "counts",
+   "type": "map",
+   "var": "counts",
+   "label": "counts (letter → copies left)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "ch"
+   ]
+  }
+ ],
+ "input": {
+  "note": "aabc",
+  "magazine": "abacab"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "ch": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "count the supply of each letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "count the supply of each letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "count the supply of each letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "count the supply of each letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "count the supply of each letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       3
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       3
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "count the supply of each letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       3
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       3
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "use one copy of the letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       2
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "use one copy of the letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "a"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       2
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "use one copy of the letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "b"
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "use one copy of the letter",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "c"
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "every letter of the note was covered",
+   "state": {
+    "counts": {
+     "entries": [
+      [
+       "a",
+       1
+      ],
+      [
+       "b",
+       1
+      ],
+      [
+       "c",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "ch": "c"
+     }
+    }
+   }
+  }
+ ],
+ "result": true
+}

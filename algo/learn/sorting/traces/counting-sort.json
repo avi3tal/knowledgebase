@@ -1,0 +1,2461 @@
+{
+ "version": 1,
+ "title": "Stable counting sort — counts, prefix sums, placement",
+ "code": [
+  "def counting_sort(nums: list[int], max_value: int) -> list[int]:",
+  "    counts = [0] * (max_value + 1)",
+  "    for x in nums:",
+  "        counts[x] += 1",
+  "    start = 0",
+  "    for v in range(max_value + 1):",
+  "        counts[v], start = start, start + counts[v]",
+  "    output = [0] * len(nums)",
+  "    for x in nums:",
+  "        output[counts[x]] = x",
+  "        counts[x] += 1",
+  "    return output"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums"
+  },
+  {
+   "id": "counts",
+   "type": "array",
+   "var": "counts",
+   "label": "counts (index = value)",
+   "pointers": {
+    "v": "v",
+    "x": "x"
+   }
+  },
+  {
+   "id": "output",
+   "type": "array",
+   "var": "output"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "x",
+    "v",
+    "start"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   3,
+   1,
+   4,
+   1,
+   0,
+   3,
+   2
+  ],
+  "max_value": 4
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "v": null,
+      "x": null
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "v": null,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      0,
+      0,
+      1,
+      0
+     ],
+     "pointers": {
+      "v": null,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      0,
+      0,
+      1,
+      0
+     ],
+     "pointers": {
+      "v": null,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      0,
+      1,
+      0
+     ],
+     "pointers": {
+      "v": null,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      0,
+      1,
+      0
+     ],
+     "pointers": {
+      "v": null,
+      "x": 4
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      0,
+      1,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 4
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      0,
+      1,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      0,
+      1,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      0,
+      1,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 0
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 0,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      0,
+      1,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 0
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 0,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      0,
+      1,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      0,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      0,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "tally each value — the value itself is the index",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": null,
+      "start": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": null,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": null,
+      "start": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 0,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 0,
+      "start": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "prefix sum: counts[v] becomes the first output slot for v",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 0,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 0,
+      "start": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 1,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 1,
+      "start": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "prefix sum: counts[v] becomes the first output slot for v",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 1,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 1,
+      "start": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      1,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 2,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 2,
+      "start": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "prefix sum: counts[v] becomes the first output slot for v",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 2,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 2,
+      "start": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      2,
+      1
+     ],
+     "pointers": {
+      "v": 3,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 3,
+      "start": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "prefix sum: counts[v] becomes the first output slot for v",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      4,
+      1
+     ],
+     "pointers": {
+      "v": 3,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 3,
+      "start": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      4,
+      1
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "prefix sum: counts[v] becomes the first output slot for v",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      4,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      4,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      4,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      4,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      5,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      5,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      1,
+      3,
+      5,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      0,
+      0,
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      3,
+      5,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      0,
+      0,
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      3,
+      5,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 4
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      0,
+      0,
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      3,
+      5,
+      6
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 4
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      0,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 4
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      0,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      0,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      2,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      3,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 1
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      3,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 0
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 0,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      0,
+      3,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 0
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 0,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 0
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 0,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      0,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      3,
+      5,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      3,
+      6,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 3
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      3,
+      6,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      0,
+      3,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "place x in its slot; scanning left to right keeps equal values stable",
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      3,
+      6,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      2,
+      3,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      4,
+      6,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      2,
+      3,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      3,
+      1,
+      4,
+      1,
+      0,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "counts": {
+     "values": [
+      1,
+      3,
+      4,
+      6,
+      7
+     ],
+     "pointers": {
+      "v": 4,
+      "x": 2
+     },
+     "window": null
+    },
+    "output": {
+     "values": [
+      0,
+      1,
+      1,
+      2,
+      3,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "v": 4,
+      "start": 7
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  0,
+  1,
+  1,
+  2,
+  3,
+  3,
+  4
+ ]
+}

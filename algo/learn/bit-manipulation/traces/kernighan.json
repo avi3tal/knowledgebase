@@ -1,0 +1,758 @@
+{
+ "version": 1,
+ "title": "n & (n − 1) — count set bits one at a time",
+ "code": [
+  "def count_set_bits(n: int) -> int:",
+  "    count = 0",
+  "    binary = list(format(n, \"08b\"))",
+  "    while n:",
+  "        lower = n - 1",
+  "        n &= lower",
+  "        binary[:] = format(n, \"08b\")",
+  "        count += 1",
+  "    return count"
+ ],
+ "view": [
+  {
+   "id": "binary",
+   "type": "array",
+   "var": "binary",
+   "label": "binary form of n"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "n",
+    "lower",
+    "count"
+   ]
+  }
+ ],
+ "input": {
+  "n": 187
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 187,
+      "lower": null,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "the binary form of n, shown for reference",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 187,
+      "lower": null,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "n - 1 flips the lowest 1 to 0 and every 0 below it to 1",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 187,
+      "lower": 186,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "n & (n - 1) clears exactly the lowest set bit",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 186,
+      "lower": 186,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 186,
+      "lower": 186,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "one iteration per SET bit, not per bit position",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 186,
+      "lower": 186,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "n - 1 flips the lowest 1 to 0 and every 0 below it to 1",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 186,
+      "lower": 185,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "n & (n - 1) clears exactly the lowest set bit",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 184,
+      "lower": 185,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 184,
+      "lower": 185,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "one iteration per SET bit, not per bit position",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 184,
+      "lower": 185,
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "n - 1 flips the lowest 1 to 0 and every 0 below it to 1",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 184,
+      "lower": 183,
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "n & (n - 1) clears exactly the lowest set bit",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 176,
+      "lower": 183,
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 176,
+      "lower": 183,
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "one iteration per SET bit, not per bit position",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 176,
+      "lower": 183,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "n - 1 flips the lowest 1 to 0 and every 0 below it to 1",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 176,
+      "lower": 175,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "n & (n - 1) clears exactly the lowest set bit",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 160,
+      "lower": 175,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 160,
+      "lower": 175,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "one iteration per SET bit, not per bit position",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 160,
+      "lower": 175,
+      "count": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "n - 1 flips the lowest 1 to 0 and every 0 below it to 1",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 160,
+      "lower": 159,
+      "count": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "n & (n - 1) clears exactly the lowest set bit",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 128,
+      "lower": 159,
+      "count": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 128,
+      "lower": 159,
+      "count": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "one iteration per SET bit, not per bit position",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 128,
+      "lower": 159,
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "n - 1 flips the lowest 1 to 0 and every 0 below it to 1",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 128,
+      "lower": 127,
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "n & (n - 1) clears exactly the lowest set bit",
+   "state": {
+    "binary": {
+     "values": [
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 0,
+      "lower": 127,
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 0,
+      "lower": 127,
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "one iteration per SET bit, not per bit position",
+   "state": {
+    "binary": {
+     "values": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 0,
+      "lower": 127,
+      "count": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "binary": {
+     "values": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "n": 0,
+      "lower": 127,
+      "count": 6
+     }
+    }
+   }
+  }
+ ],
+ "result": 6
+}

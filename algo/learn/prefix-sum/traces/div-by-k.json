@@ -1,0 +1,1326 @@
+{
+ "version": 1,
+ "title": "Prefix remainders + hash map — subarrays divisible by k",
+ "code": [
+  "def subarrays_div_by_k(nums: list[int], k: int) -> int:",
+  "    seen = {0: 1}",
+  "    prefix, count = 0, 0",
+  "    for i in range(len(nums)):",
+  "        prefix += nums[i]",
+  "        mod = prefix % k",
+  "        count += seen.get(mod, 0)",
+  "        seen[mod] = seen.get(mod, 0) + 1",
+  "    return count"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "seen",
+   "type": "map",
+   "var": "seen",
+   "label": "seen (prefix remainder → how many times)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "prefix",
+    "mod",
+    "count"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   4,
+   5,
+   0,
+   -2,
+   -3,
+   1
+  ],
+  "k": 5
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": "remainder of the empty prefix — lets subarrays that start at index 0 count",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": null,
+      "mod": null,
+      "count": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 0,
+      "mod": null,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 0,
+      "mod": null,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": null,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "Python's % is never negative, even for negative prefixes",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "every earlier prefix with the same remainder closes a subarray divisible by k",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "insert AFTER the lookup",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "Python's % is never negative, even for negative prefixes",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "every earlier prefix with the same remainder closes a subarray divisible by k",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "insert AFTER the lookup",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "Python's % is never negative, even for negative prefixes",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "every earlier prefix with the same remainder closes a subarray divisible by k",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       2
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "insert AFTER the lookup",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 9,
+      "mod": 4,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 7,
+      "mod": 4,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "Python's % is never negative, even for negative prefixes",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 7,
+      "mod": 2,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "every earlier prefix with the same remainder closes a subarray divisible by k",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 7,
+      "mod": 2,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "insert AFTER the lookup",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 7,
+      "mod": 2,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 7,
+      "mod": 2,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 2,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "Python's % is never negative, even for negative prefixes",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "every earlier prefix with the same remainder closes a subarray divisible by k",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       3
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "insert AFTER the lookup",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 4,
+      "mod": 4,
+      "count": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 5,
+      "mod": 4,
+      "count": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "Python's % is never negative, even for negative prefixes",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 5,
+      "mod": 0,
+      "count": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "every earlier prefix with the same remainder closes a subarray divisible by k",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       1
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 5,
+      "mod": 0,
+      "count": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "insert AFTER the lookup",
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 5,
+      "mod": 0,
+      "count": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      4,
+      5,
+      0,
+      -2,
+      -3,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       4,
+       4
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "prefix": 5,
+      "mod": 0,
+      "count": 7
+     }
+    }
+   }
+  }
+ ],
+ "result": 7
+}

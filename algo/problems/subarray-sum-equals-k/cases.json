@@ -1,0 +1,13 @@
+[
+  {"name": "example ones", "args": {"nums": [1, 1, 1], "k": 2}, "expected": 2},
+  {"name": "example 1 2 3", "args": {"nums": [1, 2, 3], "k": 3}, "expected": 2},
+  {"name": "negatives cancel", "args": {"nums": [1, -1, 0], "k": 0}, "expected": 3},
+  {"name": "single miss", "args": {"nums": [1], "k": 0}, "expected": 0},
+  {"name": "single hit", "args": {"nums": [5], "k": 5}, "expected": 1},
+  {"name": "single zero, k zero", "args": {"nums": [0], "k": 0}, "expected": 1},
+  {"name": "all zeros", "args": {"nums": [0, 0, 0], "k": 0}, "expected": 6},
+  {"name": "mixed signs", "args": {"nums": [3, 4, 7, 2, -3, 1, 4, 2], "k": 7}, "expected": 4},
+  {"name": "negative k", "args": {"nums": [-1, -1, 1], "k": -1}, "expected": 3},
+  {"name": "overlapping windows", "args": {"nums": [1, 2, 1, 2, 1], "k": 3}, "expected": 4},
+  {"name": "no subarray", "args": {"nums": [2, 4, 6], "k": 5}, "expected": 0}
+]

@@ -1,0 +1,11 @@
+[
+  {"name": "example", "args": {"strs": ["eat", "tea", "tan", "ate", "nat", "bat"]}, "expected": [["bat"], ["nat", "tan"], ["ate", "eat", "tea"]]},
+  {"name": "single empty string", "args": {"strs": [""]}, "expected": [[""]]},
+  {"name": "single letter", "args": {"strs": ["a"]}, "expected": [["a"]]},
+  {"name": "empty list", "args": {"strs": []}, "expected": []},
+  {"name": "two empty strings", "args": {"strs": ["", ""]}, "expected": [["", ""]]},
+  {"name": "no anagrams", "args": {"strs": ["abc", "def", "ghi"]}, "expected": [["abc"], ["def"], ["ghi"]]},
+  {"name": "duplicates stay", "args": {"strs": ["ab", "ba", "ab"]}, "expected": [["ab", "ba", "ab"]]},
+  {"name": "same letters, different counts", "args": {"strs": ["aab", "abb", "bab"]}, "expected": [["aab"], ["abb", "bab"]]},
+  {"name": "same length, different letters", "args": {"strs": ["ddddddddddg", "dgggggggggg"]}, "expected": [["ddddddddddg"], ["dgggggggggg"]]}
+]

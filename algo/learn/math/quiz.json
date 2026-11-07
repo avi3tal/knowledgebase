@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Reverse the digits of a signed 32-bit integer; return 0 if the result overflows.",
+   "options": [
+    "math",
+    "strings",
+    "stack"
+   ],
+   "answer": "math",
+   "why": "A digit loop (% 10, // 10) with an explicit 32-bit range check. Strings work, but the follow-up forbids them and the overflow check is the point."
+  },
+  {
+   "id": "q2",
+   "prompt": "Count the primes less than n = 5,000,000.",
+   "options": [
+    "math",
+    "dynamic-programming",
+    "arrays-hashing"
+   ],
+   "answer": "math",
+   "why": "Many primality facts up to n → Sieve of Eratosthenes, O(n log log n). Trial division per number is far slower."
+  },
+  {
+   "id": "q3",
+   "prompt": "Compute floor(sqrt(x)) for x up to 2^31 − 1 without a sqrt function.",
+   "options": [
+    "math",
+    "modified-binary-search",
+    "two-pointers"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Monotone condition mid·mid ≤ x → binary search on the answer, O(log x)."
+  },
+  {
+   "id": "q4",
+   "prompt": "A non-negative integer is stored as an array of digits (most significant first). Add one to it.",
+   "options": [
+    "math",
+    "arrays-hashing",
+    "two-pointers"
+   ],
+   "answer": "math",
+   "why": "Grade-school addition from the last digit with a carry; the 999 → 1000 case grows the array."
+  },
+  {
+   "id": "q5",
+   "prompt": "Two traffic lights cycle every a and b seconds and both turn green at t = 0. When do they next turn green together?",
+   "options": [
+    "math",
+    "greedy",
+    "two-pointers"
+   ],
+   "answer": "math",
+   "why": "That's lcm(a, b) = a / gcd(a, b) · b, with gcd from Euclid in O(log min(a, b))."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given 10^5 points on a grid, find the largest Manhattan distance |x1 − x2| + |y1 − y2| between any two of them.",
+   "options": [
+    "math",
+    "two-pointers",
+    "dynamic-programming"
+   ],
+   "answer": "math",
+   "why": "Expand the absolute values into sign cases: the answer is max(max(x+y) − min(x+y), max(x−y) − min(x−y)). O(n) instead of O(n²)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Every number in the array appears twice except one. Find the single one with O(1) extra space.",
+   "options": [
+    "math",
+    "bitwise-xor",
+    "arrays-hashing"
+   ],
+   "answer": "bitwise-xor",
+   "why": "Pairs cancel under XOR → one running XOR. The sum trick 2·sum(set) − sum needs a set, so O(n) space."
+  },
+  {
+   "id": "q8",
+   "prompt": "Repeatedly replace n by the sum of the squares of its digits. Decide whether you eventually reach 1 or loop forever.",
+   "options": [
+    "math",
+    "fast-slow-pointers",
+    "arrays-hashing"
+   ],
+   "answer": "fast-slow-pointers",
+   "why": "The digit math is easy; the real question is cycle detection on the sequence → Floyd's slow/fast pointers with O(1) space."
+  }
+ ]
+}

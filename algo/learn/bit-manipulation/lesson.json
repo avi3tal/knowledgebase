@@ -1,0 +1,185 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "bit-manipulation",
+ "title": "Bit Manipulation",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "kernighan",
+   "title": "n & (n − 1) — count set bits one at a time",
+   "source": "examples/count_set_bits.py",
+   "function": "count_set_bits",
+   "input": {
+    "n": 187
+   },
+   "view": [
+    {
+     "id": "binary",
+     "type": "array",
+     "var": "binary",
+     "label": "binary form of n"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "n",
+      "lower",
+      "count"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "n": 187
+     },
+     "expected": 6
+    },
+    {
+     "input": {
+      "n": 0
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "n": 255
+     },
+     "expected": 8
+    },
+    {
+     "input": {
+      "n": 1024
+     },
+     "expected": 1
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-masks.md"
+  },
+  {
+   "type": "trace",
+   "id": "letter-masks",
+   "title": "Bitmasks as letter sets — max product of disjoint words",
+   "source": "examples/max_word_product.py",
+   "function": "max_word_product",
+   "input": {
+    "words": [
+     "abc",
+     "de",
+     "f",
+     "bef",
+     "cf"
+    ]
+   },
+   "view": [
+    {
+     "id": "words",
+     "type": "array",
+     "var": "words",
+     "pointers": {
+      "i": "i",
+      "j": "j"
+     }
+    },
+    {
+     "id": "masks",
+     "type": "array",
+     "var": "masks",
+     "label": "masks (bit k set = letter k present)",
+     "pointers": {
+      "i": "i",
+      "j": "j"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "word",
+      "ch",
+      "mask",
+      "shared",
+      "best"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "words": [
+       "abc",
+       "de",
+       "f",
+       "bef",
+       "cf"
+      ]
+     },
+     "expected": 6
+    },
+    {
+     "input": {
+      "words": [
+       "abcw",
+       "baz",
+       "foo",
+       "bar",
+       "xtfn",
+       "abcdef"
+      ]
+     },
+     "expected": 16
+    },
+    {
+     "input": {
+      "words": [
+       "a",
+       "aa",
+       "aaa"
+      ]
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "words": [
+       "a",
+       "ab",
+       "abc",
+       "d",
+       "cd",
+       "bcd",
+       "abcd"
+      ]
+     },
+     "expected": 4
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "counting-bits",
+    "reverse-bits",
+    "single-number-ii",
+    "implement-power-function"
+   ]
+  }
+ ]
+}

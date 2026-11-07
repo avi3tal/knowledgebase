@@ -1,0 +1,239 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "trees",
+ "title": "Trees & Binary Search Trees",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "range-sum-bst",
+   "title": "BST pruning — sum of keys in [low, high]",
+   "source": "examples/range_sum_bst.py",
+   "function": "range_sum_bst",
+   "input": {
+    "root": [
+     50,
+     30,
+     70,
+     20,
+     40,
+     60,
+     80,
+     10,
+     25,
+     35,
+     45,
+     55,
+     65,
+     75,
+     90
+    ],
+    "low": 33,
+    "high": 62
+   },
+   "types": {
+    "root": "TreeNode"
+   },
+   "view": [
+    {
+     "id": "tree",
+     "type": "tree",
+     "var": "root",
+     "pointers": {
+      "node": "node"
+     },
+     "groups": {
+      "stack": "stack"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "low",
+      "high",
+      "total"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "root": [
+       50,
+       30,
+       70,
+       20,
+       40,
+       60,
+       80,
+       10,
+       25,
+       35,
+       45,
+       55,
+       65,
+       75,
+       90
+      ],
+      "low": 33,
+      "high": 62
+     },
+     "expected": 285
+    },
+    {
+     "input": {
+      "root": [
+       10,
+       5,
+       15,
+       3,
+       7,
+       null,
+       18
+      ],
+      "low": 7,
+      "high": 15
+     },
+     "expected": 32
+    },
+    {
+     "input": {
+      "root": [],
+      "low": 1,
+      "high": 5
+     },
+     "expected": 0
+    },
+    {
+     "input": {
+      "root": [
+       5
+      ],
+      "low": 6,
+      "high": 9
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-recipes.md"
+  },
+  {
+   "type": "trace",
+   "id": "tree-tilt",
+   "title": "Post-order: return the subtree sum, record the tilt",
+   "source": "examples/tree_tilt.py",
+   "function": "find_tilt",
+   "input": {
+    "root": [
+     4,
+     2,
+     9,
+     3,
+     5,
+     null,
+     7
+    ]
+   },
+   "types": {
+    "root": "TreeNode"
+   },
+   "view": [
+    {
+     "id": "tree",
+     "type": "tree",
+     "var": "root",
+     "pointers": {
+      "node": "node"
+     }
+    },
+    {
+     "id": "stack",
+     "type": "callstack"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "left",
+      "right",
+      "tilt"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "root": [
+       4,
+       2,
+       9,
+       3,
+       5,
+       null,
+       7
+      ]
+     },
+     "expected": 15
+    },
+    {
+     "input": {
+      "root": [
+       1,
+       2,
+       3
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "root": [
+       21,
+       7,
+       14,
+       1,
+       1,
+       2,
+       2,
+       3,
+       3
+      ]
+     },
+     "expected": 9
+    },
+    {
+     "input": {
+      "root": []
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "balanced-binary-tree",
+    "diameter-of-binary-tree",
+    "validate-binary-search-tree",
+    "binary-search-tree-iterator",
+    "binary-tree-maximum-path-sum"
+   ]
+  }
+ ]
+}

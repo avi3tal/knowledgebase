@@ -1,0 +1,1957 @@
+{
+ "version": 1,
+ "title": "Union by size + path halving — is the graph a tree?",
+ "code": [
+  "def valid_tree(n: int, edges: list[list[int]]) -> bool:",
+  "    if len(edges) != n - 1:",
+  "        return False",
+  "    parent = list(range(n))",
+  "    size = [1] * n",
+  "",
+  "    def find(x: int) -> int:",
+  "        while parent[x] != x:",
+  "            parent[x] = parent[parent[x]]",
+  "            x = parent[x]",
+  "        return x",
+  "",
+  "    for a, b in edges:",
+  "        root_a, root_b = find(a), find(b)",
+  "        if root_a == root_b:",
+  "            return False",
+  "        if size[root_a] < size[root_b]:",
+  "            root_a, root_b = root_b, root_a",
+  "        parent[root_b] = root_a",
+  "        size[root_a] += size[root_b]",
+  "    return True"
+ ],
+ "view": [
+  {
+   "id": "parent",
+   "type": "array",
+   "var": "parent",
+   "label": "parent (index → parent; a root points at itself)",
+   "pointers": {
+    "a": "a",
+    "b": "b",
+    "x": "x",
+    "root_a": "root_a",
+    "root_b": "root_b"
+   }
+  },
+  {
+   "id": "size",
+   "type": "array",
+   "var": "size",
+   "label": "size (meaningful at roots)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "a",
+    "b",
+    "root_a",
+    "root_b"
+   ]
+  }
+ ],
+ "input": {
+  "n": 6,
+  "edges": [
+   [
+    0,
+    1
+   ],
+   [
+    2,
+    3
+   ],
+   [
+    1,
+    3
+   ],
+   [
+    4,
+    5
+   ],
+   [
+    5,
+    1
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [],
+     "pointers": {
+      "a": null,
+      "b": null,
+      "x": null,
+      "root_a": null,
+      "root_b": null
+     },
+     "window": null
+    },
+    "size": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": null,
+      "b": null,
+      "root_a": null,
+      "root_b": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "every node starts as the root of its own group",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": null,
+      "b": null,
+      "x": null,
+      "root_a": null,
+      "root_b": null
+     },
+     "window": null
+    },
+    "size": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": null,
+      "b": null,
+      "root_a": null,
+      "root_b": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": null,
+      "b": null,
+      "x": null,
+      "root_a": null,
+      "root_b": null
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": null,
+      "b": null,
+      "root_a": null,
+      "root_b": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 0,
+      "b": 1,
+      "x": null,
+      "root_a": null,
+      "root_b": null
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 0,
+      "b": 1,
+      "root_a": null,
+      "root_b": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 0,
+      "b": 1,
+      "x": 0,
+      "root_a": null,
+      "root_b": null
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 0,
+      "b": 1,
+      "root_a": null,
+      "root_b": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 0,
+      "b": 1,
+      "x": 1,
+      "root_a": null,
+      "root_b": null
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 0,
+      "b": 1,
+      "root_a": null,
+      "root_b": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 0,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 1
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 0,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "union by size — hang the smaller tree under the bigger root",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 0,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 1
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 0,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 0,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 1
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 0,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 2,
+      "b": 3,
+      "x": null,
+      "root_a": 0,
+      "root_b": 1
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 3,
+      "root_a": 0,
+      "root_b": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 2,
+      "b": 3,
+      "x": 2,
+      "root_a": 0,
+      "root_b": 1
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 3,
+      "root_a": 0,
+      "root_b": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 2,
+      "b": 3,
+      "x": 3,
+      "root_a": 0,
+      "root_b": 1
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 3,
+      "root_a": 0,
+      "root_b": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 2,
+      "b": 3,
+      "x": null,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "union by size — hang the smaller tree under the bigger root",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 2,
+      "b": 3,
+      "x": null,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 2,
+      "b": 3,
+      "x": null,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 2,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": null,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": 1,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "path halving — skip a level on the way up",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": 1,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": 0,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": 3,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "path halving — skip a level on the way up",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": 3,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": 2,
+      "root_a": 2,
+      "root_b": 3
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 2,
+      "root_b": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      2,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": null,
+      "root_a": 0,
+      "root_b": 2
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 0,
+      "root_b": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "union by size — hang the smaller tree under the bigger root",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": null,
+      "root_a": 0,
+      "root_b": 2
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      2,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 0,
+      "root_b": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 1,
+      "b": 3,
+      "x": null,
+      "root_a": 0,
+      "root_b": 2
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 1,
+      "b": 3,
+      "root_a": 0,
+      "root_b": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 4,
+      "b": 5,
+      "x": null,
+      "root_a": 0,
+      "root_b": 2
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 4,
+      "b": 5,
+      "root_a": 0,
+      "root_b": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 4,
+      "b": 5,
+      "x": 4,
+      "root_a": 0,
+      "root_b": 2
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 4,
+      "b": 5,
+      "root_a": 0,
+      "root_b": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 4,
+      "b": 5,
+      "x": 5,
+      "root_a": 0,
+      "root_b": 2
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 4,
+      "b": 5,
+      "root_a": 0,
+      "root_b": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      5
+     ],
+     "pointers": {
+      "a": 4,
+      "b": 5,
+      "x": null,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 4,
+      "b": 5,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "union by size — hang the smaller tree under the bigger root",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 4,
+      "b": 5,
+      "x": null,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      1,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 4,
+      "b": 5,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 4,
+      "b": 5,
+      "x": null,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 4,
+      "b": 5,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": null,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": 5,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "path halving — skip a level on the way up",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": 5,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": 4,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": 1,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "path halving — skip a level on the way up",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": 1,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": 0,
+      "root_a": 4,
+      "root_b": 5
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": null,
+      "root_a": 4,
+      "root_b": 0
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 4,
+      "root_b": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      4,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 4
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "union by size — hang the smaller tree under the bigger root",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      0,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 4
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      4,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      0,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 4
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      6,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": "n - 1 merges and no cycle: everything is one tree",
+   "state": {
+    "parent": {
+     "values": [
+      0,
+      0,
+      0,
+      2,
+      0,
+      4
+     ],
+     "pointers": {
+      "a": 5,
+      "b": 1,
+      "x": null,
+      "root_a": 0,
+      "root_b": 4
+     },
+     "window": null
+    },
+    "size": {
+     "values": [
+      6,
+      1,
+      2,
+      1,
+      2,
+      1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "a": 5,
+      "b": 1,
+      "root_a": 0,
+      "root_b": 4
+     }
+    }
+   }
+  }
+ ],
+ "result": true
+}

@@ -1,0 +1,3069 @@
+{
+ "version": 1,
+ "title": "BST pruning — sum of keys in [low, high]",
+ "code": [
+  "def range_sum_bst(root, low: int, high: int) -> int:",
+  "    total = 0",
+  "    stack = [root] if root else []",
+  "    while stack:",
+  "        node = stack.pop()",
+  "        if low <= node.val <= high:",
+  "            total += node.val",
+  "        if node.left and node.val > low:",
+  "            stack.append(node.left)",
+  "        if node.right and node.val < high:",
+  "            stack.append(node.right)",
+  "    return total"
+ ],
+ "view": [
+  {
+   "id": "tree",
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "node": "node"
+   },
+   "groups": {
+    "stack": "stack"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "low",
+    "high",
+    "total"
+   ]
+  }
+ ],
+ "input": {
+  "root": [
+   50,
+   30,
+   70,
+   20,
+   40,
+   60,
+   80,
+   10,
+   25,
+   35,
+   45,
+   55,
+   65,
+   75,
+   90
+  ],
+  "low": 33,
+  "high": 62
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "iterative DFS: the stack holds subtrees still worth visiting",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": null
+     },
+     "groups": {
+      "stack": [
+       0
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "this key is in range — count it",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 50
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "smaller keys live on the left — only worth it if node.val > low",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 50
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "larger keys live on the right — only worth it if node.val < high",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 0
+     },
+     "groups": {
+      "stack": [
+       1,
+       2
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 50
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "stack": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 50
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "smaller keys live on the left — only worth it if node.val > low",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 2
+     },
+     "groups": {
+      "stack": [
+       1,
+       5
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 50
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "stack": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 50
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "this key is in range — count it",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "stack": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 110
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "smaller keys live on the left — only worth it if node.val > low",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "stack": [
+       1,
+       11
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 110
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "larger keys live on the right — only worth it if node.val < high",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 5
+     },
+     "groups": {
+      "stack": [
+       1,
+       11,
+       12
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 110
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 12
+     },
+     "groups": {
+      "stack": [
+       1,
+       11
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 110
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 11
+     },
+     "groups": {
+      "stack": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 110
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "this key is in range — count it",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 11
+     },
+     "groups": {
+      "stack": [
+       1
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 165
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 165
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "larger keys live on the right — only worth it if node.val < high",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 1
+     },
+     "groups": {
+      "stack": [
+       4
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 165
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 165
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "this key is in range — count it",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 205
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "smaller keys live on the left — only worth it if node.val > low",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "stack": [
+       9
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 205
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "larger keys live on the right — only worth it if node.val < high",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 4
+     },
+     "groups": {
+      "stack": [
+       9,
+       10
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 205
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 10
+     },
+     "groups": {
+      "stack": [
+       9
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 205
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "this key is in range — count it",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 10
+     },
+     "groups": {
+      "stack": [
+       9
+      ]
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 250
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 9
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 250
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "this key is in range — count it",
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 9
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 285
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "tree": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 50,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 30,
+       "left": 3,
+       "right": 4
+      },
+      {
+       "id": 2,
+       "val": 70,
+       "left": 5,
+       "right": 6
+      },
+      {
+       "id": 3,
+       "val": 20,
+       "left": 7,
+       "right": 8
+      },
+      {
+       "id": 4,
+       "val": 40,
+       "left": 9,
+       "right": 10
+      },
+      {
+       "id": 5,
+       "val": 60,
+       "left": 11,
+       "right": 12
+      },
+      {
+       "id": 6,
+       "val": 80,
+       "left": 13,
+       "right": 14
+      },
+      {
+       "id": 7,
+       "val": 10,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 8,
+       "val": 25,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 9,
+       "val": 35,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 10,
+       "val": 45,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 11,
+       "val": 55,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 12,
+       "val": 65,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 13,
+       "val": 75,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 14,
+       "val": 90,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "node": 9
+     },
+     "groups": {
+      "stack": []
+     }
+    },
+    "vars": {
+     "values": {
+      "low": 33,
+      "high": 62,
+      "total": 285
+     }
+    }
+   }
+  }
+ ],
+ "result": 285
+}

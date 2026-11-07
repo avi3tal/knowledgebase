@@ -1,0 +1,21 @@
+{
+  "title": "Cheapest Flights Within K Stops",
+  "slug": "cheapest-flights-within-k-stops",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["shortest-paths", "dp-1d"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/cheapest-flights-within-k-stops/"}],
+  "kind": "function",
+  "function": "findCheapestPrice",
+  "params": [
+    {"name": "n", "type": "int"},
+    {"name": "flights", "type": "int[][]"},
+    {"name": "src", "type": "int"},
+    {"name": "dst", "type": "int"},
+    {"name": "k", "type": "int"}
+  ],
+  "returns": "int",
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(n)", "space": "O(n)"},
+  "bench": {"args": {"n": "n", "flights": "int_matrix(4 * n, 3, 0, n - 1)", "src": "0", "dst": "n - 1", "k": "8"}, "min_n": 256, "max_n": 32768}
+}

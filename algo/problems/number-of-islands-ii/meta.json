@@ -1,0 +1,19 @@
+{
+  "title": "Number of Islands II",
+  "slug": "number-of-islands-ii",
+  "type": "algo",
+  "difficulty": "hard",
+  "patterns": ["union-find", "islands"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/number-of-islands-ii/"}],
+  "kind": "function",
+  "function": "numIslands2",
+  "params": [
+    {"name": "m", "type": "int"},
+    {"name": "n", "type": "int"},
+    {"name": "positions", "type": "int[][]"}
+  ],
+  "returns": "int[]",
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(n)", "space": "O(n)"},
+  "bench": {"args": {"m": "isqrt(n)", "n": "isqrt(n)", "positions": "int_matrix(n, 2, 0, isqrt(n) - 1)"}}
+}

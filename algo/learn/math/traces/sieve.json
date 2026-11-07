@@ -1,0 +1,3789 @@
+{
+ "version": 1,
+ "title": "Sieve of Eratosthenes — count the primes below n",
+ "code": [
+  "def count_primes(n: int) -> int:",
+  "    if n < 3:",
+  "        return 0",
+  "    is_prime = [True] * n",
+  "    is_prime[0] = is_prime[1] = False",
+  "    p = 2",
+  "    while p * p < n:",
+  "        if is_prime[p]:",
+  "            for multiple in range(p * p, n, p):",
+  "                is_prime[multiple] = (",
+  "                    False",
+  "                )",
+  "        p += 1",
+  "    return sum(is_prime)"
+ ],
+ "view": [
+  {
+   "id": "is_prime",
+   "type": "array",
+   "var": "is_prime",
+   "label": "is_prime (index = number)",
+   "pointers": {
+    "p": "p",
+    "multiple": "multiple"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "p",
+    "multiple"
+   ]
+  }
+ ],
+ "input": {
+  "n": 30
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [],
+     "pointers": {
+      "p": null,
+      "multiple": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": null,
+      "multiple": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": null,
+      "multiple": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": null,
+      "multiple": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "0 and 1 are not prime",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": null,
+      "multiple": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": null,
+      "multiple": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "primes above sqrt(n) have no multiples left to cross out",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 4
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 6
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 8
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 10
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 12
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 12
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 12
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 14
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 14
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 14
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 14
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 16
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 16
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 16
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 16
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 18
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 18
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 18
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 18
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 18
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 18
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 20
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 20
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 20
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 20
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 22
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 22
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 22
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 22
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 22
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 22
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 24
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 24
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 24
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 24
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 24
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 24
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 26
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 26
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 26
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 26
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 26
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 26
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 28
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 28
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 2,
+      "multiple": 28
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 2,
+      "multiple": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 28
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "primes above sqrt(n) have no multiples left to cross out",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 28
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 28
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 9
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 12
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 12
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 12
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 15
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 15
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 15
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 15
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 15
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 15
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 18
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 18
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 18
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 18
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 21
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 21
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 21
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 21
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 21
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 21
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 24
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 24
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 24
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 24
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 3,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 3,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 4,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 4,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "primes above sqrt(n) have no multiples left to cross out",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 4,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 4,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 5,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 5,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "primes above sqrt(n) have no multiples left to cross out",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 5,
+      "multiple": 27
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 5,
+      "multiple": 27
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 5,
+      "multiple": 25
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 5,
+      "multiple": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "cross out multiples starting at p*p — smaller ones were done by smaller primes",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 5,
+      "multiple": 25
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 5,
+      "multiple": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 5,
+      "multiple": 25
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 5,
+      "multiple": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 6,
+      "multiple": 25
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 6,
+      "multiple": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "primes above sqrt(n) have no multiples left to cross out",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 6,
+      "multiple": 25
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 6,
+      "multiple": 25
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "whatever survived is prime",
+   "state": {
+    "is_prime": {
+     "values": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+     ],
+     "pointers": {
+      "p": 6,
+      "multiple": 25
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "p": 6,
+      "multiple": 25
+     }
+    }
+   }
+  }
+ ],
+ "result": 10
+}

@@ -1,0 +1,11 @@
+[
+  {"name": "example two provinces", "args": {"isConnected": [[1, 1, 0], [1, 1, 0], [0, 0, 1]]}, "expected": 2},
+  {"name": "example no links", "args": {"isConnected": [[1, 0, 0], [0, 1, 0], [0, 0, 1]]}, "expected": 3},
+  {"name": "transitive chain", "args": {"isConnected": [[1, 0, 0, 1], [0, 1, 1, 0], [0, 1, 1, 1], [1, 0, 1, 1]]}, "expected": 1},
+  {"name": "single city", "args": {"isConnected": [[1]]}, "expected": 1},
+  {"name": "two cities linked", "args": {"isConnected": [[1, 1], [1, 1]]}, "expected": 1},
+  {"name": "all linked", "args": {"isConnected": [[1, 1, 1], [1, 1, 1], [1, 1, 1]]}, "expected": 1},
+  {"name": "two pairs and a loner", "args": {"isConnected": [[1, 0, 1, 0, 0], [0, 1, 0, 1, 0], [1, 0, 1, 0, 0], [0, 1, 0, 1, 0], [0, 0, 0, 0, 1]]}, "expected": 3},
+  {"name": "star around last city", "args": {"isConnected": [[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1], [1, 1, 1, 1]]}, "expected": 1},
+  {"name": "path 0-1-2-3-4-5", "args": {"isConnected": [[1, 1, 0, 0, 0, 0], [1, 1, 1, 0, 0, 0], [0, 1, 1, 1, 0, 0], [0, 0, 1, 1, 1, 0], [0, 0, 0, 1, 1, 1], [0, 0, 0, 0, 1, 1]]}, "expected": 1}
+]

@@ -1,0 +1,10 @@
+[
+  {"name": "example", "ctor": [], "ops": ["insert", "search", "search", "startsWith", "insert", "search"], "op_args": [["apple"], ["apple"], ["app"], ["app"], ["app"], ["app"]], "expected": [null, true, false, true, null, true]},
+  {"name": "empty trie", "ctor": [], "ops": ["search", "startsWith"], "op_args": [["a"], ["a"]], "expected": [false, false]},
+  {"name": "single letter", "ctor": [], "ops": ["insert", "search", "startsWith", "search"], "op_args": [["a"], ["a"], ["a"], ["ab"]], "expected": [null, true, true, false]},
+  {"name": "longer than stored", "ctor": [], "ops": ["insert", "search", "startsWith"], "op_args": [["car"], ["cart"], ["cart"]], "expected": [null, false, false]},
+  {"name": "branching words", "ctor": [], "ops": ["insert", "insert", "insert", "startsWith", "startsWith", "search", "search", "search"], "op_args": [["car"], ["cat"], ["dog"], ["ca"], ["do"], ["ca"], ["cat"], ["do"]], "expected": [null, null, null, true, true, false, true, false]},
+  {"name": "duplicate insert", "ctor": [], "ops": ["insert", "insert", "search", "startsWith"], "op_args": [["hi"], ["hi"], ["hi"], ["h"]], "expected": [null, null, true, true]},
+  {"name": "prefix inserted after word", "ctor": [], "ops": ["insert", "search", "insert", "search", "search"], "op_args": [["banana"], ["ban"], ["ban"], ["ban"], ["bana"]], "expected": [null, false, null, true, false]},
+  {"name": "missing first letter", "ctor": [], "ops": ["insert", "startsWith", "search"], "op_args": [["xyz"], ["y"], ["yz"]], "expected": [null, false, false]}
+]

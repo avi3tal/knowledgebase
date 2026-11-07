@@ -1,0 +1,13 @@
+[
+  {"name": "example one stop", "args": {"n": 4, "flights": [[0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600], [2, 3, 200]], "src": 0, "dst": 3, "k": 1}, "expected": 700},
+  {"name": "example cheaper with a stop", "args": {"n": 3, "flights": [[0, 1, 100], [1, 2, 100], [0, 2, 500]], "src": 0, "dst": 2, "k": 1}, "expected": 200},
+  {"name": "example direct only", "args": {"n": 3, "flights": [[0, 1, 100], [1, 2, 100], [0, 2, 500]], "src": 0, "dst": 2, "k": 0}, "expected": 500},
+  {"name": "unreachable", "args": {"n": 3, "flights": [[0, 1, 100]], "src": 0, "dst": 2, "k": 1}, "expected": -1},
+  {"name": "no flights", "args": {"n": 2, "flights": [], "src": 0, "dst": 1, "k": 0}, "expected": -1},
+  {"name": "src equals dst", "args": {"n": 2, "flights": [[0, 1, 5]], "src": 0, "dst": 0, "k": 0}, "expected": 0},
+  {"name": "too few stops for the cheap chain", "args": {"n": 4, "flights": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [0, 3, 10]], "src": 0, "dst": 3, "k": 1}, "expected": 10},
+  {"name": "enough stops for the cheap chain", "args": {"n": 4, "flights": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [0, 3, 10]], "src": 0, "dst": 3, "k": 2}, "expected": 3},
+  {"name": "cheapest prefix uses too many stops", "args": {"n": 5, "flights": [[0, 1, 5], [1, 2, 5], [0, 3, 2], [3, 1, 2], [1, 4, 1], [4, 2, 1]], "src": 0, "dst": 2, "k": 2}, "expected": 7},
+  {"name": "same graph, more stops", "args": {"n": 5, "flights": [[0, 1, 5], [1, 2, 5], [0, 3, 2], [3, 1, 2], [1, 4, 1], [4, 2, 1]], "src": 0, "dst": 2, "k": 3}, "expected": 6},
+  {"name": "same graph, one stop", "args": {"n": 5, "flights": [[0, 1, 5], [1, 2, 5], [0, 3, 2], [3, 1, 2], [1, 4, 1], [4, 2, 1]], "src": 0, "dst": 2, "k": 1}, "expected": 10}
+]

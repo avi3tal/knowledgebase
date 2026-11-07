@@ -1,0 +1,5192 @@
+{
+ "version": 1,
+ "title": "0-1 BFS — fewest obstacles to remove",
+ "code": [
+  "def min_obstacles(grid: list[list[int]]) -> int:",
+  "    rows, cols = len(grid), len(grid[0])",
+  "    dist = [[float(\"inf\")] * cols for _ in range(rows)]",
+  "    dist[0][0] = 0",
+  "    queue = deque([(0, 0)])",
+  "    while queue:",
+  "        r, c = queue.popleft()",
+  "        for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):",
+  "            if 0 <= nr < rows and 0 <= nc < cols and dist[r][c] + grid[nr][nc] < dist[nr][nc]:",
+  "                dist[nr][nc] = dist[r][c] + grid[nr][nc]",
+  "                if grid[nr][nc] == 0:",
+  "                    queue.appendleft((nr, nc))",
+  "                else:",
+  "                    queue.append((nr, nc))",
+  "    return dist[rows - 1][cols - 1]"
+ ],
+ "view": [
+  {
+   "id": "grid",
+   "type": "grid",
+   "var": "grid",
+   "label": "grid (1 = obstacle)",
+   "cells": {
+    "cur": [
+     "r",
+     "c"
+    ],
+    "next": [
+     "nr",
+     "nc"
+    ]
+   }
+  },
+  {
+   "id": "dist",
+   "type": "grid",
+   "var": "dist",
+   "label": "dist (obstacles removed to reach the cell)",
+   "cells": {
+    "cur": [
+     "r",
+     "c"
+    ]
+   }
+  },
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue",
+   "label": "deque (front = cheapest)"
+  }
+ ],
+ "input": {
+  "grid": [
+   [
+    0,
+    1,
+    1
+   ],
+   [
+    1,
+    1,
+    0
+   ],
+   [
+    1,
+    1,
+    0
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": null,
+      "next": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": null,
+      "next": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       "∞",
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": null,
+      "next": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "a deque kept in distance order — front = cheapest",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": null,
+      "next": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "obstacle (cost 1) — goes to the BACK",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       -1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       "∞",
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "obstacle (cost 1) — goes to the BACK",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ],
+      "next": [
+       0,
+       -1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       0,
+       -1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       "∞",
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "obstacle (cost 1) — goes to the BACK",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       "∞",
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "obstacle (cost 1) — goes to the BACK",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ],
+      "next": [
+       1,
+       -1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       1,
+       -1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       -1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       "∞"
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "obstacle (cost 1) — goes to the BACK",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ],
+      "next": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       3,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       "∞",
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "obstacle (cost 1) — goes to the BACK",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ],
+      "next": [
+       2,
+       -1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       2,
+       -1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       "∞"
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "free step (cost 0) — goes to the FRONT",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       2
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ],
+      "next": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       1,
+       2
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       "∞"
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "free step (cost 0) — goes to the FRONT",
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       2
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ],
+      "next": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ],
+      "next": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ],
+      "next": [
+       2,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ],
+      "next": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ],
+      "next": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ],
+      "next": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ],
+      "next": [
+       -1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ],
+      "next": [
+       0,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ],
+      "next": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [
+      [
+       2,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ],
+      "next": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ],
+      "next": [
+       3,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ],
+      "next": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ],
+      "next": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ],
+      "next": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "grid": {
+     "rows": [
+      [
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       1,
+       1,
+       0
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ],
+      "next": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "dist": {
+     "rows": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       2
+      ],
+      [
+       2,
+       3,
+       2
+      ]
+     ],
+     "cells": {
+      "cur": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": 2
+}

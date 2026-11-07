@@ -1,0 +1,103 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Sort 10 million exam scores, each an integer from 0 to 100.",
+   "options": [
+    "sorting",
+    "heaps",
+    "cyclic-sort"
+   ],
+   "answer": "sorting",
+   "why": "A small key range → counting sort in O(n + k), beating any comparison sort."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given non-negative integers, arrange them so that their concatenation is the largest possible number.",
+   "options": [
+    "sorting",
+    "greedy",
+    "backtracking"
+   ],
+   "answer": "sorting",
+   "why": "The order is decided pairwise (which of two numbers should come first in the concatenation?) → sort with a custom comparator, then join."
+  },
+  {
+   "id": "q3",
+   "prompt": "Return the k-th largest element of an unsorted array of 10^6 numbers, with k = 10.",
+   "options": [
+    "sorting",
+    "top-k-elements",
+    "modified-binary-search"
+   ],
+   "answer": "top-k-elements",
+   "why": "Only the top k matter → a size-k min-heap, O(n log k), or quickselect. Sorting everything is wasted work."
+  },
+  {
+   "id": "q4",
+   "prompt": "Find the minimum absolute difference between any two elements of an array.",
+   "options": [
+    "sorting",
+    "two-pointers",
+    "sliding-window"
+   ],
+   "answer": "sorting",
+   "why": "After sorting, the closest pair is adjacent → sort, then one linear scan of neighbours."
+  },
+  {
+   "id": "q5",
+   "prompt": "Merge all overlapping intervals.",
+   "options": [
+    "sorting",
+    "merge-intervals",
+    "greedy"
+   ],
+   "answer": "merge-intervals",
+   "why": "Sorting by start is only step one; the overlap sweep that extends or closes the current interval is the Merge Intervals pattern."
+  },
+  {
+   "id": "q6",
+   "prompt": "Sort an array that contains only 0s, 1s and 2s, in one pass and in place.",
+   "options": [
+    "sorting",
+    "two-pointers",
+    "cyclic-sort"
+   ],
+   "answer": "two-pointers",
+   "why": "Dutch national flag: low / mid / high pointers swap each element into its zone in one pass. A general sort is O(n log n)."
+  },
+  {
+   "id": "q7",
+   "prompt": "Combine k sorted linked lists into one sorted list.",
+   "options": [
+    "sorting",
+    "k-way-merge",
+    "linked-list"
+   ],
+   "answer": "k-way-merge",
+   "why": "The inputs are already sorted → keep a heap of the k list heads, O(N log k). Re-sorting everything ignores that order."
+  },
+  {
+   "id": "q8",
+   "prompt": "A researcher's h-index is the largest h such that h papers have at least h citations each. Compute it from the citation counts.",
+   "options": [
+    "sorting",
+    "modified-binary-search",
+    "greedy"
+   ],
+   "answer": "sorting",
+   "why": "Sort descending and find the last position i with citations[i] ≥ i + 1. Or counting-sort the capped counts for O(n)."
+  },
+  {
+   "id": "q9",
+   "prompt": "Every element of an array is at most k positions away from its sorted position. Sort it efficiently.",
+   "options": [
+    "sorting",
+    "heaps",
+    "two-pointers"
+   ],
+   "answer": "heaps",
+   "why": "Only the next k + 1 elements can hold the minimum → a size-(k+1) min-heap gives O(n log k). Insertion sort's O(n·k) is the simpler fallback."
+  }
+ ]
+}

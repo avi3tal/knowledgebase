@@ -1,0 +1,51 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "trie",
+ "title": "Trie (Prefix Tree)",
+ "blocks": [
+  {"type": "markdown", "src": "01-intro.md"},
+  {
+   "type": "trace",
+   "id": "prefix-scores",
+   "title": "Trie with counts — sum of prefix scores",
+   "source": "examples/prefix_scores.py",
+   "function": "prefix_scores",
+   "input": {"words": ["abc", "ab", "b", "bc"]},
+   "view": [
+    {"id": "root", "type": "map", "var": "root", "label": "root (letter → subtree; '#' = words through this prefix)"},
+    {"id": "node", "type": "map", "var": "node", "label": "node (current prefix)"},
+    {"id": "vars", "type": "vars", "vars": ["word", "ch", "score", "scores"]}
+   ],
+   "checks": [
+    {"input": {"words": ["abc", "ab", "b", "bc"]}, "expected": [5, 4, 2, 3]},
+    {"input": {"words": ["abcd"]}, "expected": [4]},
+    {"input": {"words": ["a", "a"]}, "expected": [2, 2]},
+    {"input": {"words": []}, "expected": []}
+   ]
+  },
+  {"type": "markdown", "src": "02-variants.md"},
+  {
+   "type": "trace",
+   "id": "wildcard-search",
+   "title": "DFS in a trie — match a pattern with '.' wildcards",
+   "source": "examples/wildcard_search.py",
+   "function": "wildcard_search",
+   "input": {"words": ["bad", "bed", "mad"], "pattern": ".ed"},
+   "view": [
+    {"id": "stack", "type": "callstack"},
+    {"id": "node", "type": "map", "var": "node", "label": "node (children of the current prefix)"},
+    {"id": "vars", "type": "vars", "vars": ["pattern", "i", "ch", "key"]}
+   ],
+   "checks": [
+    {"input": {"words": ["bad", "bed", "mad"], "pattern": ".ed"}, "expected": true},
+    {"input": {"words": ["bad", "dad", "mad"], "pattern": "b.."}, "expected": true},
+    {"input": {"words": ["bad", "dad", "mad"], "pattern": "..x"}, "expected": false},
+    {"input": {"words": ["bad"], "pattern": "ba"}, "expected": false}
+   ]
+  },
+  {"type": "markdown", "src": "03-recognise.md"},
+  {"type": "quiz", "src": "quiz.json"},
+  {"type": "problems", "slugs": ["longest-common-prefix", "implement-trie", "replace-words", "word-search-ii"]}
+ ]
+}

@@ -1,0 +1,12 @@
+[
+  {"name": "example balanced", "args": {"root": [3, 9, 20, null, null, 15, 7]}, "expected": true},
+  {"name": "example deep left", "args": {"root": [1, 2, 2, 3, 3, null, null, 4, 4]}, "expected": false},
+  {"name": "root fine, children not", "args": {"root": [1, 2, 2, 3, null, null, 3, 4, null, null, 4]}, "expected": false},
+  {"name": "empty", "args": {"root": []}, "expected": true},
+  {"name": "single", "args": {"root": [1]}, "expected": true},
+  {"name": "two nodes", "args": {"root": [1, 2]}, "expected": true},
+  {"name": "chain of three", "args": {"root": [1, 2, null, 3]}, "expected": false},
+  {"name": "right chain of three", "args": {"root": [1, null, 2, null, 3]}, "expected": false},
+  {"name": "perfect tree", "args": {"root": [1, 2, 3, 4, 5, 6, 7]}, "expected": true},
+  {"name": "differ by exactly one everywhere", "args": {"root": [1, 2, 3, 4, 5, 6, null, 7]}, "expected": true}
+]

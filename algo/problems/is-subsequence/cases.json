@@ -1,0 +1,12 @@
+[
+  {"name": "example found", "args": {"s": "abc", "t": "ahbgdc"}, "expected": true},
+  {"name": "example missing letter", "args": {"s": "axc", "t": "ahbgdc"}, "expected": false},
+  {"name": "empty s", "args": {"s": "", "t": "abc"}, "expected": true},
+  {"name": "both empty", "args": {"s": "", "t": ""}, "expected": true},
+  {"name": "empty t", "args": {"s": "a", "t": ""}, "expected": false},
+  {"name": "s longer than t", "args": {"s": "aaa", "t": "aa"}, "expected": false},
+  {"name": "wrong order", "args": {"s": "aec", "t": "abcde"}, "expected": false},
+  {"name": "equal strings", "args": {"s": "abc", "t": "abc"}, "expected": true},
+  {"name": "repeated letters need distinct positions", "args": {"s": "aab", "t": "abab"}, "expected": true},
+  {"name": "repeated letters not enough", "args": {"s": "bb", "t": "abc"}, "expected": false}
+]

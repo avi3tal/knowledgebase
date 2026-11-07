@@ -1,0 +1,19 @@
+{
+  "title": "Network Delay Time",
+  "slug": "network-delay-time",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["shortest-paths", "heap"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/network-delay-time/"}],
+  "kind": "function",
+  "function": "networkDelayTime",
+  "params": [
+    {"name": "times", "type": "int[][]"},
+    {"name": "n", "type": "int"},
+    {"name": "k", "type": "int"}
+  ],
+  "returns": "int",
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(n log n)", "space": "O(n)"},
+  "bench": {"args": {"times": "int_matrix(4 * n, 3, 1, n)", "n": "n", "k": "1"}, "min_n": 256, "max_n": 32768}
+}

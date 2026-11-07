@@ -1,0 +1,166 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "strings",
+ "title": "Strings: counting, matching and parsing",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "ransom-note",
+   "title": "Character counts — build the note from magazine letters",
+   "source": "examples/ransom_note.py",
+   "function": "can_construct",
+   "input": {
+    "note": "aabc",
+    "magazine": "abacab"
+   },
+   "view": [
+    {
+     "id": "counts",
+     "type": "map",
+     "var": "counts",
+     "label": "counts (letter → copies left)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "ch"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "note": "aabc",
+      "magazine": "abacab"
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "note": "aa",
+      "magazine": "ab"
+     },
+     "expected": false
+    },
+    {
+     "input": {
+      "note": "",
+      "magazine": "x"
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "note": "z",
+      "magazine": ""
+     },
+     "expected": false
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-matching.md"
+  },
+  {
+   "type": "trace",
+   "id": "prefix-function",
+   "title": "KMP prefix function — is the string one block repeated?",
+   "source": "examples/repeated_block.py",
+   "function": "is_repeated_block",
+   "input": {
+    "s": "abaababaab"
+   },
+   "view": [
+    {
+     "id": "s",
+     "type": "array",
+     "var": "s",
+     "pointers": {
+      "i": "i",
+      "k": "k"
+     }
+    },
+    {
+     "id": "lps",
+     "type": "array",
+     "var": "lps",
+     "label": "lps (longest border of s[:i+1])",
+     "pointers": {
+      "i": "i"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "k",
+      "period"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "s": "abaababaab"
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "s": "abcabcabc"
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "s": "aba"
+     },
+     "expected": false
+    },
+    {
+     "input": {
+      "s": "a"
+     },
+     "expected": false
+    },
+    {
+     "input": {
+      "s": "abab"
+     },
+     "expected": true
+    },
+    {
+     "input": {
+      "s": ""
+     },
+     "expected": false
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "is-subsequence",
+    "implement-strstr",
+    "group-anagrams",
+    "count-and-say",
+    "longest-palindromic-substring"
+   ]
+  }
+ ]
+}

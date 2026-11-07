@@ -1,0 +1,12 @@
+[
+  {"name": "example", "args": {"m": 3, "n": 3, "positions": [[0, 0], [0, 1], [1, 2], [2, 1]]}, "expected": [1, 1, 2, 3]},
+  {"name": "centre merges four islands", "args": {"m": 3, "n": 3, "positions": [[0, 1], [1, 0], [1, 2], [2, 1], [1, 1]]}, "expected": [1, 2, 3, 4, 1]},
+  {"name": "single cell", "args": {"m": 1, "n": 1, "positions": [[0, 0]]}, "expected": [1]},
+  {"name": "repeated position", "args": {"m": 1, "n": 1, "positions": [[0, 0], [0, 0]]}, "expected": [1, 1]},
+  {"name": "no operations", "args": {"m": 2, "n": 2, "positions": []}, "expected": []},
+  {"name": "bridge between two", "args": {"m": 3, "n": 3, "positions": [[0, 0], [0, 2], [0, 1]]}, "expected": [1, 2, 1]},
+  {"name": "diagonal does not connect", "args": {"m": 2, "n": 2, "positions": [[0, 0], [1, 1], [0, 1], [1, 0]]}, "expected": [1, 2, 1, 1]},
+  {"name": "one row filling", "args": {"m": 1, "n": 5, "positions": [[0, 0], [0, 4], [0, 2], [0, 1], [0, 3]]}, "expected": [1, 2, 3, 2, 1]},
+  {"name": "two neighbours same island", "args": {"m": 2, "n": 2, "positions": [[0, 0], [0, 1], [1, 0], [1, 1]]}, "expected": [1, 1, 1, 1]},
+  {"name": "rectangular grid", "args": {"m": 2, "n": 4, "positions": [[0, 0], [1, 3], [0, 3], [1, 1], [1, 0], [0, 2]]}, "expected": [1, 2, 2, 3, 2, 2]}
+]
