@@ -1,4 +1,5 @@
-import type { Focus, Session, SessionStatus } from "./api";
+import type { Focus, Session, SessionItem, SessionStatus } from "./api";
+import { designHref } from "./route";
 
 /** Pure presentation helpers for study sessions (tested in sessions.test.ts). */
 
@@ -57,6 +58,25 @@ export function groupByStatus(
 export function scoreBand(score: number | null): "none" | "low" | "mid" | "high" {
   if (score === null) return "none";
   return score >= 85 ? "high" : score >= 60 ? "mid" : "low";
+}
+
+/** System-design / OOD items open in the design console instead of getting Python/Go attempts. */
+export function isDesignItem(item: Pick<SessionItem, "kind">): boolean {
+  return item.kind === "sd-problem" || item.kind === "ood-problem";
+}
+
+/** Console link for an item's latest attempt (null when it has none). */
+export function latestConsoleHref(
+  item: Pick<SessionItem, "subject" | "slug" | "attempts">,
+): string | null {
+  const last = item.attempts[item.attempts.length - 1];
+  return last ? designHref(item.subject, item.slug, last) : null;
+}
+
+/** The attempt a "new attempt" call created: the first name not seen before (else the last). */
+export function createdAttempt(before: string[], after: string[]): string | null {
+  const seen = new Set(before);
+  return after.find((a) => !seen.has(a)) ?? after[after.length - 1] ?? null;
 }
 
 export function runCommand(path: string, root: string): string {

@@ -1,4 +1,5 @@
 import type { TopicPageData } from "../api";
+import { problemHref } from "../route";
 import { NeighbourhoodGraph } from "./NeighbourhoodGraph";
 import { ResourceList } from "./Resources";
 
@@ -60,7 +61,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
             {data.problems.map((p) => (
               <li key={p.slug}>
                 <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>{" "}
-                <a href={`#/problem/${subject}/${p.slug}`}>{p.title}</a>
+                <a href={problemHref(subject, p.slug)}>{p.title}</a>
               </li>
             ))}
           </ul>

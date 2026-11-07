@@ -1,5 +1,6 @@
 import type { ProblemRow, Subject } from "./api";
 import { topicIcon } from "./catalog";
+import { DESIGN_SUBJECTS, problemHref } from "./route";
 
 /** Global (⌘K) search over topics and problems of every subject. Pure; tested in search.test.ts. */
 
@@ -40,8 +41,15 @@ export function buildIndex(
         id: p.slug,
         title: p.title,
         detail: `${p.difficulty} · ${p.topics.join(", ")}`,
-        icon: p.status === "solved" ? "✅" : p.status === "failing" ? "❌" : "📝",
-        href: `#/problem/${s.id}/${p.slug}`,
+        icon:
+          p.status === "solved"
+            ? "✅"
+            : p.status === "failing"
+              ? "❌"
+              : DESIGN_SUBJECTS.has(s.id)
+                ? "🏗️"
+                : "📝",
+        href: problemHref(s.id, p.slug),
         locked,
       });
     }

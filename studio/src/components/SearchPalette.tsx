@@ -13,7 +13,8 @@ export function SearchPalette({ subjects, onClose }: { subjects: Subject[]; onCl
 
   useEffect(() => {
     input.current?.focus();
-    for (const s of subjects.filter((x) => x.status !== "locked")) {
+    // Every subject: locked ones (e.g. system-design before its lessons) can still have problems.
+    for (const s of subjects) {
       api.problems(s.id).then(
         (rows) => setProblems((p) => ({ ...p, [s.id]: rows })),
         () => undefined,

@@ -44,18 +44,29 @@ const row = (slug: string, title: string): ProblemRow => ({
   legacy_failing: false,
   complexity_miss: false,
 });
-const index = buildIndex(subjects, { algo: [row("two-sum", "Two Sum")] });
+const index = buildIndex(subjects, {
+  algo: [row("two-sum", "Two Sum")],
+  "system-design": [{ ...row("url-shortener", "Design a URL shortener"), status: "untried" }],
+});
 
 describe("search", () => {
-  it("indexes topics of every subject and problems", () => {
+  it("indexes topics of every subject and problems, locked subjects included", () => {
     expect(index.map((i) => `${i.kind}:${i.id}`)).toEqual([
       "topic:sliding-window",
       "topic:two-pointers",
       "topic:arrays-hashing",
       "problem:two-sum",
       "topic:caching",
+      "problem:url-shortener",
     ]);
     expect(index.find((i) => i.id === "caching")?.locked).toBe(true);
+  });
+  it("links code problems to the problem page and design problems to the design console", () => {
+    expect(index.find((i) => i.id === "two-sum")?.href).toBe("#/problem/algo/two-sum");
+    const sd = index.find((i) => i.id === "url-shortener");
+    expect(sd?.href).toBe("#/design/system-design/url-shortener");
+    expect(sd?.icon).toBe("🏗️");
+    expect(search(index, "shortener").map((i) => i.id)).toEqual(["url-shortener"]);
   });
   it("links topics to their lesson when there is one, else the topic page", () => {
     expect(index.find((i) => i.id === "sliding-window")?.href).toBe("#/learn/algo/sliding-window");

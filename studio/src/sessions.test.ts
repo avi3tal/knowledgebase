@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { Session } from "./api";
-import { actionsFor, groupByStatus, runCommand, scoreBand } from "./sessions";
+import {
+  actionsFor,
+  createdAttempt,
+  groupByStatus,
+  isDesignItem,
+  latestConsoleHref,
+  runCommand,
+  scoreBand,
+} from "./sessions";
 
 const s = (id: string, status: Session["status"]) => ({ id, status }) as Session;
 
@@ -26,6 +34,20 @@ describe("sessions", () => {
     [20, "low"],
   ] as const)("score %s is %s", (score, band) => {
     expect(scoreBand(score)).toBe(band);
+  });
+  it("sends design items to the console", () => {
+    expect(isDesignItem({ kind: "sd-problem" })).toBe(true);
+    expect(isDesignItem({ kind: "ood-problem" })).toBe(true);
+    expect(isDesignItem({ kind: "algo-problem" })).toBe(false);
+    const item = { subject: "system-design", slug: "url-shortener", attempts: ["a", "b"] };
+    expect(latestConsoleHref(item)).toBe("#/design/system-design/url-shortener/b");
+    expect(latestConsoleHref({ ...item, attempts: [] })).toBeNull();
+  });
+  it("finds the attempt a start call created", () => {
+    expect(createdAttempt(["x"], ["x", "y"])).toBe("y");
+    expect(createdAttempt([], ["a-2", "a"])).toBe("a-2");
+    expect(createdAttempt(["x"], ["x"])).toBe("x");
+    expect(createdAttempt([], [])).toBeNull();
   });
   it("prints repo-relative run commands", () => {
     expect(runCommand("/r/_workspace/attempts/algo/x/a", "/r")).toBe(
