@@ -1,0 +1,18 @@
+{
+  "title": "Top K Frequent Elements",
+  "slug": "top-k-frequent-elements",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["top-k-elements", "hashmap"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/top-k-frequent-elements/"}, {"name": "designgurus", "url": "https://www.designgurus.io/course/grokking-the-coding-interview"}],
+  "kind": "function",
+  "function": "topKFrequent",
+  "params": [
+    {"name": "nums", "type": "int[]"},
+    {"name": "k", "type": "int"}
+  ],
+  "returns": "int[]",
+  "comparator": "unordered",
+  "expected_complexity": {"time": "O(n log k)", "space": "O(n)"},
+  "bench": {"args": {"nums": "int_array(n, 0, n // 4)", "k": "isqrt(n)"}}
+}

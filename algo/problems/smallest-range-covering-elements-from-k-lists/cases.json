@@ -1,0 +1,10 @@
+[
+  {"name": "example 1", "args": {"nums": [[4, 10, 15, 24, 26], [0, 9, 12, 20], [5, 18, 22, 30]]}, "expected": [20, 24]},
+  {"name": "example 2", "args": {"nums": [[1, 2, 3], [1, 2, 3], [1, 2, 3]]}, "expected": [1, 1]},
+  {"name": "single list", "args": {"nums": [[7, 9, 12]]}, "expected": [7, 7]},
+  {"name": "single elements", "args": {"nums": [[3], [8], [5]]}, "expected": [3, 8]},
+  {"name": "tie on width: smaller start wins", "args": {"nums": [[1, 10], [2, 11]]}, "expected": [1, 2]},
+  {"name": "negatives", "args": {"nums": [[-10, -5, 0], [-6, 4], [-4, 9]]}, "expected": [-6, -4]},
+  {"name": "one list far away", "args": {"nums": [[1, 2, 3], [100], [4, 99]]}, "expected": [3, 100]},
+  {"name": "duplicates inside lists", "args": {"nums": [[1, 1, 5, 5], [3, 3, 6], [4, 4]]}, "expected": [3, 5]}
+]

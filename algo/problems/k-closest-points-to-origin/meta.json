@@ -1,0 +1,18 @@
+{
+  "title": "K Closest Points to Origin",
+  "slug": "k-closest-points-to-origin",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["top-k-elements", "heap"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/k-closest-points-to-origin/"}, {"name": "designgurus", "url": "https://www.designgurus.io/course/grokking-the-coding-interview"}],
+  "kind": "function",
+  "function": "kClosest",
+  "params": [
+    {"name": "points", "type": "int[][]"},
+    {"name": "k", "type": "int"}
+  ],
+  "returns": "int[][]",
+  "comparator": "unordered",
+  "expected_complexity": {"time": "O(n log k)", "space": "O(k)"},
+  "bench": {"args": {"points": "int_matrix(n, 2, -10**4, 10**4)", "k": "isqrt(n)"}}
+}

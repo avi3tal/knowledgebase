@@ -1,0 +1,2924 @@
+{
+ "version": 1,
+ "title": "Merge 3 sorted arrays with a heap of their heads",
+ "code": [
+  "def merge_k_sorted(arrays: list[list[int]]) -> list[int]:",
+  "    heap: list[tuple[int, int, int]] = []",
+  "    for i in range(len(arrays)):",
+  "        if arrays[i]:",
+  "            heapq.heappush(heap, (arrays[i][0], i, 0))",
+  "    merged: list[int] = []",
+  "    taken: list[tuple[int, int]] = []",
+  "    while heap:",
+  "        value, i, j = heapq.heappop(heap)",
+  "        merged.append(value)",
+  "        taken.append((i, j))",
+  "        if j + 1 < len(arrays[i]):",
+  "            heapq.heappush(heap, (arrays[i][j + 1], i, j + 1))",
+  "    return merged"
+ ],
+ "view": [
+  {
+   "id": "arrays",
+   "type": "grid",
+   "var": "arrays",
+   "marked": "taken",
+   "cells": {
+    "popped": [
+     "i",
+     "j"
+    ]
+   }
+  },
+  {
+   "id": "heap",
+   "type": "heap",
+   "var": "heap",
+   "label": "heap of (value, array, index), at most k entries"
+  },
+  {
+   "id": "merged",
+   "type": "array",
+   "var": "merged"
+  }
+ ],
+ "input": {
+  "arrays": [
+   [
+    2,
+    5,
+    9
+   ],
+   [
+    1,
+    6,
+    7
+   ],
+   [
+    3,
+    4,
+    8
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "seed with each array's head: (value, array, index)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       2,
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "seed with each array's head: (value, array, index)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       2,
+       0,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "seed with each array's head: (value, array, index)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       1,
+       1,
+       0
+      ],
+      [
+       2,
+       0,
+       0
+      ],
+      [
+       3,
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       2,
+       0,
+       0
+      ],
+      [
+       3,
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       2,
+       0,
+       0
+      ],
+      [
+       3,
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       2,
+       0,
+       0
+      ],
+      [
+       3,
+       2,
+       0
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "refill from the same array (its new head)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       2,
+       0,
+       0
+      ],
+      [
+       3,
+       2,
+       0
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       3,
+       2,
+       0
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       3,
+       2,
+       0
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       3,
+       2,
+       0
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "refill from the same array (its new head)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       3,
+       2,
+       0
+      ],
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       5,
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "refill from the same array (its new head)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       0
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       4,
+       2,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       5,
+       0,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "refill from the same array (its new head)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       5,
+       0,
+       1
+      ],
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       8,
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       8,
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       8,
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       8,
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "refill from the same array (its new head)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       6,
+       1,
+       1
+      ],
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "refill from the same array (its new head)",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       1
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       7,
+       1,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ],
+      [
+       8,
+       2,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       1,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       8,
+       2,
+       2
+      ],
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       2,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [
+      [
+       9,
+       0,
+       2
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the smallest head across all arrays is the next output",
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrays": {
+     "rows": [
+      [
+       2,
+       5,
+       9
+      ],
+      [
+       1,
+       6,
+       7
+      ],
+      [
+       3,
+       4,
+       8
+      ]
+     ],
+     "cells": {
+      "popped": [
+       0,
+       2
+      ]
+     },
+     "marked": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "merged": {
+     "values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    }
+   }
+  }
+ ],
+ "result": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9
+ ]
+}

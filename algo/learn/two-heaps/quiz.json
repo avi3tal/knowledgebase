@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Numbers arrive one at a time. After each one, return the median of all numbers seen so far.",
+   "options": [
+    "two-heaps",
+    "top-k-elements",
+    "modified-binary-search"
+   ],
+   "answer": "two-heaps",
+   "why": "Median of a growing stream → max-heap of the small half and min-heap of the large half. The median is on their boundary, so it's O(1) to read and O(log n) to update."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given two sorted arrays of sizes m and n, return the median of their union in O(log(m + n)) time.",
+   "options": [
+    "modified-binary-search",
+    "two-heaps",
+    "k-way-merge"
+   ],
+   "answer": "modified-binary-search",
+   "why": "Both arrays are sorted and given up front, and the bound is logarithmic → binary search on the partition point. Two heaps would need O((m + n) log) to load everything."
+  },
+  {
+   "id": "q3",
+   "prompt": "Return the k-th largest element of an unsorted array.",
+   "options": [
+    "top-k-elements",
+    "two-heaps",
+    "cyclic-sort"
+   ],
+   "answer": "top-k-elements",
+   "why": "k is fixed and you only care about one side of the boundary → one size-k min-heap. Two heaps are for a boundary that moves with the data, like the median."
+  },
+  {
+   "id": "q4",
+   "prompt": "You start with capital W and may finish at most k projects. Project i needs capital[i] to start and adds profits[i] to your capital when done. Maximise your final capital.",
+   "options": [
+    "two-heaps",
+    "greedy",
+    "top-k-elements"
+   ],
+   "answer": "two-heaps",
+   "why": "Two orders over the same projects: a min-heap by required capital releases what you can afford, and a max-heap by profit picks the best unlocked one. The greedy choice needs both heaps."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given an array and a window size k, return the median of every window as it slides from left to right.",
+   "options": [
+    "two-heaps",
+    "sliding-window",
+    "top-k-elements"
+   ],
+   "answer": "two-heaps",
+   "why": "The window is the sliding-window part, but the question is the median of what's inside → two heaps with lazy deletion (or a sorted container) for the halves."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given an array and a window size k, return the maximum of every window as it slides from left to right.",
+   "options": [
+    "sliding-window",
+    "two-heaps",
+    "top-k-elements"
+   ],
+   "answer": "sliding-window",
+   "why": "Only the max is needed, one end of the order → a monotonic deque inside a sliding window gives O(1) per step. Two heaps track a middle, which you don't need here."
+  },
+  {
+   "id": "q7",
+   "prompt": "For every interval, find the index of the interval with the smallest start that is greater than or equal to its end, or -1.",
+   "options": [
+    "two-heaps",
+    "merge-intervals",
+    "modified-binary-search"
+   ],
+   "answer": "two-heaps",
+   "why": "'Smallest start ≥ this end' for every interval → a max-heap of starts and a max-heap of ends, popped from the largest end down. Sorting the starts and binary searching also works. Nothing is merged, so it isn't Merge Intervals."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given meeting time intervals, return the minimum number of conference rooms needed.",
+   "options": [
+    "merge-intervals",
+    "two-heaps",
+    "top-k-elements"
+   ],
+   "answer": "merge-intervals",
+   "why": "Overlapping intervals → sort by start and sweep. A min-heap of end times may appear, but it only counts the overlaps. There are no halves to balance and no eligible-versus-best split."
+  }
+ ]
+}

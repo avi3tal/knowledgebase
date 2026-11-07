@@ -1,0 +1,10 @@
+[
+  {"name": "example", "ctor": [], "ops": ["addNum", "addNum", "findMedian", "addNum", "findMedian"], "op_args": [[1], [2], [], [3], []], "expected": [null, null, 1.5, null, 2.0]},
+  {"name": "single number", "ctor": [], "ops": ["addNum", "findMedian"], "op_args": [[5], []], "expected": [null, 5.0]},
+  {"name": "descending inserts", "ctor": [], "ops": ["addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian"], "op_args": [[5], [], [4], [], [3], [], [2], [], [1], []], "expected": [null, 5.0, null, 4.5, null, 4.0, null, 3.5, null, 3.0]},
+  {"name": "ascending inserts", "ctor": [], "ops": ["addNum", "addNum", "addNum", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian"], "op_args": [[1], [2], [3], [4], [], [5], [], [6], []], "expected": [null, null, null, null, 2.5, null, 3.0, null, 3.5]},
+  {"name": "negatives and zero", "ctor": [], "ops": ["addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian"], "op_args": [[-1], [], [-2], [], [0], [], [-3], []], "expected": [null, -1.0, null, -1.5, null, -1.0, null, -1.5]},
+  {"name": "duplicates", "ctor": [], "ops": ["addNum", "addNum", "findMedian", "addNum", "findMedian", "addNum", "addNum", "findMedian"], "op_args": [[2], [2], [], [2], [], [3], [3], []], "expected": [null, null, 2.0, null, 2.0, null, null, 2.0]},
+  {"name": "alternating sides", "ctor": [], "ops": ["addNum", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian", "addNum", "findMedian"], "op_args": [[6], [10], [], [2], [], [6], [], [5], [], [0], [], [6], [], [3], []], "expected": [null, null, 8.0, null, 6.0, null, 6.0, null, 6.0, null, 5.5, null, 6.0, null, 5.5]},
+  {"name": "half values", "ctor": [], "ops": ["addNum", "addNum", "findMedian", "addNum", "addNum", "findMedian"], "op_args": [[1], [4], [], [7], [8], []], "expected": [null, null, 2.5, null, null, 5.5]}
+]

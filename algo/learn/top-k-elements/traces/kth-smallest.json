@@ -1,0 +1,1039 @@
+{
+ "version": 1,
+ "title": "Size-k max-heap: the 3rd smallest number",
+ "code": [
+  "def kth_smallest(nums: list[int], k: int) -> int:",
+  "    heap: list[int] = []  # max-heap of the k smallest so far, stored as negatives",
+  "    for i in range(len(nums)):",
+  "        x = nums[i]",
+  "        if len(heap) < k:",
+  "            heapq.heappush(heap, -x)",
+  "        elif x < -heap[0]:",
+  "            heapq.heapreplace(heap, -x)",
+  "        kth = -heap[0]",
+  "    return kth"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums",
+   "pointers": {
+    "i": "i"
+   }
+  },
+  {
+   "id": "heap",
+   "type": "heap",
+   "var": "heap",
+   "label": "heap: the k smallest so far, stored negated (max-heap trick)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "x",
+    "kth"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   7,
+   10,
+   4,
+   3,
+   20,
+   15,
+   1
+  ],
+  "k": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": null
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "kth": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "kth": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 7,
+      "kth": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "fewer than k kept: push -x (negated so the min-heap acts as a max-heap)",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 7,
+      "kth": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 7,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 7,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 10,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "fewer than k kept: push -x (negated so the min-heap acts as a max-heap)",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 10,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 1
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 10,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 10,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "fewer than k kept: push -x (negated so the min-heap acts as a max-heap)",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 4,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -10,
+      -7,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "x beats the largest kept number: evict the top, push -x",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "kth": 10
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 3
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 3,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 20,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 4
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 20,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 20,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 15,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 5
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 15,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 15,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -7,
+      -3,
+      -4
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "x beats the largest kept number: evict the top, push -x",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -4,
+      -3,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "kth": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the top, un-negated, is the largest of the kept numbers",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -4,
+      -3,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "kth": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "after the scan the heap holds exactly the k smallest, so its top is the k-th smallest",
+   "state": {
+    "nums": {
+     "values": [
+      7,
+      10,
+      4,
+      3,
+      20,
+      15,
+      1
+     ],
+     "pointers": {
+      "i": 6
+     },
+     "window": null
+    },
+    "heap": {
+     "values": [
+      -4,
+      -3,
+      -1
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "kth": 4
+     }
+    }
+   }
+  }
+ ],
+ "result": 4
+}

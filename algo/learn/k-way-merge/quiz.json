@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Merge k sorted linked lists into one sorted linked list.",
+   "options": [
+    "k-way-merge",
+    "two-pointers",
+    "top-k-elements"
+   ],
+   "answer": "k-way-merge",
+   "why": "k sorted lists merged in order → a min-heap of the k heads, refilled from the list you just popped."
+  },
+  {
+   "id": "q2",
+   "prompt": "Merge two sorted arrays into one sorted array.",
+   "options": [
+    "two-pointers",
+    "k-way-merge",
+    "sorting"
+   ],
+   "answer": "two-pointers",
+   "why": "Only two lists → compare the two heads with two pointers. A heap of 2 adds a log factor for nothing."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given m sorted arrays and k, return the k-th smallest number among all of them.",
+   "options": [
+    "k-way-merge",
+    "top-k-elements",
+    "modified-binary-search"
+   ],
+   "answer": "k-way-merge",
+   "why": "The arrays are already sorted, so pop the smallest head k times. A size-k heap over every element (Top K) ignores that order and reads all N."
+  },
+  {
+   "id": "q4",
+   "prompt": "Return the k-th largest element of an unsorted array.",
+   "options": [
+    "top-k-elements",
+    "k-way-merge",
+    "cyclic-sort"
+   ],
+   "answer": "top-k-elements",
+   "why": "One unsorted collection, nothing pre-sorted to merge → a size-k min-heap (Top 'K' Elements)."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given k sorted lists, find the smallest range [a, b] that includes at least one number from each list.",
+   "options": [
+    "k-way-merge",
+    "sliding-window",
+    "two-heaps"
+   ],
+   "answer": "k-way-merge",
+   "why": "One element per list in a min-heap plus the running max: the range is [top, max], and you advance the list that holds the min. 'From each of k sorted lists' decides it."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given the work schedules of several employees (each a sorted list of non-overlapping intervals), return the intervals when everyone is free.",
+   "options": [
+    "merge-intervals",
+    "k-way-merge",
+    "two-pointers"
+   ],
+   "answer": "merge-intervals",
+   "why": "The question is about overlaps and gaps between intervals → Merge Intervals. You may merge the schedules by start time first, but the overlap sweep is the core."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given two sorted arrays and k, return the k pairs (one element from each array) with the smallest sums.",
+   "options": [
+    "k-way-merge",
+    "two-pointers",
+    "top-k-elements"
+   ],
+   "answer": "k-way-merge",
+   "why": "Each a[i] defines a sorted list a[i] + b[0], a[i] + b[1], … → k-way merge over those implicit lists, stopping after k pops."
+  },
+  {
+   "id": "q8",
+   "prompt": "Given two sorted arrays of sizes m and n, return the median of their union in O(log(m + n)) time.",
+   "options": [
+    "modified-binary-search",
+    "k-way-merge",
+    "two-heaps"
+   ],
+   "answer": "modified-binary-search",
+   "why": "The logarithmic bound rules out walking the merged order (that's O(m + n)). Binary search on the partition point instead."
+  }
+ ]
+}

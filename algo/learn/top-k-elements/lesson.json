@@ -1,0 +1,209 @@
+{
+ "version": 1,
+ "subject": "algo",
+ "topic": "top-k-elements",
+ "title": "Top 'K' Elements",
+ "blocks": [
+  {
+   "type": "markdown",
+   "src": "01-intro.md"
+  },
+  {
+   "type": "trace",
+   "id": "kth-smallest",
+   "title": "Size-k max-heap: the 3rd smallest number",
+   "source": "examples/kth_smallest.py",
+   "function": "kth_smallest",
+   "input": {
+    "nums": [
+     7,
+     10,
+     4,
+     3,
+     20,
+     15,
+     1
+    ],
+    "k": 3
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums",
+     "pointers": {
+      "i": "i"
+     }
+    },
+    {
+     "id": "heap",
+     "type": "heap",
+     "var": "heap",
+     "label": "heap: the k smallest so far, stored negated (max-heap trick)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "x",
+      "kth"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       7,
+       10,
+       4,
+       3,
+       20,
+       15,
+       1
+      ],
+      "k": 3
+     },
+     "expected": 4
+    },
+    {
+     "input": {
+      "nums": [
+       5,
+       1,
+       9,
+       2,
+       8
+      ],
+      "k": 1
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "nums": [
+       5,
+       1,
+       9,
+       2,
+       8
+      ],
+      "k": 5
+     },
+     "expected": 9
+    },
+    {
+     "input": {
+      "nums": [
+       3,
+       3,
+       1
+      ],
+      "k": 2
+     },
+     "expected": 3
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "02-variants.md"
+  },
+  {
+   "type": "trace",
+   "id": "connect-ropes",
+   "title": "Repeated extraction: minimum cost to connect ropes",
+   "source": "examples/connect_ropes.py",
+   "function": "connect_ropes",
+   "input": {
+    "ropes": [
+     1,
+     3,
+     11,
+     5,
+     2
+    ]
+   },
+   "view": [
+    {
+     "id": "heap",
+     "type": "heap",
+     "var": "heap",
+     "label": "heap: rope lengths (min-heap)"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "a",
+      "b",
+      "joined",
+      "total"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "ropes": [
+       1,
+       3,
+       11,
+       5,
+       2
+      ]
+     },
+     "expected": 42
+    },
+    {
+     "input": {
+      "ropes": [
+       1,
+       3,
+       11,
+       5
+      ]
+     },
+     "expected": 33
+    },
+    {
+     "input": {
+      "ropes": [
+       3,
+       4,
+       5,
+       6
+      ]
+     },
+     "expected": 36
+    },
+    {
+     "input": {
+      "ropes": [
+       7
+      ]
+     },
+     "expected": 0
+    }
+   ]
+  },
+  {
+   "type": "markdown",
+   "src": "03-recognise.md"
+  },
+  {
+   "type": "quiz",
+   "src": "quiz.json"
+  },
+  {
+   "type": "problems",
+   "slugs": [
+    "k-largest-elements",
+    "kth-largest-in-stream",
+    "k-closest-points-to-origin",
+    "top-k-frequent-elements",
+    "maximum-distinct-elements"
+   ]
+  }
+ ]
+}

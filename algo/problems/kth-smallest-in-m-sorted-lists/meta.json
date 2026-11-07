@@ -1,0 +1,18 @@
+{
+  "title": "Kth Smallest Number in M Sorted Lists",
+  "slug": "kth-smallest-in-m-sorted-lists",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["k-way-merge", "heap"],
+  "sources": [{"name": "designgurus", "url": "https://www.designgurus.io/course/grokking-the-coding-interview"}],
+  "kind": "function",
+  "function": "kthSmallest",
+  "params": [
+    {"name": "lists", "type": "int[][]"},
+    {"name": "k", "type": "int"}
+  ],
+  "returns": "int",
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(k log m)", "space": "O(m)"},
+  "bench": {"args": {"lists": "[sorted_int_array(n // 16) for _ in int_array(16)]", "k": "n // 2"}}
+}

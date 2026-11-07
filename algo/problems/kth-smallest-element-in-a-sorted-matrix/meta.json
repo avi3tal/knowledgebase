@@ -1,0 +1,18 @@
+{
+  "title": "Kth Smallest Element in a Sorted Matrix",
+  "slug": "kth-smallest-element-in-a-sorted-matrix",
+  "type": "algo",
+  "difficulty": "medium",
+  "patterns": ["k-way-merge", "binary-search"],
+  "sources": [{"name": "leetcode", "url": "https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/"}, {"name": "designgurus", "url": "https://www.designgurus.io/course/grokking-the-coding-interview"}],
+  "kind": "function",
+  "function": "kthSmallest",
+  "params": [
+    {"name": "matrix", "type": "int[][]"},
+    {"name": "k", "type": "int"}
+  ],
+  "returns": "int",
+  "comparator": "exact",
+  "expected_complexity": {"time": "O(k log n)", "space": "O(n)"},
+  "bench": {"args": {"matrix": "[[i + j for j in sorted_int_array(isqrt(n), 0, 10**6)] for i in sorted_int_array(isqrt(n), 0, 10**6)]", "k": "n // 2"}}
+}

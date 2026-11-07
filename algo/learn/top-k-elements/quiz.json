@@ -1,0 +1,92 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "Given an array of points on a plane and k, return the k points closest to the origin.",
+   "options": [
+    "top-k-elements",
+    "k-way-merge",
+    "two-heaps"
+   ],
+   "answer": "top-k-elements",
+   "why": "k smallest by a key (distance) from an unsorted collection → a size-k max-heap of (-distance, point)."
+  },
+  {
+   "id": "q2",
+   "prompt": "Given an n × n matrix whose rows and columns are each sorted ascending, return the k-th smallest element.",
+   "options": [
+    "k-way-merge",
+    "top-k-elements",
+    "modified-binary-search"
+   ],
+   "answer": "k-way-merge",
+   "why": "Rows are already sorted lists, so a heap of row heads walks the smallest k elements in O(k log n) without reading the rest. A size-k heap over all n² elements ignores the order you were given."
+  },
+  {
+   "id": "q3",
+   "prompt": "Given an array of words, return the k words that appear most often.",
+   "options": [
+    "top-k-elements",
+    "arrays-hashing",
+    "two-heaps"
+   ],
+   "answer": "top-k-elements",
+   "why": "Count with a hash map, then keep the k best by count in a size-k heap. The map is only the first step, and 'k most' decides the pattern."
+  },
+  {
+   "id": "q4",
+   "prompt": "Numbers arrive one at a time. After each one, return the median of the numbers seen so far.",
+   "options": [
+    "two-heaps",
+    "top-k-elements",
+    "sliding-window"
+   ],
+   "answer": "two-heaps",
+   "why": "The median's position (half the count) moves as numbers arrive. A fixed-size k heap can't follow it, so balance two halves instead."
+  },
+  {
+   "id": "q5",
+   "prompt": "Given ropes of different lengths, join them all into one rope. Joining two ropes costs the sum of their lengths. Return the minimum total cost.",
+   "options": [
+    "top-k-elements",
+    "greedy",
+    "merge-intervals"
+   ],
+   "answer": "top-k-elements",
+   "why": "Repeatedly take the two smallest and push the result back → a min-heap with repeated extraction (the Top K chapter's heap greedy)."
+  },
+  {
+   "id": "q6",
+   "prompt": "Given an array and k, return the largest sum of any k consecutive elements.",
+   "options": [
+    "sliding-window",
+    "top-k-elements",
+    "two-pointers"
+   ],
+   "answer": "sliding-window",
+   "why": "'Consecutive' means a contiguous window, not the k largest anywhere → a fixed sliding window with a running sum."
+  },
+  {
+   "id": "q7",
+   "prompt": "Given an array of n numbers in the range 1..n, some missing and some repeated, return the first k missing positive numbers.",
+   "options": [
+    "cyclic-sort",
+    "top-k-elements",
+    "arrays-hashing"
+   ],
+   "answer": "cyclic-sort",
+   "why": "Values in 1..n that should sit at their own index → cyclic sort, then read off the misplaced slots. The k only limits how many you report."
+  },
+  {
+   "id": "q8",
+   "prompt": "Remove exactly k elements from an array so that the number of distinct elements left is as large as possible. Return that number.",
+   "options": [
+    "top-k-elements",
+    "greedy",
+    "arrays-hashing"
+   ],
+   "answer": "top-k-elements",
+   "why": "Count, then fix the duplicated values with the smallest counts first while the budget lasts → a min-heap keyed by frequency."
+  }
+ ]
+}
