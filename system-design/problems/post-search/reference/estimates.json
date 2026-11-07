@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "posts_per_day",
+      "formula": "500 * million",
+      "unit": "/day"
+    },
+    {
+      "name": "post_rate",
+      "formula": "posts_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_post_rate",
+      "formula": "post_rate * 2.5",
+      "unit": "/s"
+    },
+    {
+      "name": "searches_per_day",
+      "formula": "200 * million",
+      "unit": "/day"
+    },
+    {
+      "name": "peak_search_qps",
+      "formula": "searches_per_day / day * 5",
+      "unit": "/s"
+    },
+    {
+      "name": "posts_5y",
+      "formula": "posts_per_day * 365 * 5",
+      "unit": ""
+    },
+    {
+      "name": "index_size_5y",
+      "formula": "posts_5y * 300 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "realtime_tier_size",
+      "formula": "posts_per_day * 7 * 600 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "engagement_rate",
+      "formula": "5 * billion / day",
+      "unit": "/s"
+    }
+  ]
+}

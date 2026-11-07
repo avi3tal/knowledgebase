@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "why": "Naive start: an hourly cron crawls every source and inserts articles; the site lists the latest ones. Breaking news is up to an hour late (N2), the same event appears 200 times (F2), and every page view hits the database.",
+  "nodes": [
+    {
+      "id": "sources",
+      "kind": "external",
+      "label": "Publishers (RSS, sitemaps, WebSub)",
+      "x": 40,
+      "y": 20
+    },
+    {
+      "id": "crawler",
+      "kind": "worker",
+      "label": "Hourly cron crawler",
+      "x": 200,
+      "y": 200
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "articles DB",
+      "x": 380,
+      "y": 200
+    },
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Web / mobile reader",
+      "x": 40,
+      "y": 420
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "News site",
+      "x": 380,
+      "y": 300
+    }
+  ],
+  "edges": [
+    {
+      "from": "crawler",
+      "to": "sources",
+      "label": "fetch every source hourly"
+    },
+    {
+      "from": "crawler",
+      "to": "db",
+      "label": "insert articles"
+    },
+    {
+      "from": "client",
+      "to": "app",
+      "label": "GET /"
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "label": "latest articles by time"
+    }
+  ],
+  "flows": []
+}

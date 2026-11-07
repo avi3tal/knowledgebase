@@ -1,31 +1,134 @@
 {
   "version": 2,
-  "why": "N1: move work to the write path. A load balancer fronts separate post and feed services; publishing stores the post and enqueues a fan-out job; workers push the post_id into every follower's feed list in a feed cache, so a feed load is one cache read plus a batched post lookup. Flaw left: a 40M-follower account creates 40M inserts per post and backs up the queue for everyone (N2), and media still flows through the app.",
+  "why": "Compose P1 and P2 (N1, N2): a load balancer over separate post and feed services; posts go to a wide-column store and a fan-out queue; workers push post ids into each follower's feed list, so a load is one cache read. Flaws left: bodies are hydrated from the store, and celebrity posts flood the queue.",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
-    { "id": "lb", "kind": "load-balancer", "label": "Load balancer", "x": 220, "y": 160 },
-    { "id": "postsvc", "kind": "service", "label": "Post service", "x": 400, "y": 80 },
-    { "id": "feedsvc", "kind": "service", "label": "Feed service", "x": 400, "y": 260 },
-    { "id": "q", "kind": "queue", "label": "Fan-out queue", "x": 600, "y": 380 },
-    { "id": "fanout", "kind": "worker", "label": "Fan-out workers", "x": 800, "y": 380 },
-    { "id": "posts", "kind": "nosql", "label": "posts store", "x": 600, "y": 80 },
-    { "id": "follows", "kind": "sql", "label": "follows graph", "x": 800, "y": 260 },
-    { "id": "feedcache", "kind": "cache", "label": "Feed cache (user → post_ids)", "x": 600, "y": 260 }
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile / web app",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 200,
+      "y": 160
+    },
+    {
+      "id": "postsvc",
+      "kind": "service",
+      "label": "Post service",
+      "x": 380,
+      "y": 80
+    },
+    {
+      "id": "feedsvc",
+      "kind": "service",
+      "label": "Feed service",
+      "x": 380,
+      "y": 260
+    },
+    {
+      "id": "posts",
+      "kind": "nosql",
+      "label": "posts store (by post_id)",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "q",
+      "kind": "queue",
+      "label": "Fan-out queue",
+      "x": 580,
+      "y": 140
+    },
+    {
+      "id": "fanout",
+      "kind": "worker",
+      "label": "Fan-out workers",
+      "x": 780,
+      "y": 140
+    },
+    {
+      "id": "follows",
+      "kind": "sql",
+      "label": "follows graph",
+      "x": 780,
+      "y": 260
+    },
+    {
+      "id": "feedcache",
+      "kind": "cache",
+      "label": "Feed cache (user → post_ids)",
+      "x": 580,
+      "y": 380
+    }
   ],
   "edges": [
-    { "from": "client", "to": "lb" },
-    { "from": "lb", "to": "postsvc", "label": "POST /posts" },
-    { "from": "lb", "to": "feedsvc", "label": "GET /feed" },
-    { "from": "postsvc", "to": "posts", "label": "store post" },
-    { "from": "postsvc", "to": "q", "label": "enqueue fan-out" },
-    { "from": "q", "to": "fanout" },
-    { "from": "fanout", "to": "follows", "label": "followers of author" },
-    { "from": "fanout", "to": "feedcache", "label": "push post_id, trim 500" },
-    { "from": "feedsvc", "to": "feedcache", "label": "read post_ids" },
-    { "from": "feedsvc", "to": "posts", "label": "batch get posts" }
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "POST /posts, GET /feed"
+    },
+    {
+      "from": "lb",
+      "to": "postsvc",
+      "label": "POST /posts, POST /media"
+    },
+    {
+      "from": "lb",
+      "to": "feedsvc",
+      "label": "GET /feed"
+    },
+    {
+      "from": "postsvc",
+      "to": "posts",
+      "label": "write post + outbox"
+    },
+    {
+      "from": "postsvc",
+      "to": "q",
+      "label": "fan-out job (post_id, author)"
+    },
+    {
+      "from": "q",
+      "to": "fanout",
+      "label": "consume"
+    },
+    {
+      "from": "fanout",
+      "to": "follows",
+      "label": "followers of author"
+    },
+    {
+      "from": "fanout",
+      "to": "feedcache",
+      "label": "push post_id, trim to 500"
+    },
+    {
+      "from": "feedsvc",
+      "to": "feedcache",
+      "label": "read post_ids"
+    },
+    {
+      "from": "feedsvc",
+      "to": "posts",
+      "label": "cache miss"
+    }
   ],
   "flows": [
-    { "name": "publish", "path": ["client", "lb", "postsvc", "q", "fanout", "feedcache"] },
-    { "name": "read feed", "path": ["client", "lb", "feedsvc", "feedcache"] }
+    {
+      "name": "publish",
+      "path": [
+        "client",
+        "lb",
+        "postsvc",
+        "q",
+        "fanout",
+        "feedcache"
+      ]
+    }
   ]
 }

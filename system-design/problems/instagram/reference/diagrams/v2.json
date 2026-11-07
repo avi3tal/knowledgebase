@@ -1,0 +1,138 @@
+{
+  "version": 2,
+  "why": "Compose P1 (N1, N3): photos go straight to object storage with a presigned URL, resize workers make renditions from a queue, a CDN serves them, and post metadata moves to a wide-column store. The feed and likes still sit on the old database.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile app",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 200,
+      "y": 220
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "label": "CDN (upload edge + image delivery)",
+      "x": 200,
+      "y": 420
+    },
+    {
+      "id": "postsvc",
+      "kind": "service",
+      "label": "App service (posts, feed, likes)",
+      "x": 380,
+      "y": 20
+    },
+    {
+      "id": "media",
+      "kind": "blob",
+      "label": "Object storage (originals + renditions)",
+      "x": 380,
+      "y": 420
+    },
+    {
+      "id": "mediaq",
+      "kind": "queue",
+      "label": "Media processing queue",
+      "x": 580,
+      "y": 420
+    },
+    {
+      "id": "imgworker",
+      "kind": "worker",
+      "label": "Resize workers",
+      "x": 780,
+      "y": 420
+    },
+    {
+      "id": "posts",
+      "kind": "nosql",
+      "label": "posts (metadata, by post_id)",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "App DB (follows, likes)",
+      "x": 560,
+      "y": 300
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "API calls"
+    },
+    {
+      "from": "lb",
+      "to": "postsvc",
+      "label": "POST /uploads, POST /posts"
+    },
+    {
+      "from": "client",
+      "to": "cdn",
+      "label": "PUT photo (presigned), GET images"
+    },
+    {
+      "from": "cdn",
+      "to": "media",
+      "label": "store upload / origin fetch"
+    },
+    {
+      "from": "postsvc",
+      "to": "media",
+      "label": "sign upload URL"
+    },
+    {
+      "from": "postsvc",
+      "to": "posts",
+      "label": "create post (processing)"
+    },
+    {
+      "from": "postsvc",
+      "to": "db",
+      "label": "follows, likes"
+    },
+    {
+      "from": "media",
+      "to": "mediaq",
+      "label": "object created"
+    },
+    {
+      "from": "mediaq",
+      "to": "imgworker",
+      "label": "resize job"
+    },
+    {
+      "from": "imgworker",
+      "to": "media",
+      "label": "write renditions"
+    },
+    {
+      "from": "imgworker",
+      "to": "posts",
+      "label": "mark ready"
+    }
+  ],
+  "flows": [
+    {
+      "name": "upload",
+      "path": [
+        "client",
+        "cdn",
+        "media",
+        "mediaq",
+        "imgworker"
+      ]
+    }
+  ]
+}

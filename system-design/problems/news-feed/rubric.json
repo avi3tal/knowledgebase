@@ -149,7 +149,6 @@
       "id": "api-post",
       "type": "endpoint",
       "label": "Write endpoint defined",
-      "method": "POST",
       "keywords": [
         "/post",
         "posts",
@@ -157,6 +156,7 @@
         "tweet",
         "publish"
       ],
+      "method": "POST",
       "tips": {
         "nudge": "Which call creates a post?",
         "hint": "A POST with the text and references to already-uploaded media.",
@@ -167,12 +167,12 @@
       "id": "api-feed",
       "type": "endpoint",
       "label": "Read endpoint defined",
-      "method": "GET",
       "keywords": [
         "feed",
         "timeline",
         "home"
       ],
+      "method": "GET",
       "tips": {
         "nudge": "What does the app call on open and on scroll?",
         "hint": "A paginated GET; think about how the next page is identified when new posts keep arriving.",
@@ -209,6 +209,81 @@
         "nudge": "To build a feed you must know whose posts to include.",
         "hint": "Model the relationship in both directions you'll query it.",
         "show": "follows(follower_id, followee_id, created_at), indexed both ways (followers-of and following-of)."
+      }
+    },
+    {
+      "id": "dd-fanout",
+      "type": "part",
+      "label": "Getting posts to followers designed as its own part",
+      "keywords": [
+        "fan-out",
+        "fanout",
+        "fan out",
+        "push model",
+        "pull model",
+        "on write",
+        "write time",
+        "hybrid",
+        "to followers",
+        "followers' feeds",
+        "into feeds"
+      ],
+      "tips": {
+        "nudge": "You can pay at publish time or at read time. Reads outnumber posts 20 to 1. Make that choice its own part.",
+        "hint": "Add a part for distribution: compare fan-out on write (push), fan-out on read (pull) and a mix, and draw the workers.",
+        "show": "Part 'Fan-out': hybrid. Push post ids into followers' cached feeds for normal accounts via a queue and workers; accounts with huge audiences are pulled and merged at read time."
+      }
+    },
+    {
+      "id": "part-feed-read",
+      "type": "part",
+      "label": "Feed read path designed as its own part",
+      "keywords": [
+        "feed read",
+        "read path",
+        "feed load",
+        "load the feed",
+        "serve the feed",
+        "serving",
+        "hydrat",
+        "rank",
+        "merge"
+      ],
+      "tips": {
+        "nudge": "Even with precomputed feeds, a page still needs 20 full posts in 300 ms. Who assembles it?",
+        "hint": "Add a part for the read path: where post ids come from, where post bodies come from, and how the order is decided.",
+        "show": "Part 'Feed read and ranking': read ~500 ids from the feed cache, merge recent posts of followed celebrities, hydrate bodies from a post cache in one batch, order by time (scorer hook for ranking later)."
+      }
+    },
+    {
+      "id": "part-media",
+      "type": "part",
+      "label": "Heavy media handled as its own part",
+      "keywords": [
+        "media",
+        "upload",
+        "photo",
+        "video",
+        "image",
+        "cdn",
+        "blob",
+        "presign",
+        "transcod",
+        "thumbnail"
+      ],
+      "choice_keywords": [
+        "cdn",
+        "blob",
+        "object",
+        "s3",
+        "presign",
+        "direct",
+        "edge"
+      ],
+      "tips": {
+        "nudge": "Photos and videos are most of the bytes. Should they pass through your post service?",
+        "hint": "Add a part for media: how bytes get uploaded, where they are stored, and how they reach viewers worldwide.",
+        "show": "Part 'Media': the app uploads straight to object storage with a presigned URL, a worker makes renditions, and a CDN serves them; posts only store media URLs."
       }
     },
     {
@@ -287,29 +362,6 @@
       }
     },
     {
-      "id": "dd-fanout",
-      "type": "decision",
-      "label": "When feeds get assembled decided",
-      "keywords": [
-        "fan-out",
-        "fanout",
-        "fan out",
-        "push model",
-        "pull model",
-        "on write",
-        "on read",
-        "write time",
-        "read time",
-        "hybrid",
-        "precompute"
-      ],
-      "tips": {
-        "nudge": "You can pay at publish time or at read time. Reads outnumber posts 20 to 1.",
-        "hint": "Compare fan-out on write (push), fan-out on read (pull) and a mix.",
-        "show": "Fan-out on write for normal accounts (reads become one cache lookup); pull for a few huge accounts; merge at read time (hybrid)."
-      }
-    },
-    {
       "id": "dd-celebrity",
       "type": "decision",
       "label": "Accounts with huge audiences handled",
@@ -322,19 +374,20 @@
         "many followers",
         "million followers",
         "hot key",
-        "large account"
+        "large account",
+        "threshold"
       ],
       "tips": {
         "nudge": "One post × 40M followers = how many feed writes, how long?",
-        "hint": "Treat accounts above a follower threshold differently.",
-        "show": "Accounts over ~100k followers are not fanned out; their recent posts are cached and merged into followers' feeds at read time."
+        "hint": "Treat accounts above a follower threshold differently, and decide what happens when an account crosses it.",
+        "show": "Accounts over ~100k followers are not fanned out; their recent posts are cached and merged into followers' feeds at read time. Crossing the threshold flips a flag; existing feed entries simply age out."
       }
     },
     {
       "id": "wrap-bottlenecks",
       "type": "wrapup",
-      "key": "bottlenecks",
       "label": "Bottlenecks and single points of failure named",
+      "key": "bottlenecks",
       "tips": {
         "nudge": "Which part breaks first on a big news day?",
         "hint": "Walk the write path (fan-out) and the read path (cache) separately.",
@@ -344,8 +397,8 @@
     {
       "id": "wrap-scale",
       "type": "wrapup",
-      "key": "scale",
       "label": "Growth plan described",
+      "key": "scale",
       "tips": {
         "nudge": "Users ×10. Which numbers grow fastest?",
         "hint": "Fan-out writes grow with users × followers; reads with users.",

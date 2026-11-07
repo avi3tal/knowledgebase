@@ -1,0 +1,690 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "A user uploads a photo with a caption; followers see it once it is processed."
+      },
+      {
+        "id": "F2",
+        "text": "A user scrolls a home feed of photos from accounts they follow, 10 per page."
+      },
+      {
+        "id": "F3",
+        "text": "Follow / unfollow accounts; profiles show follower and following counts."
+      },
+      {
+        "id": "F4",
+        "text": "Like / unlike a photo; every photo shows its like count and whether I liked it."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Feed p99 < 500 ms; images load from a nearby edge; read-heavy (~50 feed loads per upload)."
+      },
+      {
+        "id": "N2",
+        "text": "A processed photo reaches followers' feeds within ~5 s."
+      },
+      {
+        "id": "N3",
+        "text": "Durability: an acknowledged upload is never lost (replicated across zones, 11 nines)."
+      },
+      {
+        "id": "N4",
+        "text": "Like counts may lag by a few seconds, but my own like shows immediately and is counted once."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "500M DAU; 100M uploads/day; 10 feed opens and 8 likes per user per day; peak = 2–2.5× average."
+      },
+      {
+        "id": "A2",
+        "text": "Original ~2 MB; four renditions add ~0.5 MB."
+      },
+      {
+        "id": "A3",
+        "text": "~150 followers on average; a few accounts have hundreds of millions."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Video and stories, direct messages, comments, search, ads."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "/uploads",
+      "request": "content_type, size",
+      "response": "201 {media_id, upload_url (presigned PUT, 15 min)}",
+      "notes": "The app PUTs the photo bytes straight to object storage through the CDN edge."
+    },
+    {
+      "id": "E2",
+      "method": "POST",
+      "path": "/posts",
+      "request": "media_id, caption",
+      "response": "201 {post_id, status: processing}",
+      "notes": "Idempotency-Key header; becomes visible when renditions are ready."
+    },
+    {
+      "id": "E3",
+      "method": "GET",
+      "path": "/feed?cursor=&limit=10",
+      "request": "",
+      "response": "{posts[{post_id, image_urls, caption, like_count, liked_by_me}], next_cursor}",
+      "notes": "Cursor-based."
+    },
+    {
+      "id": "E4",
+      "method": "POST",
+      "path": "/posts/{id}/like",
+      "request": "",
+      "response": "204",
+      "notes": "Idempotent; DELETE to unlike."
+    },
+    {
+      "id": "E5",
+      "method": "POST",
+      "path": "/users/{id}/follow",
+      "request": "",
+      "response": "204",
+      "notes": "DELETE to unfollow."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "posts",
+      "fields": "post_id (PK, time-sortable), author_id, caption, media_keys, status, created_at",
+      "store": "nosql",
+      "why": "Photo metadata read by id in batches; bytes live in object storage."
+    },
+    {
+      "id": "D2",
+      "name": "follow graph",
+      "fields": "followers(user_id, follower_id), following(user_id, followee_id)",
+      "store": "nosql",
+      "why": "Two adjacency lists partitioned by user: each direction is one range scan."
+    },
+    {
+      "id": "D3",
+      "name": "likes",
+      "fields": "post_id, user_id (PK together), created_at",
+      "store": "nosql",
+      "why": "Source of truth for 'liked by me' and for rebuilding counters."
+    },
+    {
+      "id": "D4",
+      "name": "like_counters",
+      "fields": "post_id[#shard] → count",
+      "store": "cache",
+      "why": "Batched increments; hot posts split across sub-keys."
+    },
+    {
+      "id": "D5",
+      "name": "media objects",
+      "fields": "originals/{media_id}, renditions/{media_id}/{size}.webp",
+      "store": "blob",
+      "why": "Immutable files behind a CDN."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Double taps and retries: counting each like once",
+      "options": [
+        {
+          "name": "Count every like request",
+          "pros": "simple",
+          "cons": "retries and double taps inflate counts"
+        },
+        {
+          "name": "Unique (post_id, user_id) row; emit an event only when the insert succeeds; aggregator dedups by event id",
+          "pros": "each like counted once end to end",
+          "cons": "one extra conditional write per like"
+        }
+      ],
+      "choice": "Insert-if-absent on (post_id, user_id), emit +1 only on success, dedup events by id in the aggregator",
+      "why": "The stream is at-least-once, so the aggregator must be idempotent too; the likes row makes 'liked by me' exact even while the count lags.",
+      "version": 4
+    },
+    {
+      "id": "DD2",
+      "title": "Renditions: eager or on demand",
+      "options": [
+        {
+          "name": "Eager: make every size right after upload",
+          "pros": "first view is fast; CDN warm",
+          "cons": "CPU and storage for sizes nobody requests"
+        },
+        {
+          "name": "On demand: resize on first CDN miss",
+          "pros": "only pays for used sizes",
+          "cons": "first viewer waits; thundering herd on a viral miss"
+        }
+      ],
+      "choice": "Eager for the 3–4 sizes the app uses (WebP/AVIF), on demand for rare ones",
+      "why": "Feed sizes are requested almost immediately by followers, so eager work is never wasted; rare sizes would cost storage on 100M photos a day.",
+      "version": 2
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "Hot like counters on viral posts (sub-key sharding, batched increments), fan-out for huge accounts (pull them instead), resize queue backlog after spikes (autoscale workers on queue depth), CDN origin load (origin shield).",
+    "failures": "Uploads are durable before ack (multi-zone object storage); resize jobs retry from the queue and are idempotent per media_id; counters rebuild from the likes table; a lost feed-cache shard is rebuilt by pulling; stuck 'processing' posts are swept and retried.",
+    "monitoring": "Upload success rate, upload → visible latency, resize queue depth, feed p99, CDN hit ratio, counter lag, orphaned uploads.",
+    "scale": "Shard posts, graph and likes by id; add fan-out workers and queue partitions; tier old originals to colder storage classes; push renditions to more edge locations.",
+    "future": "Video and stories (transcoding ladders), comments, search and explore, an ML-ranked feed."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Media upload pipeline",
+      "covers": [
+        "F1",
+        "N1",
+        "N3"
+      ],
+      "problem": "Take in ~1.2k photo uploads/s (peak ~3k) of ~2 MB each, keep them durable, produce resized renditions and deliver images worldwide, without streaming ~250 TB/day through the API servers.",
+      "options": [
+        {
+          "name": "Upload through the API servers, store bytes in the database",
+          "pros": "one request, simple",
+          "cons": "API servers stream terabytes; the database bloats and backups explode"
+        },
+        {
+          "name": "Upload through the API servers to object storage, resize inline",
+          "pros": "storage is right",
+          "cons": "requests hold connections for seconds; resize CPU sits on the request path"
+        },
+        {
+          "name": "Presigned PUT straight to object storage; object-created event queues resize jobs; CDN serves renditions",
+          "pros": "servers only sign URLs; processing scales separately; immutable files cache forever",
+          "cons": "two-step publish; orphan uploads need a cleanup job"
+        }
+      ],
+      "choice": "Presigned direct upload to object storage, asynchronous resize workers fed by object-created events, CDN delivery",
+      "why": "~250 TB/day of bytes never touch the services; resize workers autoscale on queue depth; renditions are immutable so the CDN hit ratio is very high, which keeps N1 for images.",
+      "technologies": [
+        "object-storage",
+        "kafka"
+      ],
+      "patterns": [
+        "presigned-urls",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Mobile app",
+            "x": 40,
+            "y": 220
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN (upload edge + image delivery)",
+            "x": 200,
+            "y": 420
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 220
+          },
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Upload / post service",
+            "x": 380,
+            "y": 20
+          },
+          {
+            "id": "media",
+            "kind": "blob",
+            "label": "Object storage (originals + renditions)",
+            "x": 380,
+            "y": 420
+          },
+          {
+            "id": "mediaq",
+            "kind": "queue",
+            "label": "Media processing queue",
+            "x": 580,
+            "y": 420
+          },
+          {
+            "id": "imgworker",
+            "kind": "worker",
+            "label": "Resize workers",
+            "x": 780,
+            "y": 420
+          },
+          {
+            "id": "posts",
+            "kind": "nosql",
+            "label": "posts (metadata, by post_id)",
+            "x": 580,
+            "y": 20
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "API calls"
+          },
+          {
+            "from": "lb",
+            "to": "postsvc",
+            "label": "POST /uploads, POST /posts"
+          },
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "PUT photo (presigned), GET images"
+          },
+          {
+            "from": "cdn",
+            "to": "media",
+            "label": "store upload / origin fetch"
+          },
+          {
+            "from": "postsvc",
+            "to": "media",
+            "label": "sign upload URL"
+          },
+          {
+            "from": "postsvc",
+            "to": "posts",
+            "label": "create post (processing)"
+          },
+          {
+            "from": "media",
+            "to": "mediaq",
+            "label": "object created"
+          },
+          {
+            "from": "mediaq",
+            "to": "imgworker",
+            "label": "resize job"
+          },
+          {
+            "from": "imgworker",
+            "to": "media",
+            "label": "write renditions"
+          },
+          {
+            "from": "imgworker",
+            "to": "posts",
+            "label": "mark ready"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Follow graph",
+      "covers": [
+        "F3"
+      ],
+      "problem": "Answer 'all followers of X' when distributing a post and 'who X follows' for the feed and profile, for ~150 follows on average and up to 300M followers on one account.",
+      "options": [
+        {
+          "name": "One SQL follows table with two indexes",
+          "pros": "simple; consistent",
+          "cons": "one table with ~75B rows; followers-of a celebrity is a huge index scan on one shard"
+        },
+        {
+          "name": "Two denormalized adjacency lists in a wide-column store, partitioned by user",
+          "pros": "each direction is a single-partition range scan; scales horizontally",
+          "cons": "two writes per follow; repair job for drift"
+        },
+        {
+          "name": "Graph database",
+          "pros": "multi-hop queries (friends of friends)",
+          "cons": "we only need one hop; harder to shard and operate"
+        }
+      ],
+      "choice": "Two adjacency lists (followers-of, following-of) in a wide-column store, counts and celebrity flags cached",
+      "why": "Both queries are one-hop lookups by user, so partitioning by user makes each a single range scan; huge follower lists are paged by the fan-out workers or skipped for celebrities.",
+      "technologies": [
+        "cassandra",
+        "redis"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 220
+          },
+          {
+            "id": "graphsvc",
+            "kind": "service",
+            "label": "Graph service",
+            "x": 380,
+            "y": 120
+          },
+          {
+            "id": "graph",
+            "kind": "nosql",
+            "label": "follow graph (followers-of / following-of)",
+            "x": 580,
+            "y": 120
+          },
+          {
+            "id": "graphcache",
+            "kind": "cache",
+            "label": "Graph cache (counts, celebrity flags)",
+            "x": 780,
+            "y": 120
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "graphsvc",
+            "label": "follow / unfollow"
+          },
+          {
+            "from": "graphsvc",
+            "to": "graph",
+            "label": "write both lists"
+          },
+          {
+            "from": "graphsvc",
+            "to": "graphcache",
+            "label": "counts, celebrity flag"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Feed generation",
+      "covers": [
+        "F2",
+        "N1",
+        "N2"
+      ],
+      "problem": "Serve ~116k feed pages/s at peak in < 500 ms; decide whether a user's feed is assembled at read time or prepared when a photo becomes ready.",
+      "options": [
+        {
+          "name": "Pull: query every followee's recent posts on open",
+          "pros": "no write amplification; always fresh",
+          "cons": "~150 lookups per load × 116k/s; slow tail"
+        },
+        {
+          "name": "Push: write each new post id into every follower's feed",
+          "pros": "a load is one cache read",
+          "cons": "~175k inserts/s and 300M inserts for one celebrity post"
+        },
+        {
+          "name": "Hybrid push + pull for huge accounts, ranked over candidates",
+          "pros": "cheap reads, bounded writes, room for ranking",
+          "cons": "two code paths; merge at read time"
+        }
+      ],
+      "choice": "Hybrid fan-out triggered by 'post ready' events; huge accounts merged at read time; a lightweight ranker orders the candidates",
+      "why": "Reads dominate (≈ 50 feed loads per upload), so precompute; triggering on 'post ready' means followers never see a photo without renditions; skipping accounts above ~1M followers bounds the write cost.",
+      "technologies": [
+        "redis",
+        "kafka"
+      ],
+      "patterns": [
+        "fan-out",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 220
+          },
+          {
+            "id": "feedsvc",
+            "kind": "service",
+            "label": "Feed service (merge + rank)",
+            "x": 380,
+            "y": 220
+          },
+          {
+            "id": "feedcache",
+            "kind": "cache",
+            "label": "Feed cache (user → post_ids)",
+            "x": 580,
+            "y": 220
+          },
+          {
+            "id": "graphcache",
+            "kind": "cache",
+            "label": "Graph cache (counts, celebrity flags)",
+            "x": 780,
+            "y": 120
+          },
+          {
+            "id": "posts",
+            "kind": "nosql",
+            "label": "posts (metadata, by post_id)",
+            "x": 580,
+            "y": 20
+          },
+          {
+            "id": "imgworker",
+            "kind": "worker",
+            "label": "Resize workers",
+            "x": 780,
+            "y": 420
+          },
+          {
+            "id": "fanq",
+            "kind": "stream",
+            "label": "Post-ready events",
+            "x": 960,
+            "y": 420
+          },
+          {
+            "id": "fanout",
+            "kind": "worker",
+            "label": "Fan-out workers",
+            "x": 780,
+            "y": 220
+          },
+          {
+            "id": "graph",
+            "kind": "nosql",
+            "label": "follow graph (followers-of / following-of)",
+            "x": 580,
+            "y": 120
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "feedsvc",
+            "label": "GET /feed"
+          },
+          {
+            "from": "feedsvc",
+            "to": "feedcache",
+            "label": "read candidates"
+          },
+          {
+            "from": "feedsvc",
+            "to": "graphcache",
+            "label": "celebrities I follow"
+          },
+          {
+            "from": "feedsvc",
+            "to": "posts",
+            "label": "hydrate metadata"
+          },
+          {
+            "from": "imgworker",
+            "to": "fanq",
+            "label": "post ready"
+          },
+          {
+            "from": "fanq",
+            "to": "fanout",
+            "label": "consume"
+          },
+          {
+            "from": "fanout",
+            "to": "graph",
+            "label": "followers of author"
+          },
+          {
+            "from": "fanout",
+            "to": "feedcache",
+            "label": "push post_id"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Likes and counters",
+      "covers": [
+        "F4",
+        "N4"
+      ],
+      "problem": "Record ~46k likes/s (peak ~100k), one per user per photo, and show like counts on every feed item, when a viral photo can take thousands of likes per second on one counter.",
+      "options": [
+        {
+          "name": "UPDATE posts SET likes = likes + 1 per like",
+          "pros": "exact and simple",
+          "cons": "row-lock contention on hot posts; a write on the post row per like"
+        },
+        {
+          "name": "Redis INCR per like",
+          "pros": "fast",
+          "cons": "one hot key per viral post; drifts from the source of truth after failures"
+        },
+        {
+          "name": "Idempotent likes rows + like events on a stream + batched aggregation into sharded counters",
+          "pros": "hot posts become a few batched writes; counts rebuildable",
+          "cons": "counts lag by seconds"
+        }
+      ],
+      "choice": "Likes rows with insert-if-absent, +1/-1 events on a stream, an aggregator applying batched +n to counters split into sub-keys for hot posts",
+      "why": "N4 allows seconds of lag on counts; batching turns thousands of increments on one post into a few writes; the likes table stays the source of truth for 'liked by me' and for rebuilding counters.",
+      "technologies": [
+        "kafka",
+        "redis",
+        "cassandra"
+      ],
+      "patterns": [
+        "pre-aggregation",
+        "hot-keys",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 220
+          },
+          {
+            "id": "likesvc",
+            "kind": "service",
+            "label": "Like service",
+            "x": 380,
+            "y": 320
+          },
+          {
+            "id": "likes",
+            "kind": "nosql",
+            "label": "likes (post_id, user_id)",
+            "x": 580,
+            "y": 320
+          },
+          {
+            "id": "likestream",
+            "kind": "stream",
+            "label": "Like events",
+            "x": 780,
+            "y": 320
+          },
+          {
+            "id": "counteragg",
+            "kind": "worker",
+            "label": "Counter aggregator",
+            "x": 960,
+            "y": 320
+          },
+          {
+            "id": "counters",
+            "kind": "cache",
+            "label": "Like counters (sharded for hot posts)",
+            "x": 960,
+            "y": 120
+          },
+          {
+            "id": "feedsvc",
+            "kind": "service",
+            "label": "Feed service (merge + rank)",
+            "x": 380,
+            "y": 220
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "likesvc",
+            "label": "POST /posts/{id}/like"
+          },
+          {
+            "from": "likesvc",
+            "to": "likes",
+            "label": "insert if absent"
+          },
+          {
+            "from": "likesvc",
+            "to": "likestream",
+            "label": "+1 / -1 event"
+          },
+          {
+            "from": "likestream",
+            "to": "counteragg",
+            "label": "consume"
+          },
+          {
+            "from": "counteragg",
+            "to": "counters",
+            "label": "batched +n"
+          },
+          {
+            "from": "feedsvc",
+            "to": "counters",
+            "label": "like counts"
+          }
+        ]
+      }
+    }
+  ]
+}

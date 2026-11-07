@@ -1,0 +1,276 @@
+{
+  "version": 4,
+  "why": "Compose P3 and P4 (F3, F4, N1, N3): a ranker precomputes lists per edition/topic every minute; the CDN caches edition pages for 30 s; a stateless news API blends 'For you' from cached candidates and reader profiles fed by click events.",
+  "nodes": [
+    {
+      "id": "sources",
+      "kind": "external",
+      "label": "Publishers (RSS, sitemaps, WebSub)",
+      "x": 40,
+      "y": 20
+    },
+    {
+      "id": "scheduler",
+      "kind": "scheduler",
+      "label": "Poll scheduler (adaptive intervals)",
+      "x": 200,
+      "y": 110
+    },
+    {
+      "id": "srcdb",
+      "kind": "sql",
+      "label": "sources (interval, ETag, authority)",
+      "x": 380,
+      "y": 110
+    },
+    {
+      "id": "fetchers",
+      "kind": "worker",
+      "label": "Feed fetchers",
+      "x": 380,
+      "y": 20
+    },
+    {
+      "id": "raw",
+      "kind": "stream",
+      "label": "Raw articles",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "dedup",
+      "kind": "worker",
+      "label": "Extract + dedup (canonical URL, SimHash)",
+      "x": 780,
+      "y": 20
+    },
+    {
+      "id": "simidx",
+      "kind": "cache",
+      "label": "Near-dup index (SimHash bands)",
+      "x": 960,
+      "y": 20
+    },
+    {
+      "id": "articles",
+      "kind": "nosql",
+      "label": "articles",
+      "x": 580,
+      "y": 110
+    },
+    {
+      "id": "clusterer",
+      "kind": "worker",
+      "label": "Story clusterer (embeddings, incremental)",
+      "x": 960,
+      "y": 110
+    },
+    {
+      "id": "stories",
+      "kind": "nosql",
+      "label": "stories (clusters)",
+      "x": 960,
+      "y": 200
+    },
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Web / mobile reader",
+      "x": 40,
+      "y": 420
+    },
+    {
+      "id": "ranker",
+      "kind": "worker",
+      "label": "Story ranker (every minute)",
+      "x": 780,
+      "y": 200
+    },
+    {
+      "id": "editions",
+      "kind": "cache",
+      "label": "Ranked lists per edition / topic",
+      "x": 580,
+      "y": 300
+    },
+    {
+      "id": "profiles",
+      "kind": "nosql",
+      "label": "Reader interest profiles",
+      "x": 780,
+      "y": 300
+    },
+    {
+      "id": "profiler",
+      "kind": "worker",
+      "label": "Interest profiler",
+      "x": 960,
+      "y": 300
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "label": "CDN (edition pages, 30 s)",
+      "x": 200,
+      "y": 420
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 380,
+      "y": 420
+    },
+    {
+      "id": "newssvc",
+      "kind": "service",
+      "label": "News API (blend + personalise)",
+      "x": 580,
+      "y": 420
+    },
+    {
+      "id": "clicks",
+      "kind": "stream",
+      "label": "Click / view events",
+      "x": 780,
+      "y": 420
+    }
+  ],
+  "edges": [
+    {
+      "from": "sources",
+      "to": "scheduler",
+      "label": "WebSub ping (fetch now)"
+    },
+    {
+      "from": "scheduler",
+      "to": "srcdb",
+      "label": "who is due"
+    },
+    {
+      "from": "scheduler",
+      "to": "fetchers",
+      "label": "due sources"
+    },
+    {
+      "from": "fetchers",
+      "to": "sources",
+      "label": "conditional GET (ETag)"
+    },
+    {
+      "from": "fetchers",
+      "to": "srcdb",
+      "label": "ETag, new-item rate"
+    },
+    {
+      "from": "fetchers",
+      "to": "raw",
+      "label": "new article"
+    },
+    {
+      "from": "raw",
+      "to": "dedup",
+      "label": "consume"
+    },
+    {
+      "from": "dedup",
+      "to": "simidx",
+      "label": "near-dup lookup"
+    },
+    {
+      "from": "dedup",
+      "to": "articles",
+      "label": "store unique article"
+    },
+    {
+      "from": "dedup",
+      "to": "clusterer",
+      "label": "unique article"
+    },
+    {
+      "from": "clusterer",
+      "to": "stories",
+      "label": "assign / create story"
+    },
+    {
+      "from": "ranker",
+      "to": "stories",
+      "label": "recent stories"
+    },
+    {
+      "from": "ranker",
+      "to": "editions",
+      "label": "top-N per edition / topic"
+    },
+    {
+      "from": "client",
+      "to": "cdn",
+      "label": "GET pages, POST events"
+    },
+    {
+      "from": "cdn",
+      "to": "lb",
+      "label": "miss / personalised"
+    },
+    {
+      "from": "lb",
+      "to": "newssvc",
+      "label": "API"
+    },
+    {
+      "from": "newssvc",
+      "to": "editions",
+      "label": "candidate lists"
+    },
+    {
+      "from": "newssvc",
+      "to": "profiles",
+      "label": "reader interests"
+    },
+    {
+      "from": "newssvc",
+      "to": "clicks",
+      "label": "click / view event"
+    },
+    {
+      "from": "clicks",
+      "to": "profiler",
+      "label": "consume"
+    },
+    {
+      "from": "profiler",
+      "to": "profiles",
+      "label": "update interests"
+    }
+  ],
+  "flows": [
+    {
+      "name": "ingest",
+      "path": [
+        "scheduler",
+        "fetchers",
+        "raw",
+        "dedup",
+        "clusterer",
+        "stories"
+      ]
+    },
+    {
+      "name": "rank",
+      "path": [
+        "ranker",
+        "stories"
+      ]
+    },
+    {
+      "name": "read",
+      "path": [
+        "client",
+        "cdn",
+        "lb",
+        "newssvc",
+        "editions"
+      ]
+    }
+  ]
+}

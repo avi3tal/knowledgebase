@@ -1,0 +1,220 @@
+{
+  "version": 4,
+  "why": "Compose P4 (N4, global media): the app uploads media straight to object storage with a presigned URL, workers make renditions, and a CDN serves them, so feeds carry only URLs.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile / web app",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 200,
+      "y": 160
+    },
+    {
+      "id": "postsvc",
+      "kind": "service",
+      "label": "Post service",
+      "x": 380,
+      "y": 80
+    },
+    {
+      "id": "feedsvc",
+      "kind": "service",
+      "label": "Feed service (merge + order)",
+      "x": 380,
+      "y": 260
+    },
+    {
+      "id": "posts",
+      "kind": "nosql",
+      "label": "posts store (by post_id)",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "q",
+      "kind": "queue",
+      "label": "Fan-out queue",
+      "x": 580,
+      "y": 140
+    },
+    {
+      "id": "fanout",
+      "kind": "worker",
+      "label": "Fan-out workers (skip celebrities)",
+      "x": 780,
+      "y": 140
+    },
+    {
+      "id": "follows",
+      "kind": "sql",
+      "label": "follows graph",
+      "x": 780,
+      "y": 260
+    },
+    {
+      "id": "feedcache",
+      "kind": "cache",
+      "label": "Feed cache (user → post_ids)",
+      "x": 580,
+      "y": 380
+    },
+    {
+      "id": "postcache",
+      "kind": "cache",
+      "label": "Post cache (+ celebrity recent posts)",
+      "x": 580,
+      "y": 260
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "label": "CDN (media upload + delivery)",
+      "x": 200,
+      "y": 400
+    },
+    {
+      "id": "media",
+      "kind": "blob",
+      "label": "Media object storage",
+      "x": 780,
+      "y": 440
+    },
+    {
+      "id": "transcode",
+      "kind": "worker",
+      "label": "Media workers (resize, transcode)",
+      "x": 960,
+      "y": 440
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "POST /posts, GET /feed"
+    },
+    {
+      "from": "lb",
+      "to": "postsvc",
+      "label": "POST /posts, POST /media"
+    },
+    {
+      "from": "lb",
+      "to": "feedsvc",
+      "label": "GET /feed"
+    },
+    {
+      "from": "postsvc",
+      "to": "posts",
+      "label": "write post + outbox"
+    },
+    {
+      "from": "postsvc",
+      "to": "q",
+      "label": "fan-out job (post_id, author)"
+    },
+    {
+      "from": "q",
+      "to": "fanout",
+      "label": "consume"
+    },
+    {
+      "from": "fanout",
+      "to": "follows",
+      "label": "followers of author"
+    },
+    {
+      "from": "fanout",
+      "to": "feedcache",
+      "label": "push post_id, trim to 500"
+    },
+    {
+      "from": "feedsvc",
+      "to": "feedcache",
+      "label": "read post_ids"
+    },
+    {
+      "from": "feedsvc",
+      "to": "posts",
+      "label": "cache miss"
+    },
+    {
+      "from": "feedsvc",
+      "to": "postcache",
+      "label": "batch get bodies + celebrity posts"
+    },
+    {
+      "from": "feedsvc",
+      "to": "follows",
+      "label": "celebrities I follow"
+    },
+    {
+      "from": "postsvc",
+      "to": "postcache",
+      "label": "write-through recent post"
+    },
+    {
+      "from": "client",
+      "to": "cdn",
+      "label": "PUT media (presigned), GET media"
+    },
+    {
+      "from": "cdn",
+      "to": "media",
+      "label": "store upload / origin fetch"
+    },
+    {
+      "from": "postsvc",
+      "to": "media",
+      "label": "sign upload URL"
+    },
+    {
+      "from": "media",
+      "to": "transcode",
+      "label": "object created"
+    },
+    {
+      "from": "transcode",
+      "to": "media",
+      "label": "write renditions"
+    }
+  ],
+  "flows": [
+    {
+      "name": "publish",
+      "path": [
+        "client",
+        "lb",
+        "postsvc",
+        "q",
+        "fanout",
+        "feedcache"
+      ]
+    },
+    {
+      "name": "feed load",
+      "path": [
+        "client",
+        "lb",
+        "feedsvc",
+        "feedcache"
+      ]
+    },
+    {
+      "name": "media",
+      "path": [
+        "client",
+        "cdn",
+        "media",
+        "transcode"
+      ]
+    }
+  ]
+}

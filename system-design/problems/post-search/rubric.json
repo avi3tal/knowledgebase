@@ -1,0 +1,355 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Search is a derived read model (CQRS): stream changes from the source of truth into a partitioned inverted index, tier it by time so fresh data stays small and fast, and answer queries by scatter-gather with cheap per-shard scoring and a global re-rank.",
+  "checks": [
+    {
+      "id": "req-search",
+      "type": "requirement",
+      "label": "Core use case captured",
+      "keywords": [
+        "search",
+        "query",
+        "keyword",
+        "find posts"
+      ],
+      "tips": {
+        "nudge": "What does the user type, and what comes back?",
+        "hint": "Write a functional requirement for searching posts by words.",
+        "show": "F1: A user searches public posts by keywords (and phrases/hashtags) and gets matching posts."
+      }
+    },
+    {
+      "id": "req-recency",
+      "type": "requirement",
+      "label": "How soon a new post must be findable",
+      "keywords": [
+        "searchable within",
+        "within 10",
+        "10 s",
+        "10s",
+        "seconds",
+        "real-time",
+        "realtime",
+        "real time",
+        "fresh",
+        "near real"
+      ],
+      "tips": {
+        "nudge": "Something big happens. People search for it within seconds. Must the first posts about it show up?",
+        "hint": "State the time from posting to searchable.",
+        "show": "N2: A new post is searchable within ~10 s."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Query speed expectation stated",
+      "keywords": [
+        "latency",
+        "p99",
+        "millisecond",
+        " ms",
+        "fast",
+        "quick"
+      ],
+      "tips": {
+        "nudge": "The interviewer gave you a number for a search.",
+        "hint": "State a latency target for a search request.",
+        "show": "N1: Search p99 < 500 ms, even during event spikes."
+      }
+    },
+    {
+      "id": "req-delete",
+      "type": "requirement",
+      "label": "What happens when a post goes away captured",
+      "keywords": [
+        "delete",
+        "privacy",
+        "removed",
+        "takedown",
+        "visibility",
+        "disappear"
+      ],
+      "tips": {
+        "nudge": "A user deletes a post or makes it private. What should search show a minute later?",
+        "hint": "Add a requirement about deleted or hidden posts.",
+        "show": "F4: Deleted or hidden posts disappear from results within ~1 minute."
+      }
+    },
+    {
+      "id": "est-post-rate",
+      "type": "estimate",
+      "label": "Ingest throughput estimated",
+      "keywords": [
+        "post",
+        "ingest",
+        "write",
+        "new"
+      ],
+      "unit": "/s",
+      "min": 1000,
+      "max": 100000,
+      "tips": {
+        "nudge": "Start from posts per day.",
+        "hint": "posts/day ÷ seconds in a day; then a peak factor.",
+        "show": "500M / day ≈ 5.8k posts/s (peak ~15k/s)."
+      }
+    },
+    {
+      "id": "est-search-qps",
+      "type": "estimate",
+      "label": "Query throughput estimated",
+      "keywords": [
+        "search",
+        "query",
+        "read"
+      ],
+      "unit": "/s",
+      "min": 500,
+      "max": 200000,
+      "tips": {
+        "nudge": "Searches per day, then the event spike.",
+        "hint": "searches/day ÷ seconds in a day × spike factor.",
+        "show": "200M / day ≈ 2.3k/s; ×5 during big events ≈ 12k/s."
+      }
+    },
+    {
+      "id": "est-index-size",
+      "type": "estimate",
+      "label": "Index size estimated",
+      "keywords": [
+        "index",
+        "storage",
+        "size",
+        "bytes"
+      ],
+      "unit": "TB",
+      "min": 10,
+      "max": 5000,
+      "tips": {
+        "nudge": "How many posts are searchable, and how much index does each one cost?",
+        "hint": "posts over the retention × bytes of postings per post (~30 terms).",
+        "show": "500M × 365 × 5 ≈ 900B posts × ~300 B ≈ 270 TB of index."
+      }
+    },
+    {
+      "id": "api-search",
+      "type": "endpoint",
+      "label": "Search endpoint defined",
+      "keywords": [
+        "search",
+        "q=",
+        "query"
+      ],
+      "method": "GET",
+      "tips": {
+        "nudge": "What does the app send, and how does it page?",
+        "hint": "A GET with the query, a mode (top vs latest) and a cursor.",
+        "show": "GET /search?q=&mode=top|latest&cursor= → {posts[], next_cursor}"
+      }
+    },
+    {
+      "id": "data-post",
+      "type": "entity",
+      "label": "The searchable item modelled",
+      "keywords": [
+        "post",
+        "doc"
+      ],
+      "tips": {
+        "nudge": "What fields of a post does search need?",
+        "hint": "Distinguish the source of truth from what goes into the index.",
+        "show": "posts(post_id time-sortable, author_id, text, lang, created_at, visibility) in the posts store; indexed doc = post_id, terms, created_at, author, lang."
+      }
+    },
+    {
+      "id": "data-index",
+      "type": "entity",
+      "label": "How text is looked up modelled",
+      "keywords": [
+        "posting",
+        "inverted",
+        "term",
+        "index"
+      ],
+      "tips": {
+        "nudge": "Scanning 900 billion posts for a word is not an option. What structure maps words to posts?",
+        "hint": "Model the index itself: what is the key, what is the value, how is it ordered?",
+        "show": "Inverted index: term → posting list of post_ids (sorted newest first) + positions; per-shard, per-time-tier segments."
+      }
+    },
+    {
+      "id": "part-ingest",
+      "type": "part",
+      "label": "Getting posts into the index designed as its own part",
+      "keywords": [
+        "ingest",
+        "indexing pipeline",
+        "index pipeline",
+        "pipeline",
+        "indexer",
+        "cdc",
+        "change data",
+        "into the index"
+      ],
+      "choice_keywords": [
+        "stream",
+        "queue",
+        "kafka",
+        "event",
+        "cdc",
+        "async",
+        "log"
+      ],
+      "tips": {
+        "nudge": "Should the post service write to the index while the author waits?",
+        "hint": "Add a part for the ingestion pipeline: compare a synchronous dual write, batch reindexing and an event stream.",
+        "show": "Part 'Ingestion pipeline': post created/deleted events (outbox/CDC) on Kafka; indexer workers tokenize and write to the real-time index within seconds."
+      }
+    },
+    {
+      "id": "part-sharding",
+      "type": "part",
+      "label": "Splitting the index designed as its own part",
+      "keywords": [
+        "partition",
+        "sharding",
+        "split the index",
+        "replica",
+        "distribute the index"
+      ],
+      "tips": {
+        "nudge": "270 TB of index won't fit one machine. Do you split by word or by post?",
+        "hint": "Add a part for index partitioning: term-partitioned vs document-partitioned, plus time tiers and replicas.",
+        "show": "Part 'Index partitioning': document-partitioned shards inside time tiers (real-time, recent, archive), each shard replicated for query throughput."
+      }
+    },
+    {
+      "id": "part-query",
+      "type": "part",
+      "label": "Answering a query designed as its own part",
+      "keywords": [
+        "fan-out",
+        "fan out",
+        "scatter",
+        "gather",
+        "query path",
+        "query execution",
+        "answer a query",
+        "answer ~"
+      ],
+      "tips": {
+        "nudge": "One query, hundreds of shards, 500 ms. Who asks whom, and who decides the order?",
+        "hint": "Add a part for query execution: how shards are queried, merged and ranked, and what happens with slow shards.",
+        "show": "Part 'Query fan-out and ranking': a broker scatters to relevant tiers, each shard returns its top-k by a cheap score, the broker merges and re-ranks the top ~1000 with engagement features; timeouts and hedged requests bound the tail."
+      }
+    },
+    {
+      "id": "part-recency",
+      "type": "part",
+      "label": "Freshness designed as its own part",
+      "keywords": [
+        "recency",
+        "freshness",
+        "fresh posts",
+        "fresh signals",
+        "searchable within",
+        "near-real",
+        "near real",
+        "refresh"
+      ],
+      "tips": {
+        "nudge": "A post from 5 seconds ago and a like from 1 second ago both matter. Reindex on every like?",
+        "hint": "Add a part for recency: how new posts become searchable fast and how changing signals reach ranking.",
+        "show": "Part 'Recency': an in-memory real-time tier refreshed every second serves new posts and 'Latest'; likes/reposts update a separate signals store read at ranking time instead of reindexing."
+      }
+    },
+    {
+      "id": "comp-search",
+      "type": "component",
+      "label": "Text lookup that doesn't scan every post",
+      "kinds": [
+        "search"
+      ],
+      "tips": {
+        "nudge": "How do you find posts containing a word without reading all of them?",
+        "hint": "Add the component that holds the inverted index.",
+        "show": "A search cluster (Elasticsearch/Lucene-style) holding inverted-index shards."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Thousands of searches per second, ×5 during events.",
+        "hint": "Stateless brokers behind something that distributes requests.",
+        "show": "Clients → load balancer → stateless post and search broker instances."
+      }
+    },
+    {
+      "id": "edge-index-async",
+      "type": "edge",
+      "label": "Index updated off the posting request",
+      "from_kinds": [
+        "worker"
+      ],
+      "to_kinds": [
+        "search"
+      ],
+      "tips": {
+        "nudge": "Who writes into the index, and is the author waiting for it?",
+        "hint": "Let an asynchronous consumer, not the request, write to the index.",
+        "show": "Post service → post events stream → indexer workers → real-time index."
+      }
+    },
+    {
+      "id": "dd-deletes",
+      "type": "decision",
+      "label": "Removing posts from immutable segments decided",
+      "keywords": [
+        "delete",
+        "tombstone",
+        "takedown",
+        "privacy",
+        "removal",
+        "visibility"
+      ],
+      "tips": {
+        "nudge": "Index segments are immutable. How does a deleted post vanish within a minute?",
+        "hint": "Compare rewriting segments with marking documents as deleted and filtering.",
+        "show": "Delete event → tombstone (deleted-docs bitset) in every tier; queries filter tombstones; segments are purged on the next merge."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "label": "Bottlenecks and single points of failure named",
+      "key": "bottlenecks",
+      "tips": {
+        "nudge": "Which part hurts first when a big event breaks?",
+        "hint": "Walk the ingest path and the query path separately.",
+        "show": "Real-time tier write + query load during events (more replicas), hot queries (short-TTL result cache), slowest shard sets the tail (hedging, partial results), indexer lag (scale consumers)."
+      }
+    },
+    {
+      "id": "wrap-scale",
+      "type": "wrapup",
+      "label": "Growth plan described",
+      "key": "scale",
+      "tips": {
+        "nudge": "Posts ×10. What grows: shards, replicas, or both?",
+        "hint": "Separate data growth from query growth.",
+        "show": "More data → more shards per tier (doc-partitioned, add a new time tier); more queries → more replicas; old tiers on cheaper, disk-heavy nodes."
+      }
+    }
+  ]
+}

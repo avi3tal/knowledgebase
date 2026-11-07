@@ -1,0 +1,573 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Search public posts by keywords, phrases and hashtags."
+      },
+      {
+        "id": "F2",
+        "text": "Two orders: 'Top' (relevance + engagement + recency) and 'Latest' (newest first), paginated."
+      },
+      {
+        "id": "F3",
+        "text": "Engagement (likes, reposts) influences 'Top' ranking."
+      },
+      {
+        "id": "F4",
+        "text": "Deleted or hidden posts disappear from results within ~1 minute."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Search p99 < 500 ms, including ×5 spikes during big events."
+      },
+      {
+        "id": "N2",
+        "text": "A new post is searchable within ~10 s (near real time)."
+      },
+      {
+        "id": "N3",
+        "text": "Available and horizontally scalable: data growth and query growth scale separately."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "500M new posts/day, ~30 indexable terms each; 200M searches/day, ×5 during events."
+      },
+      {
+        "id": "A2",
+        "text": "5 years searchable; ~80% of queries only need the last 7 days."
+      },
+      {
+        "id": "A3",
+        "text": "~5B likes/reposts per day."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "People search, typeahead, ads, personalisation by social graph, private posts."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "GET",
+      "path": "/search?q=&mode=top|latest&since=&cursor=",
+      "request": "",
+      "response": "{posts[{post_id, author, text, created_at, likes}], next_cursor}",
+      "notes": "Cursor encodes the last (score, post_id) or time."
+    },
+    {
+      "id": "E2",
+      "method": "POST",
+      "path": "/posts",
+      "request": "text",
+      "response": "201 {post_id}",
+      "notes": "Owned by the post service; emits post-created event."
+    },
+    {
+      "id": "E3",
+      "method": "DELETE",
+      "path": "/posts/{id}",
+      "request": "",
+      "response": "204",
+      "notes": "Emits post-deleted event → tombstone."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "posts",
+      "fields": "post_id (time-sortable), author_id, text, lang, created_at, visibility",
+      "store": "nosql",
+      "why": "Source of truth; the index can be rebuilt from it."
+    },
+    {
+      "id": "D2",
+      "name": "inverted index",
+      "fields": "term → posting list of post_ids (newest first) + positions; per shard, per time tier; deleted-docs bitset",
+      "store": "search",
+      "why": "Maps words to posts without scanning; segments are immutable."
+    },
+    {
+      "id": "D3",
+      "name": "engagement signals",
+      "fields": "post_id → likes, reposts, replies (batched counts)",
+      "store": "cache",
+      "why": "Changes constantly; read only for the top candidates."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Deletes and visibility changes in immutable segments",
+      "options": [
+        {
+          "name": "Rewrite the segment containing the post",
+          "pros": "index is exact",
+          "cons": "rewriting large segments per delete is far too expensive"
+        },
+        {
+          "name": "Tombstone: mark the doc in a deleted-docs bitset per segment, filter at query, purge on merge",
+          "pros": "deletes are cheap and fast",
+          "cons": "deleted docs still take space until the next merge"
+        }
+      ],
+      "choice": "Tombstones in every tier's deleted-docs bitset, filtered at query time, purged on segment merge",
+      "why": "Delete events reach all tiers within seconds through the same stream; F4's one-minute target is met without touching segment files.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Tail latency across hundreds of shards",
+      "options": [
+        {
+          "name": "Wait for every shard",
+          "pros": "complete results",
+          "cons": "p99 = the slowest shard's p99.9"
+        },
+        {
+          "name": "Per-shard timeout, hedged request to a replica after p95, return partial results",
+          "pros": "bounded tail",
+          "cons": "rarely misses a slow shard's hits"
+        }
+      ],
+      "choice": "Hedge to a second replica after the p95 latency and cut off at the deadline with partial results",
+      "why": "With hundreds of shards, some shard is always slow; N1 matters more than the last few hits of a social search.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The real-time tier takes both the write burst and most queries during events (more replicas, separate indexing and query nodes); hot queries (short-TTL cache with coalescing); the slowest shard (hedging); indexer lag (scale consumers by stream partition).",
+    "failures": "Index nodes fail: replicas serve; a lost shard is rebuilt from segments or by replaying the post stream. Indexers down: the stream buffers and posts become searchable late. Signals store down: rank on text and recency only.",
+    "monitoring": "Search p50/p99 per tier, post → searchable lag (stream lag), shard error and timeout rate, partial-result rate, cache hit ratio, tombstone backlog.",
+    "scale": "More data → more shards per tier and new archive tiers on cheaper disk-heavy nodes; more queries → more replicas of the hot tiers; rebuild old tiers offline from the posts store.",
+    "future": "Personalised ranking (social graph, language), semantic/vector retrieval as a second candidate source, typeahead."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Ingestion pipeline",
+      "covers": [
+        "F1",
+        "F4",
+        "N2"
+      ],
+      "problem": "Turn ~5.8k new posts/s (peak ~15k) and every delete into index updates within ~10 s, without slowing the post request or losing an update.",
+      "options": [
+        {
+          "name": "Post service writes to the index synchronously",
+          "pros": "simple; immediately searchable",
+          "cons": "index latency and outages hit posting; dual write can diverge"
+        },
+        {
+          "name": "Batch reindex every hour",
+          "pros": "efficient bulk builds",
+          "cons": "misses the 10 s freshness target"
+        },
+        {
+          "name": "Outbox/CDC events on a stream, indexer workers consume",
+          "pros": "posting never waits; replayable; deletes travel the same path",
+          "cons": "a few seconds of lag; one more system"
+        }
+      ],
+      "choice": "Post created/deleted events via an outbox onto a Kafka stream; indexer workers tokenize and write to the real-time index",
+      "why": "The index is a derived view, so feeding it from a replayable log keeps it rebuildable and N2 is met with seconds to spare; partitioning the stream by post_id spreads ~15k/s across workers.",
+      "technologies": [
+        "kafka",
+        "cassandra"
+      ],
+      "patterns": [
+        "outbox-pattern",
+        "cqrs"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Mobile / web app",
+            "x": 40,
+            "y": 200
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 200
+          },
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Post service",
+            "x": 380,
+            "y": 80
+          },
+          {
+            "id": "posts",
+            "kind": "nosql",
+            "label": "posts (source of truth)",
+            "x": 580,
+            "y": 20
+          },
+          {
+            "id": "poststream",
+            "kind": "stream",
+            "label": "Post events (create / delete)",
+            "x": 580,
+            "y": 140
+          },
+          {
+            "id": "indexer",
+            "kind": "worker",
+            "label": "Indexers (tokenize, normalise)",
+            "x": 780,
+            "y": 140
+          },
+          {
+            "id": "rtindex",
+            "kind": "search",
+            "label": "Real-time index (last 7 days, in memory)",
+            "x": 960,
+            "y": 140
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "POST /posts, GET /search"
+          },
+          {
+            "from": "lb",
+            "to": "postsvc",
+            "label": "create / delete / like"
+          },
+          {
+            "from": "postsvc",
+            "to": "posts",
+            "label": "write post + outbox"
+          },
+          {
+            "from": "postsvc",
+            "to": "poststream",
+            "label": "post created / deleted"
+          },
+          {
+            "from": "poststream",
+            "to": "indexer",
+            "label": "consume"
+          },
+          {
+            "from": "indexer",
+            "to": "rtindex",
+            "label": "add docs, tombstones"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Index partitioning and replication",
+      "covers": [
+        "N1",
+        "N3"
+      ],
+      "problem": "Split a ~270 TB inverted index over many machines so that writes stay local, queries stay fast, and query throughput can grow separately from data size.",
+      "options": [
+        {
+          "name": "Term-partitioned: each shard owns a set of words",
+          "pros": "a one-word query touches one shard",
+          "cons": "one post writes to ~30 shards; hot terms melt one shard; multi-word queries join across shards"
+        },
+        {
+          "name": "Document-partitioned: each shard owns a set of posts",
+          "pros": "a post writes to one shard; shards are independent",
+          "cons": "every query fans out to all shards of the tier"
+        },
+        {
+          "name": "Document-partitioned inside time tiers, each shard replicated",
+          "pros": "queries only touch tiers in their time range; old tiers are immutable and cheap",
+          "cons": "tier boundaries to manage; a daily segment build"
+        }
+      ],
+      "choice": "Document-partitioned shards inside time tiers (real-time, recent, archive), each shard replicated",
+      "why": "Most queries are about the last days, so the small real-time tier answers them; replicas scale the ~12k/s peak; immutable archive segments built daily are cheap to store and copy.",
+      "technologies": [
+        "elasticsearch"
+      ],
+      "patterns": [
+        "scatter-gather"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "posts",
+            "kind": "nosql",
+            "label": "posts (source of truth)",
+            "x": 580,
+            "y": 20
+          },
+          {
+            "id": "builder",
+            "kind": "worker",
+            "label": "Segment builder (daily)",
+            "x": 780,
+            "y": 20
+          },
+          {
+            "id": "archive",
+            "kind": "search",
+            "label": "Archive index (time tiers, doc-partitioned)",
+            "x": 960,
+            "y": 20
+          },
+          {
+            "id": "indexer",
+            "kind": "worker",
+            "label": "Indexers (tokenize, normalise)",
+            "x": 780,
+            "y": 140
+          },
+          {
+            "id": "rtindex",
+            "kind": "search",
+            "label": "Real-time index (last 7 days, in memory)",
+            "x": 960,
+            "y": 140
+          }
+        ],
+        "edges": [
+          {
+            "from": "builder",
+            "to": "posts",
+            "label": "read a day of posts"
+          },
+          {
+            "from": "builder",
+            "to": "archive",
+            "label": "publish immutable segments"
+          },
+          {
+            "from": "indexer",
+            "to": "rtindex",
+            "label": "add docs, tombstones"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Query fan-out and ranking",
+      "covers": [
+        "F2",
+        "N1"
+      ],
+      "problem": "Answer ~12k queries/s at peak in < 500 ms when a query must reach every shard of the relevant tiers and the slowest shard sets the latency.",
+      "options": [
+        {
+          "name": "Query every shard of every tier and wait for all",
+          "pros": "complete results",
+          "cons": "latency = slowest of hundreds of shards"
+        },
+        {
+          "name": "Scatter-gather with per-shard top-k, timeouts and hedged requests",
+          "pros": "bounded tail; returns partial results if a shard is slow",
+          "cons": "results can miss a slow shard's best hits"
+        },
+        {
+          "name": "Two-phase ranking: cheap per-shard score (text match × recency), broker re-ranks top ~1000 with engagement",
+          "pros": "expensive features only on few candidates",
+          "cons": "quality bounded by first-phase recall"
+        }
+      ],
+      "choice": "Broker scatter-gathers to the tiers in the query's time range with per-shard top-k, timeouts and hedging, then re-ranks the merged top ~1000 with engagement signals; hot queries hit a short-TTL result cache",
+      "why": "Per-shard top-k keeps network small; hedging cuts the tail that hundreds of shards create; spikes are a few hot queries, which a 10–30 s cache absorbs without hurting N2.",
+      "technologies": [
+        "elasticsearch",
+        "redis"
+      ],
+      "patterns": [
+        "scatter-gather",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 200
+          },
+          {
+            "id": "searchsvc",
+            "kind": "service",
+            "label": "Search broker (scatter-gather + rank)",
+            "x": 380,
+            "y": 360
+          },
+          {
+            "id": "rtindex",
+            "kind": "search",
+            "label": "Real-time index (last 7 days, in memory)",
+            "x": 960,
+            "y": 140
+          },
+          {
+            "id": "archive",
+            "kind": "search",
+            "label": "Archive index (time tiers, doc-partitioned)",
+            "x": 960,
+            "y": 20
+          },
+          {
+            "id": "qcache",
+            "kind": "cache",
+            "label": "Query result cache (short TTL)",
+            "x": 580,
+            "y": 420
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "searchsvc",
+            "label": "GET /search"
+          },
+          {
+            "from": "searchsvc",
+            "to": "rtindex",
+            "label": "query recent tier"
+          },
+          {
+            "from": "searchsvc",
+            "to": "archive",
+            "label": "scatter to older tiers"
+          },
+          {
+            "from": "searchsvc",
+            "to": "qcache",
+            "label": "hot query results"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Recency: fresh posts and fresh signals",
+      "covers": [
+        "F3",
+        "N2"
+      ],
+      "problem": "Make posts searchable within seconds and let likes and reposts (~60k/s) affect ranking, without rewriting index documents on every interaction.",
+      "options": [
+        {
+          "name": "Reindex the post document on every like",
+          "pros": "one place for everything",
+          "cons": "~60k document rewrites/s; segment churn"
+        },
+        {
+          "name": "In-memory real-time tier refreshed every ~1 s + separate engagement signals store read at ranking",
+          "pros": "new posts visible in seconds; signals update cheaply",
+          "cons": "two lookups per ranked candidate"
+        },
+        {
+          "name": "Only batch-built segments",
+          "pros": "simple and compact",
+          "cons": "hours of delay; breaks N2"
+        }
+      ],
+      "choice": "In-memory real-time tier with ~1 s refresh for the last 7 days; engagement counts aggregated from a stream into a signals store that the broker reads for the top candidates",
+      "why": "The real-time tier is small (~2 TB) so it fits in RAM and answers 'Latest' with early termination in time order; batched signal counts keep ~60k events/s off the index.",
+      "technologies": [
+        "kafka",
+        "redis"
+      ],
+      "patterns": [
+        "cqrs",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Post service",
+            "x": 380,
+            "y": 80
+          },
+          {
+            "id": "engstream",
+            "kind": "stream",
+            "label": "Engagement events (likes, reposts)",
+            "x": 580,
+            "y": 260
+          },
+          {
+            "id": "engworker",
+            "kind": "worker",
+            "label": "Signal aggregator",
+            "x": 780,
+            "y": 260
+          },
+          {
+            "id": "signals",
+            "kind": "cache",
+            "label": "Engagement signals per post",
+            "x": 960,
+            "y": 260
+          },
+          {
+            "id": "searchsvc",
+            "kind": "service",
+            "label": "Search broker (scatter-gather + rank)",
+            "x": 380,
+            "y": 360
+          },
+          {
+            "id": "rtindex",
+            "kind": "search",
+            "label": "Real-time index (last 7 days, in memory)",
+            "x": 960,
+            "y": 140
+          }
+        ],
+        "edges": [
+          {
+            "from": "postsvc",
+            "to": "engstream",
+            "label": "like / repost"
+          },
+          {
+            "from": "engstream",
+            "to": "engworker",
+            "label": "consume"
+          },
+          {
+            "from": "engworker",
+            "to": "signals",
+            "label": "batched counts"
+          },
+          {
+            "from": "searchsvc",
+            "to": "signals",
+            "label": "features for top ~1000"
+          },
+          {
+            "from": "searchsvc",
+            "to": "rtindex",
+            "label": "query recent tier"
+          }
+        ]
+      }
+    }
+  ]
+}

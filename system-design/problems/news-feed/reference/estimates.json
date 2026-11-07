@@ -1,12 +1,45 @@
 {
   "version": 1,
   "rows": [
-    { "name": "dau", "formula": "200 * million", "unit": "" },
-    { "name": "feed_loads_per_day", "formula": "dau * 10", "unit": "/day" },
-    { "name": "peak_feed_reads", "formula": "feed_loads_per_day / day * 2", "unit": "/s" },
-    { "name": "posts_per_day", "formula": "dau * 0.5", "unit": "/day" },
-    { "name": "post_rate", "formula": "posts_per_day / day", "unit": "/s" },
-    { "name": "fanout_inserts", "formula": "post_rate * 300", "unit": "/s" },
-    { "name": "feed_cache_memory", "formula": "dau * 500 * 8 / 10**9", "unit": "GB" }
+    {
+      "name": "dau",
+      "formula": "200 * million",
+      "unit": ""
+    },
+    {
+      "name": "feed_loads_per_day",
+      "formula": "dau * 10",
+      "unit": "/day"
+    },
+    {
+      "name": "peak_feed_reads",
+      "formula": "feed_loads_per_day / day * 2",
+      "unit": "/s"
+    },
+    {
+      "name": "posts_per_day",
+      "formula": "dau * 0.5",
+      "unit": "/day"
+    },
+    {
+      "name": "post_rate",
+      "formula": "posts_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "fanout_inserts",
+      "formula": "post_rate * 300",
+      "unit": "/s"
+    },
+    {
+      "name": "feed_cache_memory",
+      "formula": "dau * 500 * 8 / 10**9",
+      "unit": "GB"
+    },
+    {
+      "name": "media_storage_per_day",
+      "formula": "posts_per_day * 0.3 * 1 * million / 10**12",
+      "unit": "TB"
+    }
   ]
 }

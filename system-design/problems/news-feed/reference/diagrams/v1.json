@@ -1,14 +1,40 @@
 {
   "version": 1,
-  "why": "Naive start: one feed service and one SQL database; a feed load joins follows with posts and sorts (fan-out on read). At ~46k feed loads/s each touching ~300 authors, the single database melts (read-heavy N1), and one server is a single point of failure.",
+  "why": "Naive start: one service and one SQL database; a feed load joins follows with posts and sorts (fan-out on read). At ~46k loads/s, each touching ~300 authors, the database melts (N1) and one server is a single point of failure.",
   "nodes": [
-    { "id": "client", "kind": "client", "label": "Mobile / web app", "x": 60, "y": 160 },
-    { "id": "app", "kind": "service", "label": "Feed + post service", "x": 400, "y": 160 },
-    { "id": "db", "kind": "sql", "label": "posts + follows DB", "x": 640, "y": 160 }
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile / web app",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "Feed + post service",
+      "x": 300,
+      "y": 220
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "posts + follows DB",
+      "x": 560,
+      "y": 220
+    }
   ],
   "edges": [
-    { "from": "client", "to": "app", "label": "POST /posts, GET /feed" },
-    { "from": "app", "to": "db", "label": "JOIN follows ⋈ posts ORDER BY time" }
+    {
+      "from": "client",
+      "to": "app",
+      "label": "POST /posts, GET /feed"
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "label": "join follows × posts, sort"
+    }
   ],
-  "flows": [{ "name": "feed (pull)", "path": ["client", "app", "db"] }]
+  "flows": []
 }

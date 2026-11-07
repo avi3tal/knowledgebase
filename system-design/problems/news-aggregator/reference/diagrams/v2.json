@@ -1,0 +1,133 @@
+{
+  "version": 2,
+  "why": "Compose P1 (F1, N2): a scheduler polls each source at its own pace and accepts WebSub pings; fetchers do conditional GETs and buffer new articles on a stream. Still one card per article.",
+  "nodes": [
+    {
+      "id": "sources",
+      "kind": "external",
+      "label": "Publishers (RSS, sitemaps, WebSub)",
+      "x": 40,
+      "y": 20
+    },
+    {
+      "id": "scheduler",
+      "kind": "scheduler",
+      "label": "Poll scheduler (adaptive intervals)",
+      "x": 200,
+      "y": 110
+    },
+    {
+      "id": "srcdb",
+      "kind": "sql",
+      "label": "sources (interval, ETag, authority)",
+      "x": 380,
+      "y": 110
+    },
+    {
+      "id": "fetchers",
+      "kind": "worker",
+      "label": "Feed fetchers",
+      "x": 380,
+      "y": 20
+    },
+    {
+      "id": "raw",
+      "kind": "stream",
+      "label": "Raw articles",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "dedup",
+      "kind": "worker",
+      "label": "Article extractor",
+      "x": 780,
+      "y": 20
+    },
+    {
+      "id": "articles",
+      "kind": "nosql",
+      "label": "articles",
+      "x": 580,
+      "y": 110
+    },
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Web / mobile reader",
+      "x": 40,
+      "y": 420
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "News site",
+      "x": 380,
+      "y": 300
+    }
+  ],
+  "edges": [
+    {
+      "from": "sources",
+      "to": "scheduler",
+      "label": "WebSub ping (fetch now)"
+    },
+    {
+      "from": "scheduler",
+      "to": "srcdb",
+      "label": "who is due"
+    },
+    {
+      "from": "scheduler",
+      "to": "fetchers",
+      "label": "due sources"
+    },
+    {
+      "from": "fetchers",
+      "to": "sources",
+      "label": "conditional GET (ETag)"
+    },
+    {
+      "from": "fetchers",
+      "to": "srcdb",
+      "label": "ETag, new-item rate"
+    },
+    {
+      "from": "fetchers",
+      "to": "raw",
+      "label": "new article"
+    },
+    {
+      "from": "raw",
+      "to": "dedup",
+      "label": "consume"
+    },
+    {
+      "from": "dedup",
+      "to": "articles",
+      "label": "store unique article"
+    },
+    {
+      "from": "client",
+      "to": "app",
+      "label": "GET /"
+    },
+    {
+      "from": "app",
+      "to": "articles",
+      "label": "latest articles"
+    }
+  ],
+  "flows": [
+    {
+      "name": "ingest",
+      "path": [
+        "scheduler",
+        "fetchers",
+        "raw",
+        "dedup",
+        "articles"
+      ]
+    }
+  ]
+}

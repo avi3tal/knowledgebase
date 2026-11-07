@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Ingest → normalise → group → rank → serve: a streaming pipeline turns many noisy sources into a few precomputed, shared lists, and the request path only blends cached candidates for the reader.",
+  "checks": [
+    {
+      "id": "req-ingest",
+      "type": "requirement",
+      "label": "Where the content comes from captured",
+      "keywords": [
+        "ingest",
+        "crawl",
+        "fetch",
+        "poll",
+        "collect",
+        "rss",
+        "from sources",
+        "publishers",
+        "aggregate articles"
+      ],
+      "tips": {
+        "nudge": "You write no articles yourself. Where does everything on the page come from?",
+        "hint": "Write a functional requirement for collecting articles from publishers.",
+        "show": "F1: Continuously collect new articles (title, snippet, image, URL) from ~50k publishers' feeds and sitemaps."
+      }
+    },
+    {
+      "id": "req-cluster",
+      "type": "requirement",
+      "label": "Many outlets, one event captured",
+      "keywords": [
+        "cluster",
+        "group",
+        "same story",
+        "duplicate",
+        "dedup",
+        "one story",
+        "full coverage"
+      ],
+      "tips": {
+        "nudge": "Two hundred outlets write about the same earthquake. How many cards does the reader see?",
+        "hint": "Add a requirement about how coverage of the same event is presented.",
+        "show": "F2: Articles about the same event are grouped into one story with a 'full coverage' list; near-identical copies are removed."
+      }
+    },
+    {
+      "id": "req-personal",
+      "type": "requirement",
+      "label": "Different readers, different pages captured",
+      "keywords": [
+        "personal",
+        "for you",
+        "interest",
+        "recommend",
+        "tailor",
+        "follow topics"
+      ],
+      "tips": {
+        "nudge": "Is the home page the same for a sports fan and a markets trader?",
+        "hint": "Add a requirement for a page section that depends on the reader.",
+        "show": "F4: Logged-in readers get a 'For you' section built from followed topics and reading history."
+      }
+    },
+    {
+      "id": "req-freshness",
+      "type": "requirement",
+      "label": "How quickly new stories must appear",
+      "keywords": [
+        "fresh",
+        "within 5",
+        "5 min",
+        "minutes",
+        "breaking",
+        "delay",
+        "lag",
+        "up to date",
+        "up-to-date"
+      ],
+      "tips": {
+        "nudge": "A big story breaks. How long can it take to show up?",
+        "hint": "State a freshness target from publication to the home page.",
+        "show": "N2: A breaking story appears within ~5 minutes of first publication."
+      }
+    },
+    {
+      "id": "est-article-rate",
+      "type": "estimate",
+      "label": "Ingest throughput estimated",
+      "keywords": [
+        "article",
+        "ingest",
+        "new",
+        "write"
+      ],
+      "unit": "/s",
+      "min": 5,
+      "max": 2000,
+      "tips": {
+        "nudge": "Start from new articles per day.",
+        "hint": "articles/day ÷ seconds in a day.",
+        "show": "2M / day ≈ 23 /s (peaks ~100 /s on big news days)."
+      }
+    },
+    {
+      "id": "est-poll-rate",
+      "type": "estimate",
+      "label": "Polling load estimated",
+      "keywords": [
+        "poll",
+        "fetch",
+        "crawl"
+      ],
+      "unit": "/s",
+      "min": 20,
+      "max": 20000,
+      "tips": {
+        "nudge": "How many requests do you make to publishers to find those articles?",
+        "hint": "sources ÷ average poll interval.",
+        "show": "50k sources / 300 s ≈ 170 feed fetches /s."
+      }
+    },
+    {
+      "id": "est-read-qps",
+      "type": "estimate",
+      "label": "Read throughput estimated",
+      "keywords": [
+        "read",
+        "view",
+        "page",
+        "request",
+        "visit"
+      ],
+      "unit": "/s",
+      "min": 1000,
+      "max": 300000,
+      "tips": {
+        "nudge": "Readers × page views, then the breaking-news spike.",
+        "hint": "Convert daily page views to per second and apply the spike factor.",
+        "show": "100M × 5 = 500M views/day ≈ 5.8k /s; ×5 on breaking news ≈ 29k /s."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "Yearly storage estimated",
+      "keywords": [
+        "storage",
+        "metadata",
+        "bytes",
+        "size",
+        "disk"
+      ],
+      "unit": "TB",
+      "min": 0.5,
+      "max": 200,
+      "tips": {
+        "nudge": "You keep metadata, not whole pages. How big is a year of it?",
+        "hint": "articles/year × bytes per article record.",
+        "show": "2M × 365 × 5 KB ≈ 3.7 TB/year of article metadata (+ ~1 TB of 30-day text for clustering)."
+      }
+    },
+    {
+      "id": "api-feed",
+      "type": "endpoint",
+      "label": "Read endpoint defined",
+      "keywords": [
+        "feed",
+        "stories",
+        "top",
+        "home",
+        "edition",
+        "news",
+        "for-you",
+        "for_you"
+      ],
+      "method": "GET",
+      "tips": {
+        "nudge": "What does the app call to draw the home page?",
+        "hint": "A GET for an edition's top stories, plus one for the personal section.",
+        "show": "GET /stories?edition=en-US&topic=&cursor= → {stories[{story_id, headline, articles[3], coverage_count}]}; GET /for-you."
+      }
+    },
+    {
+      "id": "data-article",
+      "type": "entity",
+      "label": "Source content modelled",
+      "keywords": [
+        "article",
+        "url"
+      ],
+      "tips": {
+        "nudge": "What do you keep about each article you found?",
+        "hint": "One record per canonical URL, with what you need to cluster and display it.",
+        "show": "articles(article_id, canonical_url, source_id, title, snippet, image_url, published_at, simhash, embedding, story_id)."
+      }
+    },
+    {
+      "id": "data-story",
+      "type": "entity",
+      "label": "The grouping modelled",
+      "keywords": [
+        "story",
+        "cluster",
+        "event"
+      ],
+      "tips": {
+        "nudge": "What do you show as one card on the home page?",
+        "hint": "An entity that groups articles and carries ranking signals.",
+        "show": "stories(story_id, headline, centroid, article_ids, first_seen, last_updated, coverage_count, topic, editions)."
+      }
+    },
+    {
+      "id": "part-ingest",
+      "type": "part",
+      "label": "Collecting articles designed as its own part",
+      "keywords": [
+        "ingest",
+        "crawl",
+        "fetch",
+        "poll",
+        "rss",
+        "sitemap",
+        "websub",
+        "publishers"
+      ],
+      "tips": {
+        "nudge": "50k publishers, each publishing at its own pace. How do you notice a new article within minutes without hammering them?",
+        "hint": "Add a part for ingestion: compare fixed polling, adaptive polling and push, and draw scheduler, fetchers and a buffer.",
+        "show": "Part 'Ingestion': a scheduler adapts each source's poll interval and accepts WebSub pings; fetchers do conditional GETs and put new articles on a stream."
+      }
+    },
+    {
+      "id": "part-cluster",
+      "type": "part",
+      "label": "Grouping coverage designed as its own part",
+      "keywords": [
+        "dedup",
+        "duplicate",
+        "cluster",
+        "near-dup",
+        "simhash",
+        "minhash",
+        "similar",
+        "same story",
+        "group"
+      ],
+      "tips": {
+        "nudge": "Syndicated copies are near-identical; different outlets' takes are similar but not the same. Two problems?",
+        "hint": "Add a part for dedup and clustering: exact vs near-duplicate detection, batch vs incremental clustering.",
+        "show": "Part 'Dedup and clustering': canonical URL + SimHash drop copies; each unique article joins the nearest recent story centroid (embeddings) or starts a new story; periodic batch re-clustering merges and splits."
+      }
+    },
+    {
+      "id": "part-rank",
+      "type": "part",
+      "label": "Ordering stories designed as its own part",
+      "keywords": [
+        "rank",
+        "for you",
+        "recommend",
+        "score",
+        "importance",
+        "personalisation",
+        "personalization"
+      ],
+      "tips": {
+        "nudge": "Which of today's 50k stories goes first, and for whom?",
+        "hint": "Add a part for ranking: global vs per-user, computed at request time or ahead of time.",
+        "show": "Part 'Ranking and personalisation': a ranker scores stories every minute (freshness, coverage, source authority) into lists per edition/topic; the request re-ranks a few hundred candidates with the reader's interest profile."
+      }
+    },
+    {
+      "id": "part-serving",
+      "type": "part",
+      "label": "Read path designed as its own part",
+      "keywords": [
+        "serving",
+        "serve",
+        "read path",
+        "home page",
+        "page load",
+        "page views",
+        "spike",
+        "cdn",
+        "edge cache"
+      ],
+      "tips": {
+        "nudge": "A breaking story multiplies traffic by five within minutes. What answers those requests?",
+        "hint": "Add a part for serving: what is cached where, and what must be computed per reader.",
+        "show": "Part 'Serving': anonymous edition pages cached at the CDN for ~30 s; personalised sections blended by stateless API servers from cached candidate lists."
+      }
+    },
+    {
+      "id": "comp-cache",
+      "type": "component",
+      "label": "Read path can absorb breaking-news spikes",
+      "keywords": [
+        "edition",
+        "page",
+        "rank",
+        "list",
+        "top",
+        "cdn",
+        "stories"
+      ],
+      "kinds": [
+        "cache",
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Everyone in a country sees almost the same top stories. How often should you compute that page?",
+        "hint": "Put something in front that serves the shared parts without recomputing.",
+        "show": "CDN caching edition pages for ~30 s + Redis holding ranked story lists per edition/topic."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "Tens of thousands of requests per second on a big news day.",
+        "hint": "Stateless API servers behind something that distributes requests.",
+        "show": "CDN → load balancer → stateless news API servers."
+      }
+    },
+    {
+      "id": "edge-async-ingest",
+      "type": "edge",
+      "label": "Fetching decoupled from processing",
+      "from_kinds": [
+        "worker",
+        "scheduler",
+        "service"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
+      "to_keywords": [
+        "raw",
+        "article",
+        "fetch",
+        "crawl",
+        "ingest",
+        "new item"
+      ],
+      "tips": {
+        "nudge": "Fetchers are fast; clustering is slow and bursty. Should they wait on each other?",
+        "hint": "Put a buffer between the crawl side and the processing side.",
+        "show": "Fetchers → raw-articles stream (Kafka) → dedup/extract workers."
+      }
+    },
+    {
+      "id": "dd-poll-schedule",
+      "type": "decision",
+      "label": "How often each source is checked decided",
+      "keywords": [
+        "poll",
+        "interval",
+        "schedul",
+        "websub",
+        "pubsubhubbub",
+        "recrawl",
+        "re-crawl",
+        "politeness",
+        "backoff"
+      ],
+      "tips": {
+        "nudge": "A wire service publishes every minute; a local blog once a week. Same interval?",
+        "hint": "Decide how a source's poll interval is set and changed, and how push fits in.",
+        "show": "Adaptive interval per source (shrink when new items appear, grow when not, 1–60 min), WebSub push where supported, per-host politeness limits."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure behaviour described",
+      "key": "failures",
+      "tips": {
+        "nudge": "The clusterer falls behind on a huge news day. What does the reader see?",
+        "hint": "Go stage by stage: what is buffered, what degrades, what is served stale.",
+        "show": "Stream buffers raw articles; pages serve the last ranked lists (stale but up); fetchers back off failing hosts; clustering lag shows as singleton stories, merged later."
+      }
+    },
+    {
+      "id": "wrap-monitoring",
+      "type": "wrapup",
+      "label": "Operability covered",
+      "key": "monitoring",
+      "tips": {
+        "nudge": "How would you know a breaking story is late?",
+        "hint": "List metrics for each stage from publish to page.",
+        "show": "Publish → visible latency per source, fetch error rate, stream lag, cluster size distribution, page p99, CDN hit ratio."
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "dau",
+      "formula": "500 * million",
+      "unit": ""
+    },
+    {
+      "name": "uploads_per_day",
+      "formula": "100 * million",
+      "unit": "/day"
+    },
+    {
+      "name": "upload_rate",
+      "formula": "uploads_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "peak_upload_rate",
+      "formula": "upload_rate * 2.5",
+      "unit": "/s"
+    },
+    {
+      "name": "media_storage_per_day",
+      "formula": "uploads_per_day * 2.5 * million / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "media_storage_per_year",
+      "formula": "media_storage_per_day * 365 / 1000",
+      "unit": "PB"
+    },
+    {
+      "name": "feed_loads_per_day",
+      "formula": "dau * 10",
+      "unit": "/day"
+    },
+    {
+      "name": "peak_feed_reads",
+      "formula": "feed_loads_per_day / day * 2",
+      "unit": "/s"
+    },
+    {
+      "name": "like_rate",
+      "formula": "dau * 8 / day",
+      "unit": "/s"
+    },
+    {
+      "name": "fanout_inserts",
+      "formula": "upload_rate * 150",
+      "unit": "/s"
+    }
+  ]
+}

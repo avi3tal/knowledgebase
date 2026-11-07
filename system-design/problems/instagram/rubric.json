@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "flags": {
+    "read_heavy": true,
+    "needs_lb": true
+  },
+  "pattern": "Split bytes from metadata: heavy, immutable blobs go client → object storage → CDN with asynchronous processing, while small metadata drives the graph, feed and counters; hot counters absorb write spikes by aggregating events instead of updating one row.",
+  "checks": [
+    {
+      "id": "req-upload",
+      "type": "requirement",
+      "label": "Creating content captured",
+      "keywords": [
+        "upload",
+        "post a photo",
+        "share a photo",
+        "publish",
+        "post photo",
+        "posts a photo",
+        "create a post",
+        "share photos"
+      ],
+      "tips": {
+        "nudge": "What does a user do before anyone has anything to look at?",
+        "hint": "Write a functional requirement for sharing a photo.",
+        "show": "F1: A user uploads a photo with a caption; followers can see it once it is processed."
+      }
+    },
+    {
+      "id": "req-feed",
+      "type": "requirement",
+      "label": "Core read use case captured",
+      "keywords": [
+        "feed",
+        "timeline",
+        "home"
+      ],
+      "tips": {
+        "nudge": "What does a user see when they open the app?",
+        "hint": "Describe the feed: whose photos, what order, how it pages.",
+        "show": "F2: A user scrolls a home feed of photos from accounts they follow, 10 per page, newest/most relevant first."
+      }
+    },
+    {
+      "id": "req-like",
+      "type": "requirement",
+      "label": "Engagement use case captured",
+      "keywords": [
+        "like",
+        "heart",
+        "reaction"
+      ],
+      "tips": {
+        "nudge": "Below every photo there is a number people care a lot about.",
+        "hint": "Add a functional requirement for liking and showing like counts.",
+        "show": "F4: A user can like / unlike a photo; each photo shows its like count."
+      }
+    },
+    {
+      "id": "req-latency",
+      "type": "requirement",
+      "label": "Load-time expectation stated",
+      "keywords": [
+        "latency",
+        "millisecond",
+        " ms",
+        "p99",
+        "fast",
+        "quick",
+        "500ms"
+      ],
+      "tips": {
+        "nudge": "The interviewer gave you a number for opening the feed.",
+        "hint": "State a latency target for loading a feed page and for images.",
+        "show": "N1: Feed p99 < 500 ms; images load from a nearby edge."
+      }
+    },
+    {
+      "id": "req-durability",
+      "type": "requirement",
+      "label": "What must never happen to a user's photos",
+      "keywords": [
+        "durab",
+        "never lose",
+        "never lost",
+        "not lose",
+        "lost",
+        "nines",
+        "replicat"
+      ],
+      "tips": {
+        "nudge": "Which failure would users forgive least: a slow feed, a wrong like count, or…?",
+        "hint": "Add a non-functional requirement about keeping uploaded photos safe.",
+        "show": "N3: Once an upload is acknowledged the photo is never lost (11 nines durability, replicated across zones)."
+      }
+    },
+    {
+      "id": "est-uploads",
+      "type": "estimate",
+      "label": "Write throughput estimated",
+      "keywords": [
+        "upload",
+        "photo",
+        "post",
+        "write"
+      ],
+      "unit": "/s",
+      "min": 300,
+      "max": 20000,
+      "tips": {
+        "nudge": "Start from the daily number of new photos.",
+        "hint": "uploads/day ÷ seconds in a day; then a peak factor.",
+        "show": "100M / day ≈ 1.2k uploads/s (peak ~3k/s)."
+      }
+    },
+    {
+      "id": "est-storage",
+      "type": "estimate",
+      "label": "New photo bytes per day estimated",
+      "keywords": [
+        "storage",
+        "bytes",
+        "disk",
+        "size",
+        "media"
+      ],
+      "unit": "TB",
+      "min": 50,
+      "max": 2000,
+      "tips": {
+        "nudge": "Each upload is an original plus several resized copies.",
+        "hint": "photos/day × (original + renditions) in TB.",
+        "show": "100M × (2 MB + 0.5 MB renditions) ≈ 250 TB/day, ~90 PB/year."
+      }
+    },
+    {
+      "id": "est-feed-reads",
+      "type": "estimate",
+      "label": "Read throughput estimated",
+      "keywords": [
+        "feed",
+        "read",
+        "view",
+        "load",
+        "open"
+      ],
+      "unit": "/s",
+      "min": 20000,
+      "max": 1000000,
+      "tips": {
+        "nudge": "Daily users × feed opens per day.",
+        "hint": "Convert to per-second and apply the peak factor.",
+        "show": "500M × 10 = 5B loads/day ≈ 58k/s, ~116k/s at peak."
+      }
+    },
+    {
+      "id": "api-upload",
+      "type": "endpoint",
+      "label": "Write endpoint defined",
+      "keywords": [
+        "upload",
+        "media",
+        "photo",
+        "post",
+        "image"
+      ],
+      "method": "POST",
+      "tips": {
+        "nudge": "How do photo bytes get from the phone to you, and how does the post get created?",
+        "hint": "Think about separating the bytes from the post metadata.",
+        "show": "POST /uploads → {media_id, upload_url (presigned)}; PUT bytes; POST /posts {media_id, caption} → 201 {post_id}."
+      }
+    },
+    {
+      "id": "api-feed",
+      "type": "endpoint",
+      "label": "Read endpoint defined",
+      "keywords": [
+        "feed",
+        "timeline",
+        "home"
+      ],
+      "method": "GET",
+      "tips": {
+        "nudge": "What does the app call on open and on scroll?",
+        "hint": "A paginated GET that stays stable while new posts arrive.",
+        "show": "GET /feed?cursor=&limit=10 → {posts[{post_id, image_urls, caption, like_count, liked_by_me}], next_cursor}"
+      }
+    },
+    {
+      "id": "data-posts",
+      "type": "entity",
+      "label": "Content data modelled",
+      "keywords": [
+        "post",
+        "photo",
+        "media",
+        "image"
+      ],
+      "tips": {
+        "nudge": "What do you store per photo, and what do you store elsewhere?",
+        "hint": "Metadata row keyed by id; bytes referenced, not embedded.",
+        "show": "posts(post_id PK, author_id, caption, media_keys, status, created_at) in a wide-column store; bytes in object storage."
+      }
+    },
+    {
+      "id": "data-follows",
+      "type": "entity",
+      "label": "Who-follows-whom modelled",
+      "keywords": [
+        "follow",
+        "graph",
+        "friend",
+        "subscri",
+        "adjacen"
+      ],
+      "tips": {
+        "nudge": "Fan-out asks one question about the graph, the profile page another.",
+        "hint": "Model the relationship for both directions you query.",
+        "show": "followers(user_id, follower_id) and following(user_id, followee_id), both partitioned by user_id."
+      }
+    },
+    {
+      "id": "part-media",
+      "type": "part",
+      "label": "Photo bytes pipeline designed as its own part",
+      "keywords": [
+        "upload",
+        "media",
+        "image",
+        "photo",
+        "transcod",
+        "thumbnail",
+        "resize",
+        "rendition",
+        "presign",
+        "cdn"
+      ],
+      "choice_keywords": [
+        "presign",
+        "signed",
+        "direct",
+        "object",
+        "blob",
+        "s3",
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "100M photos a day at several MB each. Should those bytes touch your API servers?",
+        "hint": "Add a part for the upload pipeline: how bytes arrive, how resized copies are made, how they are served.",
+        "show": "Part 'Media pipeline': presigned PUT straight to object storage, an object-created event queues resize jobs, workers write renditions, a CDN serves them."
+      }
+    },
+    {
+      "id": "part-graph",
+      "type": "part",
+      "label": "Follow relationships designed as their own part",
+      "keywords": [
+        "follow",
+        "graph",
+        "adjacen",
+        "followers",
+        "relationship"
+      ],
+      "tips": {
+        "nudge": "Fan-out needs 'all followers of X' fast; the profile needs counts; some users have 300M followers.",
+        "hint": "Add a part for the follow graph: compare a SQL table, two adjacency lists and a graph database.",
+        "show": "Part 'Follow graph': two denormalized adjacency lists (followers-of, following-of) in a wide-column store partitioned by user, cached counts."
+      }
+    },
+    {
+      "id": "part-feed",
+      "type": "part",
+      "label": "Feed generation designed as its own part",
+      "keywords": [
+        "feed generation",
+        "generate the feed",
+        "build the feed",
+        "assembled",
+        "timeline",
+        "fan-out",
+        "fanout",
+        "fan out",
+        "precompute",
+        "hybrid"
+      ],
+      "tips": {
+        "nudge": "Building a feed from 150 followees on every open, or ahead of time?",
+        "hint": "Add a part for feed generation: push, pull or hybrid, and when it is triggered.",
+        "show": "Part 'Feed generation': hybrid fan-out triggered when a post's renditions are ready; huge accounts merged at read time; a light ranker orders candidates."
+      }
+    },
+    {
+      "id": "part-likes",
+      "type": "part",
+      "label": "Likes and counters designed as their own part",
+      "keywords": [
+        "likes",
+        "like count",
+        "liking",
+        "counter",
+        "engagement",
+        "hearts"
+      ],
+      "choice_keywords": [
+        "stream",
+        "batch",
+        "aggregat",
+        "shard",
+        "async",
+        "queue",
+        "kafka",
+        "event"
+      ],
+      "tips": {
+        "nudge": "A viral photo gets thousands of likes per second. What does that do to one row?",
+        "hint": "Add a part for likes: compare updating a counter per like with aggregating events.",
+        "show": "Part 'Likes and counters': idempotent likes(post_id, user_id) rows, like events on a stream, an aggregator applies batched +n to sharded counters in Redis."
+      }
+    },
+    {
+      "id": "comp-cdn",
+      "type": "component",
+      "label": "Images reach users from nearby",
+      "kinds": [
+        "cdn"
+      ],
+      "tips": {
+        "nudge": "Users all over the world scroll photos. Where should the bytes come from?",
+        "hint": "Something close to users that caches immutable files.",
+        "show": "A CDN in front of object storage; renditions are immutable, so they cache forever."
+      }
+    },
+    {
+      "id": "comp-lb",
+      "type": "component",
+      "label": "Traffic spread across instances",
+      "kinds": [
+        "load-balancer",
+        "api-gateway"
+      ],
+      "tips": {
+        "nudge": "~100k feed loads per second at peak.",
+        "hint": "Stateless services behind something that distributes requests.",
+        "show": "Clients → load balancer / API gateway → stateless post, feed, graph and like services."
+      }
+    },
+    {
+      "id": "edge-async-media",
+      "type": "edge",
+      "label": "Image processing kept off the upload request",
+      "from_kinds": [
+        "service",
+        "blob"
+      ],
+      "to_kinds": [
+        "queue",
+        "stream"
+      ],
+      "to_keywords": [
+        "media",
+        "image",
+        "photo",
+        "upload",
+        "process",
+        "resize",
+        "thumbnail",
+        "transcod",
+        "object",
+        "rendition"
+      ],
+      "tips": {
+        "nudge": "Resizing a photo into four sizes takes seconds. Should the user wait?",
+        "hint": "Let storage or the upload service hand the work to something asynchronous.",
+        "show": "Object storage emits 'object created' → media processing queue → resize workers."
+      }
+    },
+    {
+      "id": "dd-like-dedup",
+      "type": "decision",
+      "label": "Repeated likes handled",
+      "keywords": [
+        "idempot",
+        "double",
+        "duplicate",
+        "twice",
+        "dedup",
+        "exactly once",
+        "at-least-once",
+        "at least once"
+      ],
+      "tips": {
+        "nudge": "A double tap, a retry on a flaky network, a replayed event: how many likes is that?",
+        "hint": "Decide where uniqueness of (user, post) is enforced and how the counter stays consistent with it.",
+        "show": "likes has PK (post_id, user_id) and insert-if-absent; only a successful insert emits a +1 event; the aggregator dedups by event id."
+      }
+    },
+    {
+      "id": "wrap-bottlenecks",
+      "type": "wrapup",
+      "label": "Bottlenecks and single points of failure named",
+      "key": "bottlenecks",
+      "tips": {
+        "nudge": "Which part breaks first when a celebrity posts?",
+        "hint": "Walk the upload path, the fan-out path and the like path separately.",
+        "show": "Hot like counters (sharded counters), fan-out for huge accounts (pull instead), resize queue backlog (autoscale workers), CDN origin load (origin shield)."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Failure behaviour described",
+      "key": "failures",
+      "tips": {
+        "nudge": "A resize worker crashes halfway; a cache node dies. What does the user see?",
+        "hint": "Go component by component: what is lost, what is retried, what degrades.",
+        "show": "Uploads are durable before ack; resize jobs retry from the queue (idempotent); counters rebuild from the likes table; feed cache rebuilt by pulling."
+      }
+    }
+  ]
+}

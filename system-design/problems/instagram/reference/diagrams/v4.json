@@ -1,0 +1,318 @@
+{
+  "version": 4,
+  "why": "Compose P4 (F4, N4): likes become idempotent rows plus events; an aggregator batches them into sharded counters, so a viral photo no longer locks one row. The old database is gone.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile app",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 200,
+      "y": 220
+    },
+    {
+      "id": "cdn",
+      "kind": "cdn",
+      "label": "CDN (upload edge + image delivery)",
+      "x": 200,
+      "y": 420
+    },
+    {
+      "id": "postsvc",
+      "kind": "service",
+      "label": "Upload / post service",
+      "x": 380,
+      "y": 20
+    },
+    {
+      "id": "media",
+      "kind": "blob",
+      "label": "Object storage (originals + renditions)",
+      "x": 380,
+      "y": 420
+    },
+    {
+      "id": "mediaq",
+      "kind": "queue",
+      "label": "Media processing queue",
+      "x": 580,
+      "y": 420
+    },
+    {
+      "id": "imgworker",
+      "kind": "worker",
+      "label": "Resize workers",
+      "x": 780,
+      "y": 420
+    },
+    {
+      "id": "posts",
+      "kind": "nosql",
+      "label": "posts (metadata, by post_id)",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "graphsvc",
+      "kind": "service",
+      "label": "Graph service",
+      "x": 380,
+      "y": 120
+    },
+    {
+      "id": "graph",
+      "kind": "nosql",
+      "label": "follow graph (followers-of / following-of)",
+      "x": 580,
+      "y": 120
+    },
+    {
+      "id": "graphcache",
+      "kind": "cache",
+      "label": "Graph cache (counts, celebrity flags)",
+      "x": 780,
+      "y": 120
+    },
+    {
+      "id": "feedsvc",
+      "kind": "service",
+      "label": "Feed service (merge + rank)",
+      "x": 380,
+      "y": 220
+    },
+    {
+      "id": "feedcache",
+      "kind": "cache",
+      "label": "Feed cache (user → post_ids)",
+      "x": 580,
+      "y": 220
+    },
+    {
+      "id": "fanout",
+      "kind": "worker",
+      "label": "Fan-out workers",
+      "x": 780,
+      "y": 220
+    },
+    {
+      "id": "fanq",
+      "kind": "stream",
+      "label": "Post-ready events",
+      "x": 960,
+      "y": 420
+    },
+    {
+      "id": "likesvc",
+      "kind": "service",
+      "label": "Like service",
+      "x": 380,
+      "y": 320
+    },
+    {
+      "id": "likes",
+      "kind": "nosql",
+      "label": "likes (post_id, user_id)",
+      "x": 580,
+      "y": 320
+    },
+    {
+      "id": "likestream",
+      "kind": "stream",
+      "label": "Like events",
+      "x": 780,
+      "y": 320
+    },
+    {
+      "id": "counteragg",
+      "kind": "worker",
+      "label": "Counter aggregator",
+      "x": 960,
+      "y": 320
+    },
+    {
+      "id": "counters",
+      "kind": "cache",
+      "label": "Like counters (sharded for hot posts)",
+      "x": 960,
+      "y": 120
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "API calls"
+    },
+    {
+      "from": "lb",
+      "to": "postsvc",
+      "label": "POST /uploads, POST /posts"
+    },
+    {
+      "from": "client",
+      "to": "cdn",
+      "label": "PUT photo (presigned), GET images"
+    },
+    {
+      "from": "cdn",
+      "to": "media",
+      "label": "store upload / origin fetch"
+    },
+    {
+      "from": "postsvc",
+      "to": "media",
+      "label": "sign upload URL"
+    },
+    {
+      "from": "postsvc",
+      "to": "posts",
+      "label": "create post (processing)"
+    },
+    {
+      "from": "media",
+      "to": "mediaq",
+      "label": "object created"
+    },
+    {
+      "from": "mediaq",
+      "to": "imgworker",
+      "label": "resize job"
+    },
+    {
+      "from": "imgworker",
+      "to": "media",
+      "label": "write renditions"
+    },
+    {
+      "from": "imgworker",
+      "to": "posts",
+      "label": "mark ready"
+    },
+    {
+      "from": "lb",
+      "to": "graphsvc",
+      "label": "follow / unfollow"
+    },
+    {
+      "from": "graphsvc",
+      "to": "graph",
+      "label": "write both lists"
+    },
+    {
+      "from": "graphsvc",
+      "to": "graphcache",
+      "label": "counts, celebrity flag"
+    },
+    {
+      "from": "lb",
+      "to": "feedsvc",
+      "label": "GET /feed"
+    },
+    {
+      "from": "feedsvc",
+      "to": "feedcache",
+      "label": "read candidates"
+    },
+    {
+      "from": "feedsvc",
+      "to": "graphcache",
+      "label": "celebrities I follow"
+    },
+    {
+      "from": "feedsvc",
+      "to": "posts",
+      "label": "hydrate metadata"
+    },
+    {
+      "from": "imgworker",
+      "to": "fanq",
+      "label": "post ready"
+    },
+    {
+      "from": "fanq",
+      "to": "fanout",
+      "label": "consume"
+    },
+    {
+      "from": "fanout",
+      "to": "graph",
+      "label": "followers of author"
+    },
+    {
+      "from": "fanout",
+      "to": "feedcache",
+      "label": "push post_id"
+    },
+    {
+      "from": "lb",
+      "to": "likesvc",
+      "label": "POST /posts/{id}/like"
+    },
+    {
+      "from": "likesvc",
+      "to": "likes",
+      "label": "insert if absent"
+    },
+    {
+      "from": "likesvc",
+      "to": "likestream",
+      "label": "+1 / -1 event"
+    },
+    {
+      "from": "likestream",
+      "to": "counteragg",
+      "label": "consume"
+    },
+    {
+      "from": "counteragg",
+      "to": "counters",
+      "label": "batched +n"
+    },
+    {
+      "from": "feedsvc",
+      "to": "counters",
+      "label": "like counts"
+    }
+  ],
+  "flows": [
+    {
+      "name": "upload",
+      "path": [
+        "client",
+        "cdn",
+        "media",
+        "mediaq",
+        "imgworker",
+        "fanq",
+        "fanout",
+        "feedcache"
+      ]
+    },
+    {
+      "name": "feed load",
+      "path": [
+        "client",
+        "lb",
+        "feedsvc",
+        "feedcache"
+      ]
+    },
+    {
+      "name": "like",
+      "path": [
+        "client",
+        "lb",
+        "likesvc",
+        "likestream",
+        "counteragg",
+        "counters"
+      ]
+    }
+  ]
+}

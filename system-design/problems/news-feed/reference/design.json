@@ -2,34 +2,77 @@
   "version": 1,
   "scope": {
     "functional": [
-      { "id": "F1", "text": "A user can publish a post: text plus optional photos/videos." },
-      { "id": "F2", "text": "A user sees a home feed of recent posts from accounts they follow, newest first, paginated 20 at a time (infinite scroll)." },
-      { "id": "F3", "text": "Follow / unfollow accounts." }
+      {
+        "id": "F1",
+        "text": "A user can publish a post: text plus optional photos/videos."
+      },
+      {
+        "id": "F2",
+        "text": "A user sees a home feed of recent posts from accounts they follow, newest first, paginated 20 at a time (infinite scroll)."
+      },
+      {
+        "id": "F3",
+        "text": "Follow / unfollow accounts."
+      }
     ],
     "non_functional": [
-      { "id": "N1", "text": "Feed page latency < 300 ms at p99; read-heavy (~20 feed loads per post)." },
-      { "id": "N2", "text": "Eventually consistent: a new post reaches followers' feeds within ~10 s." },
-      { "id": "N3", "text": "Highly available reads; a slow fan-out must never block publishing." }
+      {
+        "id": "N1",
+        "text": "Feed page latency < 300 ms at p99; read-heavy (~20 feed loads per post)."
+      },
+      {
+        "id": "N2",
+        "text": "Eventually consistent: a new post reaches followers' feeds within ~10 s."
+      },
+      {
+        "id": "N3",
+        "text": "Highly available reads; a slow fan-out must never block publishing, and a stored post is never lost."
+      },
+      {
+        "id": "N4",
+        "text": "Media is served quickly worldwide without passing through the app servers."
+      }
     ],
     "assumptions": [
-      { "id": "A1", "text": "200M DAU, 10 feed opens and 0.5 posts per user per day; peak = 2× average." },
-      { "id": "A2", "text": "Average 300 followers; a few thousand accounts have tens of millions." }
+      {
+        "id": "A1",
+        "text": "200M DAU, 10 feed opens and 0.5 posts per user per day; peak = 2× average."
+      },
+      {
+        "id": "A2",
+        "text": "Average 300 followers; a few thousand accounts have tens of millions."
+      },
+      {
+        "id": "A3",
+        "text": "~30% of posts carry media, ~1 MB each after compression."
+      }
     ],
     "out_of_scope": [
-      { "id": "O1", "text": "ML ranking, ads, comments/likes, search." }
+      {
+        "id": "O1",
+        "text": "ML ranking, ads, comments/likes, search."
+      }
     ]
   },
   "api": [
     {
       "id": "E1",
       "method": "POST",
-      "path": "/posts",
-      "request": "text, media_ids[] (uploaded beforehand via a pre-signed URL)",
-      "response": "201 {post_id, created_at}",
-      "notes": "Returns once the post is stored; distribution is asynchronous."
+      "path": "/media",
+      "request": "content_type, size",
+      "response": "201 {media_id, upload_url (presigned PUT)}",
+      "notes": "The app then PUTs bytes straight to storage."
     },
     {
       "id": "E2",
+      "method": "POST",
+      "path": "/posts",
+      "request": "text, media_ids[]",
+      "response": "201 {post_id, created_at}",
+      "notes": "Returns once the post is stored; distribution is asynchronous. Idempotency-Key header."
+    },
+    {
+      "id": "E3",
       "method": "GET",
       "path": "/feed?cursor=&limit=20",
       "request": "",
@@ -37,7 +80,7 @@
       "notes": "Cursor = last seen post_id (time-sortable), stable while new posts arrive."
     },
     {
-      "id": "E3",
+      "id": "E4",
       "method": "POST",
       "path": "/users/{id}/follow",
       "request": "",
@@ -58,7 +101,7 @@
       "name": "follows",
       "fields": "follower_id, followee_id, created_at; indexed both directions",
       "store": "sql",
-      "why": "Graph edges queried as 'followers of X' (fan-out) and 'who X follows' (pull)."
+      "why": "Graph edges queried as 'followers of X' (fan-out) and 'who X follows' (celebrity merge)."
     },
     {
       "id": "D3",
@@ -66,49 +109,483 @@
       "fields": "user_id → list of latest ~500 post_ids (trimmed)",
       "store": "cache",
       "why": "Precomputed per-user feed: one lookup per feed load."
+    },
+    {
+      "id": "D4",
+      "name": "media",
+      "fields": "media_id, owner_id, object key, renditions, status",
+      "store": "blob",
+      "why": "Bytes in object storage behind a CDN; the post only stores URLs."
     }
   ],
   "deep_dives": [
     {
-      "id": "DD1",
-      "title": "When is a feed assembled?",
-      "options": [
-        { "name": "fan-out on read (pull)", "pros": "no write amplification; always fresh", "cons": "each load queries ~300 authors and merges: too slow at 46k/s" },
-        { "name": "fan-out on write (push)", "pros": "a feed load is one cache read", "cons": "write amplification; a 40M-follower post is 40M inserts" },
-        { "name": "hybrid", "pros": "push for most, pull for the few huge accounts", "cons": "two code paths and a merge at read time" }
-      ],
-      "choice": "hybrid: fan-out on write by default",
-      "why": "Reads outnumber posts ~20:1 and N1 needs one cache lookup per page; the push cost (~350k inserts/s) is affordable for ordinary accounts.",
-      "version": 2
-    },
-    {
       "id": "DD2",
-      "title": "Celebrity accounts",
+      "title": "Celebrity threshold: where to draw it and what happens at the line",
       "options": [
-        { "name": "fan out to everyone anyway", "pros": "uniform", "cons": "minutes of queue backlog per post; delays everyone else's posts" },
-        { "name": "skip fan-out above a follower threshold; merge at read", "pros": "bounded write cost", "cons": "read path merges a few extra lists" }
+        {
+          "name": "Fan out to everyone anyway",
+          "pros": "uniform",
+          "cons": "minutes of backlog per post; delays everyone else's posts"
+        },
+        {
+          "name": "Fixed follower threshold (~100k); merge at read",
+          "pros": "simple, bounded write cost",
+          "cons": "accounts crossing the line need a policy"
+        },
+        {
+          "name": "Dynamic: decide per post from follower count × active followers",
+          "pros": "precise cost control",
+          "cons": "harder to reason about and test"
+        }
       ],
-      "choice": "skip fan-out for accounts above ~100k followers; merge at read time",
-      "why": "Keeps N2 (10 s) for normal posts during a celebrity post. Followers typically follow only a handful of such accounts, and their recent posts sit in a hot cache, so the merge stays cheap.",
+      "choice": "Fixed threshold of ~100k followers; skip fan-out above it and merge at read time",
+      "why": "Followers follow only a handful of such accounts and their recent posts sit in the post cache, so the merge is cheap. When an account crosses the threshold a flag flips; entries already pushed simply age out of feeds.",
       "version": 3
     },
     {
       "id": "DD3",
       "title": "Pagination",
       "options": [
-        { "name": "offset/limit", "pros": "simple", "cons": "new posts shift pages: duplicates and gaps" },
-        { "name": "cursor on time-sortable post_id", "pros": "stable while the feed changes", "cons": "no random page jumps (not needed)" }
+        {
+          "name": "offset/limit",
+          "pros": "simple",
+          "cons": "new posts shift pages: duplicates and gaps"
+        },
+        {
+          "name": "cursor on time-sortable post_id",
+          "pros": "stable while the feed changes",
+          "cons": "no random page jumps (not needed)"
+        }
       ],
       "choice": "cursor on time-sortable post_id",
       "why": "Infinite scroll on a feed that changes every second.",
       "version": 2
+    },
+    {
+      "id": "DD4",
+      "title": "Feed cache memory and inactive users",
+      "options": [
+        {
+          "name": "Precompute feeds for every user",
+          "pros": "every load is a hit",
+          "cons": "~800 GB of RAM, much of it for people who never open the app"
+        },
+        {
+          "name": "Precompute only for users active in the last 30 days; rebuild on return",
+          "pros": "memory follows real usage",
+          "cons": "the first load after a long absence is a slow pull"
+        }
+      ],
+      "choice": "Precompute only for recently active users; rebuild a returning user's feed by pulling once",
+      "why": "Fan-out workers check an 'active' bit and skip the rest, cutting both cache memory and insert rate; one slow load per returning user is acceptable.",
+      "version": 3
     }
   ],
   "wrapup": {
     "bottlenecks": "Fan-out queue backlog on busy days (scale workers, prioritise recently active users), hot post bodies (replicated post cache), feed cache memory (ids only, trim to 500, skip users inactive for 30 days).",
-    "failures": "Feed cache node lost: rebuild that user's feed on demand by pulling from followees. Fan-out workers down: posts are safe in the store, the queue retains work and feeds catch up late. CDN miss storm: origin shield in front of blob storage.",
-    "monitoring": "Feed p99 latency, cache hit ratio, fan-out queue lag (publish → visible time), worker error rate, CDN hit ratio.",
+    "failures": "Feed cache node lost: rebuild that user's feed on demand by pulling from followees. Fan-out workers down: posts are safe in the store, the outbox and queue retain work and feeds catch up late. CDN miss storm: origin shield in front of object storage.",
+    "monitoring": "Feed p99 latency, cache hit ratio, fan-out queue lag (publish → visible time), worker error rate, CDN hit ratio, orphaned-upload count.",
     "scale": "Shard the feed cache by user_id, add queue partitions and workers, lower the celebrity threshold, precompute only for active users, multi-region read replicas.",
     "future": "Ranked feed (candidate generation from this cache + a ranking service), ads injection, notifications for close friends."
-  }
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Post write and storage",
+      "covers": [
+        "F1",
+        "N3"
+      ],
+      "problem": "Accept ~1.2k posts/s (peak ~2.4k) durably, give each a time-sortable id, and acknowledge the author at once, while never losing the hand-off to the delivery step.",
+      "options": [
+        {
+          "name": "Single SQL table with auto-increment ids",
+          "pros": "simple, transactional",
+          "cons": "one primary takes every write; ids are not globally unique once sharded"
+        },
+        {
+          "name": "Wide-column store keyed by post_id, Snowflake-style ids, outbox row in the same write",
+          "pros": "scales writes horizontally; ids sort by time; hand-off survives crashes",
+          "cons": "no cross-row transactions; needs an id generator per node"
+        },
+        {
+          "name": "Write post, then publish to the queue from the request",
+          "pros": "fewest moving parts",
+          "cons": "a crash between the two writes loses the fan-out (dual write)"
+        }
+      ],
+      "choice": "Wide-column posts store keyed by a time-sortable id, with an outbox entry that a relay forwards to the queue",
+      "why": "2.4k writes/s and 100M posts/day need horizontal writes; time-sortable ids give cursors for free; the outbox makes 'stored but never distributed' impossible, which N3 asks for.",
+      "technologies": [
+        "cassandra",
+        "kafka"
+      ],
+      "patterns": [
+        "outbox-pattern",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Mobile / web app",
+            "x": 40,
+            "y": 220
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 160
+          },
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Post service",
+            "x": 380,
+            "y": 80
+          },
+          {
+            "id": "posts",
+            "kind": "nosql",
+            "label": "posts store (by post_id)",
+            "x": 580,
+            "y": 20
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "lb",
+            "label": "POST /posts, GET /feed"
+          },
+          {
+            "from": "lb",
+            "to": "postsvc",
+            "label": "POST /posts, POST /media"
+          },
+          {
+            "from": "postsvc",
+            "to": "posts",
+            "label": "write post + outbox"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Fan-out: delivering posts to followers",
+      "covers": [
+        "F2",
+        "N1",
+        "N2"
+      ],
+      "problem": "Get each new post into followers' feeds within ~10 s when the average author has 300 followers but a few have tens of millions; decide whether feeds are built at write time, read time or both.",
+      "options": [
+        {
+          "name": "Fan-out on read (pull)",
+          "pros": "no write amplification; always fresh",
+          "cons": "each feed load queries ~300 authors and merges: too slow at ~46k loads/s"
+        },
+        {
+          "name": "Fan-out on write (push)",
+          "pros": "a feed load becomes one cache read",
+          "cons": "~350k inserts/s; one 40M-follower post is 40M inserts and backs up the queue"
+        },
+        {
+          "name": "Hybrid: push for normal accounts, pull for huge ones",
+          "pros": "cheap reads and bounded write cost",
+          "cons": "two code paths and a merge at read time"
+        }
+      ],
+      "choice": "Hybrid fan-out: workers push post ids into followers' feed lists, except for accounts above ~100k followers, which are pulled at read time",
+      "why": "Reads outnumber posts ~20:1, so precomputing is worth ~350k cache inserts/s; skipping the few huge accounts keeps the queue draining inside the 10 s budget (N2).",
+      "technologies": [
+        "kafka",
+        "redis"
+      ],
+      "patterns": [
+        "fan-out",
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Post service",
+            "x": 380,
+            "y": 80
+          },
+          {
+            "id": "q",
+            "kind": "queue",
+            "label": "Fan-out queue",
+            "x": 580,
+            "y": 140
+          },
+          {
+            "id": "fanout",
+            "kind": "worker",
+            "label": "Fan-out workers (skip celebrities)",
+            "x": 780,
+            "y": 140
+          },
+          {
+            "id": "follows",
+            "kind": "sql",
+            "label": "follows graph",
+            "x": 780,
+            "y": 260
+          },
+          {
+            "id": "feedcache",
+            "kind": "cache",
+            "label": "Feed cache (user → post_ids)",
+            "x": 580,
+            "y": 380
+          }
+        ],
+        "edges": [
+          {
+            "from": "postsvc",
+            "to": "q",
+            "label": "fan-out job (post_id, author)"
+          },
+          {
+            "from": "q",
+            "to": "fanout",
+            "label": "consume"
+          },
+          {
+            "from": "fanout",
+            "to": "follows",
+            "label": "followers of author"
+          },
+          {
+            "from": "fanout",
+            "to": "feedcache",
+            "label": "push post_id, trim to 500"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Feed read and ranking",
+      "covers": [
+        "F2",
+        "N1"
+      ],
+      "problem": "Serve a 20-post feed page in < 300 ms at ~46k loads/s: read the precomputed ids, merge posts from followed celebrities, hydrate the bodies and decide the order.",
+      "options": [
+        {
+          "name": "Hydrate every id from the posts store",
+          "pros": "always consistent",
+          "cons": "20 store reads per page, ~1M reads/s at peak; hot posts hammer one partition"
+        },
+        {
+          "name": "Post cache in front of the store, batch get, merge celebrity posts, then order",
+          "pros": "one cache round trip for bodies; hot posts stay in memory",
+          "cons": "cache invalidation on edits/deletes"
+        },
+        {
+          "name": "Inline ML ranking service on every load",
+          "pros": "better engagement",
+          "cons": "adds latency and a dependency; out of scope for v1"
+        }
+      ],
+      "choice": "Read ids from the feed cache, merge followed celebrities' recent posts, batch-hydrate from a post cache, order by time behind a scorer hook",
+      "why": "Two cache round trips fit easily in 300 ms; the scorer hook lets ranking replace chronological order later without changing storage.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 200,
+            "y": 160
+          },
+          {
+            "id": "feedsvc",
+            "kind": "service",
+            "label": "Feed service (merge + order)",
+            "x": 380,
+            "y": 260
+          },
+          {
+            "id": "feedcache",
+            "kind": "cache",
+            "label": "Feed cache (user → post_ids)",
+            "x": 580,
+            "y": 380
+          },
+          {
+            "id": "postcache",
+            "kind": "cache",
+            "label": "Post cache (+ celebrity recent posts)",
+            "x": 580,
+            "y": 260
+          },
+          {
+            "id": "posts",
+            "kind": "nosql",
+            "label": "posts store (by post_id)",
+            "x": 580,
+            "y": 20
+          },
+          {
+            "id": "follows",
+            "kind": "sql",
+            "label": "follows graph",
+            "x": 780,
+            "y": 260
+          },
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Post service",
+            "x": 380,
+            "y": 80
+          }
+        ],
+        "edges": [
+          {
+            "from": "lb",
+            "to": "feedsvc",
+            "label": "GET /feed"
+          },
+          {
+            "from": "feedsvc",
+            "to": "feedcache",
+            "label": "read post_ids"
+          },
+          {
+            "from": "feedsvc",
+            "to": "postcache",
+            "label": "batch get bodies + celebrity posts"
+          },
+          {
+            "from": "feedsvc",
+            "to": "follows",
+            "label": "celebrities I follow"
+          },
+          {
+            "from": "feedsvc",
+            "to": "posts",
+            "label": "cache miss"
+          },
+          {
+            "from": "postsvc",
+            "to": "postcache",
+            "label": "write-through recent post"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Media upload and delivery",
+      "covers": [
+        "F1",
+        "N4"
+      ],
+      "problem": "Photos and videos are most of the bytes (≈ 30 TB/day) and are viewed worldwide; keep them off the post and feed services.",
+      "options": [
+        {
+          "name": "Upload through the post service and store in the database",
+          "pros": "one request",
+          "cons": "app servers stream gigabytes; the database bloats"
+        },
+        {
+          "name": "Presigned upload straight to object storage, renditions by workers, served by a CDN",
+          "pros": "app servers only sign URLs; bytes travel edge ↔ storage",
+          "cons": "upload and post creation are two steps; orphaned uploads need cleanup"
+        }
+      ],
+      "choice": "Presigned direct upload to object storage, workers create renditions, a CDN serves them",
+      "why": "Keeps ~30 TB/day of bytes off the services; posts carry only URLs, so feed responses stay small and the CDN absorbs global reads.",
+      "technologies": [
+        "object-storage"
+      ],
+      "patterns": [
+        "presigned-urls"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Mobile / web app",
+            "x": 40,
+            "y": 220
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN (media upload + delivery)",
+            "x": 200,
+            "y": 400
+          },
+          {
+            "id": "postsvc",
+            "kind": "service",
+            "label": "Post service",
+            "x": 380,
+            "y": 80
+          },
+          {
+            "id": "media",
+            "kind": "blob",
+            "label": "Media object storage",
+            "x": 780,
+            "y": 440
+          },
+          {
+            "id": "transcode",
+            "kind": "worker",
+            "label": "Media workers (resize, transcode)",
+            "x": 960,
+            "y": 440
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "PUT media (presigned), GET media"
+          },
+          {
+            "from": "cdn",
+            "to": "media",
+            "label": "store upload / origin fetch"
+          },
+          {
+            "from": "postsvc",
+            "to": "media",
+            "label": "sign upload URL"
+          },
+          {
+            "from": "media",
+            "to": "transcode",
+            "label": "object created"
+          },
+          {
+            "from": "transcode",
+            "to": "media",
+            "label": "write renditions"
+          }
+        ]
+      }
+    }
+  ]
 }

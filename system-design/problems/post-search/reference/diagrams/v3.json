@@ -1,0 +1,167 @@
+{
+  "version": 3,
+  "why": "Compose P2 and P3 (N1, N3): document-partitioned shards in time tiers (a daily builder publishes archive segments), and a broker that scatter-gathers per-shard top-k with timeouts; a short-TTL cache absorbs hot queries. Ranking still ignores engagement.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile / web app",
+      "x": 40,
+      "y": 200
+    },
+    {
+      "id": "lb",
+      "kind": "load-balancer",
+      "label": "Load balancer",
+      "x": 200,
+      "y": 200
+    },
+    {
+      "id": "postsvc",
+      "kind": "service",
+      "label": "Post service",
+      "x": 380,
+      "y": 80
+    },
+    {
+      "id": "posts",
+      "kind": "nosql",
+      "label": "posts (source of truth)",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "poststream",
+      "kind": "stream",
+      "label": "Post events (create / delete)",
+      "x": 580,
+      "y": 140
+    },
+    {
+      "id": "indexer",
+      "kind": "worker",
+      "label": "Indexers (tokenize, normalise)",
+      "x": 780,
+      "y": 140
+    },
+    {
+      "id": "rtindex",
+      "kind": "search",
+      "label": "Real-time index (last 7 days, in memory)",
+      "x": 960,
+      "y": 140
+    },
+    {
+      "id": "searchsvc",
+      "kind": "service",
+      "label": "Search broker (scatter-gather)",
+      "x": 380,
+      "y": 360
+    },
+    {
+      "id": "builder",
+      "kind": "worker",
+      "label": "Segment builder (daily)",
+      "x": 780,
+      "y": 20
+    },
+    {
+      "id": "archive",
+      "kind": "search",
+      "label": "Archive index (time tiers, doc-partitioned)",
+      "x": 960,
+      "y": 20
+    },
+    {
+      "id": "qcache",
+      "kind": "cache",
+      "label": "Query result cache (short TTL)",
+      "x": 580,
+      "y": 420
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "lb",
+      "label": "POST /posts, GET /search"
+    },
+    {
+      "from": "lb",
+      "to": "postsvc",
+      "label": "create / delete / like"
+    },
+    {
+      "from": "lb",
+      "to": "searchsvc",
+      "label": "GET /search"
+    },
+    {
+      "from": "postsvc",
+      "to": "posts",
+      "label": "write post + outbox"
+    },
+    {
+      "from": "postsvc",
+      "to": "poststream",
+      "label": "post created / deleted"
+    },
+    {
+      "from": "poststream",
+      "to": "indexer",
+      "label": "consume"
+    },
+    {
+      "from": "indexer",
+      "to": "rtindex",
+      "label": "add docs, tombstones"
+    },
+    {
+      "from": "searchsvc",
+      "to": "rtindex",
+      "label": "query recent tier"
+    },
+    {
+      "from": "builder",
+      "to": "posts",
+      "label": "read a day of posts"
+    },
+    {
+      "from": "builder",
+      "to": "archive",
+      "label": "publish immutable segments"
+    },
+    {
+      "from": "searchsvc",
+      "to": "archive",
+      "label": "scatter to older tiers"
+    },
+    {
+      "from": "searchsvc",
+      "to": "qcache",
+      "label": "hot query results"
+    }
+  ],
+  "flows": [
+    {
+      "name": "index",
+      "path": [
+        "client",
+        "lb",
+        "postsvc",
+        "poststream",
+        "indexer",
+        "rtindex"
+      ]
+    },
+    {
+      "name": "query",
+      "path": [
+        "client",
+        "lb",
+        "searchsvc",
+        "rtindex"
+      ]
+    }
+  ]
+}

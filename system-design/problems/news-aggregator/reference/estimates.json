@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "name": "articles_per_day",
+      "formula": "2 * million",
+      "unit": "/day"
+    },
+    {
+      "name": "article_rate",
+      "formula": "articles_per_day / day",
+      "unit": "/s"
+    },
+    {
+      "name": "sources",
+      "formula": "50 * thousand",
+      "unit": ""
+    },
+    {
+      "name": "poll_rate",
+      "formula": "sources / 300",
+      "unit": "/s"
+    },
+    {
+      "name": "dau",
+      "formula": "100 * million",
+      "unit": ""
+    },
+    {
+      "name": "page_views_per_day",
+      "formula": "dau * 5",
+      "unit": "/day"
+    },
+    {
+      "name": "peak_page_views",
+      "formula": "page_views_per_day / day * 5",
+      "unit": "/s"
+    },
+    {
+      "name": "metadata_storage_per_year",
+      "formula": "articles_per_day * 365 * 5000 / 10**12",
+      "unit": "TB"
+    },
+    {
+      "name": "text_storage_30_days",
+      "formula": "articles_per_day * 30 * 20000 / 10**12",
+      "unit": "TB"
+    }
+  ]
+}

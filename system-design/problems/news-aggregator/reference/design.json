@@ -1,0 +1,639 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "Continuously ingest new articles (title, snippet, image, URL) from ~50k publishers' RSS/Atom feeds and sitemaps."
+      },
+      {
+        "id": "F2",
+        "text": "Group articles about the same event into one story with a 'full coverage' list; drop near-identical copies."
+      },
+      {
+        "id": "F3",
+        "text": "Show top stories per edition (country + language) and per topic, linking out to publishers."
+      },
+      {
+        "id": "F4",
+        "text": "Personalised 'For you' section from followed topics and reading history."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Page p99 < 200 ms; read-heavy, with ×5 spikes on breaking news."
+      },
+      {
+        "id": "N2",
+        "text": "Freshness: a breaking story appears within ~5 minutes of first publication."
+      },
+      {
+        "id": "N3",
+        "text": "Highly available reads: serving stale lists is better than an error."
+      },
+      {
+        "id": "N4",
+        "text": "Polite crawling: never overload a publisher."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "~2M new articles/day; 100M DAU × 5 page views; breaking news ×5."
+      },
+      {
+        "id": "A2",
+        "text": "Keep ~5 KB of metadata per article for a year; full text only 30 days (for clustering)."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Full-text search, comments, paywall handling, publisher payouts."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "GET",
+      "path": "/stories?edition=&topic=&cursor=",
+      "request": "",
+      "response": "{stories[{story_id, headline, articles[3], coverage_count, image_url}], next_cursor}",
+      "notes": "Anonymous; cached at the CDN ~30 s."
+    },
+    {
+      "id": "E2",
+      "method": "GET",
+      "path": "/for-you?cursor=",
+      "request": "auth",
+      "response": "{stories[...]}",
+      "notes": "Personalised; not CDN-cached."
+    },
+    {
+      "id": "E3",
+      "method": "GET",
+      "path": "/stories/{id}",
+      "request": "",
+      "response": "{headline, articles[] (full coverage)}",
+      "notes": ""
+    },
+    {
+      "id": "E4",
+      "method": "POST",
+      "path": "/events",
+      "request": "[{story_id, type: view|click, ts}]",
+      "response": "202",
+      "notes": "Batched from the client; feeds interest profiles."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "articles",
+      "fields": "article_id, canonical_url (unique), source_id, title, snippet, image_url, published_at, simhash, embedding, story_id",
+      "store": "nosql",
+      "why": "Write-once, read by id and by story; ~3.7 TB/year."
+    },
+    {
+      "id": "D2",
+      "name": "stories",
+      "fields": "story_id, headline, centroid, article_ids, first_seen, last_updated, coverage_count, topic, editions",
+      "store": "nosql",
+      "why": "Updated as articles join; read by the ranker."
+    },
+    {
+      "id": "D3",
+      "name": "sources",
+      "fields": "source_id, feed_url, poll_interval, next_due, etag, authority, edition",
+      "store": "sql",
+      "why": "Small (50k rows), relational, drives the scheduler."
+    },
+    {
+      "id": "D4",
+      "name": "ranked lists",
+      "fields": "edition:topic → [story_id, score] top 500",
+      "store": "cache",
+      "why": "Recomputed every minute; read on every page."
+    },
+    {
+      "id": "D5",
+      "name": "profiles",
+      "fields": "user_id → topic weights, followed topics, recently seen story_ids",
+      "store": "nosql",
+      "why": "Read per personalised request; updated from click events."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Poll schedule per source",
+      "options": [
+        {
+          "name": "Same interval for every source",
+          "pros": "simple",
+          "cons": "either late for wire services or wasteful for blogs"
+        },
+        {
+          "name": "Adaptive interval: shrink when new items appear, grow when not (1–60 min), WebSub where supported, per-host politeness cap",
+          "pros": "fresh where it matters; polite",
+          "cons": "per-source state and tuning"
+        }
+      ],
+      "choice": "Adaptive per-source interval (1–60 min) with WebSub pings and per-host rate limits",
+      "why": "A few hundred sources produce most breaking news; checking them every minute and the long tail hourly fits ~170 fetches/s and keeps N2.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Stable story ids when clusters merge or split",
+      "options": [
+        {
+          "name": "Recompute clusters and ids from scratch each batch",
+          "pros": "clean clusters",
+          "cons": "links and caches point to vanished ids"
+        },
+        {
+          "name": "Keep ids; on merge the larger story absorbs the smaller and leaves a redirect",
+          "pros": "stable URLs and lists",
+          "cons": "bookkeeping for redirects"
+        }
+      ],
+      "choice": "Stable story ids; merges keep the older/larger id and redirect the other",
+      "why": "Ranked lists, shared links and reader history reference story ids; the hourly re-cluster must not break them.",
+      "version": 3
+    },
+    {
+      "id": "DD3",
+      "title": "Breaking-news hot story",
+      "options": [
+        {
+          "name": "Let every request reach origin",
+          "pros": "always fresh",
+          "cons": "spike lands on the API and cache"
+        },
+        {
+          "name": "Short CDN TTL + request coalescing at origin",
+          "pros": "one origin fetch per edition per TTL",
+          "cons": "up to 30 s stale"
+        }
+      ],
+      "choice": "30 s CDN TTL with request coalescing on misses",
+      "why": "The hot story is on the same edition pages everyone loads, so coalescing collapses the spike to a handful of origin requests.",
+      "version": 4
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "The clusterer during big news days (partition by language/edition, scale workers), the near-dup index memory (keep 48 h of SimHash bands), CDN misses right after TTL expiry (coalescing).",
+    "failures": "The raw-articles stream buffers fetches if processing lags; pages keep serving the last ranked lists (stale but up); fetchers back off failing hosts; if clustering lags, new articles appear as singleton stories and merge later.",
+    "monitoring": "Publish → visible latency per top source, fetch error rate per host, stream consumer lag, cluster size distribution (too many singletons = threshold drift), page p99, CDN hit ratio.",
+    "scale": "More editions and languages: partition the pipeline by language, add fetchers per region, add ranked lists per edition; profiles shard by user.",
+    "future": "Full-text search, local news by location, fact-check labels, story timelines."
+  },
+  "parts": [
+    {
+      "id": "P1",
+      "title": "Ingestion: finding new articles",
+      "covers": [
+        "F1",
+        "N2",
+        "N4"
+      ],
+      "problem": "Notice new articles from ~50k publishers within minutes (~2M/day, bursts of ~100/s) without overloading small sites or re-downloading unchanged feeds.",
+      "options": [
+        {
+          "name": "Fixed-interval polling of every feed",
+          "pros": "simple, predictable",
+          "cons": "too slow for wire services, wasteful for weekly blogs"
+        },
+        {
+          "name": "Adaptive polling per source + WebSub push where offered",
+          "pros": "fast where it matters; few wasted fetches",
+          "cons": "scheduler state per source; push is optional and unreliable alone"
+        },
+        {
+          "name": "General web crawl of publisher sites",
+          "pros": "finds articles without feeds",
+          "cons": "huge cost; slow to discover new pages"
+        }
+      ],
+      "choice": "Adaptive polling per source plus WebSub pings, conditional GETs, fetched articles buffered on a stream",
+      "why": "Interval follows each source's publish rate, so ~170 fetches/s cover 50k sources and wire services are checked every minute; the stream decouples bursty fetching from slower processing.",
+      "technologies": [
+        "kafka",
+        "postgresql"
+      ],
+      "patterns": [
+        "backpressure",
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "sources",
+            "kind": "external",
+            "label": "Publishers (RSS, sitemaps, WebSub)",
+            "x": 40,
+            "y": 20
+          },
+          {
+            "id": "scheduler",
+            "kind": "scheduler",
+            "label": "Poll scheduler (adaptive intervals)",
+            "x": 200,
+            "y": 110
+          },
+          {
+            "id": "srcdb",
+            "kind": "sql",
+            "label": "sources (interval, ETag, authority)",
+            "x": 380,
+            "y": 110
+          },
+          {
+            "id": "fetchers",
+            "kind": "worker",
+            "label": "Feed fetchers",
+            "x": 380,
+            "y": 20
+          },
+          {
+            "id": "raw",
+            "kind": "stream",
+            "label": "Raw articles",
+            "x": 580,
+            "y": 20
+          }
+        ],
+        "edges": [
+          {
+            "from": "sources",
+            "to": "scheduler",
+            "label": "WebSub ping (fetch now)"
+          },
+          {
+            "from": "scheduler",
+            "to": "srcdb",
+            "label": "who is due"
+          },
+          {
+            "from": "scheduler",
+            "to": "fetchers",
+            "label": "due sources"
+          },
+          {
+            "from": "fetchers",
+            "to": "sources",
+            "label": "conditional GET (ETag)"
+          },
+          {
+            "from": "fetchers",
+            "to": "srcdb",
+            "label": "ETag, new-item rate"
+          },
+          {
+            "from": "fetchers",
+            "to": "raw",
+            "label": "new article"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "title": "Dedup and story clustering",
+      "covers": [
+        "F2"
+      ],
+      "problem": "Drop syndicated near-duplicate copies and group different outlets' articles about the same event into one story, quickly enough for breaking news.",
+      "options": [
+        {
+          "name": "Exact hash of URL/body only",
+          "pros": "cheap",
+          "cons": "misses syndicated copies with different boilerplate"
+        },
+        {
+          "name": "SimHash/MinHash near-dup detection",
+          "pros": "catches copies with small edits in O(1) lookups",
+          "cons": "tuning thresholds; not enough to group different write-ups"
+        },
+        {
+          "name": "Batch clustering of all recent articles every hour",
+          "pros": "good global clusters",
+          "cons": "a breaking story waits up to an hour"
+        },
+        {
+          "name": "Incremental: assign each article to the nearest recent story centroid (embeddings), periodic batch re-cluster",
+          "pros": "seconds of latency; quality repaired in batch",
+          "cons": "story ids can merge/split; needs stable ids"
+        }
+      ],
+      "choice": "Canonical URL + SimHash to drop copies, then incremental nearest-centroid clustering on embeddings with an hourly batch re-cluster",
+      "why": "N2 needs a new article placed within seconds; ~23 articles/s × one ANN lookup over ~48 h of stories is cheap, and the batch pass fixes drift.",
+      "technologies": [
+        "kafka",
+        "redis",
+        "cassandra"
+      ],
+      "patterns": [
+        "idempotency"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "raw",
+            "kind": "stream",
+            "label": "Raw articles",
+            "x": 580,
+            "y": 20
+          },
+          {
+            "id": "dedup",
+            "kind": "worker",
+            "label": "Extract + dedup (canonical URL, SimHash)",
+            "x": 780,
+            "y": 20
+          },
+          {
+            "id": "simidx",
+            "kind": "cache",
+            "label": "Near-dup index (SimHash bands)",
+            "x": 960,
+            "y": 20
+          },
+          {
+            "id": "articles",
+            "kind": "nosql",
+            "label": "articles",
+            "x": 580,
+            "y": 110
+          },
+          {
+            "id": "clusterer",
+            "kind": "worker",
+            "label": "Story clusterer (embeddings, incremental)",
+            "x": 960,
+            "y": 110
+          },
+          {
+            "id": "stories",
+            "kind": "nosql",
+            "label": "stories (clusters)",
+            "x": 960,
+            "y": 200
+          }
+        ],
+        "edges": [
+          {
+            "from": "raw",
+            "to": "dedup",
+            "label": "consume"
+          },
+          {
+            "from": "dedup",
+            "to": "simidx",
+            "label": "near-dup lookup"
+          },
+          {
+            "from": "dedup",
+            "to": "articles",
+            "label": "store unique article"
+          },
+          {
+            "from": "dedup",
+            "to": "clusterer",
+            "label": "unique article"
+          },
+          {
+            "from": "clusterer",
+            "to": "stories",
+            "label": "assign / create story"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "title": "Ranking and personalisation",
+      "covers": [
+        "F3",
+        "F4"
+      ],
+      "problem": "Order stories for each edition and topic by importance and freshness, and give each logged-in reader a 'For you' section, within the read latency budget.",
+      "options": [
+        {
+          "name": "One global ranking for everyone",
+          "pros": "trivially cacheable",
+          "cons": "no personalisation"
+        },
+        {
+          "name": "Score every story per reader at request time",
+          "pros": "fully personal",
+          "cons": "thousands of stories × 29k req/s; no shared caching"
+        },
+        {
+          "name": "Two stage: precomputed candidate lists per edition/topic, light per-reader re-rank at request",
+          "pros": "shared work done once a minute; personal touch is cheap",
+          "cons": "personalisation limited to the candidate pool"
+        }
+      ],
+      "choice": "Two-stage ranking: a ranker precomputes top-N lists per edition/topic every minute; the request re-ranks a few hundred candidates with the reader's interest profile",
+      "why": "Importance (coverage count, source authority, freshness) is the same for everyone, so compute it once; the per-reader part is a dot product over ~300 candidates, well inside N1.",
+      "technologies": [
+        "redis",
+        "kafka",
+        "cassandra"
+      ],
+      "patterns": [
+        "pre-aggregation"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "ranker",
+            "kind": "worker",
+            "label": "Story ranker (every minute)",
+            "x": 780,
+            "y": 200
+          },
+          {
+            "id": "stories",
+            "kind": "nosql",
+            "label": "stories (clusters)",
+            "x": 960,
+            "y": 200
+          },
+          {
+            "id": "editions",
+            "kind": "cache",
+            "label": "Ranked lists per edition / topic",
+            "x": 580,
+            "y": 300
+          },
+          {
+            "id": "newssvc",
+            "kind": "service",
+            "label": "News API (blend + personalise)",
+            "x": 580,
+            "y": 420
+          },
+          {
+            "id": "profiles",
+            "kind": "nosql",
+            "label": "Reader interest profiles",
+            "x": 780,
+            "y": 300
+          },
+          {
+            "id": "clicks",
+            "kind": "stream",
+            "label": "Click / view events",
+            "x": 780,
+            "y": 420
+          },
+          {
+            "id": "profiler",
+            "kind": "worker",
+            "label": "Interest profiler",
+            "x": 960,
+            "y": 300
+          }
+        ],
+        "edges": [
+          {
+            "from": "ranker",
+            "to": "stories",
+            "label": "recent stories"
+          },
+          {
+            "from": "ranker",
+            "to": "editions",
+            "label": "top-N per edition / topic"
+          },
+          {
+            "from": "newssvc",
+            "to": "editions",
+            "label": "candidate lists"
+          },
+          {
+            "from": "newssvc",
+            "to": "profiles",
+            "label": "reader interests"
+          },
+          {
+            "from": "newssvc",
+            "to": "clicks",
+            "label": "click / view event"
+          },
+          {
+            "from": "clicks",
+            "to": "profiler",
+            "label": "consume"
+          },
+          {
+            "from": "profiler",
+            "to": "profiles",
+            "label": "update interests"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P4",
+      "title": "Serving the home page",
+      "covers": [
+        "F3",
+        "N1",
+        "N3"
+      ],
+      "problem": "Serve ~6k page views/s, ×5 on a breaking story, in < 200 ms p99, while the underlying lists change every minute.",
+      "options": [
+        {
+          "name": "Render each page from the stores per request",
+          "pros": "always current",
+          "cons": "every spike hits the database"
+        },
+        {
+          "name": "Precompute a page per reader",
+          "pros": "fast reads",
+          "cons": "100M pages recomputed every minute"
+        },
+        {
+          "name": "CDN-cached edition pages (~30 s) + personalised sections blended from cached lists by stateless servers",
+          "pros": "spikes absorbed at the edge; small per-reader work",
+          "cons": "pages up to 30 s stale"
+        }
+      ],
+      "choice": "Edition pages cached at the CDN for ~30 s; a stateless news API behind a load balancer blends personalised sections from cached candidate lists",
+      "why": "Most traffic is the same edition page, so a 30 s edge cache turns a ×5 spike into a few origin requests per edition; N2's 5-minute budget easily absorbs 30 s.",
+      "technologies": [
+        "redis"
+      ],
+      "patterns": [
+        "hot-keys"
+      ],
+      "diagram": {
+        "nodes": [
+          {
+            "id": "client",
+            "kind": "client",
+            "label": "Web / mobile reader",
+            "x": 40,
+            "y": 420
+          },
+          {
+            "id": "cdn",
+            "kind": "cdn",
+            "label": "CDN (edition pages, 30 s)",
+            "x": 200,
+            "y": 420
+          },
+          {
+            "id": "lb",
+            "kind": "load-balancer",
+            "label": "Load balancer",
+            "x": 380,
+            "y": 420
+          },
+          {
+            "id": "newssvc",
+            "kind": "service",
+            "label": "News API (blend + personalise)",
+            "x": 580,
+            "y": 420
+          },
+          {
+            "id": "editions",
+            "kind": "cache",
+            "label": "Ranked lists per edition / topic",
+            "x": 580,
+            "y": 300
+          }
+        ],
+        "edges": [
+          {
+            "from": "client",
+            "to": "cdn",
+            "label": "GET pages, POST events"
+          },
+          {
+            "from": "cdn",
+            "to": "lb",
+            "label": "miss / personalised"
+          },
+          {
+            "from": "lb",
+            "to": "newssvc",
+            "label": "API"
+          },
+          {
+            "from": "newssvc",
+            "to": "editions",
+            "label": "candidate lists"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: one service and one SQL database that stores photo bytes, joins follows with posts for the feed and increments a likes column. ~250 TB/day of bytes and ~116k feed loads/s overwhelm it, and one box is a single point of failure.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile app",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "Photo app service",
+      "x": 300,
+      "y": 300
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "App DB (photos as BLOBs, follows, likes)",
+      "x": 560,
+      "y": 300
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "app",
+      "label": "upload, GET feed, like"
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "label": "store bytes, join feed, likes += 1"
+    }
+  ],
+  "flows": []
+}

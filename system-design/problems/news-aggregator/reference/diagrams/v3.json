@@ -1,0 +1,170 @@
+{
+  "version": 3,
+  "why": "Compose P2 (F2): SimHash drops syndicated copies and an incremental clusterer groups articles into stories, so the site lists stories, not articles. Ordering is still 'newest first' and every view hits the store.",
+  "nodes": [
+    {
+      "id": "sources",
+      "kind": "external",
+      "label": "Publishers (RSS, sitemaps, WebSub)",
+      "x": 40,
+      "y": 20
+    },
+    {
+      "id": "scheduler",
+      "kind": "scheduler",
+      "label": "Poll scheduler (adaptive intervals)",
+      "x": 200,
+      "y": 110
+    },
+    {
+      "id": "srcdb",
+      "kind": "sql",
+      "label": "sources (interval, ETag, authority)",
+      "x": 380,
+      "y": 110
+    },
+    {
+      "id": "fetchers",
+      "kind": "worker",
+      "label": "Feed fetchers",
+      "x": 380,
+      "y": 20
+    },
+    {
+      "id": "raw",
+      "kind": "stream",
+      "label": "Raw articles",
+      "x": 580,
+      "y": 20
+    },
+    {
+      "id": "dedup",
+      "kind": "worker",
+      "label": "Extract + dedup (canonical URL, SimHash)",
+      "x": 780,
+      "y": 20
+    },
+    {
+      "id": "simidx",
+      "kind": "cache",
+      "label": "Near-dup index (SimHash bands)",
+      "x": 960,
+      "y": 20
+    },
+    {
+      "id": "articles",
+      "kind": "nosql",
+      "label": "articles",
+      "x": 580,
+      "y": 110
+    },
+    {
+      "id": "clusterer",
+      "kind": "worker",
+      "label": "Story clusterer (embeddings, incremental)",
+      "x": 960,
+      "y": 110
+    },
+    {
+      "id": "stories",
+      "kind": "nosql",
+      "label": "stories (clusters)",
+      "x": 960,
+      "y": 200
+    },
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Web / mobile reader",
+      "x": 40,
+      "y": 420
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "News site",
+      "x": 380,
+      "y": 300
+    }
+  ],
+  "edges": [
+    {
+      "from": "sources",
+      "to": "scheduler",
+      "label": "WebSub ping (fetch now)"
+    },
+    {
+      "from": "scheduler",
+      "to": "srcdb",
+      "label": "who is due"
+    },
+    {
+      "from": "scheduler",
+      "to": "fetchers",
+      "label": "due sources"
+    },
+    {
+      "from": "fetchers",
+      "to": "sources",
+      "label": "conditional GET (ETag)"
+    },
+    {
+      "from": "fetchers",
+      "to": "srcdb",
+      "label": "ETag, new-item rate"
+    },
+    {
+      "from": "fetchers",
+      "to": "raw",
+      "label": "new article"
+    },
+    {
+      "from": "raw",
+      "to": "dedup",
+      "label": "consume"
+    },
+    {
+      "from": "dedup",
+      "to": "simidx",
+      "label": "near-dup lookup"
+    },
+    {
+      "from": "dedup",
+      "to": "articles",
+      "label": "store unique article"
+    },
+    {
+      "from": "dedup",
+      "to": "clusterer",
+      "label": "unique article"
+    },
+    {
+      "from": "clusterer",
+      "to": "stories",
+      "label": "assign / create story"
+    },
+    {
+      "from": "client",
+      "to": "app",
+      "label": "GET /"
+    },
+    {
+      "from": "app",
+      "to": "stories",
+      "label": "latest stories"
+    }
+  ],
+  "flows": [
+    {
+      "name": "ingest",
+      "path": [
+        "scheduler",
+        "fetchers",
+        "raw",
+        "dedup",
+        "clusterer",
+        "stories"
+      ]
+    }
+  ]
+}

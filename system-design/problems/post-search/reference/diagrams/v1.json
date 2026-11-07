@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "why": "Naive start: one service runs LIKE '%q%' over the posts table. Every search scans hundreds of billions of rows (N1), there is no relevance, and one database is a single point of failure.",
+  "nodes": [
+    {
+      "id": "client",
+      "kind": "client",
+      "label": "Mobile / web app",
+      "x": 40,
+      "y": 200
+    },
+    {
+      "id": "app",
+      "kind": "service",
+      "label": "App service",
+      "x": 300,
+      "y": 300
+    },
+    {
+      "id": "db",
+      "kind": "sql",
+      "label": "posts DB",
+      "x": 560,
+      "y": 340
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "app",
+      "label": "POST /posts, GET /search"
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "label": "WHERE text LIKE '%q%'"
+    }
+  ],
+  "flows": []
+}
