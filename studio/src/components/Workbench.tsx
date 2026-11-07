@@ -157,7 +157,8 @@ export function Workbench({
     // Content above the bench (crumbs, app bar) can change height after mount: re-measure then too.
     const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
     const parent = ref.current?.parentElement;
-    if (ro && parent) for (const el of [parent, ...Array.from(parent.children)]) ro.observe(el);
+    if (ro && parent)
+      for (const el of [document.body, parent, ...Array.from(parent.children)]) ro.observe(el);
     window.addEventListener("resize", measure);
     return () => {
       ro?.disconnect();
