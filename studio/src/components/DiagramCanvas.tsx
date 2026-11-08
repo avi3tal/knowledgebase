@@ -104,6 +104,7 @@ export function DiagramCanvas({
   handle,
   reservedIds,
   presentation = false,
+  failed = NONE,
 }: {
   diagram: Diagram;
   /** @deprecated the stencil lives outside the canvas now; ignored */
@@ -122,6 +123,8 @@ export function DiagramCanvas({
   reservedIds?: string[];
   /** lesson figures: no ids or NEW badges; the highlight marks the current step */
   presentation?: boolean;
+  /** lesson figures: nodes / edges shown as failed (red, ✕) in the current step */
+  failed?: Highlight;
 }) {
   const editable = Boolean(onChange);
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, "");
@@ -471,13 +474,14 @@ export function DiagramCanvas({
               const bend = edgeKeys.has(`${ed.to}->${ed.from}`) ? 22 : 0;
               const { d, mid } = edgePath(a, b, bend);
               const isNew = highlight.edges.has(key);
+              const isFailed = failed.edges.has(key);
               const isSel = sel?.type === "edge" && sel.id === key;
               const marker = isSel ? "sel" : isNew ? "new" : "plain";
               const label = ed.label ? truncate(ed.label, 28) : "";
               return (
                 <g
                   key={key}
-                  className={`dg-edge ${isNew ? "is-new" : ""} ${isSel ? "selected" : ""}`}
+                  className={`dg-edge ${isNew ? "is-new" : ""} ${isFailed ? "is-failed" : ""} ${isSel ? "selected" : ""}`}
                   style={{ ["--kc" as string]: kindStyle(a.kind).color }}
                   onPointerDown={(e) => {
                     e.stopPropagation();
@@ -488,6 +492,32 @@ export function DiagramCanvas({
                   <path d={d} className="dg-edge-hit" />
                   <path d={d} className="dg-edge-line" markerEnd={`url(#arrow-${marker}-${uid})`} />
                   <path d={d} className="dg-edge-flow" />
+                  {presentation && isNew && !isFailed && (
+                    <g className="dg-packets" aria-hidden="true">
+                      {[0, 0.55].map((begin) => (
+                        <circle key={begin} className="dg-packet" r={5}>
+                          <animateMotion
+                            dur="1.1s"
+                            begin={`${begin}s`}
+                            repeatCount="indefinite"
+                            path={d}
+                          />
+                        </circle>
+                      ))}
+                    </g>
+                  )}
+                  {presentation && isFailed && (
+                    <g
+                      className="dg-fail-mark"
+                      transform={`translate(${mid.x} ${mid.y})`}
+                      aria-hidden="true"
+                    >
+                      <circle r={11} />
+                      <text textAnchor="middle" dominantBaseline="central">
+                        ✕
+                      </text>
+                    </g>
+                  )}
                   {label && (
                     <g className="dg-edge-label" transform={`translate(${mid.x} ${mid.y})`}>
                       <rect
@@ -532,6 +562,7 @@ export function DiagramCanvas({
                     `shape-${kindShape(n.kind)}`,
                     isSel ? "selected" : "",
                     isNew ? "is-new" : "",
+                    failed.nodes.has(n.id) ? "is-failed" : "",
                     smell ? "smelly" : "",
                     pending === n.id ? "pending" : "",
                     gesture?.kind === "drag" && gesture.id === n.id ? "dragging" : "",
@@ -566,6 +597,18 @@ export function DiagramCanvas({
                         ? truncate(n.sub ?? s.label, 20)
                         : truncate(`${s.label} · ${n.id}`, 17)}
                     </text>
+                    {presentation && failed.nodes.has(n.id) && (
+                      <g
+                        className="dg-fail-mark"
+                        transform={`translate(${NODE_W - 4} 4)`}
+                        aria-hidden="true"
+                      >
+                        <circle r={11} />
+                        <text textAnchor="middle" dominantBaseline="central">
+                          ✕
+                        </text>
+                      </g>
+                    )}
                     {isNew && !presentation && (
                       <g className="dg-new-badge" transform={`translate(${NODE_W - 30} -9)`}>
                         <rect width={38} height={18} rx={9} />

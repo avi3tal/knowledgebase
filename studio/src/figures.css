@@ -388,3 +388,165 @@
 .markdown td:first-child {
   font-weight: 600;
 }
+
+/* ---------------------------------------------------------------- motion + scenarios */
+.fig-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px 0;
+}
+.fig-tab {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+.fig-tab.on {
+  border-color: var(--t, var(--accent));
+  background: color-mix(in srgb, var(--t, var(--accent)) 12%, var(--panel));
+  font-weight: 650;
+}
+.tone-happy {
+  --t: var(--ok);
+}
+.tone-failure,
+.tone-risk {
+  --t: var(--bad);
+}
+.tone-edge {
+  --t: var(--warn);
+}
+.tone-alternative {
+  --t: #0891b2;
+}
+.fig-summary {
+  margin: 8px 16px 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--t, var(--accent));
+  background: color-mix(in srgb, var(--t, var(--accent)) 7%, var(--panel));
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+}
+.fig-narration.bad b {
+  color: var(--bad);
+}
+.fig-progress {
+  flex: 1 1 60px;
+  max-width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent-soft);
+  position: relative;
+  overflow: hidden;
+  margin-left: 6px;
+}
+.fig-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: left;
+  animation: fig-progress var(--ms) linear forwards;
+}
+@keyframes fig-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* packets travelling along active arrows */
+.dg-packet,
+.flow-packet,
+.seq-packet {
+  fill: var(--accent);
+  stroke: var(--panel);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+.seq-msg.error .seq-packet {
+  fill: var(--bad);
+  filter: drop-shadow(0 0 4px var(--bad));
+}
+
+/* failures */
+.dg-fail-mark circle {
+  fill: var(--bad);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.dg-fail-mark text {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+.fig.stepping .dg-node.is-failed,
+.fig.stepping .dg-edge.is-failed {
+  opacity: 1;
+}
+.dg-node.is-failed .dg-card {
+  stroke: var(--bad) !important;
+  stroke-dasharray: 6 4;
+}
+.dg-edge.is-failed .dg-edge-line {
+  stroke: var(--bad) !important;
+  stroke-dasharray: 6 5;
+}
+.flow-edge.failed path {
+  stroke: var(--bad);
+  stroke-dasharray: 6 5;
+}
+.flow-node.failed rect,
+.flow-node.failed path {
+  stroke: var(--bad);
+  stroke-dasharray: 6 4;
+}
+.flow-fail,
+.seq-lost {
+  fill: var(--bad);
+  font-size: 16px;
+  font-weight: 800;
+}
+.seq-msg.lost path {
+  stroke: var(--bad);
+  stroke-dasharray: 4 4;
+}
+.seq-msg.lost .seq-label {
+  fill: var(--bad);
+}
+
+/* the active arrow draws itself */
+.seq-msg.on path,
+.flow-edge.on path {
+  stroke-dasharray: 8 6;
+  animation: fig-march 0.7s linear infinite;
+}
+@keyframes fig-march {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+.fig.stepping .dg-edge.is-new .dg-edge-line {
+  stroke-dasharray: 8 6;
+  animation: fig-march 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-packets,
+  .flow-packet,
+  .seq-packet {
+    display: none;
+  }
+  .seq-msg.on path,
+  .flow-edge.on path,
+  .fig.stepping .dg-edge.is-new .dg-edge-line {
+    animation: none;
+  }
+}

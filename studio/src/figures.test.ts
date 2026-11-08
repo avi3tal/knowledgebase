@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { ArchitectureFigure, SequenceFigure } from "./figures";
 import {
+  applyScenario,
   architectureDiagram,
+  scenarioTabs,
+  stepFailed,
   circled,
   edgeStepNumbers,
   figureNumbering,
@@ -79,5 +82,46 @@ describe("figures", () => {
       ["0:b", 2],
       ["2:c", 3],
     ]);
+  });
+});
+
+describe("scenarios", () => {
+  const withScenarios: ArchitectureFigure = {
+    ...ARCH,
+    caption: "base caption",
+    base_name: "Happy path",
+    scenarios: [
+      { name: "Cache down", tone: "failure", steps: [{ text: "boom", fail: ["c", "b>c"] }] },
+      {
+        name: "No cache",
+        tone: "alternative",
+        nodes: [{ id: "a", kind: "client", x: 0, y: 0 }],
+        edges: [],
+      },
+    ],
+  };
+
+  it("lists the base first, then each scenario with its tone", () => {
+    expect(scenarioTabs(withScenarios).map((t) => [t.name, t.tone])).toEqual([
+      ["Happy path", "happy"],
+      ["Cache down", "failure"],
+      ["No cache", "alternative"],
+    ]);
+  });
+
+  it("replaces only the fields a scenario sets, and drops the base caption", () => {
+    const down = applyScenario(withScenarios, 1);
+    expect(down.steps?.[0]?.text).toBe("boom");
+    expect(down.kind === "architecture" && down.nodes).toHaveLength(3);
+    expect(down.caption).toBeUndefined();
+    const alt = applyScenario(withScenarios, 2);
+    expect(alt.kind === "architecture" && alt.nodes).toHaveLength(1);
+    expect(applyScenario(withScenarios, 0)).toBe(withScenarios);
+  });
+
+  it("splits failed ids into nodes and canvas edge keys", () => {
+    const f = stepFailed({ text: "x", fail: ["c", "b>c"] });
+    expect([...f.nodes]).toEqual(["c"]);
+    expect([...f.edges]).toEqual(["b->c"]);
   });
 });

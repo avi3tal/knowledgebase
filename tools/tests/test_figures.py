@@ -95,3 +95,40 @@ def test_resolved_lesson_inlines_figures() -> None:
     md = [b for b in lesson["blocks"] if b["type"] == "markdown"]
     inlined = {name for b in md for name in b.get("figures", {})}
     assert {"placement", "three-requests", "token-bucket-flow", "race"} <= inlined
+
+
+def test_scenarios_validate_merged_and_report_mistakes() -> None:
+    ok = {
+        **ARCH,
+        "scenarios": [
+            {"name": "Down", "tone": "failure", "steps": [{"text": "x", "fail": ["s", "c>s"]}]},
+            {
+                "name": "Alt",
+                "tone": "alternative",
+                "nodes": [{"id": "c", "kind": "client", "x": 0, "y": 0}],
+                "edges": [],
+                "steps": [{"text": "y", "nodes": ["c"]}],
+            },
+        ],
+    }
+    assert figures.validate(ok, PALETTE) == []
+    bad = {
+        **ARCH,
+        "scenarios": [
+            {"name": "How it works", "tone": "meh", "steps": [{"text": "x", "fail": ["zz"]}], "colour": 1},
+            {"name": "Empty"},
+            {"tone": "edge"},
+        ],
+    }
+    errs = "\n".join(figures.validate(bad, PALETTE))
+    for needle in (
+        "duplicate scenario name",
+        "tone must be",
+        "unknown fields",
+        "unknown nodes/edges",
+        "changes nothing",
+        "needs a 'name'",
+    ):
+        assert needle in errs
+    lost = {**SEQ, "messages": [{"from": "a", "to": "b", "label": "reply", "style": "lost"}]}
+    assert figures.validate(lost, PALETTE) == []

@@ -19,8 +19,14 @@ them (DiagramCanvas for architecture, its own SVG for sequence and flowchart). K
   `tone`: good | bad colours an outcome),
   `edges [{from, to, label?}]` (label decision branches "yes" / "no"), optional `steps`.
 
-Every kind takes `title` and optional `caption`. `steps [{text, nodes?, edges?}]` highlight nodes and
-edges (`"from>to"`) one step at a time with narration underneath.
+Every kind takes `title` and optional `caption`. `steps [{text, nodes?, edges?, fail?}]` highlight nodes
+and edges (`"from>to"`) one step at a time with narration underneath; `fail` marks nodes/edges that
+break in that step (red, ✕). Sequence `style: lost` is a message that never arrives.
+
+`scenarios [{name, tone, summary?, steps?, caption?, nodes?/edges?/actors?/messages?}]` are tabs that
+replay the figure for a failure, edge case, alternative design or risk (`tone`: happy | failure |
+edge | alternative | risk). A scenario's fields replace the base figure's; the merged figure must be
+valid on its own. The base figure is the first tab (`base_name`, default "How it works").
 """
 
 from __future__ import annotations
@@ -34,7 +40,9 @@ FENCE_RE = re.compile(r"^```figure[ \t]*\n([^\n`]*)\n```", re.M)
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 KINDS = {"architecture", "sequence", "flowchart"}
 FLOW_TYPES = {"start", "step", "decision", "end"}
-MESSAGE_STYLES = {"call", "reply", "error", "async", "self"}
+MESSAGE_STYLES = {"call", "reply", "error", "async", "self", "lost"}
+SCENARIO_TONES = {"happy", "failure", "edge", "alternative", "risk"}
+SCENARIO_FIELDS = {"name", "tone", "summary", "steps", "caption", "nodes", "edges", "actors", "messages"}
 
 
 def names(markdown: str) -> list[str]:
@@ -109,16 +117,43 @@ def _steps(spec: dict[str, Any], node_ids: set[str], edge_keys: set[str], errors
         bad = [n for n in s.get("nodes", []) if n not in node_ids] + [
             e for e in s.get("edges", []) if e not in edge_keys
         ]
+        bad += [x for x in s.get("fail", []) if x not in node_ids and x not in edge_keys]
         if bad:
             errors.append(f"step {i} highlights unknown nodes/edges {bad}")
-        if not s.get("nodes") and not s.get("edges"):
+        if not s.get("nodes") and not s.get("edges") and not s.get("fail"):
             errors.append(f"step {i} highlights nothing")
 
 
 def validate(spec: Any, palette: set[str]) -> list[str]:
-    """Problems with one figure spec; `palette` = node kinds an architecture figure may use."""
+    """Problems with one figure spec (and each of its scenarios merged over it)."""
     if not isinstance(spec, dict):
         return ["spec must be an object"]
+    errors = _validate_one(spec, palette)
+    scenarios = spec.get("scenarios", [])
+    if not isinstance(scenarios, list):
+        return [*errors, "'scenarios' must be a list"]
+    names = {str(spec.get("base_name", "How it works"))}
+    for i, sc in enumerate(scenarios, 1):
+        where = f"scenario {i} ({sc.get('name') if isinstance(sc, dict) else '?'})"
+        if not isinstance(sc, dict) or not str(sc.get("name", "")).strip():
+            errors.append(f"scenario {i} needs a 'name'")
+            continue
+        if sc["name"] in names:
+            errors.append(f"{where}: duplicate scenario name")
+        names.add(sc["name"])
+        if sc.get("tone", "edge") not in SCENARIO_TONES:
+            errors.append(f"{where}: tone must be one of {sorted(SCENARIO_TONES)}")
+        if unknown := set(sc) - SCENARIO_FIELDS:
+            errors.append(f"{where}: unknown fields {sorted(unknown)}")
+        if not any(k in sc for k in ("steps", "nodes", "edges", "actors", "messages")):
+            errors.append(f"{where}: changes nothing (give it steps or a changed picture)")
+        merged = {**spec, **{k: v for k, v in sc.items() if k not in {"name", "tone", "summary"}}}
+        merged.pop("scenarios", None)
+        errors += [f"{where}: {e}" for e in _validate_one(merged, palette)]
+    return errors
+
+
+def _validate_one(spec: dict[str, Any], palette: set[str]) -> list[str]:
     errors: list[str] = []
     kind = spec.get("kind")
     if kind not in KINDS:

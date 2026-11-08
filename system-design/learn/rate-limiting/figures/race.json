@@ -43,12 +43,73 @@
    "label": "SET count = 4 (allow)",
    "style": "error",
    "note": "Both allowed: 5 requests passed a limit of 4, and the counter says 4. The lost update grows with traffic."
+  }
+ ],
+ "base_name": "The bug: read, then write",
+ "scenarios": [
+  {
+   "name": "Fix: atomic INCR",
+   "tone": "happy",
+   "summary": "One round trip that increments and returns the new value: each gateway sees a different number, so exactly one request is rejected.",
+   "messages": [
+    {
+     "from": "g1",
+     "to": "s",
+     "label": "INCR count",
+     "note": "Gateway 1 increments atomically."
+    },
+    {
+     "from": "s",
+     "to": "g1",
+     "label": "4 → allow",
+     "style": "reply",
+     "note": "It gets 4: the last allowed slot."
+    },
+    {
+     "from": "g2",
+     "to": "s",
+     "label": "INCR count",
+     "note": "Gateway 2 increments at almost the same moment."
+    },
+    {
+     "from": "s",
+     "to": "g2",
+     "label": "5 → 429",
+     "style": "error",
+     "note": "It gets 5, which is over the limit: rejected. No lost update is possible."
+    }
+   ]
   },
   {
-   "from": "g2",
-   "to": "s",
-   "label": "fix: INCR → 5 > 4 → reject",
-   "note": "With an atomic INCR each gateway gets a distinct new value (4, then 5), so exactly one is rejected."
+   "name": "Alternative: Lua script",
+   "tone": "alternative",
+   "summary": "For token buckets (read tokens, refill, take one) run the whole check as one server-side script so it is atomic too.",
+   "messages": [
+    {
+     "from": "g1",
+     "to": "s",
+     "label": "EVAL take_token(key)",
+     "note": "The script reads tokens and last refill time, refills, decides and writes back, all inside the store."
+    },
+    {
+     "from": "s",
+     "to": "g1",
+     "label": "allowed, 2 left",
+     "style": "reply"
+    },
+    {
+     "from": "g2",
+     "to": "s",
+     "label": "EVAL take_token(key)",
+     "note": "Scripts run one at a time on that key, so there is no interleaving."
+    },
+    {
+     "from": "s",
+     "to": "g2",
+     "label": "allowed, 1 left",
+     "style": "reply"
+    }
+   ]
   }
  ]
 }

@@ -49,6 +49,13 @@ structure and tone.
        decision | end; `col`/`row` grid; label branches yes/no; `tone`: good | bad on outcomes).
      Aim for 3–6 figures per lesson, each with a `title` that states the takeaway and a one-line
      `caption`. Keep node labels ≤ 18 characters. ASCII stays only for formulas and tiny tables.
+   - **Animate the system, not just the happy path.** Figures auto-play when scrolled into view
+     (packets travel the active arrows). Give the lesson's 2–3 central figures **`scenarios`**
+     (tabs): `failure` (a component dies or a message is lost: `fail: [...]` in a step, sequence
+     `style: "lost"`), `edge` (limits, hot keys, late events, retries), `alternative` (a different
+     design with its own `nodes`/`edges` or `messages`, and its trade-off in `summary`) and `risk`
+     (what goes wrong at scale and the mitigation). Every scenario has a one-line `summary` that
+     states the takeaway. Name the base tab with `base_name` ("Allowed request", "Cache hit"…).
    - **Callouts** (GitHub syntax, rendered as styled boxes): `> [!PROS]` / `> [!CONS]` after each
      option, `> [!INTERVIEW] title` for what to say, `> [!PITFALL]`, `> [!TIP]`, `> [!NUMBERS]`,
      and `> [!DIALOGUE] title` with `**Candidate:** …` / `**Interviewer:** …` lines for scoping.

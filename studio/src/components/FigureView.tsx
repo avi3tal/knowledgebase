@@ -1,8 +1,10 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { Figure, FlowchartFigure, SequenceFigure } from "../figures";
 import {
   FLOW,
   SEQ,
+  TONE_ICON,
+  applyScenario,
   architectureDiagram,
   circled,
   edgeStepNumbers,
@@ -10,60 +12,127 @@ import {
   flowEdgePath,
   flowSize,
   laneX,
+  scenarioTabs,
   sequenceSize,
+  stepFailed,
   stepHighlight,
   stepsOf,
 } from "../figures";
 import { kindStyle } from "../design";
+import type { CanvasHandle } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
 
+const STEP_MS = 2600;
+const reducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
 /**
- * A lesson figure: a real diagram (architecture / sequence / flowchart) with a caption and, when it
- * has steps, a step-through that highlights one numbered step at a time with its narration.
+ * A lesson figure: an animated diagram (architecture / sequence / flowchart). It auto-plays its
+ * steps the first time it scrolls into view — request "packets" travel along the active arrows,
+ * failures turn red with ✕ — and its scenario tabs replay the same system for failures, edge
+ * cases, alternatives and risks.
  */
 export function FigureView({ figure, number }: { figure: Figure; number?: number }) {
-  const steps = useMemo(() => stepsOf(figure), [figure]);
+  const tabs = useMemo(() => scenarioTabs(figure), [figure]);
+  const [scenario, setScenario] = useState(0);
+  const shown = useMemo(() => applyScenario(figure, scenario), [figure, scenario]);
+  const steps = useMemo(() => stepsOf(shown), [shown]);
   const [step, setStep] = useState(-1); // -1: whole picture, nothing highlighted
   const [playing, setPlaying] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+  const started = useRef(false);
+  const canvas = useRef<CanvasHandle>(null);
+  // a scenario may change the picture: re-fit the canvas (kept mounted so the page doesn't jump)
+  useEffect(() => {
+    const t = window.setTimeout(() => canvas.current?.fit(), 0);
+    return () => window.clearTimeout(t);
+  }, [scenario]);
+
+  // Auto-play once, the first time at least half of the figure is visible.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reducedMotion() || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting && !started.current && steps.length > 0) {
+          started.current = true;
+          setStep(0);
+          setPlaying(true);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [steps.length]);
 
   useEffect(() => {
     if (!playing) return;
     const t = window.setTimeout(() => {
       if (step >= steps.length - 1) setPlaying(false);
       else setStep(step + 1);
-    }, 2200);
+    }, STEP_MS);
     return () => window.clearTimeout(t);
   }, [playing, step, steps.length]);
 
+  const pick = (i: number) => {
+    setScenario(i);
+    setStep(0);
+    setPlaying(!reducedMotion());
+    started.current = true;
+  };
+
   const current = step >= 0 ? steps[step] : undefined;
   let body;
-  if (figure.kind === "architecture") {
+  if (shown.kind === "architecture") {
     body = (
       <DiagramCanvas
-        diagram={architectureDiagram(figure)}
+        handle={canvas}
+        diagram={architectureDiagram(shown)}
         highlight={stepHighlight(current)}
+        failed={stepFailed(current)}
+        height={Math.max(260, Math.max(...shown.nodes.map((n) => n.y)) + 150)}
         presentation
-        height={Math.max(260, Math.max(...figure.nodes.map((n) => n.y)) + 150)}
       />
     );
-  } else if (figure.kind === "sequence") {
-    body = <SequenceSvg f={figure} active={step} />;
+  } else if (shown.kind === "sequence") {
+    body = <SequenceSvg f={shown} active={step} />;
   } else {
-    body = <FlowchartSvg f={figure} active={step} />;
+    body = <FlowchartSvg f={shown} active={step} />;
   }
+  const tab = tabs[scenario];
 
   return (
-    <figure className={`fig fig-${figure.kind} ${step >= 0 ? "stepping" : ""}`}>
+    <figure ref={ref} className={`fig fig-${shown.kind} ${step >= 0 ? "stepping" : ""}`}>
       <figcaption className="fig-head">
         {number !== undefined && <span className="fig-num">Figure {number}</span>}
         <span className="fig-title">{figure.title}</span>
       </figcaption>
+      {tabs.length > 1 && (
+        <div className="fig-tabs" role="tablist">
+          {tabs.map((t, i) => (
+            <button
+              key={t.name}
+              role="tab"
+              aria-selected={i === scenario}
+              className={`fig-tab tone-${t.tone} ${i === scenario ? "on" : ""}`}
+              onClick={() => pick(i)}
+            >
+              <span aria-hidden="true">{TONE_ICON[t.tone]}</span> {t.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {tab?.summary && <p className={`fig-summary tone-${tab.tone}`}>{tab.summary}</p>}
       <div className="fig-body">{body}</div>
       {steps.length > 0 && (
         <div className="fig-steps">
           <div className="fig-controls">
             <button
-              onClick={() => setStep(Math.max(-1, step - 1))}
+              onClick={() => {
+                setPlaying(false);
+                setStep(Math.max(-1, step - 1));
+              }}
               disabled={step < 0}
               aria-label="previous step"
             >
@@ -72,15 +141,18 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
             <button
               className="primary"
               onClick={() => {
-                if (step >= steps.length - 1) setStep(0);
-                else if (step < 0) setStep(0);
-                setPlaying(!playing);
+                if (playing) return setPlaying(false);
+                if (step < 0 || step >= steps.length - 1) setStep(0);
+                setPlaying(true);
               }}
             >
-              {playing ? "❚❚ pause" : step < 0 ? "▶ walk through" : "▶ play"}
+              {playing ? "❚❚ pause" : step >= steps.length - 1 ? "↻ replay" : "▶ play"}
             </button>
             <button
-              onClick={() => setStep(Math.min(steps.length - 1, step + 1))}
+              onClick={() => {
+                setPlaying(false);
+                setStep(Math.min(steps.length - 1, step + 1));
+              }}
               disabled={step >= steps.length - 1}
               aria-label="next step"
             >
@@ -101,32 +173,28 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
                 </button>
               ))}
             </span>
-            {step >= 0 && (
-              <button
-                className="ghost"
-                onClick={() => {
-                  setPlaying(false);
-                  setStep(-1);
-                }}
-              >
-                show all
-              </button>
+            {playing && (
+              <span
+                className="fig-progress"
+                key={`${scenario}-${step}`}
+                style={{ ["--ms" as string]: `${STEP_MS}ms` }}
+              />
             )}
           </div>
-          <p className="fig-narration" aria-live="polite">
+          <p className={`fig-narration ${current?.fail?.length ? "bad" : ""}`} aria-live="polite">
             {current ? (
               <>
                 <b>{circled(step + 1)}</b> {current.text}
               </>
             ) : (
               <span className="muted">
-                {steps.length} steps — press <b>walk through</b> or click a number.
+                {steps.length} steps — press <b>play</b> or click a number.
               </span>
             )}
           </p>
         </div>
       )}
-      {figure.caption && <p className="fig-caption">{figure.caption}</p>}
+      {shown.caption && <p className="fig-caption">{shown.caption}</p>}
     </figure>
   );
 }
@@ -190,18 +258,27 @@ function SequenceSvg({ f, active }: { f: SequenceFigure; active: number }) {
         const style = m.style ?? "call";
         const state = active < 0 ? "" : i === active ? "on" : i < active ? "done" : "later";
         const self = style === "self" || m.from === m.to;
+        const lost = style === "lost";
+        const end = lost ? (x1 + x2) / 2 : x2 + (x2 > x1 ? -2 : 2);
         const mid = self ? x1 + 46 : (x1 + x2) / 2;
-        const marker = `url(#${uid}-${style === "error" ? "error" : style === "reply" ? "reply" : "call"})`;
+        const head = style === "error" || lost ? "error" : style === "reply" ? "reply" : "call";
+        const d = self ? `M${x1},${y - 10} h36 v20 h-34` : `M${x1},${y} L${end},${y}`;
         return (
           <g key={i} className={`seq-msg ${style} ${state}`}>
-            {self ? (
-              <path d={`M${x1},${y - 10} h36 v20 h-34`} markerEnd={marker} />
-            ) : (
-              <line x1={x1} y1={y} x2={x2 + (x2 > x1 ? -2 : 2)} y2={y} markerEnd={marker} />
+            <path d={d} markerEnd={lost ? undefined : `url(#${uid}-${head})`} />
+            {lost && (
+              <text className="seq-lost" x={end} y={y + 5} textAnchor="middle">
+                ✕
+              </text>
+            )}
+            {state === "on" && (
+              <circle className="seq-packet" r={6}>
+                <animateMotion dur="0.9s" repeatCount="indefinite" path={d} />
+              </circle>
             )}
             <text
               className="seq-label"
-              x={self ? x1 + 44 : mid}
+              x={self ? x1 + 44 : lost ? (x1 + end) / 2 : mid}
               y={self ? y + 4 : y - 7}
               textAnchor={self ? "start" : "middle"}
             >
@@ -221,8 +298,11 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
   const step = active >= 0 ? f.steps?.[active] : undefined;
   const litNodes = new Set(step?.nodes ?? []);
   const litEdges = new Set(step?.edges ?? []);
+  const failed = new Set(step?.fail ?? []);
   const nums = edgeStepNumbers(f.steps);
   const dim = active >= 0;
+  const edgeClass = (key: string, label?: string) =>
+    `flow-edge ${failed.has(key) ? "failed" : litEdges.has(key) ? "on" : dim ? "dim" : ""} ${/^no\b/i.test(label ?? "") ? "no" : ""}`;
   return (
     <svg
       className="fig-svg"
@@ -250,20 +330,25 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
         const b = byId.get(e.to);
         if (!a || !b) return null;
         const key = `${e.from}>${e.to}`;
-        const cls = `flow-edge ${litEdges.has(key) ? "on" : dim ? "dim" : ""} ${/^no\b/i.test(e.label ?? "") ? "no" : ""}`;
+        const d = flowEdgePath(a, b);
         return (
-          <g key={key} className={cls}>
-            <path d={flowEdgePath(a, b)} markerEnd={`url(#${uid}-a)`} />
+          <g key={key} className={edgeClass(key, e.label)}>
+            <path d={d} markerEnd={`url(#${uid}-a)`} />
+            {litEdges.has(key) && !failed.has(key) && (
+              <circle className="flow-packet" r={5}>
+                <animateMotion dur="1s" repeatCount="indefinite" path={d} />
+              </circle>
+            )}
           </g>
         );
       })}
       {f.nodes.map((n) => {
         const c = flowCenter(n);
-        const cls = `flow-node ${n.type} ${n.tone ?? ""} ${litNodes.has(n.id) ? "on" : dim ? "dim" : ""}`;
+        const state = failed.has(n.id) ? "failed" : litNodes.has(n.id) ? "on" : dim ? "dim" : "";
         const hw = FLOW.w / 2;
         const hh = FLOW.h / 2;
         return (
-          <g key={n.id} className={cls}>
+          <g key={n.id} className={`flow-node ${n.type} ${n.tone ?? ""} ${state}`}>
             {n.type === "decision" ? (
               <path
                 d={`M${c.x},${c.y - hh - 6} L${c.x + hw},${c.y} L${c.x},${c.y + hh + 6} L${c.x - hw},${c.y} Z`}
@@ -280,6 +365,11 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
             <text x={c.x} y={c.y + 5} textAnchor="middle">
               {n.label}
             </text>
+            {state === "failed" && (
+              <text className="flow-fail" x={c.x + hw - 4} y={c.y - hh + 4} textAnchor="middle">
+                ✕
+              </text>
+            )}
           </g>
         );
       })}
@@ -295,9 +385,8 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
         const q = flowCenter(b);
         const lx = a.col === b.col ? p.x + 10 : (p.x + q.x) / 2;
         const ly = a.col === b.col ? (p.y + q.y) / 2 + 4 : p.y - 8;
-        const cls = `flow-edge ${litEdges.has(key) ? "on" : dim ? "dim" : ""}`;
         return (
-          <g key={`l-${key}`} className={cls}>
+          <g key={`l-${key}`} className={edgeClass(key)}>
             <text
               className="flow-edge-label"
               x={lx}

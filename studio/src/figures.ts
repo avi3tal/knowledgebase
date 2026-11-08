@@ -7,11 +7,34 @@ export interface FigureStep {
   nodes?: string[];
   /** "from>to" */
   edges?: string[];
+  /** nodes or "from>to" edges that fail in this step (drawn red with ✕) */
+  fail?: string[];
+}
+/** What a scenario is about; drives its tab icon and colour. */
+export type ScenarioTone = "happy" | "failure" | "edge" | "alternative" | "risk";
+/**
+ * One way the system can play out: a tab on the figure. Any figure field it sets (nodes, edges,
+ * actors, messages, steps, caption) replaces the base figure's for this scenario.
+ */
+export interface Scenario {
+  name: string;
+  tone?: ScenarioTone;
+  /** one line under the tabs: what this scenario shows and what to take away */
+  summary?: string;
+  steps?: FigureStep[];
+  caption?: string;
+  nodes?: unknown[];
+  edges?: unknown[];
+  actors?: unknown[];
+  messages?: unknown[];
 }
 interface FigureBase {
   title: string;
   caption?: string;
   steps?: FigureStep[];
+  /** first tab = the base figure (named `base_name`, default "How it works") */
+  scenarios?: Scenario[];
+  base_name?: string;
 }
 export interface ArchitectureFigure extends FigureBase {
   kind: "architecture";
@@ -33,7 +56,8 @@ export interface FlowchartFigure extends FigureBase {
   }[];
   edges: { from: string; to: string; label?: string }[];
 }
-export type MessageStyle = "call" | "reply" | "error" | "async" | "self";
+/** lost = never arrives (drawn half-way, ending in ✕): a dropped packet, a lost reply */
+export type MessageStyle = "call" | "reply" | "error" | "async" | "self" | "lost";
 export interface SequenceFigure extends FigureBase {
   kind: "sequence";
   actors: { id: string; label: string; kind?: string }[];
@@ -68,6 +92,44 @@ export function architectureDiagram(f: ArchitectureFigure): Diagram {
       const label = [n ? circled(n) : "", e.label ?? ""].filter(Boolean).join(" ");
       return { from: e.from, to: e.to, label: label || undefined };
     }),
+  };
+}
+
+export const TONE_ICON: Record<ScenarioTone, string> = {
+  happy: "✅",
+  failure: "⚠️",
+  edge: "🧪",
+  alternative: "🔀",
+  risk: "🧨",
+};
+
+/** Tabs of a figure: the base figure first, then its scenarios. */
+export function scenarioTabs(f: Figure): { name: string; tone: ScenarioTone; summary?: string }[] {
+  return [
+    { name: f.base_name ?? "How it works", tone: "happy" as ScenarioTone },
+    ...(f.scenarios ?? []).map((s) => ({
+      name: s.name,
+      tone: s.tone ?? "edge",
+      summary: s.summary,
+    })),
+  ];
+}
+
+/** The figure as scenario `i` shows it (0 = base): the scenario's fields replace the base's. */
+export function applyScenario(f: Figure, i: number): Figure {
+  const s = i > 0 ? f.scenarios?.[i - 1] : undefined;
+  if (!s) return f;
+  const { name: _name, tone: _tone, summary: _summary, ...fields } = s;
+  // the base caption describes the base picture: a scenario shows its own caption or none
+  return { ...f, caption: undefined, ...fields, scenarios: f.scenarios } as Figure;
+}
+
+/** Failed nodes and edges of a step, as a canvas highlight. */
+export function stepFailed(step: FigureStep | undefined): Highlight {
+  const fail = step?.fail ?? [];
+  return {
+    nodes: new Set(fail.filter((x) => !x.includes(">"))),
+    edges: new Set(fail.filter((x) => x.includes(">")).map((e) => e.replace(">", "->"))),
   };
 }
 

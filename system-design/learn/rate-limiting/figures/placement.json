@@ -108,5 +108,250 @@
     "gw>client"
    ]
   }
+ ],
+ "base_name": "Allowed request",
+ "scenarios": [
+  {
+   "name": "Over the limit",
+   "tone": "edge",
+   "summary": "The 11th request in a window of 10: rejected at the edge, so the API and database never see it.",
+   "steps": [
+    {
+     "text": "Request 11 of this minute arrives for the same API key.",
+     "nodes": [
+      "client",
+      "gw"
+     ],
+     "edges": [
+      "client>gw"
+     ]
+    },
+    {
+     "text": "INCR returns 11, which is above the limit of 10.",
+     "nodes": [
+      "gw",
+      "counters"
+     ],
+     "edges": [
+      "gw>counters"
+     ]
+    },
+    {
+     "text": "Reject now: 429 Too Many Requests with Retry-After: 23 (seconds until the window resets).",
+     "nodes": [
+      "gw",
+      "client"
+     ],
+     "edges": [
+      "gw>client"
+     ]
+    },
+    {
+     "text": "Nothing behind the limiter is touched: that's the whole point of rejecting early.",
+     "nodes": [
+      "api",
+      "db"
+     ],
+     "fail": [
+      "gw>api"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Counter store down",
+   "tone": "failure",
+   "summary": "The limiter can't reach its counters. You must decide in advance: fail open (serve, unprotected) or fail closed (reject everyone).",
+   "steps": [
+    {
+     "text": "A request arrives as usual.",
+     "nodes": [
+      "client",
+      "gw"
+     ],
+     "edges": [
+      "client>gw"
+     ]
+    },
+    {
+     "text": "INCR times out: the counter store is down or partitioned away.",
+     "fail": [
+      "counters",
+      "gw>counters"
+     ]
+    },
+    {
+     "text": "Fail open (most public APIs): forward the request and page someone. Users are fine; the API is briefly unprotected.",
+     "nodes": [
+      "gw",
+      "api",
+      "db"
+     ],
+     "edges": [
+      "gw>api",
+      "api>db"
+     ],
+     "fail": [
+      "counters"
+     ]
+    },
+    {
+     "text": "Fail closed (login, OTP, payments): return 429/503. Abuse stays blocked, but so does everyone else.",
+     "nodes": [
+      "gw",
+      "client"
+     ],
+     "edges": [
+      "gw>client"
+     ],
+     "fail": [
+      "counters"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: in each service",
+   "tone": "alternative",
+   "summary": "No central gateway: every service limits with a local token bucket. One less hop, but each instance only sees its own traffic.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Client",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 280,
+     "y": 150
+    },
+    {
+     "id": "s1",
+     "kind": "service",
+     "label": "Service 1",
+     "sub": "local bucket",
+     "x": 560,
+     "y": 40
+    },
+    {
+     "id": "s2",
+     "kind": "service",
+     "label": "Service 2",
+     "sub": "local bucket",
+     "x": 560,
+     "y": 260
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Database",
+     "x": 840,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "s1"
+    },
+    {
+     "from": "lb",
+     "to": "s2"
+    },
+    {
+     "from": "s1",
+     "to": "db"
+    },
+    {
+     "from": "s2",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The load balancer spreads one user's requests across both instances.",
+     "nodes": [
+      "client",
+      "lb",
+      "s1",
+      "s2"
+     ],
+     "edges": [
+      "client>lb",
+      "lb>s1",
+      "lb>s2"
+     ]
+    },
+    {
+     "text": "Each instance checks its own in-memory bucket: no network hop, about 1 µs.",
+     "nodes": [
+      "s1",
+      "s2"
+     ]
+    },
+    {
+     "text": "Catch: with N instances a user can get up to N × limit. Set each bucket to limit ÷ N, and accept that the limit is approximate.",
+     "nodes": [
+      "s1",
+      "s2",
+      "db"
+     ],
+     "edges": [
+      "s1>db",
+      "s2>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: retry storm",
+   "tone": "risk",
+   "summary": "Clients that retry 429s immediately multiply the load. The limiter survives, but the counter store and the network take the hit.",
+   "steps": [
+    {
+     "text": "A burst gets 429s.",
+     "nodes": [
+      "gw",
+      "client"
+     ],
+     "edges": [
+      "gw>client"
+     ]
+    },
+    {
+     "text": "Badly written clients retry at once, in a tight loop: 10× the traffic, every request still hitting the counter store.",
+     "nodes": [
+      "client",
+      "gw",
+      "counters"
+     ],
+     "edges": [
+      "client>gw",
+      "gw>counters"
+     ],
+     "fail": [
+      "counters"
+     ]
+    },
+    {
+     "text": "Mitigation: send Retry-After, have SDKs back off with jitter, and block repeat offenders at the CDN/edge before they reach the limiter.",
+     "nodes": [
+      "gw",
+      "client"
+     ],
+     "edges": [
+      "gw>client"
+     ]
+    }
+   ]
+  }
  ]
 }
