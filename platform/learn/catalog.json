@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "subject": "platform",
+  "title": "Platform: Kubernetes & Cloud",
+  "status": "locked",
+  "source": {
+    "name": "kb curated topic map",
+    "note": "Topic map for containers, Kubernetes, cloud and delivery; lessons and problems come later."
+  },
+  "topics": [
+    {
+      "id": "containers",
+      "name": "Containers",
+      "kind": "concept",
+      "group": "containers",
+      "usage": "Images, layers, registries and runtime isolation (namespaces, cgroups): the unit you ship.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": [
+        "k8s-architecture"
+      ]
+    },
+    {
+      "id": "k8s-architecture",
+      "name": "Kubernetes architecture",
+      "kind": "concept",
+      "group": "kubernetes",
+      "usage": "Control plane (API server, etcd, scheduler, controllers) and nodes (kubelet): desired state reconciled in a loop.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "containers"
+      ],
+      "related": [
+        "containers",
+        "pods-deployments"
+      ]
+    },
+    {
+      "id": "pods-deployments",
+      "name": "Pods, Deployments & StatefulSets",
+      "kind": "concept",
+      "group": "kubernetes",
+      "usage": "Workload objects: replicas, rolling updates, probes, and when you need stable identity and storage.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "k8s-architecture"
+      ],
+      "related": [
+        "k8s-architecture",
+        "k8s-storage"
+      ]
+    },
+    {
+      "id": "k8s-networking",
+      "name": "Services, Ingress & networking",
+      "kind": "concept",
+      "group": "kubernetes",
+      "usage": "Service discovery, ClusterIP/LoadBalancer, Ingress/Gateway, DNS and network policies.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "pods-deployments"
+      ],
+      "related": [
+        "vpc-networking"
+      ]
+    },
+    {
+      "id": "k8s-scaling",
+      "name": "Scheduling & autoscaling",
+      "kind": "concept",
+      "group": "kubernetes",
+      "usage": "Requests/limits, affinity, HPA/VPA and cluster autoscaling.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "pods-deployments"
+      ],
+      "related": []
+    },
+    {
+      "id": "k8s-storage",
+      "name": "Storage: volumes & PVCs",
+      "kind": "concept",
+      "group": "kubernetes",
+      "usage": "PersistentVolumes, claims, storage classes and stateful workloads.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "pods-deployments"
+      ],
+      "related": [
+        "pods-deployments",
+        "cloud-storage"
+      ]
+    },
+    {
+      "id": "config-secrets",
+      "name": "Config & secrets",
+      "kind": "concept",
+      "group": "kubernetes",
+      "usage": "ConfigMaps, Secrets, external secret stores and rotating credentials safely.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "pods-deployments"
+      ],
+      "related": [
+        "iam"
+      ]
+    },
+    {
+      "id": "helm-packaging",
+      "name": "Helm & packaging",
+      "kind": "concept",
+      "group": "delivery",
+      "usage": "Templated, versioned releases of a set of manifests; values per environment.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "pods-deployments"
+      ],
+      "related": [
+        "gitops"
+      ]
+    },
+    {
+      "id": "cloud-fundamentals",
+      "name": "Cloud fundamentals",
+      "kind": "concept",
+      "group": "cloud",
+      "usage": "Regions and availability zones, shared responsibility, managed vs self-run, pricing models.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": [
+        "serverless"
+      ]
+    },
+    {
+      "id": "iam",
+      "name": "Identity & access (IAM)",
+      "kind": "concept",
+      "group": "cloud",
+      "usage": "Principals, roles, policies and least privilege; workload identity instead of static keys.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cloud-fundamentals"
+      ],
+      "related": [
+        "config-secrets"
+      ]
+    },
+    {
+      "id": "vpc-networking",
+      "name": "VPC networking",
+      "kind": "concept",
+      "group": "cloud",
+      "usage": "Subnets, routing, NAT, security groups, private endpoints and peering.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cloud-fundamentals"
+      ],
+      "related": [
+        "k8s-networking"
+      ]
+    },
+    {
+      "id": "cloud-storage",
+      "name": "Cloud storage",
+      "kind": "concept",
+      "group": "cloud",
+      "usage": "Object vs block vs file storage, storage tiers and durability guarantees.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cloud-fundamentals"
+      ],
+      "related": [
+        "k8s-storage"
+      ]
+    },
+    {
+      "id": "serverless",
+      "name": "Serverless",
+      "kind": "concept",
+      "group": "cloud",
+      "usage": "Functions and managed containers: scale to zero, cold starts, event triggers, limits.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cloud-fundamentals"
+      ],
+      "related": [
+        "cloud-fundamentals"
+      ]
+    },
+    {
+      "id": "infrastructure-as-code",
+      "name": "Infrastructure as code",
+      "kind": "concept",
+      "group": "delivery",
+      "usage": "Declarative infra (Terraform, Pulumi): plans, state, modules and drift.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cloud-fundamentals"
+      ],
+      "related": [
+        "gitops"
+      ]
+    },
+    {
+      "id": "ci-cd",
+      "name": "CI/CD",
+      "kind": "concept",
+      "group": "delivery",
+      "usage": "Build, test and deploy pipelines; artifacts, environments and promotion.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "containers"
+      ],
+      "related": [
+        "deployment-strategies"
+      ]
+    },
+    {
+      "id": "gitops",
+      "name": "GitOps",
+      "kind": "concept",
+      "group": "delivery",
+      "usage": "Git as the source of truth; a controller (Argo CD, Flux) reconciles the cluster to it.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "ci-cd"
+      ],
+      "related": [
+        "helm-packaging",
+        "infrastructure-as-code"
+      ]
+    },
+    {
+      "id": "deployment-strategies",
+      "name": "Deployment strategies",
+      "kind": "concept",
+      "group": "delivery",
+      "usage": "Rolling, blue-green, canary and feature flags; fast, safe rollback.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "ci-cd"
+      ],
+      "related": [
+        "ci-cd"
+      ]
+    },
+    {
+      "id": "slos-reliability",
+      "name": "Observability & SLOs",
+      "kind": "concept",
+      "group": "operations",
+      "usage": "Metrics, logs and traces; SLIs, SLOs and error budgets; alerting on symptoms.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "k8s-architecture"
+      ],
+      "related": [
+        "cost-optimization"
+      ]
+    },
+    {
+      "id": "cost-optimization",
+      "name": "Cost optimization (FinOps)",
+      "kind": "concept",
+      "group": "operations",
+      "usage": "Right-sizing, autoscaling, spot capacity, storage tiers and cost visibility per team.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "cloud-fundamentals"
+      ],
+      "related": [
+        "slos-reliability"
+      ]
+    }
+  ]
+}

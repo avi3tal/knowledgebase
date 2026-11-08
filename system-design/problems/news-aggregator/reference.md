@@ -197,5 +197,5 @@ v4
 - [Message queues](#/learn/system-design/message-queues) and [caching](#/learn/system-design/caching)
 - [Stream processing](#/topic/system-design/stream-processing) and
   [probabilistic structures](#/topic/system-design/probabilistic-structures) (SimHash, MinHash)
-- Related case studies: [web crawler](#/topic/system-design/web-crawler) and
-  [news feed](#/topic/system-design/news-feed)
+- Related case studies: [web crawler](#/design/system-design/web-crawler) and
+  [news feed](#/design/system-design/news-feed)

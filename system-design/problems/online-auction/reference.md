@@ -212,5 +212,5 @@ v4
 - [Message queues and event streaming](#/learn/system-design/message-queues)
 - [Sharding](#/learn/system-design/sharding) for partitioning auctions by id
 - [CAP and consistency models](#/topic/system-design/cap-consistency)
-- [Distributed job scheduler](#/topic/system-design/job-scheduler) for the timer side in depth
-- [Live comments](#/topic/system-design/live-comments), the same fan-out shape without the race
+- [Distributed job scheduler](#/design/system-design/job-scheduler) for the timer side in depth
+- [Live comments](#/design/system-design/live-comments), the same fan-out shape without the race

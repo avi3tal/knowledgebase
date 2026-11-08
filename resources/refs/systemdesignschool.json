@@ -30,12 +30,12 @@
       "access": "free",
       "subject": "system-design",
       "topics": [
-        "chat-system",
         "networking-basics",
         "back-of-envelope"
       ],
       "summary": "Builds the design from one server to the full delivery path; deep dives on delivery and dedup, per-chat ordering, group fan-out and presence. Live estimation panel and a heartbeat/presence simulator.",
-      "quality": 5
+      "quality": 5,
+      "problem_title": "chat-system"
     },
     {
       "id": "sds-chatapp-practice",
@@ -45,11 +45,11 @@
       "access": "trial",
       "subject": "system-design",
       "topics": [
-        "chat-system",
         "sd-framework"
       ],
       "summary": "AI interviewer runs five short stages (scoping, high-level, end-to-end trace, scaling, capacity) in any order and scores each against a rubric; best score per stage saved when signed in.",
-      "quality": 4
+      "quality": 4,
+      "problem_title": "chat-system"
     },
     {
       "id": "sds-rate-limiter-solution",
@@ -59,11 +59,11 @@
       "access": "free",
       "subject": "system-design",
       "topics": [
-        "rate-limiter-design",
         "rate-limiting"
       ],
       "summary": "All five classic algorithms with an animated simulator (tune limit, window and arrival rate) and an over-allowance calculator; Bad/Good/Great deep dives on distributed counting.",
-      "quality": 5
+      "quality": 5,
+      "problem_title": "rate-limiter-design"
     },
     {
       "id": "sds-news-feed-solution",
@@ -73,11 +73,11 @@
       "access": "free",
       "subject": "system-design",
       "topics": [
-        "news-feed",
         "caching"
       ],
       "summary": "Push vs pull fan-out with a follower-threshold slider for the hybrid, celebrity hot-key handling via replicated cache and request coalescing, and a latency budget funnel.",
-      "quality": 5
+      "quality": 5,
+      "problem_title": "news-feed"
     },
     {
       "id": "sds-kv-store-solution",
@@ -87,13 +87,13 @@
       "access": "free",
       "subject": "system-design",
       "topics": [
-        "key-value-store",
         "replication",
         "cap-consistency",
         "sharding"
       ],
       "summary": "Dynamo-style store: interactive R/W/N quorum widget, why quorum is not linearisable, LWW vs vector clocks vs CRDTs, hinted handoff for short outages and Merkle anti-entropy for drift.",
-      "quality": 5
+      "quality": 5,
+      "problem_title": "key-value-store"
     },
     {
       "id": "sds-youtube-solution",
@@ -103,12 +103,12 @@
       "access": "free",
       "subject": "system-design",
       "topics": [
-        "video-streaming",
         "cdn",
         "blob-storage"
       ],
       "summary": "Deep dives on the transcode pipeline, adaptive bitrate and CDN delivery, and egress cost with storage tiers; codec/ladder explorer, rebuffering simulator and egress calculator.",
-      "quality": 5
+      "quality": 5,
+      "problem_title": "youtube"
     },
     {
       "id": "sds-payment-solution",
@@ -117,11 +117,10 @@
       "kind": "article",
       "access": "free",
       "subject": "system-design",
-      "topics": [
-        "payment-system"
-      ],
+      "topics": [],
       "summary": "Idempotency and the 'in-doubt' outcome when the provider times out, double-entry ledger, sagas plus reconciliation; stepper that replays a capture timeout.",
-      "quality": 4
+      "quality": 4,
+      "problem_title": "payment-system"
     },
     {
       "id": "sds-typeahead-solution",
@@ -130,11 +129,10 @@
       "kind": "article",
       "access": "free",
       "subject": "system-design",
-      "topics": [
-        "search-autocomplete"
-      ],
+      "topics": [],
       "summary": "Ranked trie with top-k per node built offline and swapped atomically, debouncing and hot-prefix caching for latency, skew-aware sharding, and a real-time trending layer for freshness.",
-      "quality": 4
+      "quality": 4,
+      "problem_title": "typeahead"
     },
     {
       "id": "sds-rag-solution",
@@ -142,10 +140,11 @@
       "url": "https://systemdesignschool.io/problems/rag/solution",
       "kind": "article",
       "access": "free",
-      "subject": "system-design",
+      "subject": "genai",
       "topics": [
-        "rag-system",
-        "genai-foundations"
+        "rag",
+        "tokens-embeddings",
+        "transformers"
       ],
       "summary": "Deep dives on the ANN index, retrieval quality (chunking, hybrid search, re-ranking, eval) and freshness; HNSW walk visualiser, filtered-search comparison and rank-fusion demo.",
       "quality": 5
@@ -158,11 +157,11 @@
       "access": "free",
       "subject": "system-design",
       "topics": [
-        "url-shortener",
         "unique-id-generation"
       ],
       "summary": "Older-format page: requirements, data model, API, high-level design, ID generation and encoding options, staff-level topics and a level-expectations table. Several option bodies collapsed or empty.",
-      "quality": 3
+      "quality": 3,
+      "problem_title": "url-shortener"
     },
     {
       "id": "sds-web-crawler-solution",
@@ -171,11 +170,10 @@
       "kind": "article",
       "access": "trial",
       "subject": "system-design",
-      "topics": [
-        "web-crawler"
-      ],
+      "topics": [],
       "summary": "Web crawler case study from the problem list (linked; not opened, so format and depth unverified; access not checked).",
-      "quality": 2
+      "quality": 2,
+      "problem_title": "web-crawler"
     },
     {
       "id": "sds-dropbox-solution",
@@ -185,11 +183,11 @@
       "access": "trial",
       "subject": "system-design",
       "topics": [
-        "file-sync",
         "blob-storage"
       ],
       "summary": "File storage and sync case study from the problem list (linked; not opened, so format and depth unverified; access not checked).",
-      "quality": 2
+      "quality": 2,
+      "problem_title": "dropbox"
     },
     {
       "id": "sds-yelp-solution",
@@ -199,7 +197,7 @@
       "access": "trial",
       "subject": "system-design",
       "topics": [
-        "proximity-service"
+        "geo-indexing"
       ],
       "summary": "Nearby-places case study from the problem list; pairs with the geospatial search domain page (linked; not opened; access not checked).",
       "quality": 2
@@ -210,10 +208,11 @@
       "url": "https://systemdesignschool.io/problems/chatgpt/solution",
       "kind": "article",
       "access": "trial",
-      "subject": "system-design",
+      "subject": "genai",
       "topics": [
-        "llm-serving",
-        "genai-foundations"
+        "inference-serving",
+        "tokens-embeddings",
+        "transformers"
       ],
       "summary": "AI system design case study for a chat LLM product (linked from the AI section; not opened; access not checked).",
       "quality": 2

@@ -45,7 +45,8 @@ def catalog(subject: str) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
-TOPIC_KINDS = {"pattern", "fundamental", "concept", "case-study", "principle"}
+# No "case-study": case studies are practice problems, linked to topics by their meta tags.
+TOPIC_KINDS = {"pattern", "fundamental", "concept", "principle"}
 TOPIC_STATUS = {"open", "locked"}
 
 

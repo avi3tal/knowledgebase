@@ -229,4 +229,4 @@ v4
 - [Sharding](#/learn/system-design/sharding) for partitioning seats by event
 - [Distributed transactions](#/topic/system-design/distributed-transactions) and
   [CAP and consistency models](#/topic/system-design/cap-consistency)
-- [Payment system](#/topic/system-design/payment-system) for the payment side in depth
+- [Payment system](#/design/system-design/payment-system) for the payment side in depth

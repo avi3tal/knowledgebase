@@ -8,7 +8,13 @@
   studio's design console; format and API contract in `system-design/FORMAT.md`, checker `tools/kb/design.py`,
   `kb sd validate` is the content gate). System design is practised as **decompose → reduce** (parts merged
   into the high-level design by node id) and every `reference.md` follows FORMAT.md's fixed solution layout.
-  Studio pages for design problems use the shared `Workbench` layout (header / tabs / left | center | right / footer). k8s later.
+  Studio pages for design problems use the shared `Workbench` layout (header / tabs / left | center | right / footer).
+  **genai** (LLM systems) and **platform** (containers, Kubernetes, cloud, delivery) are catalog-only subjects
+  (status `locked`) until they get lessons and problems.
+- **Learn vs Practice (2026-11-08):** catalog topics are what you learn; problems are what you practise.
+  Case studies are problems, never catalog topics (`case-study` kind is rejected). Problem→topic links come
+  only from `learn.problem_topics` (algo `patterns`; design `topics`/`technologies`/`design_patterns` = role).
+  No empty pages: a topic is `lesson`, `practice-only` or `planned` (planned = not linkable).
 - Learning studio (approved 2026-11-06): **React + TypeScript (strict) + Vite** app in `studio/`,
   package manager **yarn** (v4, `nodeLinker: node-modules`). The Python `kb` CLI is its local
   backend (`kb studio`, stdlib HTTP server on 127.0.0.1) and the only thing that touches files.
@@ -16,7 +22,7 @@
   writes lesson content once (stored in the repo) and does code review only when asked.
 
 ## Layout rules
-- Top level = type (`algo/`, `system-design/`, `ood/`, later `k8s/`). Never organise by source or by year.
+- Top level = type (`algo/`, `system-design/`, `ood/`, `genai/`, `platform/`). Never organise by source or by year.
 - **Content vs private data.** The repo ships content only (problems, lessons, resources, tools) so
   anyone can clone it and learn. Everything a learner produces lives in their private, git-ignored
   workspace `_workspace/` (`KB_WORKSPACE` overrides; Go attempts must stay inside the repo):

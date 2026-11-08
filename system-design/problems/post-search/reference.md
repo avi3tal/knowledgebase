@@ -198,5 +198,5 @@ v4
   and [caching](#/learn/system-design/caching)
 - [Search indexing](#/topic/system-design/search-indexing) and
   [stream processing](#/topic/system-design/stream-processing)
-- Related case studies: [search autocomplete](#/topic/system-design/search-autocomplete) and
-  [news feed](#/topic/system-design/news-feed)
+- Related case studies: [search autocomplete](#/design/system-design/typeahead) and
+  [news feed](#/design/system-design/news-feed)

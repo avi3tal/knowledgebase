@@ -6,12 +6,16 @@ export const SUBJECT_ICON: Record<string, string> = {
   algo: "🧮",
   "system-design": "🏗️",
   ood: "🧩",
+  genai: "🤖",
+  platform: "☁️",
 };
 
 export const SUBJECT_SHORT: Record<string, string> = {
   algo: "Algorithms",
   "system-design": "System Design",
   ood: "OOD",
+  genai: "GenAI",
+  platform: "Platform",
 };
 
 const GROUP_LABEL: Record<string, string> = {
@@ -19,11 +23,20 @@ const GROUP_LABEL: Record<string, string> = {
   fundamental: "Fundamentals",
   fundamentals: "Fundamentals",
   "building-blocks": "Building blocks",
-  "case-studies": "Case studies",
+  "data-stores": "Databases & data stores",
+  performance: "Scalability & performance",
   technologies: "Key technologies",
   patterns: "Design patterns & techniques",
   genai: "GenAI systems",
   "design-patterns": "Design patterns",
+  foundations: "Foundations",
+  building: "Building with LLMs",
+  production: "In production",
+  containers: "Containers",
+  kubernetes: "Kubernetes",
+  cloud: "Cloud",
+  delivery: "Delivery",
+  operations: "Operations",
 };
 
 const GROUP_ICON: Record<string, string> = {
@@ -31,11 +44,20 @@ const GROUP_ICON: Record<string, string> = {
   fundamental: "📐",
   fundamentals: "📐",
   "building-blocks": "🧱",
-  "case-studies": "🏙️",
+  "data-stores": "🗄️",
+  performance: "🚀",
   technologies: "🛠️",
   patterns: "🧠",
   genai: "🤖",
   "design-patterns": "🎨",
+  foundations: "📐",
+  building: "🧱",
+  production: "🚀",
+  containers: "📦",
+  kubernetes: "☸️",
+  cloud: "☁️",
+  delivery: "🚚",
+  operations: "📟",
 };
 
 /** Topic-specific icons; anything missing falls back to its group icon. */
@@ -87,19 +109,11 @@ const TOPIC_ICON: Record<string, string> = {
   sharding: "🧩",
   replication: "🪞",
   "rate-limiting": "🚦",
-  "url-shortener": "🔗",
-  "chat-system": "💬",
-  "news-feed": "📰",
-  "video-streaming": "🎬",
-  "payment-system": "💳",
-  "rag-system": "📚",
-  "llm-serving": "🤖",
-  "parking-lot": "🅿️",
-  "elevator-system": "🛗",
-  "vending-machine": "🥤",
-  "chess-game": "♟️",
-  atm: "🏧",
   solid: "🧱",
+  rag: "📚",
+  "inference-serving": "🤖",
+  "vector-databases": "🧭",
+  "k8s-architecture": "☸️",
 };
 
 /** A fixed, colour-blind-aware-ish palette; groups get a stable colour by order of appearance. */
@@ -131,9 +145,18 @@ const KIND_ORDER = [
   "fundamentals",
   "fundamental",
   "building-blocks",
+  "data-stores",
+  "performance",
   "technologies",
   "patterns",
-  "case-studies",
+  "foundations",
+  "building",
+  "production",
+  "containers",
+  "kubernetes",
+  "cloud",
+  "delivery",
+  "operations",
 ];
 
 /** Topics grouped (in a stable, teaching-friendly order) with a colour per group. */

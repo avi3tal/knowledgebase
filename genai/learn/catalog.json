@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "subject": "genai",
+  "title": "GenAI",
+  "status": "locked",
+  "source": {
+    "name": "kb curated topic map",
+    "note": "Topic map for building LLM systems; lessons and design problems come later."
+  },
+  "topics": [
+    {
+      "id": "tokens-embeddings",
+      "name": "Tokens & embeddings",
+      "kind": "concept",
+      "group": "foundations",
+      "usage": "How text becomes tokens and vectors; context windows, cost per token, similarity.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [],
+      "related": [
+        "transformers",
+        "vector-search"
+      ]
+    },
+    {
+      "id": "transformers",
+      "name": "Transformers & LLMs",
+      "kind": "concept",
+      "group": "foundations",
+      "usage": "Attention, decoder-only models, sampling (temperature, top-p) and why outputs vary.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "tokens-embeddings"
+      ],
+      "related": [
+        "tokens-embeddings"
+      ]
+    },
+    {
+      "id": "prompting",
+      "name": "Prompting & structured output",
+      "kind": "concept",
+      "group": "foundations",
+      "usage": "Instructions, few-shot examples, tool schemas and JSON output that downstream code can trust.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "transformers"
+      ],
+      "related": [
+        "evaluation"
+      ]
+    },
+    {
+      "id": "vector-search",
+      "name": "Vector search",
+      "kind": "concept",
+      "group": "building",
+      "usage": "Chunk, embed, index (HNSW/IVF) and retrieve by similarity; hybrid with keyword search.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "tokens-embeddings"
+      ],
+      "related": [
+        "tokens-embeddings",
+        "rag"
+      ]
+    },
+    {
+      "id": "rag",
+      "name": "Retrieval-augmented generation",
+      "kind": "concept",
+      "group": "building",
+      "usage": "Ground answers in retrieved documents: ingestion, retrieval, re-ranking, citations, freshness.",
+      "ds": [],
+      "samples": [
+        "Docs Q&A bot",
+        "Support assistant"
+      ],
+      "aliases": [],
+      "prereqs": [
+        "vector-search",
+        "prompting"
+      ],
+      "related": [
+        "vector-search",
+        "evaluation"
+      ]
+    },
+    {
+      "id": "fine-tuning",
+      "name": "Fine-tuning & adaptation",
+      "kind": "concept",
+      "group": "building",
+      "usage": "When prompting and RAG aren't enough: SFT, LoRA, preference tuning, and the data they need.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "transformers"
+      ],
+      "related": [
+        "evaluation"
+      ]
+    },
+    {
+      "id": "agents-tool-use",
+      "name": "Agents & tool use",
+      "kind": "concept",
+      "group": "building",
+      "usage": "The model calls tools in a loop: planning, tool schemas, memory, human-in-the-loop, failure handling.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "prompting"
+      ],
+      "related": [
+        "guardrails-safety"
+      ]
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluation",
+      "kind": "concept",
+      "group": "building",
+      "usage": "Golden sets, LLM-as-judge, regression suites and online metrics: know if a change made it better.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "prompting"
+      ],
+      "related": [
+        "prompting",
+        "rag",
+        "fine-tuning"
+      ]
+    },
+    {
+      "id": "inference-serving",
+      "name": "Inference & serving",
+      "kind": "concept",
+      "group": "production",
+      "usage": "Batching, KV cache, quantisation, streaming, GPU capacity and routing between models.",
+      "ds": [],
+      "samples": [
+        "ChatGPT-style chat service"
+      ],
+      "aliases": [],
+      "prereqs": [
+        "transformers"
+      ],
+      "related": [
+        "cost-latency"
+      ]
+    },
+    {
+      "id": "guardrails-safety",
+      "name": "Guardrails & safety",
+      "kind": "concept",
+      "group": "production",
+      "usage": "Input/output filtering, prompt-injection defence, PII handling and policy enforcement.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "prompting"
+      ],
+      "related": [
+        "agents-tool-use"
+      ]
+    },
+    {
+      "id": "cost-latency",
+      "name": "Cost & latency",
+      "kind": "concept",
+      "group": "production",
+      "usage": "Token budgets, caching (prompt and semantic), model cascades and time-to-first-token.",
+      "ds": [],
+      "samples": [],
+      "aliases": [],
+      "prereqs": [
+        "inference-serving"
+      ],
+      "related": [
+        "inference-serving"
+      ]
+    }
+  ]
+}

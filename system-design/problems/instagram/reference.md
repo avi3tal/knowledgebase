@@ -197,5 +197,5 @@ v4
 - [Caching](#/learn/system-design/caching), [sharding](#/learn/system-design/sharding) and
   [message queues](#/learn/system-design/message-queues)
 - [Blob storage](#/topic/system-design/blob-storage) and [CDN](#/topic/system-design/cdn)
-- Related case studies: [news feed](#/topic/system-design/news-feed) and
-  [video streaming](#/topic/system-design/video-streaming)
+- Related case studies: [news feed](#/design/system-design/news-feed) and
+  [video streaming](#/design/system-design/youtube)

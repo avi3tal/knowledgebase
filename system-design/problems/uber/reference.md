@@ -229,7 +229,7 @@ v4
 - Never charge the card inside the trip-completion request.
 
 ## 11. Learn more
-- [Proximity service](#/topic/system-design/proximity-service) and [geo-indexing](#/topic/system-design/geo-indexing)
+- [Proximity service](#/topic/system-design/geo-indexing) and [geo-indexing](#/topic/system-design/geo-indexing)
 - [Sharding](#/learn/system-design/sharding) and [caching](#/learn/system-design/caching)
 - [Distributed transactions](#/topic/system-design/distributed-transactions) and [distributed locking](#/topic/system-design/distributed-locking)
 - [Back-of-the-envelope estimation](#/learn/system-design/back-of-envelope)

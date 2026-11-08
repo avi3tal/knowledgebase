@@ -76,3 +76,31 @@ def test_topic_counts_match_topic_pages() -> None:
     page = learn.topic_page("system-design", "fan-out")
     assert counts["fan-out"][0] == len(page["problems"])
     assert set(counts) == {t["id"] for t in learn.catalog("system-design")["topics"]}
+
+
+def test_case_studies_are_problems_not_topics(monkeypatch: pytest.MonkeyPatch) -> None:
+    for s in learn.subjects():
+        assert all(t["kind"] != "case-study" for t in learn.catalog(s)["topics"]), s
+    real = learn.catalog
+    monkeypatch.setattr(
+        learn,
+        "catalog",
+        lambda s: {"topics": [{"id": "x", "name": "X", "kind": "case-study"}]} if s == "zz" else real(s),
+    )
+    assert any("kind must be" in e for e in learn.validate_catalog("zz"))
+
+
+def test_old_case_study_topic_redirects_to_the_problem() -> None:
+    assert learn.topic_page("system-design", "url-shortener") == {
+        "subject": "system-design",
+        "redirect_problem": "url-shortener",
+    }
+
+
+def test_new_subjects_start_planned() -> None:
+    for s in ("genai", "platform"):
+        cat = learn.catalog(s)
+        assert cat["status"] == "locked" and not learn.validate_catalog(s)
+        page = learn.topic_page(s, cat["topics"][0]["id"])
+        assert page["problems"] == [] and page["state"] in {"planned", "practice-only"}
+    assert learn.topic_page("genai", "rag")["state"] == "practice-only"  # refs moved over from system-design

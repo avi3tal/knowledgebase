@@ -191,4 +191,3 @@ v4
 - [Stream processing](#/topic/system-design/stream-processing) and
   [search indexing](#/topic/system-design/search-indexing)
 - [Consistent hashing](#/learn/system-design/consistent-hashing) (sharding the prefix index)
-- [Search autocomplete](#/topic/system-design/search-autocomplete)

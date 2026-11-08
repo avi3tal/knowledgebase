@@ -71,11 +71,11 @@
    "access": "free",
    "subject": "system-design",
    "topics": [
-    "rate-limiting",
-    "rate-limiter-design"
+    "rate-limiting"
    ],
    "summary": "Compares five throttling algorithms (token bucket, leaky bucket, fixed window, sliding log, sliding counter). Then moves from one middleware with a shared counter store to a distributed setup with race and sync fixes.",
-   "quality": 5
+   "quality": 5,
+   "problem_title": "rate-limiter-design"
   },
   {
    "id": "sdi-consistent-hashing",
@@ -98,12 +98,12 @@
    "access": "free",
    "subject": "system-design",
    "topics": [
-    "key-value-store",
     "cap-consistency",
     "replication"
    ],
    "summary": "A Dynamo-style walkthrough: CAP trade-offs, partitioning on a ring, replication, quorum tuning, vector clocks, failure detection and repair, and the read and write paths.",
-   "quality": 5
+   "quality": 5,
+   "problem_title": "key-value-store"
   },
   {
    "id": "sdi-unique-id",
@@ -125,11 +125,10 @@
    "kind": "lesson",
    "access": "free",
    "subject": "system-design",
-   "topics": [
-    "url-shortener"
-   ],
+   "topics": [],
    "summary": "Textbook 4-step case: traffic and storage estimates, two REST endpoints, a single-table data model, a hash-plus-collision vs base-62 trade-off table, and redirect caching.",
-   "quality": 5
+   "quality": 5,
+   "problem_title": "url-shortener"
   },
   {
    "id": "sdi-web-crawler",
@@ -138,11 +137,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "system-design",
-   "topics": [
-    "web-crawler"
-   ],
+   "topics": [],
    "summary": "Web crawler chapter (listed in the TOC). We didn't open it, so access wasn't checked. Treat it as possibly gated.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "web-crawler"
   },
   {
    "id": "sdi-notification-system",
@@ -151,11 +149,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "system-design",
-   "topics": [
-    "notification-system"
-   ],
+   "topics": [],
    "summary": "Notification system chapter (listed in the TOC). We didn't open it, so access wasn't checked. Treat it as possibly gated.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "notification-system"
   },
   {
    "id": "sdi-news-feed",
@@ -165,11 +162,11 @@
    "access": "free",
    "subject": "system-design",
    "topics": [
-    "news-feed",
     "caching"
    ],
    "summary": "Splits the problem into a publish flow and a read flow, each with its own endpoint. Weighs fan-out on write against fan-out on read and settles on a hybrid that treats high-follower accounts separately.",
-   "quality": 5
+   "quality": 5,
+   "problem_title": "news-feed"
   },
   {
    "id": "sdi-chat-system",
@@ -179,11 +176,11 @@
    "access": "free",
    "subject": "system-design",
    "topics": [
-    "chat-system",
     "networking-basics"
    ],
    "summary": "Compares polling, long polling and WebSocket. Moves from one server to stateless and stateful services, chooses a KV store for history, refines message IDs and presence via heartbeats, and covers small-group fan-out.",
-   "quality": 5
+   "quality": 5,
+   "problem_title": "chat-system"
   },
   {
    "id": "sdi-search-autocomplete",
@@ -192,11 +189,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "system-design",
-   "topics": [
-    "search-autocomplete"
-   ],
+   "topics": [],
    "summary": "Typeahead or autocomplete chapter (listed in the TOC). We didn't open it, so access wasn't checked. Treat it as possibly gated.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "typeahead"
   },
   {
    "id": "sdi-youtube",
@@ -206,12 +202,12 @@
    "access": "free",
    "subject": "system-design",
    "topics": [
-    "video-streaming",
     "blob-storage",
     "cdn"
    ],
    "summary": "Covers the video upload and streaming flows, a transcoding pipeline, cost and speed optimizations such as CDN placement for popular content, and error handling along the pipeline.",
-   "quality": 4
+   "quality": 4,
+   "problem_title": "youtube"
   },
   {
    "id": "sdi-google-drive",
@@ -220,11 +216,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "system-design",
-   "topics": [
-    "file-sync"
-   ],
+   "topics": [],
    "summary": "File storage and sync chapter (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "dropbox"
   },
   {
    "id": "sdi-proximity-service",
@@ -234,7 +229,7 @@
    "access": "paid",
    "subject": "system-design",
    "topics": [
-    "proximity-service"
+    "geo-indexing"
    ],
    "summary": "Nearby-places chapter from volume 2 (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
    "quality": 3
@@ -299,11 +294,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "system-design",
-   "topics": [
-    "payment-system"
-   ],
+   "topics": [],
    "summary": "Volume 2 payment chapter (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "payment-system"
   },
   {
    "id": "genai-course",
@@ -311,9 +305,10 @@
    "url": "https://bytebytego.com/courses/genai-system-design-interview",
    "kind": "course-module",
    "access": "trial",
-   "subject": "system-design",
+   "subject": "genai",
    "topics": [
-    "genai-foundations"
+    "tokens-embeddings",
+    "transformers"
    ],
    "summary": "Public table of contents for 11 chapters: an intro, then case studies on text (smart compose, translation, chatbot, RAG), vision (captioning) and generation (faces, high-res images, text-to-image, headshots, video).",
    "quality": 4
@@ -324,9 +319,10 @@
    "url": "https://bytebytego.com/courses/genai-system-design-interview/introduction-and-overview",
    "kind": "lesson",
    "access": "free",
-   "subject": "system-design",
+   "subject": "genai",
    "topics": [
-    "genai-foundations"
+    "tokens-embeddings",
+    "transformers"
    ],
    "summary": "Long overview of the GenAI landscape and a 7-step ML interview frame: requirements, ML task framing, data, model, evaluation, overall system, then deploy and monitor.",
    "quality": 4
@@ -337,9 +333,9 @@
    "url": "https://bytebytego.com/courses/genai-system-design-interview/retrieval-augmented-generation",
    "kind": "lesson",
    "access": "paid",
-   "subject": "system-design",
+   "subject": "genai",
    "topics": [
-    "rag-system"
+    "rag"
    ],
    "summary": "RAG case study (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
    "quality": 3
@@ -392,13 +388,13 @@
    "access": "free",
    "subject": "ood",
    "topics": [
-    "parking-lot",
     "behavioral-patterns",
     "structural-patterns",
     "solid"
    ],
    "summary": "Walks the full framework with per-component and complete UML class diagrams and Java classes. Uses Strategy for pricing, a Facade entry point and an open-closed deep dive.",
-   "quality": 5
+   "quality": 5,
+   "problem_title": "parking-lot"
   },
   {
    "id": "ood-vending-machine",
@@ -407,11 +403,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "ood",
-   "topics": [
-    "vending-machine"
-   ],
+   "topics": [],
    "summary": "Vending machine case (listed in the TOC). We didn't open it, so access wasn't checked.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "vending-machine"
   },
   {
    "id": "ood-elevator",
@@ -420,11 +415,10 @@
    "kind": "lesson",
    "access": "paid",
    "subject": "ood",
-   "topics": [
-    "elevator-system"
-   ],
+   "topics": [],
    "summary": "Elevator case (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
-   "quality": 3
+   "quality": 3,
+   "problem_title": "elevator-system"
   },
   {
    "id": "ood-atm",
@@ -434,7 +428,7 @@
    "access": "paid",
    "subject": "ood",
    "topics": [
-    "atm"
+    "behavioral-patterns"
    ],
    "summary": "ATM case (listed in the TOC). Logged out, the page returned no body, so it's probably gated. Content not sampled.",
    "quality": 3

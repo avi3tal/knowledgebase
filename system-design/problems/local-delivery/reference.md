@@ -212,7 +212,7 @@ v4
 
 ## 11. Learn more
 - [Caching](#/learn/system-design/caching) and [sharding](#/learn/system-design/sharding)
-- [Proximity service](#/topic/system-design/proximity-service) and
-  [ride hailing](#/topic/system-design/ride-hailing) for geo indexes and matching in depth
+- [Proximity service](#/topic/system-design/geo-indexing) and
+  [ride hailing](#/design/system-design/uber) for geo indexes and matching in depth
 - [Distributed transactions](#/topic/system-design/distributed-transactions)
-- [Ticket booking](#/topic/system-design/ticket-booking): the same no-oversell problem with unique seats
+- [Ticket booking](#/design/system-design/ticketmaster): the same no-oversell problem with unique seats

@@ -188,5 +188,5 @@ v4
 - [Caching](#/learn/system-design/caching) and [message queues](#/learn/system-design/message-queues)
 - [Sharding](#/learn/system-design/sharding) for the feed cache and posts store
 - [CDN](#/topic/system-design/cdn) and [blob storage](#/topic/system-design/blob-storage)
-- Related case studies: [photo sharing](#/topic/system-design/photo-sharing) and
-  [notification system](#/topic/system-design/notification-system)
+- Related case studies: [photo sharing](#/design/system-design/instagram) and
+  [notification system](#/design/system-design/notification-system)

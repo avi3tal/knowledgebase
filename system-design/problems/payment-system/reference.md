@@ -230,5 +230,5 @@ v4
 - [Distributed transactions](#/topic/system-design/distributed-transactions) and
   [CAP and consistency models](#/topic/system-design/cap-consistency)
 - [Rate limiting](#/learn/system-design/rate-limiting) for the per-merchant limits at the gateway
-- [Ticket booking](#/topic/system-design/ticket-booking), which uses this payment flow at the end of
+- [Ticket booking](#/design/system-design/ticketmaster), which uses this payment flow at the end of
   checkout

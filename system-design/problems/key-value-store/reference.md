@@ -206,5 +206,4 @@ v4
 ## 11. Learn more
 - [Consistent hashing](#/learn/system-design/consistent-hashing) and [sharding](#/learn/system-design/sharding)
 - [Replication](#/topic/system-design/replication) and [CAP and consistency models](#/topic/system-design/cap-consistency)
-- [Key-value store case study](#/topic/system-design/key-value-store)
 - [Back-of-the-envelope estimation](#/learn/system-design/back-of-envelope)

@@ -207,4 +207,3 @@ v3
 - [Databases: SQL vs NoSQL](#/topic/system-design/databases-sql-nosql) and
   [sharding](#/learn/system-design/sharding)
 - [Back-of-the-envelope estimation](#/learn/system-design/back-of-envelope)
-- [Ad click aggregator](#/topic/system-design/ad-click-aggregator)

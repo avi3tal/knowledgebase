@@ -210,7 +210,7 @@ v4
 - Counting views with a DB increment is the classic hot-row trap.
 
 ## 11. Learn more
-- [Video streaming case study](#/topic/system-design/video-streaming) and [CDN](#/topic/system-design/cdn)
+- [CDN](#/topic/system-design/cdn)
 - [Blob storage](#/topic/system-design/blob-storage) and [message queues](#/learn/system-design/message-queues)
 - [Caching](#/learn/system-design/caching) and [search indexing](#/topic/system-design/search-indexing)
 - [Back-of-the-envelope estimation](#/learn/system-design/back-of-envelope)

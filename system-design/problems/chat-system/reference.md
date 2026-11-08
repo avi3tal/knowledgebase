@@ -213,4 +213,4 @@ v4
 - [Message queues](#/learn/system-design/message-queues) and [sharding](#/learn/system-design/sharding)
 - [Load balancing](#/learn/system-design/load-balancing) for long-lived connections
 - [Networking basics](#/topic/system-design/networking-basics) and [SQL vs NoSQL](#/topic/system-design/databases-sql-nosql)
-- Same shape, bigger audience: [live comments](#/topic/system-design/live-comments)
+- Same shape, bigger audience: [live comments](#/design/system-design/live-comments)

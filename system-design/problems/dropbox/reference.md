@@ -204,7 +204,7 @@ v3
 - Mention offline explicitly: it is why locks are wrong and why sync is cursor-based.
 
 ## 11. Learn more
-- [File sync case study](#/topic/system-design/file-sync) and [blob storage](#/topic/system-design/blob-storage)
+- [Blob storage](#/topic/system-design/blob-storage)
 - [Sharding](#/learn/system-design/sharding) and [message queues](#/learn/system-design/message-queues)
 - [Replication](#/topic/system-design/replication)
 - [Back-of-the-envelope estimation](#/learn/system-design/back-of-envelope)

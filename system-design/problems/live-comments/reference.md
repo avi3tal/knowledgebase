@@ -208,4 +208,4 @@ v4
 ## 11. Learn more
 - [Message queues](#/learn/system-design/message-queues) and [caching](#/learn/system-design/caching)
 - [CDN](#/topic/system-design/cdn) and [networking basics](#/topic/system-design/networking-basics)
-- Smaller audience, stricter delivery: [chat system](#/topic/system-design/chat-system)
+- Smaller audience, stricter delivery: [chat system](#/design/system-design/chat-system)

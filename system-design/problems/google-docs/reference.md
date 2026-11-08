@@ -195,7 +195,6 @@ v3
 - Keep presence out of the database.
 
 ## 11. Learn more
-- [Collaborative editor case study](#/topic/system-design/collaborative-editor)
 - [Consensus and coordination](#/topic/system-design/consensus-coordination) and [consistent hashing](#/learn/system-design/consistent-hashing)
 - [Load balancing](#/learn/system-design/load-balancing) for sticky WebSocket routing
 - [Back-of-the-envelope estimation](#/learn/system-design/back-of-envelope)
