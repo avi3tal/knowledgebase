@@ -1,0 +1,81 @@
+{
+ "kind": "sequence",
+ "title": "A limit of 2 requests per second, seen by one client",
+ "caption": "The third request in the same second is rejected cheaply; the next second starts a fresh allowance.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "rl",
+   "label": "Rate limiter",
+   "kind": "api-gateway"
+  },
+  {
+   "id": "api",
+   "label": "API",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "rl",
+   "label": "request #1 (t = 0.1 s)",
+   "note": "First request of this second: the counter for this key goes 0 → 1."
+  },
+  {
+   "from": "rl",
+   "to": "api",
+   "label": "forward (count 1/2)"
+  },
+  {
+   "from": "api",
+   "to": "c",
+   "label": "200 OK",
+   "style": "reply"
+  },
+  {
+   "from": "c",
+   "to": "rl",
+   "label": "request #2 (t = 0.4 s)",
+   "note": "Counter 1 → 2: still within the limit of 2."
+  },
+  {
+   "from": "rl",
+   "to": "api",
+   "label": "forward (count 2/2)"
+  },
+  {
+   "from": "api",
+   "to": "c",
+   "label": "200 OK",
+   "style": "reply"
+  },
+  {
+   "from": "c",
+   "to": "rl",
+   "label": "request #3 (t = 0.7 s)",
+   "note": "Counter would go to 3 > 2: reject without touching the API."
+  },
+  {
+   "from": "rl",
+   "to": "c",
+   "label": "429 Too Many Requests · Retry-After: 1",
+   "style": "error"
+  },
+  {
+   "from": "c",
+   "to": "rl",
+   "label": "request #4 (t = 1.2 s)",
+   "note": "A new second (or refilled tokens): the request is allowed again."
+  },
+  {
+   "from": "rl",
+   "to": "api",
+   "label": "forward (count 1/2)"
+  }
+ ]
+}

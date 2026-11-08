@@ -1,0 +1,49 @@
+{
+ "kind": "sequence",
+ "title": "Fixed window, limit 4 per 10 s: 8 requests get through in 4 seconds",
+ "caption": "Every request is legal for its own window, but the client straddles the boundary at t = 10 s and gets double the rate.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "w1",
+   "label": "Window [0, 10)",
+   "kind": "cache"
+  },
+  {
+   "id": "w2",
+   "label": "Window [10, 20)",
+   "kind": "cache"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "w1",
+   "label": "4 requests at t = 8–9 s",
+   "note": "The first window is almost over and still empty: all 4 fit (count 4/4)."
+  },
+  {
+   "from": "w1",
+   "to": "c",
+   "label": "all allowed (4/4)",
+   "style": "reply"
+  },
+  {
+   "from": "c",
+   "to": "w2",
+   "label": "4 requests at t = 10–11 s",
+   "note": "A brand-new window starts with count 0, so 4 more fit immediately."
+  },
+  {
+   "from": "w2",
+   "to": "c",
+   "label": "all allowed (4/4)",
+   "style": "reply",
+   "note": "8 requests in about 4 seconds, double the intended rate. Sliding windows and token buckets don't have this flaw."
+  }
+ ]
+}

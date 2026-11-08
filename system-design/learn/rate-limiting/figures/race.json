@@ -1,0 +1,54 @@
+{
+ "kind": "sequence",
+ "title": "Read-then-write race: two gateways both allow the 5th request (limit 4)",
+ "caption": "Fix: one atomic operation (INCR, or a short server-side script) that increments and returns the new value.",
+ "actors": [
+  {
+   "id": "g1",
+   "label": "Gateway 1",
+   "kind": "api-gateway"
+  },
+  {
+   "id": "s",
+   "label": "Counter store",
+   "kind": "cache"
+  },
+  {
+   "id": "g2",
+   "label": "Gateway 2",
+   "kind": "api-gateway"
+  }
+ ],
+ "messages": [
+  {
+   "from": "g1",
+   "to": "s",
+   "label": "GET count → 3",
+   "note": "Gateway 1 reads 3: one request left."
+  },
+  {
+   "from": "g2",
+   "to": "s",
+   "label": "GET count → 3",
+   "note": "Gateway 2 reads before gateway 1 writes back. It also sees 3."
+  },
+  {
+   "from": "g1",
+   "to": "s",
+   "label": "SET count = 4 (allow)"
+  },
+  {
+   "from": "g2",
+   "to": "s",
+   "label": "SET count = 4 (allow)",
+   "style": "error",
+   "note": "Both allowed: 5 requests passed a limit of 4, and the counter says 4. The lost update grows with traffic."
+  },
+  {
+   "from": "g2",
+   "to": "s",
+   "label": "fix: INCR → 5 > 4 → reject",
+   "note": "With an atomic INCR each gateway gets a distinct new value (4, then 5), so exactly one is rejected."
+  }
+ ]
+}

@@ -1,0 +1,116 @@
+{
+ "kind": "flowchart",
+ "title": "Token bucket: the decision for every request",
+ "caption": "State per key is two numbers (tokens, last refill time). Refilling happens lazily on each request, so no timer is needed.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Request arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "refill",
+   "type": "step",
+   "label": "Refill lazily",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "check",
+   "type": "decision",
+   "label": "tokens ≥ 1 ?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "take",
+   "type": "step",
+   "label": "Take one token",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "Forward request",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  },
+  {
+   "id": "no",
+   "type": "end",
+   "label": "Return 429",
+   "col": 1,
+   "row": 2,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "refill"
+  },
+  {
+   "from": "refill",
+   "to": "check"
+  },
+  {
+   "from": "check",
+   "to": "take",
+   "label": "yes"
+  },
+  {
+   "from": "take",
+   "to": "ok"
+  },
+  {
+   "from": "check",
+   "to": "no",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Refill: tokens = min(capacity, tokens + elapsed × refill_rate). Elapsed is the time since the last request for this key.",
+   "nodes": [
+    "in",
+    "refill"
+   ],
+   "edges": [
+    "in>refill"
+   ]
+  },
+  {
+   "text": "Check the bucket.",
+   "nodes": [
+    "check"
+   ],
+   "edges": [
+    "refill>check"
+   ]
+  },
+  {
+   "text": "A token is available: take it and forward. A full bucket lets a burst of up to `capacity` through.",
+   "nodes": [
+    "take",
+    "ok"
+   ],
+   "edges": [
+    "check>take",
+    "take>ok"
+   ]
+  },
+  {
+   "text": "Empty bucket: reject now. The client can retry after 1 / refill_rate seconds.",
+   "nodes": [
+    "no"
+   ],
+   "edges": [
+    "check>no"
+   ]
+  }
+ ]
+}

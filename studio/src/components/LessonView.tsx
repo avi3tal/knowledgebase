@@ -21,6 +21,8 @@ import {
   TopicLinks,
   usePrevNextKeys,
 } from "./LearnBenchParts";
+import { figureNumbering } from "../figures";
+import { FigureView } from "./FigureView";
 import { Markdown } from "./Markdown";
 import { NavList, useCenterScroller } from "./panes";
 import { ProblemCard } from "./ProblemCard";
@@ -36,10 +38,35 @@ const TAB_COLOUR: Record<SectionKey, string> = {
   resources: "var(--rd-tech)",
 };
 
-function LessonBlock({ b, i, lesson }: { b: Block; i: number; lesson: Lesson }) {
+function LessonBlock({
+  b,
+  i,
+  lesson,
+  figureNumbers,
+}: {
+  b: Block;
+  i: number;
+  lesson: Lesson;
+  figureNumbers: Map<string, number>;
+}) {
   switch (b.type) {
     case "markdown":
-      return <Markdown text={b.text} path={b.path} anchors />;
+      return (
+        <Markdown
+          text={b.text}
+          path={b.path}
+          anchors
+          fence={(lang, body) => {
+            if (lang !== "figure") return undefined;
+            const fig = b.figures?.[body];
+            return fig ? (
+              <FigureView figure={fig} number={figureNumbers.get(`${i}:${body}`)} />
+            ) : (
+              <p className="why wrong">Missing figure “{body}” — run ./kb learn validate.</p>
+            );
+          }}
+        />
+      );
     case "trace":
       return (
         <div id={blockId(i)} className="lb-block">
@@ -123,6 +150,7 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
   const topics = useMemo(() => subject?.topics ?? [], [subject]);
   const topic = topics.find((t) => t.id === lesson.topic) ?? null;
   const sections = useMemo(() => lessonSections(lesson.blocks), [lesson]);
+  const figureNumbers = useMemo(() => figureNumbering(lesson.blocks), [lesson]);
   const [active, setActive] = useState<SectionKey>(sections[0]?.key ?? "learn");
   const tabbed = sections.length > 1;
   const current = sections.find((s) => s.key === active) ?? sections[0];
@@ -266,7 +294,13 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
               hidden={tabbed && s.key !== current?.key}
             >
               {s.blocks.map((i) => (
-                <LessonBlock key={i} b={lesson.blocks[i]!} i={i} lesson={lesson} />
+                <LessonBlock
+                  key={i}
+                  b={lesson.blocks[i]!}
+                  i={i}
+                  lesson={lesson}
+                  figureNumbers={figureNumbers}
+                />
               ))}
             </div>
           ))}

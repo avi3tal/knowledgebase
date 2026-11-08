@@ -8,8 +8,18 @@
 **Many limiter instances, one shared count.** With 20 gateway nodes behind a load balancer, the
 counters must live in a shared fast store (an in-memory KV), or each node must enforce
 `limit / 20` locally.
+
+```figure
+distributed
+```
+
 - Read-then-write races allow too much. Use an **atomic** increment, or a small script that
-  checks and decrements in one round trip.
+  checks and decrements in one round trip:
+
+```figure
+race
+```
+
 - Every request now pays a network hop. Options are to batch or sync counts asynchronously,
   accepting a little overshoot, or to keep a local token bucket that leases tokens from the
   central store in chunks.
@@ -37,8 +47,17 @@ well-behaved clients back off instead of hammering.
 - **Back-pressure** inside a pipeline (bounded queues, consumers pulling) is the internal
   cousin. Rate limiting is the policy at the edge, per client.
 
-**Interview pitfalls:**
-- Naming an algorithm without saying **what the key is** and **where the counter lives**.
-- Ignoring the race between "read count" and "write count" across instances.
-- Forgetting the response contract (429 + Retry-After) and the fail-open/closed decision.
-- Using a fixed window and not mentioning the boundary burst.
+> [!DIALOGUE] Scoping a rate limiter in the interview
+> **Candidate:** Is this a server-side limiter for our API, or client-side throttling?
+> **Interviewer:** Server-side, in front of our public API.
+> **Candidate:** What do we limit by: user id, API key or IP? Different rules per endpoint?
+> **Interviewer:** Per API key, and the login endpoint gets a much stricter rule.
+> **Candidate:** How many gateway nodes, and what's the traffic?
+> **Interviewer:** About 20 nodes, 50 000 requests per second at peak.
+> **Candidate:** Then the counters have to be shared and atomic, and I'll decide fail-open vs fail-closed per endpoint.
+
+> [!PITFALL] Interview pitfalls
+> - Naming an algorithm without saying **what the key is** and **where the counter lives**.
+> - Ignoring the race between "read count" and "write count" across instances.
+> - Forgetting the response contract (429 + Retry-After) and the fail-open/closed decision.
+> - Using a fixed window and not mentioning the boundary burst.

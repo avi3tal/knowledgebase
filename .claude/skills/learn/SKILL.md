@@ -35,6 +35,24 @@ structure and tone.
      why, complexity, and pitfalls.
    - Use the catalog entry (`usage`, `ds`, `samples` come from the DesignGurus patterns PDF) as the
      seed. No `<!-- -->` placeholders.
+   - **Figures, not ASCII art** (system design / OOD; reference: `system-design/learn/rate-limiting/`).
+     Embed a real diagram right after the paragraph that introduces it with a fence whose body is
+     the figure name, ```` ```figure\nplacement\n``` ````, and put the spec in
+     `<topic>/figures/<name>.json` (format and checks: `tools/kb/figures.py`):
+     - `architecture` — boxes and arrows with the design-console shapes (`kind` from the
+       system-design palette: client, load-balancer, api-gateway, service, worker, cache, sql,
+       nosql, blob, queue, stream…), explicit `x`/`y` (≈250–300 px apart, no crossing arrows),
+       and numbered `steps` that walk the request flow (`edges: ["from>to"]`).
+     - `sequence` — actors and messages for request/response timing, retries, races and
+       protocols (`style`: call | reply | error | async | self; `note` = narration).
+     - `flowchart` — the decision an algorithm makes per request (`type`: start | step |
+       decision | end; `col`/`row` grid; label branches yes/no; `tone`: good | bad on outcomes).
+     Aim for 3–6 figures per lesson, each with a `title` that states the takeaway and a one-line
+     `caption`. Keep node labels ≤ 18 characters. ASCII stays only for formulas and tiny tables.
+   - **Callouts** (GitHub syntax, rendered as styled boxes): `> [!PROS]` / `> [!CONS]` after each
+     option, `> [!INTERVIEW] title` for what to say, `> [!PITFALL]`, `> [!TIP]`, `> [!NUMBERS]`,
+     and `> [!DIALOGUE] title` with `**Candidate:** …` / `**Interviewer:** …` lines for scoping.
+   - Compare options in a markdown table (rows = options, columns = the trade-off axes).
 2. **Worked examples → animations.** Write 1–2 small, clean reference functions in
    `<topic>/examples/*.py`.
    - Add `# note: …` comments on the key lines. They become the narration and are stripped from

@@ -1,0 +1,121 @@
+{
+ "kind": "architecture",
+ "title": "Many limiter instances, one shared count",
+ "caption": "Counters live in one fast shared store, so the limit holds no matter which gateway a request lands on.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Clients",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "x": 230,
+   "y": 170
+  },
+  {
+   "id": "gw1",
+   "kind": "api-gateway",
+   "label": "Gateway 1",
+   "x": 480,
+   "y": 30
+  },
+  {
+   "id": "gw2",
+   "kind": "api-gateway",
+   "label": "Gateway 2",
+   "x": 480,
+   "y": 310
+  },
+  {
+   "id": "redis",
+   "kind": "cache",
+   "label": "Shared counters",
+   "x": 480,
+   "y": 170
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "API servers",
+   "x": 760,
+   "y": 170
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "lb"
+  },
+  {
+   "from": "lb",
+   "to": "gw1"
+  },
+  {
+   "from": "lb",
+   "to": "gw2"
+  },
+  {
+   "from": "gw1",
+   "to": "redis",
+   "label": "INCR"
+  },
+  {
+   "from": "gw2",
+   "to": "redis",
+   "label": "INCR"
+  },
+  {
+   "from": "gw1",
+   "to": "api"
+  },
+  {
+   "from": "gw2",
+   "to": "api"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The load balancer may send the same user's requests to any gateway.",
+   "nodes": [
+    "client",
+    "lb",
+    "gw1",
+    "gw2"
+   ],
+   "edges": [
+    "client>lb",
+    "lb>gw1",
+    "lb>gw2"
+   ]
+  },
+  {
+   "text": "Every gateway increments the same key in the shared store, so together they enforce one limit (not 2 × limit).",
+   "nodes": [
+    "gw1",
+    "gw2",
+    "redis"
+   ],
+   "edges": [
+    "gw1>redis",
+    "gw2>redis"
+   ]
+  },
+  {
+   "text": "Allowed requests continue to the API. If the store is down, you must pick fail-open or fail-closed.",
+   "nodes": [
+    "gw1",
+    "gw2",
+    "api"
+   ],
+   "edges": [
+    "gw1>api",
+    "gw2>api"
+   ]
+  }
+ ]
+}

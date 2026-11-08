@@ -3,6 +3,7 @@ import { Children, isValidElement, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { expandCallouts } from "../callouts";
 import { RootContext } from "../context";
 import { linkTarget } from "../links";
 import { slugify, uniqueId } from "../toc";
@@ -77,7 +78,7 @@ export function Markdown({
           },
         }}
       >
-        {text}
+        {expandCallouts(text)}
       </ReactMarkdown>
     </div>
   );

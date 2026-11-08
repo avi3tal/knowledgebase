@@ -1,3 +1,4 @@
+import type { Figure } from "./figures";
 import type { Json, Trace } from "./trace";
 
 export interface Topic {
@@ -144,7 +145,7 @@ export interface QuizItem {
   options: string[];
 }
 export type Block =
-  | { type: "markdown"; text: string; path: string }
+  | { type: "markdown"; text: string; path: string; figures?: Record<string, Figure> }
   | { type: "trace"; id: string; trace: Trace }
   | { type: "quiz"; items: QuizItem[] }
   | { type: "problems"; problems: ProblemCardData[] }

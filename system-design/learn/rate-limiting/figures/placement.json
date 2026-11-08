@@ -1,0 +1,112 @@
+{
+ "kind": "architecture",
+ "title": "Where the limiter sits: one check before any expensive work",
+ "caption": "The gateway asks the shared counter store before forwarding. Rejected requests never reach the API servers or the database.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Client",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "Rate limiter",
+   "x": 300,
+   "y": 120
+  },
+  {
+   "id": "counters",
+   "kind": "cache",
+   "label": "Counters",
+   "x": 300,
+   "y": 300
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "API servers",
+   "x": 600,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Database",
+   "x": 880,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "gw",
+   "label": "request"
+  },
+  {
+   "from": "gw",
+   "to": "counters",
+   "label": "INCR key"
+  },
+  {
+   "from": "gw",
+   "to": "api",
+   "label": "allowed"
+  },
+  {
+   "from": "api",
+   "to": "db"
+  },
+  {
+   "from": "gw",
+   "to": "client",
+   "label": "429 + Retry-After"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A request arrives at the edge, tagged with its key (user id, API key or IP).",
+   "nodes": [
+    "client",
+    "gw"
+   ],
+   "edges": [
+    "client>gw"
+   ]
+  },
+  {
+   "text": "The limiter atomically increments the key's counter in a fast shared store and reads the result: one round trip, about 1 ms.",
+   "nodes": [
+    "gw",
+    "counters"
+   ],
+   "edges": [
+    "gw>counters"
+   ]
+  },
+  {
+   "text": "Under the limit: forward. The API servers and database only ever see allowed traffic.",
+   "nodes": [
+    "gw",
+    "api",
+    "db"
+   ],
+   "edges": [
+    "gw>api",
+    "api>db"
+   ]
+  },
+  {
+   "text": "Over the limit: answer 429 Too Many Requests with Retry-After right away. The rejection costs almost nothing.",
+   "nodes": [
+    "gw",
+    "client"
+   ],
+   "edges": [
+    "gw>client"
+   ]
+  }
+ ]
+}

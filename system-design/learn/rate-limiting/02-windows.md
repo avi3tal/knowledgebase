@@ -4,13 +4,8 @@
 `12:03`) and reject once it reaches `limit`. It's the simplest option: one `INCR` with an
 expiry. Its flaw shows up at the boundary.
 
-```
-limit 4 per 10s
-
-window [0,10)            window [10,20)
-. . . . . . . . ● ● ● ●| ● ● ● ● . . . . .
-                 t=8..9 | t=10..11
-             8 requests inside 4 seconds, all allowed
+```figure
+boundary-burst
 ```
 
 A client can send `2 × limit` requests in a short span by straddling the boundary.
@@ -37,6 +32,11 @@ Requests go into a FIFO queue of fixed size and **drain at a constant rate**. A 
 means reject. The output is perfectly smooth, which suits protecting a downstream system that
 can't take bursts, such as a payment provider. The cost is that bursts are delayed rather than
 served, and old requests can wait in the queue.
+
+> [!INTERVIEW] Which one should I pick?
+> Say **token bucket** by default (public APIs, cheap, allows bursts), **sliding window counter**
+> when the interviewer worries about boundary bursts at high limits, and **leaky bucket** when a
+> downstream must see a constant rate. Then move on: the key and the counter store matter more.
 
 | algorithm | bursts | memory per key | accuracy | typical use |
 |---|---|---|---|---|

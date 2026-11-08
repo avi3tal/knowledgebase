@@ -103,6 +103,7 @@ export function DiagramCanvas({
   onRename,
   handle,
   reservedIds,
+  presentation = false,
 }: {
   diagram: Diagram;
   /** @deprecated the stencil lives outside the canvas now; ignored */
@@ -119,6 +120,8 @@ export function DiagramCanvas({
   handle?: Ref<CanvasHandle>;
   /** ids new shapes must not take (see addNode) */
   reservedIds?: string[];
+  /** lesson figures: no ids or NEW badges; the highlight marks the current step */
+  presentation?: boolean;
 }) {
   const editable = Boolean(onChange);
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, "");
@@ -556,12 +559,12 @@ export function DiagramCanvas({
                       {s.icon}
                     </text>
                     <text className="dg-label" x={46} y={26}>
-                      {truncate(n.label || n.id, 13)}
+                      {truncate(n.label || n.id, presentation ? 18 : 13)}
                     </text>
                     <text className="dg-kind" x={46} y={41}>
-                      {truncate(`${s.label} · ${n.id}`, 17)}
+                      {presentation ? s.label : truncate(`${s.label} · ${n.id}`, 17)}
                     </text>
-                    {isNew && (
+                    {isNew && !presentation && (
                       <g className="dg-new-badge" transform={`translate(${NODE_W - 30} -9)`}>
                         <rect width={38} height={18} rx={9} />
                         <text x={19} y={9}>

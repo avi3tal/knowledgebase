@@ -13,7 +13,7 @@ import random
 from pathlib import Path
 from typing import Any
 
-from kb import scaffold
+from kb import figures, scaffold
 from kb.convert import to_json, to_py
 from kb.naming import SLUG_RE
 from kb.paths import ROOT
@@ -298,6 +298,8 @@ def validate(subject: str, topic: str) -> list[str]:
                 continue
             if b["type"] == "markdown" and "<!--" in src.read_text():
                 errors.append(f"{where}: {b['src']} still has <!-- --> placeholders")
+            if b["type"] == "markdown":
+                errors += figures.validate_markdown(ldir, src.read_text(), where, _figure_palette(subject))
             if b["type"] == "quiz":
                 errors += _validate_quiz(json.loads(src.read_text()), ids, where)
         elif b["type"] == "trace":
@@ -311,6 +313,14 @@ def validate(subject: str, topic: str) -> list[str]:
                 if not (learn_root() / subject / "problems" / str(slug) / "meta.json").exists():
                     errors.append(f"{where}: unknown problem {slug!r}")
     return errors
+
+
+def _figure_palette(subject: str) -> set[str]:
+    """Shapes an architecture figure may use: the subject's design palette, else every palette."""
+    from kb import design
+
+    palettes = design.PALETTES
+    return set(palettes.get(subject) or {k for p in palettes.values() for k in p})
 
 
 def _validate_quiz(quiz: Any, ids: set[str], where: str) -> list[str]:
@@ -374,7 +384,11 @@ def resolve(subject: str, topic: str, history: list[dict[str, Any]] | None = Non
     for b in lesson["blocks"]:
         if b["type"] == "markdown":
             src = ldir / b["src"]
-            out_blocks.append({"type": "markdown", "text": src.read_text(), "path": _repo_rel(src)})
+            text = src.read_text()
+            block = {"type": "markdown", "text": text, "path": _repo_rel(src)}
+            if figs := figures.load_all(ldir, text):
+                block["figures"] = figs
+            out_blocks.append(block)
         elif b["type"] == "trace":
             out_blocks.append({"type": "trace", "id": b["id"], "trace": json.loads(_trace_path(ldir, b).read_text())})
         elif b["type"] == "quiz":

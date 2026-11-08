@@ -13,11 +13,14 @@ Why you'd want one:
 - **Abuse and cost control.** Slow down login brute force, scraping and SMS spam. Every
   request you reject is one you never pay for downstream.
 
+```figure
+placement
 ```
-client ──► [ rate limiter ] ──allow──► API servers ──► DB
-                 │
-                 └──reject──► 429 + Retry-After
-             (counters live in a fast shared store, e.g. an in-memory KV)
+
+What a client actually experiences with a limit of 2 requests per second:
+
+```figure
+three-requests
 ```
 
 ## The key: what you count
@@ -29,18 +32,20 @@ whether one more request still fits the rule.
 Picture a bucket that holds at most `capacity` tokens and gains `refill_rate` tokens per
 second. Each request takes one token, and an empty bucket means reject.
 
-```
-capacity 3, refill 1/s
-
-t=0  ●●●  → req, req, req   ●●● → ○○○   (burst of 3 allowed)
-t=0  ○○○  → req              rejected
-t=1  ●○○  → req              allowed     (one token came back)
+```figure
+token-bucket-flow
 ```
 
-- Allows **short bursts** up to `capacity` while still enforcing a long-run average of
-  `refill_rate`.
-- State per key is only two numbers, `tokens` and `last_refill_time`. You never need a timer:
-  refill **lazily** when a request arrives, using the time elapsed since the last one.
+> [!PROS]
+> - Allows **short bursts** up to `capacity` while still enforcing a long-run average of
+>   `refill_rate`. Real users are bursty (a page load fires 10 calls at once).
+> - Tiny state: two numbers per key, `tokens` and `last_refill_time`. No timer needed:
+>   refill **lazily** when a request arrives, using the time elapsed since the last one.
+
+> [!CONS]
+> - Two parameters to tune (`capacity`, `refill_rate`), and they interact.
+> - A full bucket lets a burst hit the backend at once; if the backend can't take bursts, use a
+>   leaky bucket instead.
 
 Step through it below. Watch `tokens` drain during the burst at t=0, then come back one per
 second.
