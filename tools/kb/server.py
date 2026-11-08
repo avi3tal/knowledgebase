@@ -90,7 +90,7 @@ def problems_payload(subject: str) -> list[dict[str, Any]]:
                 "title": p.meta.get("title", p.slug),
                 "difficulty": p.meta.get("difficulty"),
                 "patterns": tags,
-                "topics": sorted({aliases[t] for t in tags if t in aliases}),
+                "topics": sorted(link["id"] for link in learn.problem_topics(p.meta, aliases)),
                 "sources": [s.get("name") for s in p.meta.get("sources", [])],
                 "attempts": len(p.attempts()),
                 "status": st["status"],
@@ -214,7 +214,9 @@ class Handler(BaseHTTPRequestHandler):
         problem = design.load(subject, slug)
         if len(parts) == 4:
             payload = design.public_problem(problem)
-            payload["status"] = feedback.problem_status(problem, history.runs())  # type: ignore[arg-type]
+            runs = history.runs()
+            payload["status"] = feedback.problem_status(problem, runs)  # type: ignore[arg-type]
+            payload.update(learn.problem_context(subject, slug, runs))
             return self._json(payload)
         if len(parts) == 5 and parts[4] == "solution":
             return self._json(design.solution(problem))

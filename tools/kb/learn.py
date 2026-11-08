@@ -104,6 +104,82 @@ def alias_map(cat: dict[str, Any]) -> dict[str, str]:
     return out
 
 
+# Design problems tag topics in three meta keys; the key says how the problem uses the topic.
+DESIGN_ROLES = (("topics", "topic"), ("technologies", "technology"), ("design_patterns", "pattern"))
+
+
+def problem_topics(meta: dict[str, Any], aliases: dict[str, str]) -> list[dict[str, str]]:
+    """The single source of problem -> topic links: `[{id, role}]`, catalog ids, first role wins.
+
+    Design problems: role from the meta key (topic / technology / pattern). Algo problems: every
+    `patterns` tag is role `pattern`. Tags that aren't in the catalog are skipped (see `unmapped_tags`).
+    """
+    if any(k in meta for k, _ in DESIGN_ROLES):
+        tagged = [(tag, role) for key, role in DESIGN_ROLES for tag in meta.get(key, [])]
+    else:
+        tagged = [(tag, "pattern") for tag in meta.get("patterns", [])]
+    out: dict[str, str] = {}
+    for tag, role in tagged:
+        if tag in aliases:
+            out.setdefault(aliases[tag], role)
+    return [{"id": t, "role": r} for t, r in out.items()]
+
+
+def unmapped_tags(meta: dict[str, Any], aliases: dict[str, str]) -> set[str]:
+    return {t for t in meta.get("patterns", []) if t not in aliases}
+
+
+def problem_links(subject: str, problems: list[Any] | None = None) -> dict[str, list[dict[str, str]]]:
+    """slug -> `problem_topics` for every problem of a subject."""
+    aliases = alias_map(catalog(subject))
+    return {p.slug: problem_topics(p.meta, aliases) for p in (problems or subject_problems(subject))}
+
+
+def similar_problems(
+    slug: str, links: dict[str, list[dict[str, str]]], limit: int = 6
+) -> list[tuple[str, float, list[str]]]:
+    """Problems sharing the most topics with `slug` (Jaccard), ties by slug: `[(slug, score, shared)]`."""
+    mine = {link["id"] for link in links.get(slug, [])}
+    scored = []
+    for other, other_links in links.items():
+        theirs = {link["id"] for link in other_links}
+        shared = mine & theirs
+        if other == slug or not shared:
+            continue
+        scored.append((other, round(len(shared) / len(mine | theirs), 3), sorted(shared)))
+    scored.sort(key=lambda x: (-x[1], x[0]))
+    return scored[:limit]
+
+
+def problem_context(subject: str, slug: str, runs: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Practice -> Learn links for a problem page: its topics (with role + lesson) and similar problems."""
+    from kb import feedback
+
+    cat = catalog(subject)
+    names = {t["id"]: t["name"] for t in cat["topics"]}
+    problems = {p.slug: p for p in subject_problems(subject)}
+    links = problem_links(subject, list(problems.values()))
+    if slug not in links:
+        raise ProblemError(f"no problem {subject}/{slug}")
+    similar = []
+    for other, score, shared in similar_problems(slug, links):
+        p = problems[other]
+        similar.append(
+            {
+                "slug": other,
+                "title": p.meta.get("title", other),
+                "difficulty": p.meta.get("difficulty"),
+                "status": feedback.problem_status(p, runs or [])["status"],
+                "score": score,
+                "shared": shared,
+            }
+        )
+    topic_links = [
+        {**link, "name": names[link["id"]], "has_lesson": has_lesson(subject, link["id"])} for link in links[slug]
+    ]
+    return {"topic_links": topic_links, "similar": similar}
+
+
 def subject_problems(subject: str, pdir: Path | None = None) -> list[Any]:
     """Problems of a subject: algo `Problem`s, or `DesignProblem`s for design subjects. Both expose
     `.slug`, `.meta` (with `patterns` = catalog tags/topics) and `.attempts()`."""
@@ -335,23 +411,53 @@ def topic_page(subject: str, topic: str, history: list[dict[str, Any]] | None = 
     entry = next((t for t in cat["topics"] if t["id"] == _check_id(topic, "topic")), None)
     if entry is None:
         raise ProblemError(f"unknown topic {subject}/{topic}")
-    aliases = alias_map(cat)
+    from kb import feedback
+
+    all_problems = subject_problems(subject)
+    links = problem_links(subject, all_problems)
     problems = []
-    for p in subject_problems(subject):
-        if topic in {aliases.get(t) for t in p.meta.get("patterns", [])}:
-            problems.append({"slug": p.slug, "title": p.meta["title"], "difficulty": p.meta["difficulty"]})
+    co: dict[str, int] = {}
+    for p in all_problems:
+        mine = links[p.slug]
+        role = next((link["role"] for link in mine if link["id"] == topic), None)
+        if role is None:
+            continue
+        others = [link["id"] for link in mine if link["id"] != topic]
+        for o in others:
+            co[o] = co.get(o, 0) + 1
+        problems.append(
+            {
+                "slug": p.slug,
+                "title": p.meta["title"],
+                "difficulty": p.meta["difficulty"],
+                "role": role,
+                "status": feedback.problem_status(p, history or [])["status"],
+                "other_topics": others,
+            }
+        )
     order = {"easy": 0, "medium": 1, "hard": 2}
     problems.sort(key=lambda p: (order.get(p["difficulty"], 3), p["title"]))
+    resources = refs.for_topic(subject, topic, limit=8)
+    lesson = has_lesson(subject, topic)
     return {
         "subject": subject,
         "subject_status": cat.get("status", "open"),
         "topic": entry,
         "names": {t["id"]: t["name"] for t in cat["topics"]},
-        "has_lesson": has_lesson(subject, topic),
+        "has_lesson": lesson,
+        "state": topic_state(lesson, len(problems), len(resources)),
         "problems": problems,
-        "resources": refs.for_topic(subject, topic, limit=8),
+        "co_topics": [{"id": t, "count": n} for t, n in sorted(co.items(), key=lambda x: (-x[1], x[0]))],
+        "resources": resources,
         "graph": refs.neighbourhood(subject, f"topic:{topic}"),
     }
+
+
+def topic_state(lesson: bool, problems: int, resources: int) -> str:
+    """lesson | practice-only (problems or refs, no lesson) | planned (nothing to show yet)."""
+    if lesson:
+        return "lesson"
+    return "practice-only" if problems or resources else "planned"
 
 
 def _repo_rel(path: Path) -> str:
@@ -389,6 +495,7 @@ def problem_card(subject: str, slug: str, history: list[dict[str, Any]] | None =
         "readme_path": _repo_rel(problem.dir / "README.md"),
         "attempts": attempts,
         "refs": _problem_refs(slug),
+        **problem_context(subject, slug, history),
     }
 
 

@@ -75,11 +75,9 @@ def compute(subject: str, problems_dir: Path, today: dt.date | None = None) -> d
     unmapped: set[str] = set()
     for p in learn.subject_problems(subject, problems_dir):
         st = problem_status(p, runs)
-        for tag in p.meta.get("patterns", []):
-            if tag in aliases:
-                by_topic[aliases[tag]].append(st)
-            else:
-                unmapped.add(tag)
+        for link in learn.problem_topics(p.meta, aliases):
+            by_topic[link["id"]].append(st)
+        unmapped |= learn.unmapped_tags(p.meta, aliases)
 
     topics = []
     for t in cat["topics"]:

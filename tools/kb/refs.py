@@ -292,7 +292,7 @@ def graph(subject: str) -> dict[str, Any]:
         node(
             f"problem:{p.slug}", type="problem", label=p.meta.get("title", p.slug), difficulty=p.meta.get("difficulty")
         )
-        for tag in sorted({aliases[t] for t in p.meta.get("patterns", []) if t in aliases}):
+        for tag in sorted(link["id"] for link in learn.problem_topics(p.meta, aliases)):
             edges.append({"from": f"topic:{tag}", "to": f"problem:{p.slug}", "type": "practice"})
 
     titles = title_index(pdir) if pdir.is_dir() else {}
