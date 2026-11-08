@@ -1,0 +1,464 @@
+{
+ "kind": "architecture",
+ "title": "Each 10× of traffic forces exactly one new kind of box",
+ "caption": "Re-run the same five-line estimate at 100k, 1M, 10M and 100M users; switch the 📈 tabs to see which number breaks each time.",
+ "base_name": "v1: 100k users",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "client",
+   "label": "Mobile app",
+   "sub": "100k DAU",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "srv",
+   "kind": "service",
+   "label": "App server",
+   "sub": "~170 req/s peak",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Postgres",
+   "sub": "20 MB/day rows",
+   "x": 560,
+   "y": 40
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Object store",
+   "sub": "10 GB/day",
+   "x": 560,
+   "y": 200
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "srv"
+  },
+  {
+   "from": "srv",
+   "to": "db"
+  },
+  {
+   "from": "srv",
+   "to": "blob"
+  }
+ ],
+ "steps": [
+  {
+   "text": "100k users: 0.2 uploads/s, ~170 views/s at peak, ~700 Mbps of photos at peak. One server serves it all.",
+   "nodes": [
+    "app",
+    "srv"
+   ],
+   "edges": [
+    "app>srv"
+   ]
+  },
+  {
+   "text": "Rows go to Postgres, bytes to an object store from day one: it costs nothing and never needs a migration.",
+   "nodes": [
+    "db",
+    "blob"
+   ],
+   "edges": [
+    "srv>db",
+    "srv>blob"
+   ]
+  },
+  {
+   "text": "The weak spot is not capacity but the single server: say so.",
+   "nodes": [
+    "srv"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: 1M users",
+   "tone": "scale",
+   "summary": "~7 Gbps of photos at peak is the number that breaks: put a CDN in front and run 2+ servers behind a load balancer.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "client",
+     "label": "Mobile app",
+     "sub": "1M DAU",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN",
+     "sub": "~7 Gbps peak",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "s1",
+     "kind": "service",
+     "label": "App server ×2",
+     "sub": "~1 700 req/s",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Object store",
+     "sub": "100 GB/day",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Postgres",
+     "x": 690,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "cdn"
+    },
+    {
+     "from": "cdn",
+     "to": "blob",
+     "label": "miss"
+    },
+    {
+     "from": "app",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "s1"
+    },
+    {
+     "from": "s1",
+     "to": "db"
+    },
+    {
+     "from": "s1",
+     "to": "blob"
+    }
+   ],
+   "steps": [
+    {
+     "text": "10× users: ~1 700 reads/s still fits one database, but ~7 Gbps of bytes is most of a server's NIC.",
+     "nodes": [
+      "app"
+     ],
+     "edges": [
+      "app>cdn",
+      "app>lb"
+     ]
+    },
+    {
+     "text": "A CDN serves the photos; the object store sees misses only.",
+     "nodes": [
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "app>cdn",
+      "cdn>blob"
+     ]
+    },
+    {
+     "text": "Two servers behind a load balancer remove the single point of failure.",
+     "nodes": [
+      "lb",
+      "s1",
+      "db"
+     ],
+     "edges": [
+      "lb>s1",
+      "s1>db"
+     ]
+    },
+    {
+     "text": "Cost: a CDN bill and cache-control rules; photos are immutable, so invalidation is easy.",
+     "nodes": [
+      "cdn"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: 10M users",
+   "tone": "scale",
+   "summary": "17 400 reads/s breaks the database: a metadata cache and read replicas take the read path; resizing moves to a queue.",
+   "nodes": [
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Photo API ×4",
+     "sub": "17k req/s peak",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Resize queue",
+     "x": 230,
+     "y": 280
+    },
+    {
+     "id": "cache",
+     "kind": "cache",
+     "label": "Metadata cache",
+     "sub": "95% hits",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Primary",
+     "sub": "23 writes/s",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "rep",
+     "kind": "sql",
+     "label": "Read replicas",
+     "sub": "~870 reads/s",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "rz",
+     "kind": "worker",
+     "label": "Resizers",
+     "x": 460,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "lb",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "cache"
+    },
+    {
+     "from": "api",
+     "to": "db"
+    },
+    {
+     "from": "db",
+     "to": "rep"
+    },
+    {
+     "from": "api",
+     "to": "q"
+    },
+    {
+     "from": "q",
+     "to": "rz"
+    }
+   ],
+   "steps": [
+    {
+     "text": "10× again: 17 400 metadata reads/s is past one database.",
+     "nodes": [
+      "lb",
+      "api"
+     ],
+     "edges": [
+      "lb>api"
+     ]
+    },
+    {
+     "text": "A cache takes ~95% of reads; replicas serve the misses.",
+     "nodes": [
+      "cache",
+      "db",
+      "rep"
+     ],
+     "edges": [
+      "api>cache",
+      "api>db",
+      "db>rep"
+     ]
+    },
+    {
+     "text": "Uploads (23/s) return fast; resizing runs in workers off a queue.",
+     "nodes": [
+      "q",
+      "rz"
+     ],
+     "edges": [
+      "api>q",
+      "q>rz"
+     ]
+    },
+    {
+     "text": "Cost: stale cache entries after edits, replica lag, and two more systems to operate.",
+     "nodes": [
+      "cache",
+      "rep"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: 100M users",
+   "tone": "scale",
+   "summary": "Now writes (230/s) are fine but metadata hits ~36 TB and reads 174k/s: shard the rows by user and run a cache cluster.",
+   "nodes": [
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "sub": "174k req/s",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Photo API ×40",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "cache",
+     "kind": "cache",
+     "label": "Cache cluster",
+     "sub": "~3 nodes",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "r",
+     "kind": "service",
+     "label": "Shard router",
+     "sub": "user_id → shard",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "x": 690,
+     "y": 20
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "s3",
+     "kind": "sql",
+     "label": "Shard N",
+     "x": 690,
+     "y": 260
+    }
+   ],
+   "edges": [
+    {
+     "from": "lb",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "cache"
+    },
+    {
+     "from": "api",
+     "to": "r"
+    },
+    {
+     "from": "r",
+     "to": "s1"
+    },
+    {
+     "from": "r",
+     "to": "s2"
+    },
+    {
+     "from": "r",
+     "to": "s3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "10× again: 174k reads/s, 230 writes/s, 20 GB of rows a day (~36 TB in 5 years) and ~700 Gbps at peak at the edge.",
+     "nodes": [
+      "lb",
+      "api"
+     ],
+     "edges": [
+      "lb>api"
+     ]
+    },
+    {
+     "text": "One cache node is no longer enough: a small cluster partitioned by key.",
+     "nodes": [
+      "cache"
+     ],
+     "edges": [
+      "api>cache"
+     ]
+    },
+    {
+     "text": "Size forces sharding before write rate does: shard by user id so a profile page reads one shard.",
+     "nodes": [
+      "r",
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "api>r",
+      "r>s1",
+      "r>s2",
+      "r>s3"
+     ]
+    },
+    {
+     "text": "Cost: resharding, cross-shard queries (\"photos near me\"), and hot celebrity shards.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ]
+    }
+   ]
+  }
+ ]
+}

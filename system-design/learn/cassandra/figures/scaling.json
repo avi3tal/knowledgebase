@@ -1,0 +1,400 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the message store: from 3 nodes to a multi-DC ring with an analytics DC",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: three nodes",
+ "nodes": [
+  {
+   "id": "svc",
+   "kind": "service",
+   "label": "Message service",
+   "x": 0,
+   "y": 135
+  },
+  {
+   "id": "n1",
+   "kind": "nosql",
+   "label": "Node 1",
+   "sub": "100% of data",
+   "x": 280,
+   "y": 0
+  },
+  {
+   "id": "n2",
+   "kind": "nosql",
+   "label": "Node 2",
+   "sub": "100% of data",
+   "x": 280,
+   "y": 135
+  },
+  {
+   "id": "n3",
+   "kind": "nosql",
+   "label": "Node 3",
+   "sub": "100% of data",
+   "x": 280,
+   "y": 270
+  }
+ ],
+ "edges": [
+  {
+   "from": "svc",
+   "to": "n1"
+  },
+  {
+   "from": "svc",
+   "to": "n2"
+  },
+  {
+   "from": "svc",
+   "to": "n3"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Three nodes, RF 3: every node holds every message. QUORUM survives one node down.",
+   "nodes": [
+    "svc",
+    "n1",
+    "n2",
+    "n3"
+   ],
+   "edges": [
+    "svc>n1",
+    "svc>n2",
+    "svc>n3"
+   ]
+  },
+  {
+   "text": "Each node absorbs every write, so the whole cluster's capacity is one node's disk and write rate.",
+   "nodes": [
+    "n1",
+    "n2",
+    "n3"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: bigger ring",
+   "tone": "scale",
+   "summary": "Add nodes and each one owns a smaller slice; capacity grows roughly linearly, at the cost of streaming and repair work.",
+   "nodes": [
+    {
+     "id": "svc",
+     "kind": "service",
+     "label": "Message service",
+     "sub": "token-aware driver",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "r1",
+     "kind": "nosql",
+     "label": "Rack 1: 4 nodes",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "r2",
+     "kind": "nosql",
+     "label": "Rack 2: 4 nodes",
+     "x": 280,
+     "y": 135
+    },
+    {
+     "id": "r3",
+     "kind": "nosql",
+     "label": "Rack 3: 4 nodes",
+     "x": 280,
+     "y": 270
+    }
+   ],
+   "edges": [
+    {
+     "from": "svc",
+     "to": "r1"
+    },
+    {
+     "from": "svc",
+     "to": "r2"
+    },
+    {
+     "from": "svc",
+     "to": "r3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "12 nodes, RF 3: each node holds about a quarter of the data (RF / N) and takes a quarter of the writes.",
+     "nodes": [
+      "r1",
+      "r2",
+      "r3"
+     ],
+     "edges": [
+      "svc>r1",
+      "svc>r2",
+      "svc>r3"
+     ]
+    },
+    {
+     "text": "Rack-aware placement puts each partition's 3 replicas in 3 different racks, so losing a rack loses one copy.",
+     "nodes": [
+      "r1",
+      "r2",
+      "r3"
+     ]
+    },
+    {
+     "text": "Cost: every join streams data, repairs take longer, and a bad partition key now creates a visible hot node.",
+     "nodes": [
+      "svc"
+     ],
+     "edges": [
+      "svc>r2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: two regions",
+   "tone": "scale",
+   "summary": "A second DC serves its own users at LOCAL_QUORUM and survives the loss of a whole region, for twice the storage.",
+   "nodes": [
+    {
+     "id": "ueu",
+     "kind": "client",
+     "label": "EU users",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "uus",
+     "kind": "client",
+     "label": "US users",
+     "x": 0,
+     "y": 270
+    },
+    {
+     "id": "seu",
+     "kind": "service",
+     "label": "EU service",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "sus",
+     "kind": "service",
+     "label": "US service",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "deu",
+     "kind": "nosql",
+     "label": "DC EU (12 nodes)",
+     "sub": "RF 3",
+     "x": 560,
+     "y": 0
+    },
+    {
+     "id": "dus",
+     "kind": "nosql",
+     "label": "DC US (12 nodes)",
+     "sub": "RF 3",
+     "x": 560,
+     "y": 270
+    }
+   ],
+   "edges": [
+    {
+     "from": "ueu",
+     "to": "seu"
+    },
+    {
+     "from": "uus",
+     "to": "sus"
+    },
+    {
+     "from": "seu",
+     "to": "deu",
+     "label": "LOCAL_QUORUM"
+    },
+    {
+     "from": "sus",
+     "to": "dus"
+    },
+    {
+     "from": "deu",
+     "to": "dus",
+     "label": "async replication"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Users write and read in their nearest region at LOCAL_QUORUM: local latency.",
+     "nodes": [
+      "ueu",
+      "uus",
+      "seu",
+      "sus",
+      "deu",
+      "dus"
+     ],
+     "edges": [
+      "ueu>seu",
+      "uus>sus",
+      "seu>deu",
+      "sus>dus"
+     ]
+    },
+    {
+     "text": "Each DC holds a full copy, replicated asynchronously; if one region goes dark the other takes all users.",
+     "nodes": [
+      "deu",
+      "dus"
+     ],
+     "edges": [
+      "deu>dus"
+     ]
+    },
+    {
+     "text": "Cost: 2× storage, cross-region bandwidth, and concurrent edits resolved by last write wins.",
+     "nodes": [
+      "deu",
+      "dus"
+     ],
+     "edges": [
+      "deu>dus"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: analytics DC",
+   "tone": "scale",
+   "summary": "A third, read-only DC takes the full scans, so analytics never competes with chat traffic.",
+   "nodes": [
+    {
+     "id": "seu",
+     "kind": "service",
+     "label": "EU service",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "sus",
+     "kind": "service",
+     "label": "US service",
+     "x": 0,
+     "y": 270
+    },
+    {
+     "id": "deu",
+     "kind": "nosql",
+     "label": "DC EU",
+     "sub": "serving",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "dus",
+     "kind": "nosql",
+     "label": "DC US",
+     "sub": "serving",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "dan",
+     "kind": "nosql",
+     "label": "DC analytics",
+     "sub": "RF 1, no app traffic",
+     "x": 560,
+     "y": 135
+    },
+    {
+     "id": "spark",
+     "kind": "worker",
+     "label": "Spark jobs",
+     "x": 840,
+     "y": 135
+    }
+   ],
+   "edges": [
+    {
+     "from": "seu",
+     "to": "deu"
+    },
+    {
+     "from": "sus",
+     "to": "dus"
+    },
+    {
+     "from": "deu",
+     "to": "dus"
+    },
+    {
+     "from": "deu",
+     "to": "dan",
+     "label": "async"
+    },
+    {
+     "from": "dus",
+     "to": "dan"
+    },
+    {
+     "from": "dan",
+     "to": "spark",
+     "label": "full scans"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The serving DCs keep handling chat at LOCAL_QUORUM, as before.",
+     "nodes": [
+      "seu",
+      "sus",
+      "deu",
+      "dus"
+     ],
+     "edges": [
+      "seu>deu",
+      "sus>dus",
+      "deu>dus"
+     ]
+    },
+    {
+     "text": "A third DC receives every write through normal replication, but no app server is allowed to read from it.",
+     "nodes": [
+      "dan"
+     ],
+     "edges": [
+      "deu>dan",
+      "dus>dan"
+     ]
+    },
+    {
+     "text": "Spark scans whole tables there (spam detection, nightly batch jobs over known tables) without touching serving latency.",
+     "nodes": [
+      "dan",
+      "spark"
+     ],
+     "edges": [
+      "dan>spark"
+     ]
+    },
+    {
+     "text": "Cost: another copy of the data to store, and results that lag the serving DCs slightly.",
+     "nodes": [
+      "dan"
+     ],
+     "edges": [
+      "deu>dan"
+     ]
+    }
+   ]
+  }
+ ]
+}

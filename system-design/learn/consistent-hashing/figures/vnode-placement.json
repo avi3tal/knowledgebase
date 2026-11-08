@@ -1,0 +1,266 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: how membership places a node's virtual nodes before publishing a ring",
+ "caption": "Token count follows machine size, and the ring is checked for even shares before any app server sees it.",
+ "base_name": "Same-size node",
+ "nodes": [
+  {
+   "id": "s",
+   "type": "start",
+   "label": "Membership change",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "w",
+   "type": "step",
+   "label": "Tokens: 128×weight",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "h",
+   "type": "step",
+   "label": "Hash name#i",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "m",
+   "type": "step",
+   "label": "Merge, sort ring",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "chk",
+   "type": "decision",
+   "label": "Max ≤ 1.25× avg?",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "hold",
+   "type": "end",
+   "label": "Hold, alert",
+   "col": 1,
+   "row": 4,
+   "tone": "bad"
+  },
+  {
+   "id": "pub",
+   "type": "end",
+   "label": "Publish ring v+1",
+   "col": 0,
+   "row": 5,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "s",
+   "to": "w"
+  },
+  {
+   "from": "w",
+   "to": "h"
+  },
+  {
+   "from": "h",
+   "to": "m"
+  },
+  {
+   "from": "m",
+   "to": "chk"
+  },
+  {
+   "from": "chk",
+   "to": "hold",
+   "label": "no"
+  },
+  {
+   "from": "chk",
+   "to": "pub",
+   "label": "yes"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Cache D joins with the same size as the others, so weight 1.",
+   "nodes": [
+    "s",
+    "w"
+   ],
+   "edges": [
+    "s>w"
+   ]
+  },
+  {
+   "text": "Hash D#0 … D#127 to 128 positions spread pseudo-randomly around the ring.",
+   "nodes": [
+    "h"
+   ],
+   "edges": [
+    "w>h"
+   ]
+  },
+  {
+   "text": "Merge them into the sorted token array. Each token takes a small slice from whichever arc it lands in.",
+   "nodes": [
+    "m"
+   ],
+   "edges": [
+    "h>m"
+   ]
+  },
+  {
+   "text": "Before publishing, compute every physical node's total arc length. With 128 random tokens a spread of about ±10% is normal; refuse only real outliers.",
+   "nodes": [
+    "chk"
+   ],
+   "edges": [
+    "m>chk"
+   ]
+  },
+  {
+   "text": "With 128 tokens per node the shares are close, so the new ring goes out to the app servers.",
+   "nodes": [
+    "pub"
+   ],
+   "edges": [
+    "chk>pub"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Bigger machine",
+   "tone": "edge",
+   "summary": "Weight is just more tokens: a node with twice the memory gets 256 tokens and about twice the keys.",
+   "steps": [
+    {
+     "text": "Cache C is replaced by a box with twice the RAM: weight 2.",
+     "nodes": [
+      "s",
+      "w"
+     ],
+     "edges": [
+      "s>w"
+     ]
+    },
+    {
+     "text": "256 tokens instead of 128, so its arcs add up to about twice the others'.",
+     "nodes": [
+      "h",
+      "m"
+     ],
+     "edges": [
+      "w>h",
+      "h>m"
+     ]
+    },
+    {
+     "text": "The check compares each node's share with its weight, not with a flat average.",
+     "nodes": [
+      "chk"
+     ],
+     "edges": [
+      "m>chk"
+     ]
+    },
+    {
+     "text": "Publish.",
+     "nodes": [
+      "pub"
+     ],
+     "edges": [
+      "chk>pub"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Node removed",
+   "tone": "edge",
+   "summary": "Deleting tokens is the same process in reverse; each removed arc merges into the next one clockwise.",
+   "steps": [
+    {
+     "text": "Cache B leaves (scale-in or crash).",
+     "nodes": [
+      "s"
+     ]
+    },
+    {
+     "text": "Its 128 tokens are deleted from the array; nothing new is hashed.",
+     "nodes": [
+      "m"
+     ]
+    },
+    {
+     "text": "Its arcs merge into 128 different neighbours, so the survivors each grow a little.",
+     "nodes": [
+      "chk"
+     ],
+     "edges": [
+      "m>chk"
+     ]
+    },
+    {
+     "text": "Publish.",
+     "nodes": [
+      "pub"
+     ],
+     "edges": [
+      "chk>pub"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Too few tokens",
+   "tone": "risk",
+   "summary": "With a handful of tokens per node, arc lengths vary wildly; refuse to publish a ring that would overload one node.",
+   "steps": [
+    {
+     "text": "Someone configures 4 tokens per node to keep the ring tiny.",
+     "nodes": [
+      "s",
+      "w"
+     ],
+     "edges": [
+      "s>w"
+     ]
+    },
+    {
+     "text": "Four random points per node leave some arcs several times longer than others.",
+     "nodes": [
+      "h",
+      "m"
+     ],
+     "edges": [
+      "w>h",
+      "h>m"
+     ]
+    },
+    {
+     "text": "One node's share is well over 1.25× the average: it would take far more than its share of keys and traffic.",
+     "nodes": [
+      "chk"
+     ],
+     "edges": [
+      "m>chk"
+     ]
+    },
+    {
+     "text": "Hold the change and alert. Raise the token count; the ring stays small anyway (a few thousand entries).",
+     "nodes": [
+      "hold"
+     ],
+     "edges": [
+      "chk>hold"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,387 @@
+{
+ "kind": "architecture",
+ "title": "The system: a hotel booking platform on one PostgreSQL primary",
+ "caption": "Every booking commits on one primary and reaches a standby before it is confirmed; replicas, the WAL archive and CDC all feed from the same write-ahead log.",
+ "base_name": "A booking",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "Web & mobile",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Booking API",
+   "sub": "stateless, autoscaled",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "ha",
+   "kind": "coordinator",
+   "label": "Failover manager",
+   "sub": "leader lock",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "pool",
+   "kind": "service",
+   "label": "Pooler",
+   "sub": "PgBouncer pool",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "sync",
+   "kind": "sql",
+   "label": "Sync standby",
+   "sub": "same region",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "primary",
+   "kind": "sql",
+   "label": "Primary",
+   "sub": "all writes",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "replica",
+   "kind": "sql",
+   "label": "Read replica",
+   "sub": "async, lag ms–s",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "wal",
+   "kind": "blob",
+   "label": "WAL archive",
+   "sub": "base backups + WAL",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "search",
+   "kind": "search",
+   "label": "Search index",
+   "sub": "hotel search",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "cdc",
+   "kind": "stream",
+   "label": "CDC stream",
+   "sub": "logical decoding",
+   "x": 920,
+   "y": 280
+  },
+  {
+   "id": "dw",
+   "kind": "external",
+   "label": "Analytics",
+   "sub": "warehouse",
+   "x": 920,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "pool",
+   "label": "SQL"
+  },
+  {
+   "from": "pool",
+   "to": "primary",
+   "label": "writes + fresh reads"
+  },
+  {
+   "from": "pool",
+   "to": "replica",
+   "label": "read-only"
+  },
+  {
+   "from": "primary",
+   "to": "sync",
+   "label": "sync WAL"
+  },
+  {
+   "from": "primary",
+   "to": "replica",
+   "label": "async WAL"
+  },
+  {
+   "from": "primary",
+   "to": "wal",
+   "label": "WAL segments"
+  },
+  {
+   "from": "primary",
+   "to": "cdc",
+   "label": "committed changes"
+  },
+  {
+   "from": "cdc",
+   "to": "search"
+  },
+  {
+   "from": "cdc",
+   "to": "dw"
+  },
+  {
+   "from": "ha",
+   "to": "primary",
+   "label": "health"
+  },
+  {
+   "from": "ha",
+   "to": "sync",
+   "label": "health"
+  },
+  {
+   "from": "ha",
+   "to": "pool",
+   "label": "current leader"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A guest books two nights. The API servers are stateless and scale out; each one talks SQL to the pooler, which multiplexes thousands of client connections onto ~150 server connections.",
+   "nodes": [
+    "users",
+    "api",
+    "pool"
+   ],
+   "edges": [
+    "users>api",
+    "api>pool"
+   ]
+  },
+  {
+   "text": "The pooler sends the write transaction to the primary: lock the room-night rows, insert the booking, decrement availability, COMMIT. All of it happens, or none of it.",
+   "nodes": [
+    "pool",
+    "primary"
+   ],
+   "edges": [
+    "pool>primary"
+   ]
+  },
+  {
+   "text": "The commit is acknowledged only after the sync standby has flushed its WAL record (~1 ms in the same region), so a confirmed booking survives losing the primary's disk.",
+   "nodes": [
+    "primary",
+    "sync"
+   ],
+   "edges": [
+    "primary>sync"
+   ]
+  },
+  {
+   "text": "Read replicas replay the same WAL a few ms behind. Browsing hotels and past trips go there; the booking page itself reads from the primary.",
+   "nodes": [
+    "pool",
+    "replica",
+    "primary"
+   ],
+   "edges": [
+    "primary>replica",
+    "pool>replica"
+   ]
+  },
+  {
+   "text": "Every WAL segment is shipped to object storage next to a nightly base backup: any second of the last 14 days can be restored (point-in-time recovery).",
+   "nodes": [
+    "primary",
+    "wal"
+   ],
+   "edges": [
+    "primary>wal"
+   ]
+  },
+  {
+   "text": "Logical decoding turns committed changes into an ordered stream; CDC updates the search index and the warehouse, so the API never writes to three systems at once.",
+   "nodes": [
+    "primary",
+    "cdc",
+    "search",
+    "dw"
+   ],
+   "edges": [
+    "primary>cdc",
+    "cdc>search",
+    "cdc>dw"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Holiday sale",
+   "tone": "edge",
+   "summary": "Traffic jumps 20× for an hour: the pooler protects the primary from connection storms and replicas absorb the browsing.",
+   "steps": [
+    {
+     "text": "The API autoscales from 20 to 400 pods; each wants 10 connections, 4 000 in total.",
+     "nodes": [
+      "users",
+      "api"
+     ],
+     "edges": [
+      "users>api",
+      "api>pool"
+     ]
+    },
+    {
+     "text": "The pooler still opens only ~150 server connections and queues the rest for a few ms. Without it, 4 000 backend processes would eat the primary's memory.",
+     "nodes": [
+      "pool",
+      "primary"
+     ],
+     "edges": [
+      "pool>primary"
+     ]
+    },
+    {
+     "text": "90% of the extra load is searching and browsing: it lands on replicas (add one more in minutes).",
+     "nodes": [
+      "pool",
+      "replica"
+     ],
+     "edges": [
+      "pool>replica"
+     ]
+    },
+    {
+     "text": "Writes grow only 3×, well within one primary. Search catches up through CDC with a second of lag.",
+     "nodes": [
+      "primary",
+      "cdc",
+      "search"
+     ],
+     "edges": [
+      "primary>cdc",
+      "cdc>search"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Replica falls behind",
+   "tone": "failure",
+   "summary": "A long report on the replica and a write burst push lag to 40 s: route reads away from it instead of serving stale availability.",
+   "steps": [
+    {
+     "text": "An analyst's 10-minute report runs on the replica while a bulk price update hits the primary.",
+     "nodes": [
+      "replica",
+      "primary"
+     ],
+     "edges": [
+      "primary>replica"
+     ]
+    },
+    {
+     "text": "Replay pauses behind the report's snapshot; lag reaches 40 s. Guests would see rooms that are already gone.",
+     "fail": [
+      "replica",
+      "primary>replica"
+     ],
+     "nodes": [
+      "replica"
+     ]
+    },
+    {
+     "text": "The pooler's health check reads replay lag and stops sending reads to that replica above 5 s.",
+     "fail": [
+      "pool>replica"
+     ],
+     "nodes": [
+      "pool",
+      "primary"
+     ],
+     "edges": [
+      "pool>primary"
+     ]
+    },
+    {
+     "text": "Fix the cause: reports move to the warehouse (fed by CDC), and the replica catches up.",
+     "nodes": [
+      "cdc",
+      "dw",
+      "replica"
+     ],
+     "edges": [
+      "primary>cdc",
+      "cdc>dw"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Schema migration",
+   "tone": "risk",
+   "summary": "Adding an index to a 2 TB bookings table can block every write; online variants and lock timeouts keep the site up.",
+   "steps": [
+    {
+     "text": "A deploy runs a plain CREATE INDEX on bookings. It holds a lock that blocks inserts for the whole build.",
+     "fail": [
+      "primary"
+     ],
+     "nodes": [
+      "primary"
+     ],
+     "edges": [
+      "pool>primary"
+     ]
+    },
+    {
+     "text": "Booking requests pile up in the pooler, and then in the API, until they time out.",
+     "fail": [
+      "pool>primary"
+     ],
+     "nodes": [
+      "pool",
+      "api"
+     ],
+     "edges": [
+      "api>pool"
+     ]
+    },
+    {
+     "text": "Safe version: CREATE INDEX CONCURRENTLY, SET lock_timeout = '2s', add columns as nullable and backfill in small batches.",
+     "nodes": [
+      "primary"
+     ],
+     "edges": [
+      "pool>primary"
+     ]
+    },
+    {
+     "text": "The change replays on standby and replicas; CDC consumers must accept the new column before it is written.",
+     "nodes": [
+      "sync",
+      "replica",
+      "cdc"
+     ],
+     "edges": [
+      "primary>sync",
+      "primary>replica",
+      "primary>cdc"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,355 @@
+{
+ "kind": "architecture",
+ "title": "The system: an online shop's product page behind four caches",
+ "caption": "Each tier answers what it can and passes the rest inward; a change event removes stale copies from every tier.",
+ "base_name": "Normal traffic",
+ "nodes": [
+  {
+   "id": "browser",
+   "kind": "client",
+   "label": "Shoppers",
+   "sub": "browser HTTP cache",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "img",
+   "kind": "blob",
+   "label": "Image store",
+   "sub": "product photos",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN edge",
+   "sub": "assets + page API 60 s",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "Product service",
+   "sub": "in-process LRU 5 s",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "admin",
+   "kind": "client",
+   "label": "Merchant console",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "cache",
+   "kind": "cache",
+   "label": "Cache cluster",
+   "sub": "cache-aside, TTL 10 min",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "writer",
+   "kind": "service",
+   "label": "Catalog writer",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Catalog DB",
+   "sub": "primary + replicas",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "events",
+   "kind": "stream",
+   "label": "Change events",
+   "sub": "CDC from the DB log",
+   "x": 920,
+   "y": 280
+  },
+  {
+   "id": "inv",
+   "kind": "worker",
+   "label": "Invalidator",
+   "sub": "DEL, purge, evict",
+   "x": 690,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "browser",
+   "to": "cdn"
+  },
+  {
+   "from": "cdn",
+   "to": "img",
+   "label": "images"
+  },
+  {
+   "from": "cdn",
+   "to": "app",
+   "label": "miss"
+  },
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "GET / SET"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "on miss"
+  },
+  {
+   "from": "admin",
+   "to": "writer",
+   "label": "edit price"
+  },
+  {
+   "from": "writer",
+   "to": "db"
+  },
+  {
+   "from": "db",
+   "to": "events"
+  },
+  {
+   "from": "events",
+   "to": "inv"
+  },
+  {
+   "from": "inv",
+   "to": "cache",
+   "label": "DEL key"
+  },
+  {
+   "from": "inv",
+   "to": "cdn",
+   "label": "purge URL"
+  },
+  {
+   "from": "inv",
+   "to": "app",
+   "label": "evict (pub/sub)"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The browser keeps JS, CSS and photos for a year (versioned file names), so a repeat visit only asks for the product data. The CDN serves photos from the image store and the product API for 60 s.",
+   "nodes": [
+    "browser",
+    "cdn",
+    "img"
+   ],
+   "edges": [
+    "browser>cdn",
+    "cdn>img"
+   ]
+  },
+  {
+   "text": "A CDN miss reaches the product service. The top few thousand products sit in each pod's own memory for 5 s: no network hop at all.",
+   "nodes": [
+    "cdn",
+    "app"
+   ],
+   "edges": [
+    "cdn>app"
+   ]
+  },
+  {
+   "text": "Not in local memory: one GET product:42 to the shared cache cluster, about 1 ms. Most reads end here.",
+   "nodes": [
+    "app",
+    "cache"
+   ],
+   "edges": [
+    "app>cache"
+   ]
+  },
+  {
+   "text": "A miss reads the row from a DB replica and SETs it with a TTL (10 min plus random jitter), so the next reader hits.",
+   "nodes": [
+    "app",
+    "db",
+    "cache"
+   ],
+   "edges": [
+    "app>db",
+    "app>cache"
+   ]
+  },
+  {
+   "text": "A merchant changes the price. The writer commits it to the catalog DB, and the commit appears as a change event read from the DB log.",
+   "nodes": [
+    "admin",
+    "writer",
+    "db",
+    "events"
+   ],
+   "edges": [
+    "admin>writer",
+    "writer>db",
+    "db>events"
+   ]
+  },
+  {
+   "text": "The invalidator turns the event into three removals: DEL the cache key, purge the CDN URL and tell every pod to drop its local copy. The TTL is the safety net if one is missed.",
+   "nodes": [
+    "inv",
+    "cache",
+    "cdn",
+    "app"
+   ],
+   "edges": [
+    "events>inv",
+    "inv>cache",
+    "inv>cdn",
+    "inv>app"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Flash sale",
+   "tone": "edge",
+   "summary": "A promoted product gets a sudden spike: each tier absorbs most of what reaches it, so the DB sees a trickle.",
+   "steps": [
+    {
+     "text": "A push notification sends a crowd to one product page within a minute.",
+     "nodes": [
+      "browser",
+      "cdn"
+     ],
+     "edges": [
+      "browser>cdn"
+     ]
+    },
+    {
+     "text": "The CDN answers almost every request; only about one request per edge location per 60 s reaches the service.",
+     "nodes": [
+      "cdn",
+      "app"
+     ],
+     "edges": [
+      "cdn>app"
+     ]
+    },
+    {
+     "text": "Every pod keeps the product locally, so the one cache node that owns product:42 sees one read per pod every 5 s, not every request.",
+     "nodes": [
+      "app",
+      "cache"
+     ],
+     "edges": [
+      "app>cache"
+     ]
+    },
+    {
+     "text": "When the entry expires, one request per pod refills it while the others wait (request coalescing), so the DB gets a handful of reads.",
+     "nodes": [
+      "app",
+      "db"
+     ],
+     "edges": [
+      "app>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Cache node down",
+   "tone": "failure",
+   "summary": "Losing a cache node turns its keys into misses at once; protect the DB first, then let the cache warm up.",
+   "steps": [
+    {
+     "text": "One node of the cache cluster dies; every key it owned is now a miss.",
+     "fail": [
+      "cache",
+      "app>cache"
+     ],
+     "nodes": [
+      "app"
+     ]
+    },
+    {
+     "text": "Those misses hit the DB together. Pods cap concurrent DB reads (a bulkhead) and serve slightly stale local copies instead of queueing.",
+     "fail": [
+      "cache"
+     ],
+     "nodes": [
+      "app",
+      "db"
+     ],
+     "edges": [
+      "app>db"
+     ]
+    },
+    {
+     "text": "The replica of the dead node is promoted, or its slots move to other nodes, and the misses refill the cache key by key.",
+     "nodes": [
+      "cache",
+      "app"
+     ],
+     "edges": [
+      "app>cache"
+     ]
+    },
+    {
+     "text": "Alert on hit rate and DB read load: the drop and the recovery curve show how close the DB came to its limit.",
+     "nodes": [
+      "db"
+     ],
+     "edges": [
+      "app>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Schema change",
+   "tone": "edge",
+   "summary": "A deploy adds a field to the cached product: change the key version instead of flushing the cache.",
+   "steps": [
+    {
+     "text": "New pods read and write product:v2:42; old pods still use product:v1:42. Neither misreads the other's format.",
+     "nodes": [
+      "app",
+      "cache"
+     ],
+     "edges": [
+      "app>cache"
+     ]
+    },
+    {
+     "text": "v2 keys start empty, so the rollout runs gradually (10% of pods, then more) to keep the extra DB reads small.",
+     "nodes": [
+      "app",
+      "db"
+     ],
+     "edges": [
+      "app>db"
+     ]
+    },
+    {
+     "text": "The invalidator deletes both versions during the rollout; v1 keys simply age out by TTL afterwards.",
+     "nodes": [
+      "inv",
+      "cache"
+     ],
+     "edges": [
+      "events>inv",
+      "inv>cache"
+     ]
+    }
+   ]
+  }
+ ]
+}

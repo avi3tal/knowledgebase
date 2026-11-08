@@ -1,0 +1,405 @@
+{
+ "kind": "architecture",
+ "title": "Scaling Redis: from one node to one cluster per region",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: single node",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "Game servers",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "r",
+   "kind": "cache",
+   "label": "Redis",
+   "sub": "RDB snapshots",
+   "x": 260,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Player DB",
+   "x": 520,
+   "y": 140
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "r"
+  },
+  {
+   "from": "app",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "One Redis node holds sessions, counters and boards: about 100k simple ops/s with sub-millisecond latency.",
+   "nodes": [
+    "app",
+    "r"
+   ],
+   "edges": [
+    "app>r"
+   ]
+  },
+  {
+   "text": "Limits: one machine's RAM, one CPU core for commands, and no failover. If it dies, everything in it is gone until it restarts from its last snapshot.",
+   "nodes": [
+    "r"
+   ],
+   "edges": [
+    "app>r",
+    "app>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: primary + replicas",
+   "tone": "scale",
+   "summary": "Add replicas and Sentinels for automatic failover; send some reads to replicas.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "Game servers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "p",
+     "kind": "cache",
+     "label": "Primary",
+     "sub": "all writes",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "r1",
+     "kind": "cache",
+     "label": "Replica 1",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "r2",
+     "kind": "cache",
+     "label": "Replica 2",
+     "x": 520,
+     "y": 280
+    },
+    {
+     "id": "s",
+     "kind": "coordinator",
+     "label": "Sentinels",
+     "sub": "3 voters",
+     "x": 260,
+     "y": 0
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "p",
+     "label": "writes"
+    },
+    {
+     "from": "p",
+     "to": "r1",
+     "label": "async"
+    },
+    {
+     "from": "p",
+     "to": "r2",
+     "label": "async"
+    },
+    {
+     "from": "s",
+     "to": "p",
+     "label": "watch"
+    },
+    {
+     "from": "app",
+     "to": "r2",
+     "label": "reads"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A dead primary is replaced by a replica in seconds instead of a restart from a snapshot.",
+     "nodes": [
+      "s",
+      "p",
+      "r1"
+     ],
+     "edges": [
+      "s>p",
+      "p>r1"
+     ]
+    },
+    {
+     "text": "Reads that tolerate a little staleness (top-100 views) can go to replicas.",
+     "nodes": [
+      "app",
+      "r2"
+     ],
+     "edges": [
+      "app>r2",
+      "p>r2"
+     ]
+    },
+    {
+     "text": "Cost: replication is async, so a failover can lose the last writes and replica reads can be stale. Writes and memory are still capped by one primary.",
+     "nodes": [
+      "p"
+     ],
+     "edges": [
+      "app>p"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: Redis Cluster",
+   "tone": "scale",
+   "summary": "Shard keys over several primaries by hash slot; each primary has its own replica.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "Game servers",
+     "sub": "cluster-aware client",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "a",
+     "kind": "cache",
+     "label": "Primary A",
+     "sub": "slots 0–5460",
+     "x": 260,
+     "y": 0
+    },
+    {
+     "id": "b",
+     "kind": "cache",
+     "label": "Primary B",
+     "sub": "slots 5461–10922",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "c",
+     "kind": "cache",
+     "label": "Primary C",
+     "sub": "slots 10923–16383",
+     "x": 260,
+     "y": 280
+    },
+    {
+     "id": "ra",
+     "kind": "cache",
+     "label": "Replica A",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "rb",
+     "kind": "cache",
+     "label": "Replica B",
+     "x": 520,
+     "y": 140
+    },
+    {
+     "id": "rc",
+     "kind": "cache",
+     "label": "Replica C",
+     "x": 520,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "a"
+    },
+    {
+     "from": "app",
+     "to": "b"
+    },
+    {
+     "from": "app",
+     "to": "c"
+    },
+    {
+     "from": "a",
+     "to": "ra"
+    },
+    {
+     "from": "b",
+     "to": "rb"
+    },
+    {
+     "from": "c",
+     "to": "rc"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each key hashes to one of 16 384 slots, and each primary owns a range: memory and write throughput grow with primaries.",
+     "nodes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "edges": [
+      "app>a",
+      "app>b",
+      "app>c"
+     ]
+    },
+    {
+     "text": "Each shard fails over on its own; the rest of the cluster keeps serving.",
+     "nodes": [
+      "b",
+      "rb"
+     ],
+     "edges": [
+      "b>rb"
+     ]
+    },
+    {
+     "text": "Cost: multi-key commands need all keys in one slot (hash tags), clients must handle MOVED, and one hot key still sits on one primary.",
+     "nodes": [
+      "app",
+      "b"
+     ],
+     "edges": [
+      "app>b"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: multi-region",
+   "tone": "scale",
+   "summary": "Run a cluster per region close to the players; build global views from regional ones.",
+   "nodes": [
+    {
+     "id": "ue",
+     "kind": "client",
+     "label": "Players (EU)",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "ua",
+     "kind": "client",
+     "label": "Players (Asia)",
+     "x": 0,
+     "y": 280
+    },
+    {
+     "id": "ce",
+     "kind": "cache",
+     "label": "EU cluster",
+     "sub": "sessions, regional boards",
+     "x": 260,
+     "y": 0
+    },
+    {
+     "id": "ca",
+     "kind": "cache",
+     "label": "Asia cluster",
+     "sub": "sessions, regional boards",
+     "x": 260,
+     "y": 280
+    },
+    {
+     "id": "agg",
+     "kind": "worker",
+     "label": "Global board job",
+     "sub": "merges top-N",
+     "x": 520,
+     "y": 140
+    },
+    {
+     "id": "g",
+     "kind": "cache",
+     "label": "Global board",
+     "sub": "read-mostly copy",
+     "x": 780,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "ue",
+     "to": "ce"
+    },
+    {
+     "from": "ua",
+     "to": "ca"
+    },
+    {
+     "from": "ce",
+     "to": "agg",
+     "label": "top 1000"
+    },
+    {
+     "from": "ca",
+     "to": "agg",
+     "label": "top 1000"
+    },
+    {
+     "from": "agg",
+     "to": "g"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Players hit the cluster in their region; sessions and counters never cross an ocean.",
+     "nodes": [
+      "ue",
+      "ce",
+      "ua",
+      "ca"
+     ],
+     "edges": [
+      "ue>ce",
+      "ua>ca"
+     ]
+    },
+    {
+     "text": "A job merges each region's top entries into a global board every few seconds.",
+     "nodes": [
+      "ce",
+      "ca",
+      "agg",
+      "g"
+     ],
+     "edges": [
+      "ce>agg",
+      "ca>agg",
+      "agg>g"
+     ]
+    },
+    {
+     "text": "Cost: the global board lags by a few seconds, and a player who travels gets a new session in the other region. Say both out loud as accepted trade-offs.",
+     "nodes": [
+      "g"
+     ],
+     "edges": [
+      "agg>g"
+     ]
+    }
+   ]
+  }
+ ]
+}

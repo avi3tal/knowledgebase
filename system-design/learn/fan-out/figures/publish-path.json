@@ -1,0 +1,318 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: the publish path never loses a post event and splits big jobs",
+ "caption": "An outbox makes 'post saved' and 'event published' one decision; a planner cuts each fan-out into small batches that any worker can retry.",
+ "base_name": "Normal author",
+ "nodes": [
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Post API",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Posts DB",
+   "sub": "post + outbox row",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "relay",
+   "kind": "worker",
+   "label": "Outbox relay",
+   "sub": "tails the outbox",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "log",
+   "kind": "stream",
+   "label": "Post events",
+   "sub": "by author",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "plan",
+   "kind": "worker",
+   "label": "Fan-out planner",
+   "sub": "split into batches",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "graph",
+   "kind": "nosql",
+   "label": "Follow graph",
+   "sub": "sharded by user",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "wk",
+   "kind": "worker",
+   "label": "Batch workers",
+   "sub": "autoscaled pool",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "jobs",
+   "kind": "queue",
+   "label": "Batch jobs",
+   "sub": "1 000 ids each",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "tl",
+   "kind": "cache",
+   "label": "Timeline shards",
+   "sub": "by reader id",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "dlq",
+   "kind": "queue",
+   "label": "Dead letters",
+   "sub": "after 5 retries",
+   "x": 920,
+   "y": 280
+  }
+ ],
+ "edges": [
+  {
+   "from": "api",
+   "to": "db",
+   "label": "1 transaction"
+  },
+  {
+   "from": "db",
+   "to": "relay"
+  },
+  {
+   "from": "relay",
+   "to": "log",
+   "label": "publish"
+  },
+  {
+   "from": "log",
+   "to": "plan"
+  },
+  {
+   "from": "plan",
+   "to": "jobs",
+   "label": "N batch jobs"
+  },
+  {
+   "from": "jobs",
+   "to": "wk"
+  },
+  {
+   "from": "wk",
+   "to": "graph",
+   "label": "page of ids"
+  },
+  {
+   "from": "wk",
+   "to": "tl",
+   "label": "pipelined adds"
+  },
+  {
+   "from": "wk",
+   "to": "dlq"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The post API inserts the post and an outbox row in the same database transaction: either both exist or neither does.",
+   "nodes": [
+    "api",
+    "db"
+   ],
+   "edges": [
+    "api>db"
+   ]
+  },
+  {
+   "text": "A relay tails the outbox and publishes each row to the event log, marking it sent only after the log acknowledges.",
+   "nodes": [
+    "db",
+    "relay",
+    "log"
+   ],
+   "edges": [
+    "db>relay",
+    "relay>log"
+   ]
+  },
+  {
+   "text": "The planner reads the follower count and cuts the job into batches of 1 000 follower ids (a cursor range, not the ids themselves).",
+   "nodes": [
+    "log",
+    "plan",
+    "jobs"
+   ],
+   "edges": [
+    "log>plan",
+    "plan>jobs"
+   ]
+  },
+  {
+   "text": "Any free worker takes a batch, reads that page of the follow graph and writes the post id into those timelines in one pipelined call.",
+   "nodes": [
+    "jobs",
+    "wk",
+    "graph",
+    "tl"
+   ],
+   "edges": [
+    "jobs>wk",
+    "wk>graph",
+    "wk>tl"
+   ]
+  },
+  {
+   "text": "A batch is acknowledged only after its writes land, so a crash means that one batch is retried, not the whole post.",
+   "nodes": [
+    "wk",
+    "jobs"
+   ],
+   "edges": [
+    "jobs>wk"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Big author, many batches",
+   "tone": "edge",
+   "summary": "A post from an account just under the celebrity threshold becomes 400 batches that the pool drains in parallel.",
+   "steps": [
+    {
+     "text": "400 k followers become 400 batch jobs in a few milliseconds.",
+     "nodes": [
+      "plan",
+      "jobs"
+     ],
+     "edges": [
+      "log>plan",
+      "plan>jobs"
+     ]
+    },
+    {
+     "text": "The pool scales out on queue depth; 50 workers drain it in seconds instead of one worker for minutes.",
+     "nodes": [
+      "jobs",
+      "wk"
+     ],
+     "edges": [
+      "jobs>wk"
+     ]
+    },
+    {
+     "text": "Small authors' batches sit in the same queue, so one big post doesn't delay everyone else's by more than a few seconds.",
+     "nodes": [
+      "wk",
+      "tl",
+      "graph"
+     ],
+     "edges": [
+      "wk>tl",
+      "wk>graph"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Relay crash",
+   "tone": "failure",
+   "summary": "Without the outbox, a crash between 'save' and 'publish' silently loses the fan-out. With it, the post is only delayed.",
+   "steps": [
+    {
+     "text": "The post and its outbox row are committed.",
+     "nodes": [
+      "api",
+      "db"
+     ],
+     "edges": [
+      "api>db"
+     ]
+    },
+    {
+     "text": "The relay dies before publishing.",
+     "fail": [
+      "relay",
+      "relay>log"
+     ],
+     "nodes": [
+      "db"
+     ]
+    },
+    {
+     "text": "A new relay starts, finds the unsent row and publishes it. If the old one had already published, the event appears twice.",
+     "nodes": [
+      "relay",
+      "log"
+     ],
+     "edges": [
+      "db>relay",
+      "relay>log"
+     ]
+    },
+    {
+     "text": "The planner dedupes by post id, so followers get the post once, a few seconds late.",
+     "nodes": [
+      "plan",
+      "jobs"
+     ],
+     "edges": [
+      "log>plan",
+      "plan>jobs"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Timeline shard slow",
+   "tone": "risk",
+   "summary": "One timeline shard degrades: retries with backoff, and a dead-letter queue so poisoned batches don't block the pool.",
+   "steps": [
+    {
+     "text": "Writes to one timeline shard start timing out.",
+     "fail": [
+      "tl",
+      "wk>tl"
+     ],
+     "nodes": [
+      "wk"
+     ]
+    },
+    {
+     "text": "Workers retry those batches with exponential backoff; batches for healthy shards keep flowing.",
+     "nodes": [
+      "jobs",
+      "wk"
+     ],
+     "edges": [
+      "jobs>wk"
+     ]
+    },
+    {
+     "text": "After 5 failed attempts a batch goes to the dead-letter queue and an alert fires; it is replayed once the shard recovers.",
+     "nodes": [
+      "wk",
+      "dlq"
+     ],
+     "edges": [
+      "wk>dlq"
+     ]
+    }
+   ]
+  }
+ ]
+}

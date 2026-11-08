@@ -1,0 +1,239 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: a presigned multipart upload, from request to event",
+ "caption": "The API is called twice (start and complete); everything in between is the client and the store.",
+ "base_name": "600 MB video",
+ "actors": [
+  {
+   "id": "app",
+   "label": "Mobile app",
+   "kind": "client"
+  },
+  {
+   "id": "api",
+   "label": "Upload API",
+   "kind": "service"
+  },
+  {
+   "id": "meta",
+   "label": "Metadata DB",
+   "kind": "sql"
+  },
+  {
+   "id": "store",
+   "label": "Object store",
+   "kind": "blob"
+  },
+  {
+   "id": "q",
+   "label": "Upload events",
+   "kind": "queue"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "api",
+   "label": "POST /uploads {600 MB, video/mp4}",
+   "note": "The app says what it intends to upload; the API checks quota and allowed types."
+  },
+  {
+   "from": "api",
+   "to": "meta",
+   "label": "INSERT video v_77 (pending)",
+   "note": "The id is random, so keys spread evenly across the store."
+  },
+  {
+   "from": "api",
+   "to": "store",
+   "label": "start multipart: videos/v_77/original",
+   "note": "The store returns an upload id for this one key."
+  },
+  {
+   "from": "api",
+   "to": "app",
+   "label": "upload id + 60 part URLs",
+   "style": "reply",
+   "note": "Each URL is signed for one part number of one key, valid for 1 hour."
+  },
+  {
+   "from": "app",
+   "to": "store",
+   "label": "PUT parts 1–60 (10 MB, 6 at a time)",
+   "note": "Parallel parts use all the bandwidth; a failed part is resent alone."
+  },
+  {
+   "from": "store",
+   "to": "app",
+   "label": "ETag per part",
+   "style": "reply",
+   "note": "The client keeps the list."
+  },
+  {
+   "from": "app",
+   "to": "api",
+   "label": "POST /uploads/v_77/complete [ETags]",
+   "note": "Second and last API call."
+  },
+  {
+   "from": "api",
+   "to": "store",
+   "label": "complete multipart",
+   "note": "The store stitches the parts into one object atomically: readers never see half a file."
+  },
+  {
+   "from": "store",
+   "to": "q",
+   "label": "ObjectCreated videos/v_77/original",
+   "style": "async",
+   "note": "Processing starts from the event, not from the API call."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Event lost or late",
+   "tone": "failure",
+   "summary": "Store notifications are at-least-once and occasionally late; a sweeper keeps a video from staying pending forever.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "api",
+     "label": "POST /uploads/v_77/complete",
+     "note": "The upload itself went fine."
+    },
+    {
+     "from": "api",
+     "to": "store",
+     "label": "complete multipart",
+     "note": "The object exists."
+    },
+    {
+     "from": "store",
+     "to": "q",
+     "label": "ObjectCreated v_77",
+     "style": "lost",
+     "note": "This notification is delayed for an hour."
+    },
+    {
+     "from": "api",
+     "to": "meta",
+     "label": "sweeper: pending > 10 min?",
+     "style": "self",
+     "note": "A periodic job looks for rows that should have been processed by now."
+    },
+    {
+     "from": "api",
+     "to": "store",
+     "label": "HEAD videos/v_77/original",
+     "note": "The object is there, so it was the event that went missing, not the upload."
+    },
+    {
+     "from": "api",
+     "to": "q",
+     "label": "enqueue v_77 again",
+     "style": "async",
+     "note": "Workers are idempotent by key; if the late event also arrives, the second run is a no-op."
+    }
+   ]
+  },
+  {
+   "name": "Complete sent twice",
+   "tone": "edge",
+   "summary": "The app's complete call times out and is retried: the API treats an already-uploaded video as success.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "api",
+     "label": "complete [ETags]",
+     "note": "First call."
+    },
+    {
+     "from": "api",
+     "to": "store",
+     "label": "complete multipart",
+     "note": "Succeeds."
+    },
+    {
+     "from": "api",
+     "to": "meta",
+     "label": "UPDATE v_77 SET status = uploaded",
+     "note": "Recorded."
+    },
+    {
+     "from": "api",
+     "to": "app",
+     "label": "200",
+     "style": "lost",
+     "note": "Lost on the network."
+    },
+    {
+     "from": "app",
+     "to": "api",
+     "label": "complete [ETags] (retry)",
+     "note": "Same video id."
+    },
+    {
+     "from": "api",
+     "to": "meta",
+     "label": "status already uploaded",
+     "style": "self",
+     "note": "The upload id no longer exists in the store, but the row says the work is done."
+    },
+    {
+     "from": "api",
+     "to": "app",
+     "label": "200 (same answer)",
+     "style": "reply",
+     "note": "Retry-safe: no error and no second object."
+    }
+   ]
+  },
+  {
+   "name": "Risk: wrong file",
+   "tone": "risk",
+   "summary": "A client claims a 600 MB video and sends a 4 GB executable; conditions in the signature and a check in the worker stop it.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "api",
+     "label": "POST /uploads {600 MB, video/mp4}",
+     "note": "What the client claims."
+    },
+    {
+     "from": "api",
+     "to": "app",
+     "label": "URLs with size and type conditions",
+     "style": "reply",
+     "note": "The signature pins content-type and a content-length range."
+    },
+    {
+     "from": "app",
+     "to": "store",
+     "label": "PUT 4 GB with another type",
+     "style": "error",
+     "note": "Doesn't match what was signed."
+    },
+    {
+     "from": "store",
+     "to": "app",
+     "label": "403 signature mismatch",
+     "style": "error",
+     "note": "Rejected before it is stored."
+    },
+    {
+     "from": "store",
+     "to": "q",
+     "label": "ObjectCreated (a file that passed)",
+     "style": "async",
+     "note": "Anything that does get in is checked again downstream."
+    },
+    {
+     "from": "q",
+     "to": "meta",
+     "label": "worker: magic bytes not video → rejected",
+     "note": "Never trust the extension: the worker sniffs the content, quarantines it and marks the row rejected."
+    }
+   ]
+  }
+ ]
+}

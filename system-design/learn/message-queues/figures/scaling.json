@@ -1,0 +1,532 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the order pipeline: from calls to partitioned queues",
+ "caption": "Each stage removes the previous bottleneck and adds an operational cost; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: synchronous calls",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Shoppers",
+   "x": 0,
+   "y": 130
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Checkout API",
+   "sub": "calls all 3",
+   "x": 260,
+   "y": 130
+  },
+  {
+   "id": "p",
+   "kind": "external",
+   "label": "Payment",
+   "x": 520,
+   "y": 0
+  },
+  {
+   "id": "i",
+   "kind": "sql",
+   "label": "Inventory DB",
+   "x": 520,
+   "y": 130
+  },
+  {
+   "id": "m",
+   "kind": "external",
+   "label": "Email",
+   "x": 520,
+   "y": 260
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "p"
+  },
+  {
+   "from": "api",
+   "to": "i"
+  },
+  {
+   "from": "api",
+   "to": "m"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Checkout calls payment, inventory and email one after another before it answers.",
+   "nodes": [
+    "c",
+    "api"
+   ],
+   "edges": [
+    "c>api",
+    "api>p",
+    "api>i",
+    "api>m"
+   ]
+  },
+  {
+   "text": "Latency is the sum of all three (about 1.5 s), and availability is their product: three 99.9% dependencies make a 99.7% checkout.",
+   "nodes": [
+    "p",
+    "i",
+    "m"
+   ],
+   "edges": [
+    "api>p",
+    "api>i",
+    "api>m"
+   ]
+  },
+  {
+   "text": "A slow email provider holds checkout threads, so at peak the shop fails because of a receipt.",
+   "nodes": [
+    "m",
+    "api"
+   ],
+   "edges": [
+    "api>m"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: one queue + workers",
+   "tone": "scale",
+   "summary": "Take the side effects out of the request: checkout gets fast and survives a down dependency, but every job type shares one line.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 130
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Checkout API",
+     "x": 250,
+     "y": 130
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Jobs queue",
+     "sub": "all job types",
+     "x": 500,
+     "y": 130
+    },
+    {
+     "id": "w",
+     "kind": "worker",
+     "label": "Worker pool",
+     "sub": "fixed: 10",
+     "x": 750,
+     "y": 130
+    },
+    {
+     "id": "p",
+     "kind": "external",
+     "label": "Payment",
+     "x": 1000,
+     "y": 0
+    },
+    {
+     "id": "i",
+     "kind": "sql",
+     "label": "Inventory DB",
+     "x": 1000,
+     "y": 130
+    },
+    {
+     "id": "m",
+     "kind": "external",
+     "label": "Email",
+     "x": 1000,
+     "y": 260
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "q",
+     "label": "enqueue 3 jobs"
+    },
+    {
+     "from": "q",
+     "to": "w"
+    },
+    {
+     "from": "w",
+     "to": "p"
+    },
+    {
+     "from": "w",
+     "to": "i"
+    },
+    {
+     "from": "w",
+     "to": "m"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Checkout writes the order and enqueues the jobs: about 50 ms, and it no longer fails when email is down.",
+     "nodes": [
+      "c",
+      "api",
+      "q"
+     ],
+     "edges": [
+      "c>api",
+      "api>q"
+     ]
+    },
+    {
+     "text": "One pool of 10 workers takes any job type, with ack, retries and a DLQ.",
+     "nodes": [
+      "q",
+      "w"
+     ],
+     "edges": [
+      "q>w",
+      "w>p",
+      "w>i",
+      "w>m"
+     ]
+    },
+    {
+     "text": "Cost: one shared queue. When the email provider slows down, email jobs occupy the workers and payments wait behind them (head-of-line blocking).",
+     "nodes": [
+      "w",
+      "m",
+      "q"
+     ],
+     "edges": [
+      "w>m"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: a queue per concern",
+   "tone": "scale",
+   "summary": "Split the work by concern and autoscale each pool, so a slow dependency only backs up its own queue.",
+   "nodes": [
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Checkout API",
+     "x": 0,
+     "y": 130
+    },
+    {
+     "id": "x",
+     "kind": "stream",
+     "label": "Order events",
+     "sub": "fan-out",
+     "x": 230,
+     "y": 130
+    },
+    {
+     "id": "qp",
+     "kind": "queue",
+     "label": "payment queue",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "qi",
+     "kind": "queue",
+     "label": "inventory queue",
+     "x": 460,
+     "y": 130
+    },
+    {
+     "id": "qm",
+     "kind": "queue",
+     "label": "email queue",
+     "x": 460,
+     "y": 260
+    },
+    {
+     "id": "wp",
+     "kind": "worker",
+     "label": "Payment workers",
+     "sub": "2–20",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "wi",
+     "kind": "worker",
+     "label": "Stock workers",
+     "sub": "2–8",
+     "x": 690,
+     "y": 130
+    },
+    {
+     "id": "wm",
+     "kind": "worker",
+     "label": "Email workers",
+     "sub": "1–30",
+     "x": 690,
+     "y": 260
+    },
+    {
+     "id": "as",
+     "kind": "scheduler",
+     "label": "Autoscaler",
+     "sub": "on age of oldest",
+     "x": 920,
+     "y": 130
+    }
+   ],
+   "edges": [
+    {
+     "from": "api",
+     "to": "x",
+     "label": "OrderPlaced"
+    },
+    {
+     "from": "x",
+     "to": "qp"
+    },
+    {
+     "from": "x",
+     "to": "qi"
+    },
+    {
+     "from": "x",
+     "to": "qm"
+    },
+    {
+     "from": "qp",
+     "to": "wp"
+    },
+    {
+     "from": "qi",
+     "to": "wi"
+    },
+    {
+     "from": "qm",
+     "to": "wm"
+    },
+    {
+     "from": "as",
+     "to": "wp"
+    },
+    {
+     "from": "as",
+     "to": "wi"
+    },
+    {
+     "from": "as",
+     "to": "wm"
+    }
+   ],
+   "steps": [
+    {
+     "text": "One event fans out into a queue per concern, each with its own workers, retries and DLQ.",
+     "nodes": [
+      "api",
+      "x",
+      "qp",
+      "qi",
+      "qm"
+     ],
+     "edges": [
+      "api>x",
+      "x>qp",
+      "x>qi",
+      "x>qm"
+     ]
+    },
+    {
+     "text": "A slow email provider now only grows the email queue; payments keep flowing.",
+     "nodes": [
+      "qm",
+      "wm",
+      "qp",
+      "wp"
+     ],
+     "edges": [
+      "qm>wm",
+      "qp>wp"
+     ]
+    },
+    {
+     "text": "An autoscaler sizes each pool on the age of its oldest message, within limits the downstream can take.",
+     "nodes": [
+      "as",
+      "wp",
+      "wi",
+      "wm"
+     ],
+     "edges": [
+      "as>wp",
+      "as>wi",
+      "as>wm"
+     ]
+    },
+    {
+     "text": "Cost: more queues, alerts and DLQs to operate, and scaling reacts in minutes, not instantly. There is still no order between events of one order.",
+     "nodes": [
+      "qp",
+      "qi",
+      "qm"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: partitioned, ordered",
+   "tone": "scale",
+   "summary": "When order per entity matters, partition by its key: ordered per order, parallel across orders.",
+   "nodes": [
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Checkout API",
+     "x": 0,
+     "y": 130
+    },
+    {
+     "id": "t",
+     "kind": "stream",
+     "label": "Order events",
+     "sub": "key = order_id",
+     "x": 250,
+     "y": 130
+    },
+    {
+     "id": "p0",
+     "kind": "queue",
+     "label": "Partition 0",
+     "x": 500,
+     "y": 0
+    },
+    {
+     "id": "p1",
+     "kind": "queue",
+     "label": "Partition 1",
+     "x": 500,
+     "y": 130
+    },
+    {
+     "id": "p2",
+     "kind": "queue",
+     "label": "Partition 2",
+     "x": 500,
+     "y": 260
+    },
+    {
+     "id": "c0",
+     "kind": "worker",
+     "label": "Consumer 0",
+     "x": 750,
+     "y": 0
+    },
+    {
+     "id": "c1",
+     "kind": "worker",
+     "label": "Consumer 1",
+     "x": 750,
+     "y": 130
+    },
+    {
+     "id": "c2",
+     "kind": "worker",
+     "label": "Consumer 2",
+     "x": 750,
+     "y": 260
+    }
+   ],
+   "edges": [
+    {
+     "from": "api",
+     "to": "t",
+     "label": "created, paid, cancelled"
+    },
+    {
+     "from": "t",
+     "to": "p0"
+    },
+    {
+     "from": "t",
+     "to": "p1"
+    },
+    {
+     "from": "t",
+     "to": "p2"
+    },
+    {
+     "from": "p0",
+     "to": "c0"
+    },
+    {
+     "from": "p1",
+     "to": "c1"
+    },
+    {
+     "from": "p2",
+     "to": "c2"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Cancellations must not overtake payments. Events are keyed by order id, so every event of one order lands in the same partition (or FIFO group).",
+     "nodes": [
+      "api",
+      "t",
+      "p0",
+      "p1",
+      "p2"
+     ],
+     "edges": [
+      "api>t",
+      "t>p0",
+      "t>p1",
+      "t>p2"
+     ]
+    },
+    {
+     "text": "One consumer per partition processes them in order, and partitions run in parallel.",
+     "nodes": [
+      "c0",
+      "c1",
+      "c2"
+     ],
+     "edges": [
+      "p0>c0",
+      "p1>c1",
+      "p2>c2"
+     ]
+    },
+    {
+     "text": "Cost: parallelism is capped by the partition count, a hot key overloads one consumer, and a poison message blocks its whole partition until it is moved aside.",
+     "nodes": [
+      "p1",
+      "c1"
+     ],
+     "edges": [
+      "p1>c1"
+     ]
+    }
+   ]
+  }
+ ]
+}

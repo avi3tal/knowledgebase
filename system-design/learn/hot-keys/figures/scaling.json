@@ -1,0 +1,358 @@
+{
+ "kind": "architecture",
+ "title": "Scaling for hot keys: from one hot shard to adaptive handling",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: one hot shard",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "API pods",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "s1",
+   "kind": "cache",
+   "label": "Shard 1",
+   "x": 260,
+   "y": 0
+  },
+  {
+   "id": "s2",
+   "kind": "cache",
+   "label": "Shard 2",
+   "sub": "hot key here",
+   "x": 260,
+   "y": 140
+  },
+  {
+   "id": "s3",
+   "kind": "cache",
+   "label": "Shard 3",
+   "x": 260,
+   "y": 280
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "s1"
+  },
+  {
+   "from": "app",
+   "to": "s2",
+   "label": "most reads"
+  },
+  {
+   "from": "app",
+   "to": "s3"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Keys are spread evenly over shards, which works while requests are spread evenly too.",
+   "nodes": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "edges": [
+    "app>s1",
+    "app>s3"
+   ]
+  },
+  {
+   "text": "One key takes a big share of traffic and its shard hits its limit while the others idle. More shards don't help: the key still lives on one.",
+   "nodes": [
+    "s2"
+   ],
+   "edges": [
+    "app>s2"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: read replicas",
+   "tone": "scale",
+   "summary": "Give the hot shard replicas and spread reads of the key over them.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "API pods",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "s2",
+     "kind": "cache",
+     "label": "Shard 2 primary",
+     "sub": "writes",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "r1",
+     "kind": "cache",
+     "label": "Replica A",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "r2",
+     "kind": "cache",
+     "label": "Replica B",
+     "x": 520,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "s2",
+     "label": "writes"
+    },
+    {
+     "from": "app",
+     "to": "r1",
+     "label": "reads"
+    },
+    {
+     "from": "app",
+     "to": "r2",
+     "label": "reads"
+    },
+    {
+     "from": "s2",
+     "to": "r1",
+     "label": "async"
+    },
+    {
+     "from": "s2",
+     "to": "r2",
+     "label": "async"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Reads of the hot key go to any of the replicas: capacity grows by the number of copies.",
+     "nodes": [
+      "app",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "app>r1",
+      "app>r2"
+     ]
+    },
+    {
+     "text": "Cost: replica reads may be slightly stale, writes still hit one primary, and it is a fixed multiplier (×3, not ×100).",
+     "nodes": [
+      "s2"
+     ],
+     "edges": [
+      "app>s2",
+      "s2>r1",
+      "s2>r2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: static hot-key config",
+   "tone": "scale",
+   "summary": "For keys known in advance: local copies in each pod for reads, and split counters for writes.",
+   "nodes": [
+    {
+     "id": "cfg",
+     "kind": "coordinator",
+     "label": "Hot-key config",
+     "sub": "hand-maintained",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "API pods",
+     "sub": "local copy 1 s",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "s1",
+     "kind": "cache",
+     "label": "item:777#0",
+     "x": 260,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "cache",
+     "label": "item:777#1",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "s3",
+     "kind": "cache",
+     "label": "stock:777 parts",
+     "sub": "8 counters",
+     "x": 260,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "cfg",
+     "to": "app"
+    },
+    {
+     "from": "app",
+     "to": "s1",
+     "label": "refill"
+    },
+    {
+     "from": "app",
+     "to": "s2",
+     "label": "refill"
+    },
+    {
+     "from": "app",
+     "to": "s3",
+     "label": "DECR one"
+    }
+   ],
+   "steps": [
+    {
+     "text": "An operator lists the keys of planned events; pods keep those in memory for 1 s.",
+     "nodes": [
+      "cfg",
+      "app"
+     ],
+     "edges": [
+      "cfg>app"
+     ]
+    },
+    {
+     "text": "Refills read one of several copies, and the stock counter is split so writes spread too.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "app>s1",
+      "app>s2",
+      "app>s3"
+     ]
+    },
+    {
+     "text": "Cost: up to 1 s of staleness, and it only covers keys someone thought of. A surprise hit still lands on one shard.",
+     "nodes": [
+      "cfg"
+     ],
+     "edges": [
+      "cfg>app"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: adaptive",
+   "tone": "scale",
+   "summary": "Detect hot keys from live samples and apply local caching, coalescing and splitting automatically.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "API pods",
+     "sub": "local top-K + cache",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "det",
+     "kind": "worker",
+     "label": "Detector",
+     "sub": "global top-K",
+     "x": 260,
+     "y": 0
+    },
+    {
+     "id": "list",
+     "kind": "coordinator",
+     "label": "Hot-key list",
+     "sub": "entries expire",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "sh",
+     "kind": "cache",
+     "label": "Cache cluster",
+     "sub": "copies on demand",
+     "x": 260,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "det",
+     "label": "samples"
+    },
+    {
+     "from": "det",
+     "to": "list"
+    },
+    {
+     "from": "list",
+     "to": "app",
+     "label": "push"
+    },
+    {
+     "from": "app",
+     "to": "sh",
+     "label": "coalesced refills"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Pods report sampled key counts; the detector finds keys far above the rest within seconds.",
+     "nodes": [
+      "app",
+      "det"
+     ],
+     "edges": [
+      "app>det"
+     ]
+    },
+    {
+     "text": "The hot list goes back to every pod, and entries expire when traffic falls.",
+     "nodes": [
+      "list",
+      "app"
+     ],
+     "edges": [
+      "det>list",
+      "list>app"
+     ]
+    },
+    {
+     "text": "Pods serve hot keys locally and send one refill at a time, spread over copies. Cost: another moving part to run and tune, and the seconds before detection are still exposed.",
+     "nodes": [
+      "app",
+      "sh"
+     ],
+     "edges": [
+      "app>sh"
+     ]
+    }
+   ]
+  }
+ ]
+}

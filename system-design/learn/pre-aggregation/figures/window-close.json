@@ -1,0 +1,185 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: one minute window from first click to final row",
+ "caption": "A window opens on its first event, closes when the watermark passes its end plus the allowed lateness, and only then writes its row.",
+ "base_name": "On-time window",
+ "actors": [
+  {
+   "id": "ads",
+   "label": "Ad servers",
+   "kind": "service"
+  },
+  {
+   "id": "st",
+   "label": "Click stream",
+   "kind": "stream"
+  },
+  {
+   "id": "win",
+   "label": "Window state",
+   "kind": "worker"
+  },
+  {
+   "id": "roll",
+   "label": "Rollup store",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "ads",
+   "to": "st",
+   "label": "click ad7 @ 09:14:05",
+   "style": "async"
+  },
+  {
+   "from": "st",
+   "to": "win",
+   "label": "open window (ad7, 09:14)",
+   "style": "async",
+   "note": "The bucket is ts // 60: the window is found from the event time, not the arrival time."
+  },
+  {
+   "from": "st",
+   "to": "win",
+   "label": "more clicks for 09:14",
+   "style": "async",
+   "note": "In-memory count and spend; nothing is written yet."
+  },
+  {
+   "from": "win",
+   "to": "win",
+   "label": "watermark passes 09:15 + 10 s",
+   "style": "self",
+   "note": "The watermark says 'no event older than this is expected any more'."
+  },
+  {
+   "from": "win",
+   "to": "roll",
+   "label": "upsert (ad7, 09:14) = 42 clicks"
+  },
+  {
+   "from": "roll",
+   "to": "win",
+   "label": "ack",
+   "style": "reply",
+   "note": "Only now is the window's state dropped and the checkpoint advanced."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Late click, still allowed",
+   "tone": "edge",
+   "summary": "A phone was offline for a few seconds. Its click lands inside the allowed lateness and updates the open window.",
+   "messages": [
+    {
+     "from": "st",
+     "to": "win",
+     "label": "clicks for 09:14",
+     "style": "async"
+    },
+    {
+     "from": "ads",
+     "to": "st",
+     "label": "click ad7 @ 09:14:55, arrives 09:15:06",
+     "style": "async",
+     "note": "Event time 09:14, arrival time 09:15."
+    },
+    {
+     "from": "st",
+     "to": "win",
+     "label": "add to (ad7, 09:14)",
+     "style": "async",
+     "note": "The watermark has not passed 09:15 + 10 s yet, so the window is still open."
+    },
+    {
+     "from": "win",
+     "to": "win",
+     "label": "watermark passes 09:15:10",
+     "style": "self"
+    },
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "upsert (ad7, 09:14), late click included"
+    }
+   ]
+  },
+  {
+   "name": "Straggler after close",
+   "tone": "edge",
+   "summary": "A click shows up an hour late. Reopening windows forever would keep unbounded state; route it aside and let the nightly recon count it.",
+   "messages": [
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "upsert (ad7, 09:14), final for streaming"
+    },
+    {
+     "from": "ads",
+     "to": "st",
+     "label": "click ad7 @ 09:14:30, arrives 10:20",
+     "style": "async",
+     "note": "Buffered on a device that was offline."
+    },
+    {
+     "from": "st",
+     "to": "win",
+     "label": "event for a closed window",
+     "style": "async"
+    },
+    {
+     "from": "win",
+     "to": "win",
+     "label": "side output: count as late",
+     "style": "self",
+     "note": "A late-events metric; the raw archive still has the event."
+    },
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "no change tonight; recon will include it",
+     "style": "lost",
+     "note": "The streaming row stays slightly low until the batch recompute overwrites it."
+    }
+   ]
+  },
+  {
+   "name": "Write ack lost",
+   "tone": "failure",
+   "summary": "The upsert succeeds but its ack is lost. The retry writes the same absolute value, so the row is still right.",
+   "messages": [
+    {
+     "from": "win",
+     "to": "win",
+     "label": "watermark passes 09:15 + 10 s",
+     "style": "self"
+    },
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "upsert (ad7, 09:14) = 42 clicks"
+    },
+    {
+     "from": "roll",
+     "to": "win",
+     "label": "ack",
+     "style": "lost",
+     "note": "Network blip: the write happened, the reply did not arrive."
+    },
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "retry: upsert (ad7, 09:14) = 42 clicks",
+     "note": "Setting 42 twice is still 42. An 'add 42' write would now say 84."
+    },
+    {
+     "from": "roll",
+     "to": "win",
+     "label": "ack",
+     "style": "reply"
+    }
+   ]
+  }
+ ]
+}

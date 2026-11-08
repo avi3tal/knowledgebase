@@ -1,0 +1,458 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the cache tier: from hash % N to a replicated, zone-aware ring",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: hash % N",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "sub": "hash(k) % 3",
+   "x": 0,
+   "y": 135
+  },
+  {
+   "id": "c1",
+   "kind": "cache",
+   "label": "Cache 0",
+   "x": 280,
+   "y": 0
+  },
+  {
+   "id": "c2",
+   "kind": "cache",
+   "label": "Cache 1",
+   "x": 280,
+   "y": 135
+  },
+  {
+   "id": "c3",
+   "kind": "cache",
+   "label": "Cache 2",
+   "x": 280,
+   "y": 270
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Catalog DB",
+   "x": 560,
+   "y": 135
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "c1"
+  },
+  {
+   "from": "app",
+   "to": "c2"
+  },
+  {
+   "from": "app",
+   "to": "c3"
+  },
+  {
+   "from": "c2",
+   "to": "db",
+   "label": "misses"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Each app server computes hash(key) % 3: stateless, even, nothing to configure.",
+   "nodes": [
+    "app",
+    "c1",
+    "c2",
+    "c3"
+   ],
+   "edges": [
+    "app>c1",
+    "app>c2",
+    "app>c3"
+   ]
+  },
+  {
+   "text": "Change N to 4 and most keys get a new owner at once. The cache is effectively empty and every miss lands on the DB.",
+   "nodes": [
+    "c2",
+    "db"
+   ],
+   "edges": [
+    "c2>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: hash ring",
+   "tone": "scale",
+   "summary": "Put nodes on a ring so a change only moves the keys on one arc; the ring becomes shared config.",
+   "nodes": [
+    {
+     "id": "cfg",
+     "kind": "coordinator",
+     "label": "Membership",
+     "sub": "ring config",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "ring, 1 token/node",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "c1",
+     "kind": "cache",
+     "label": "Cache A",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "c2",
+     "kind": "cache",
+     "label": "Cache B",
+     "x": 280,
+     "y": 135
+    },
+    {
+     "id": "c3",
+     "kind": "cache",
+     "label": "Cache C",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Catalog DB",
+     "x": 560,
+     "y": 135
+    }
+   ],
+   "edges": [
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring"
+    },
+    {
+     "from": "app",
+     "to": "c1"
+    },
+    {
+     "from": "app",
+     "to": "c2"
+    },
+    {
+     "from": "app",
+     "to": "c3"
+    },
+    {
+     "from": "c2",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Nodes and keys hash onto one circle; a key belongs to the next node clockwise.",
+     "nodes": [
+      "app",
+      "c1",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "app>c1",
+      "app>c2",
+      "app>c3"
+     ]
+    },
+    {
+     "text": "Adding or removing a node moves only about 1/N of the keys. The ring is now config every app server must agree on.",
+     "nodes": [
+      "cfg",
+      "app"
+     ],
+     "edges": [
+      "cfg>app"
+     ]
+    },
+    {
+     "text": "Cost: with one point per node, arcs are uneven, and a dead node hands its whole arc to a single neighbour.",
+     "nodes": [
+      "c2",
+      "db"
+     ],
+     "edges": [
+      "c2>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: virtual nodes",
+   "tone": "scale",
+   "summary": "Many tokens per node even out the shares, spread a failure over everyone, and let big machines take more.",
+   "nodes": [
+    {
+     "id": "cfg",
+     "kind": "coordinator",
+     "label": "Membership",
+     "sub": "ring config",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "ring, 128 vnodes",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "c1",
+     "kind": "cache",
+     "label": "Cache A",
+     "sub": "128 tokens",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "c2",
+     "kind": "cache",
+     "label": "Cache B",
+     "sub": "128 tokens",
+     "x": 280,
+     "y": 135
+    },
+    {
+     "id": "c3",
+     "kind": "cache",
+     "label": "Cache C",
+     "sub": "256 tokens (2×)",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Catalog DB",
+     "x": 560,
+     "y": 135
+    }
+   ],
+   "edges": [
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring"
+    },
+    {
+     "from": "app",
+     "to": "c1"
+    },
+    {
+     "from": "app",
+     "to": "c2"
+    },
+    {
+     "from": "app",
+     "to": "c3"
+    },
+    {
+     "from": "c2",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each node owns 128 small arcs instead of one big one, so shares are close to even.",
+     "nodes": [
+      "c1",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "app>c1",
+      "app>c2",
+      "app>c3"
+     ]
+    },
+    {
+     "text": "A node with twice the memory simply gets twice the tokens.",
+     "nodes": [
+      "c3"
+     ],
+     "edges": [
+      "app>c3"
+     ]
+    },
+    {
+     "text": "Cost: a bigger ring to ship and search (still microseconds) and more config. One node is still the only copy of its keys.",
+     "nodes": [
+      "cfg",
+      "app",
+      "db"
+     ],
+     "edges": [
+      "cfg>app",
+      "c2>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: replicas across zones",
+   "tone": "scale",
+   "summary": "Store each key on two nodes in different zones, so losing a node or a whole zone doesn't empty the cache.",
+   "nodes": [
+    {
+     "id": "cfg",
+     "kind": "coordinator",
+     "label": "Membership",
+     "sub": "zone-aware ring",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "walks ring, RF 2",
+     "x": 0,
+     "y": 195
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Catalog DB",
+     "x": 0,
+     "y": 390
+    },
+    {
+     "id": "a1",
+     "kind": "cache",
+     "label": "Cache A1",
+     "sub": "zone a",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "b1",
+     "kind": "cache",
+     "label": "Cache B1",
+     "sub": "zone b",
+     "x": 280,
+     "y": 130
+    },
+    {
+     "id": "a2",
+     "kind": "cache",
+     "label": "Cache A2",
+     "sub": "zone a",
+     "x": 280,
+     "y": 260
+    },
+    {
+     "id": "b2",
+     "kind": "cache",
+     "label": "Cache B2",
+     "sub": "zone b",
+     "x": 280,
+     "y": 390
+    }
+   ],
+   "edges": [
+    {
+     "from": "cfg",
+     "to": "app"
+    },
+    {
+     "from": "app",
+     "to": "a1",
+     "label": "primary"
+    },
+    {
+     "from": "app",
+     "to": "b1",
+     "label": "replica"
+    },
+    {
+     "from": "app",
+     "to": "a2"
+    },
+    {
+     "from": "app",
+     "to": "b2"
+    },
+    {
+     "from": "app",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The ring walk picks the first node clockwise, then keeps walking until it finds a node in another zone.",
+     "nodes": [
+      "cfg",
+      "app",
+      "a1",
+      "b1"
+     ],
+     "edges": [
+      "cfg>app",
+      "app>a1",
+      "app>b1"
+     ]
+    },
+    {
+     "text": "Writes go to both owners; reads try the primary and fall back to the replica.",
+     "nodes": [
+      "a1",
+      "b1"
+     ],
+     "edges": [
+      "app>a1",
+      "app>b1"
+     ]
+    },
+    {
+     "text": "A whole zone can go dark and every key still has a warm copy; the DB stays protected.",
+     "fail": [
+      "a1",
+      "a2"
+     ],
+     "nodes": [
+      "b1",
+      "b2",
+      "db"
+     ],
+     "edges": [
+      "app>b2",
+      "app>db"
+     ]
+    },
+    {
+     "text": "Cost: twice the memory, two writes per set, and the two copies can briefly disagree after an invalidation.",
+     "nodes": [
+      "a2",
+      "b2"
+     ],
+     "edges": [
+      "app>a2",
+      "app>b2"
+     ]
+    }
+   ]
+  }
+ ]
+}

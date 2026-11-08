@@ -1,0 +1,358 @@
+{
+ "kind": "architecture",
+ "title": "The system: an online shop, balanced at every tier",
+ "caption": "DNS picks the region, L4 spreads connections, L7 routes requests by path; every service behind it is a stateless pool.",
+ "base_name": "Normal traffic",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "Shoppers",
+   "sub": "web + mobile",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "dns",
+   "kind": "dns",
+   "label": "GeoDNS / GSLB",
+   "sub": "picks a region",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "regb",
+   "kind": "load-balancer",
+   "label": "Region B stack",
+   "sub": "warm, same layout",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "l4",
+   "kind": "load-balancer",
+   "label": "L4 load balancer",
+   "sub": "TCP, one VIP",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "l7",
+   "kind": "load-balancer",
+   "label": "L7 proxy pool",
+   "sub": "TLS + routing",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "web",
+   "kind": "service",
+   "label": "Web frontend",
+   "sub": "/ and /product/*",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "cart",
+   "kind": "service",
+   "label": "Checkout API",
+   "sub": "/api/cart/*",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "search",
+   "kind": "service",
+   "label": "Search API",
+   "sub": "/api/search",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Orders DB",
+   "sub": "primary + replica",
+   "x": 920,
+   "y": 70
+  },
+  {
+   "id": "sess",
+   "kind": "cache",
+   "label": "Session store",
+   "sub": "carts, logins",
+   "x": 920,
+   "y": 210
+  },
+  {
+   "id": "idx",
+   "kind": "search",
+   "label": "Search index",
+   "x": 920,
+   "y": 350
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "dns",
+   "label": "resolve shop.com"
+  },
+  {
+   "from": "dns",
+   "to": "regb",
+   "label": "failover"
+  },
+  {
+   "from": "users",
+   "to": "l4",
+   "label": "HTTPS"
+  },
+  {
+   "from": "l4",
+   "to": "l7",
+   "label": "5-tuple hash"
+  },
+  {
+   "from": "l7",
+   "to": "web"
+  },
+  {
+   "from": "l7",
+   "to": "cart"
+  },
+  {
+   "from": "l7",
+   "to": "search"
+  },
+  {
+   "from": "cart",
+   "to": "db"
+  },
+  {
+   "from": "cart",
+   "to": "sess"
+  },
+  {
+   "from": "search",
+   "to": "idx"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The browser resolves shop.com. GeoDNS answers with the virtual IP (VIP) of the nearest healthy region, with a short TTL (30–60 s).",
+   "nodes": [
+    "users",
+    "dns"
+   ],
+   "edges": [
+    "users>dns"
+   ]
+  },
+  {
+   "text": "The L4 load balancer owns that VIP. It never reads HTTP: it hashes each TCP connection (source/dest IP and port) to one L7 proxy, at millions of connections per second.",
+   "nodes": [
+    "users",
+    "l4",
+    "l7"
+   ],
+   "edges": [
+    "users>l4",
+    "l4>l7"
+   ]
+  },
+  {
+   "text": "The L7 proxies terminate TLS and read the request: / and /product/* go to the web pool, /api/cart/* to checkout, /api/search to search.",
+   "nodes": [
+    "l7",
+    "web",
+    "cart",
+    "search"
+   ],
+   "edges": [
+    "l7>web",
+    "l7>cart",
+    "l7>search"
+   ]
+  },
+  {
+   "text": "Inside each pool the proxy picks an instance by least outstanding requests, and health checks every few seconds keep sick instances out of rotation.",
+   "nodes": [
+    "l7",
+    "cart"
+   ],
+   "edges": [
+    "l7>cart"
+   ]
+  },
+  {
+   "text": "Services are stateless: carts and logins live in the session store and orders in the database, so any instance can serve any request.",
+   "nodes": [
+    "cart",
+    "sess",
+    "db",
+    "search",
+    "idx"
+   ],
+   "edges": [
+    "cart>sess",
+    "cart>db",
+    "search>idx"
+   ]
+  },
+  {
+   "text": "A second region runs the same stack. The GSLB health-checks both and can move users there in about a minute.",
+   "nodes": [
+    "dns",
+    "regb"
+   ],
+   "edges": [
+    "dns>regb"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Flash sale",
+   "tone": "edge",
+   "summary": "10× traffic in a minute: L4 barely notices, the L7 pool and checkout autoscale, and least-requests keeps new instances from being flooded.",
+   "steps": [
+    {
+     "text": "A sale starts: requests jump from 5 000/s to 50 000/s within a minute.",
+     "nodes": [
+      "users",
+      "l4"
+     ],
+     "edges": [
+      "users>l4"
+     ]
+    },
+    {
+     "text": "L4 forwards packets and has headroom; the L7 pool scales out on CPU (TLS handshakes are the cost).",
+     "nodes": [
+      "l4",
+      "l7"
+     ],
+     "edges": [
+      "l4>l7"
+     ]
+    },
+    {
+     "text": "Checkout autoscales. New instances get a slow start so cold caches aren't hit with full load at once.",
+     "nodes": [
+      "l7",
+      "cart"
+     ],
+     "edges": [
+      "l7>cart"
+     ]
+    },
+    {
+     "text": "The session store and DB are the real limit: the proxy sheds /api/search first to protect checkout.",
+     "nodes": [
+      "sess",
+      "db",
+      "search"
+     ],
+     "edges": [
+      "cart>sess",
+      "cart>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Region A outage",
+   "tone": "failure",
+   "summary": "The whole region fails: GSLB health checks notice and DNS points users at region B. Recovery is bounded by the DNS TTL.",
+   "steps": [
+    {
+     "text": "A power failure takes out region A's load balancers.",
+     "fail": [
+      "l4",
+      "l7"
+     ],
+     "nodes": [
+      "users"
+     ],
+     "edges": [
+      "users>l4"
+     ]
+    },
+    {
+     "text": "The GSLB's health checks to region A's VIP fail three times in a row (~30 s).",
+     "fail": [
+      "l4"
+     ],
+     "nodes": [
+      "dns"
+     ]
+    },
+    {
+     "text": "DNS now answers with region B's VIP; users move as their cached answer expires.",
+     "nodes": [
+      "users",
+      "dns",
+      "regb"
+     ],
+     "edges": [
+      "users>dns",
+      "dns>regb"
+     ]
+    },
+    {
+     "text": "Region B takes double load: it must be sized for it, and its database must be a promoted replica.",
+     "nodes": [
+      "regb"
+     ],
+     "edges": [
+      "dns>regb"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Rolling deploy",
+   "tone": "edge",
+   "summary": "Ship checkout v2 with zero errors: drain an instance, upgrade, health-check it back in, repeat. The load balancer is what makes this safe.",
+   "steps": [
+    {
+     "text": "Mark one checkout instance as draining: the proxy sends it no new requests.",
+     "nodes": [
+      "l7",
+      "cart"
+     ],
+     "edges": [
+      "l7>cart"
+     ]
+    },
+    {
+     "text": "In-flight requests finish (up to a 30 s drain timeout), then the instance is upgraded.",
+     "nodes": [
+      "cart"
+     ]
+    },
+    {
+     "text": "Passing health checks re-admit it with slow start; repeat for the next instance.",
+     "nodes": [
+      "l7",
+      "cart"
+     ],
+     "edges": [
+      "l7>cart"
+     ]
+    },
+    {
+     "text": "Sessions are in the session store, so no shopper loses a cart.",
+     "nodes": [
+      "cart",
+      "sess"
+     ],
+     "edges": [
+      "cart>sess"
+     ]
+    }
+   ]
+  }
+ ]
+}

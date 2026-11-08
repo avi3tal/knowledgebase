@@ -1,0 +1,379 @@
+{
+ "kind": "architecture",
+ "title": "The board at minute 45: a promo-code service, end to end",
+ "caption": "A finished interview design: hot validate reads come from a cache, contended redeems are one atomic write, and analytics stays off the checkout path.",
+ "base_name": "The final design",
+ "nodes": [
+  {
+   "id": "shop",
+   "kind": "client",
+   "label": "Shoppers",
+   "sub": "cart + checkout",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "API gateway",
+   "sub": "auth, rate limits",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "fraud",
+   "kind": "service",
+   "label": "Fraud check",
+   "sub": "velocity, device",
+   "x": 230,
+   "y": 280
+  },
+  {
+   "id": "val",
+   "kind": "service",
+   "label": "Validate API",
+   "sub": "1 200 reads/s",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "red",
+   "kind": "service",
+   "label": "Redeem API",
+   "sub": "~25 writes/s",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Redemption events",
+   "sub": "async",
+   "x": 460,
+   "y": 420
+  },
+  {
+   "id": "cache",
+   "kind": "cache",
+   "label": "Code cache",
+   "sub": "rules, hot codes",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Coupon DB",
+   "sub": "codes + usage",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "an",
+   "kind": "worker",
+   "label": "Analytics worker",
+   "x": 690,
+   "y": 420
+  },
+  {
+   "id": "mkt",
+   "kind": "client",
+   "label": "Marketers",
+   "sub": "create campaigns",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "camp",
+   "kind": "service",
+   "label": "Campaign API",
+   "sub": "rules, limits",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "stats",
+   "kind": "sql",
+   "label": "Campaign stats",
+   "sub": "per code, per hour",
+   "x": 920,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "shop",
+   "to": "gw"
+  },
+  {
+   "from": "gw",
+   "to": "val",
+   "label": "preview"
+  },
+  {
+   "from": "gw",
+   "to": "red",
+   "label": "at checkout"
+  },
+  {
+   "from": "val",
+   "to": "cache"
+  },
+  {
+   "from": "val",
+   "to": "db",
+   "label": "miss"
+  },
+  {
+   "from": "red",
+   "to": "fraud"
+  },
+  {
+   "from": "red",
+   "to": "db",
+   "label": "atomic update"
+  },
+  {
+   "from": "red",
+   "to": "q"
+  },
+  {
+   "from": "q",
+   "to": "an"
+  },
+  {
+   "from": "an",
+   "to": "stats"
+  },
+  {
+   "from": "mkt",
+   "to": "camp"
+  },
+  {
+   "from": "camp",
+   "to": "db"
+  },
+  {
+   "from": "camp",
+   "to": "cache",
+   "label": "invalidate"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Minute 5, scope agreed: marketers create campaigns; shoppers validate a code in the cart and redeem it at checkout; codes have usage limits; abuse is blocked; marketers see results. About 1 200 validates/s, 10× on Black Friday, ~25 redeems/s. Correctness on redeem beats latency.",
+   "nodes": [
+    "shop",
+    "mkt"
+   ],
+   "edges": [
+    "shop>gw"
+   ]
+  },
+  {
+   "text": "Campaign path: a marketer defines the code, discount, dates and limits. The Campaign API writes the source of truth and invalidates the cached rule.",
+   "nodes": [
+    "mkt",
+    "camp",
+    "db",
+    "cache"
+   ],
+   "edges": [
+    "mkt>camp",
+    "camp>db",
+    "camp>cache"
+   ]
+  },
+  {
+   "text": "Validate is the hot read and only a preview: the Validate API answers from the code cache (rules plus an approximate remaining count) and reads the DB on a miss. It never changes a counter.",
+   "nodes": [
+    "gw",
+    "val",
+    "cache",
+    "db"
+   ],
+   "edges": [
+    "gw>val",
+    "val>cache",
+    "val>db"
+   ]
+  },
+  {
+   "text": "Redeem is the contended write: run the fraud check, then one atomic conditional update (uses < limit) in the same transaction as the order. Exactly one decision per use, no oversell.",
+   "nodes": [
+    "gw",
+    "red",
+    "fraud",
+    "db"
+   ],
+   "edges": [
+    "gw>red",
+    "red>fraud",
+    "red>db"
+   ]
+  },
+  {
+   "text": "Reporting is a requirement but not a latency one: each redemption is an event on a queue, and a worker aggregates per code per hour. Checkout never waits for analytics.",
+   "nodes": [
+    "red",
+    "q",
+    "an",
+    "stats"
+   ],
+   "edges": [
+    "red>q",
+    "q>an",
+    "an>stats"
+   ]
+  },
+  {
+   "text": "Wrap-up (minute 42): the first bottleneck is one hot code's counter row; the failure plan covers the cache and the DB; watch redeem p99, rejected redeems and fraud blocks.",
+   "nodes": [
+    "db",
+    "cache",
+    "red"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Black Friday spike",
+   "tone": "edge",
+   "summary": "10× validates are cheap cache reads, but one doorbuster code concentrates thousands of redeems on one row: that is the deep dive to offer.",
+   "steps": [
+    {
+     "text": "Midnight: validates jump to 12 000/s and a \"first 10 000 orders\" code goes live.",
+     "nodes": [
+      "shop",
+      "gw"
+     ],
+     "edges": [
+      "shop>gw"
+     ]
+    },
+    {
+     "text": "The gateway rate-limits per customer; validates are served from the cache.",
+     "nodes": [
+      "gw",
+      "val",
+      "cache"
+     ],
+     "edges": [
+      "gw>val",
+      "val>cache"
+     ]
+    },
+    {
+     "text": "2 000 redeem attempts/s hit the same code row: every update waits on one row lock.",
+     "nodes": [
+      "red",
+      "db"
+     ],
+     "edges": [
+      "gw>red",
+      "red>db"
+     ]
+    },
+    {
+     "text": "Events spike too, but the queue absorbs them; stats lag by a minute.",
+     "nodes": [
+      "q",
+      "an"
+     ],
+     "edges": [
+      "red>q",
+      "q>an"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Code cache down",
+   "tone": "failure",
+   "summary": "Validate degrades, redeem doesn't: the DB is the source of truth, so losing the cache costs latency and DB load, never correctness.",
+   "steps": [
+    {
+     "text": "The code-cache cluster fails during peak.",
+     "fail": [
+      "cache",
+      "val>cache"
+     ],
+     "nodes": [
+      "val"
+     ]
+    },
+    {
+     "text": "Validates fall through to the DB (read replicas): size them for the miss storm, or shed load.",
+     "fail": [
+      "cache"
+     ],
+     "nodes": [
+      "val",
+      "db"
+     ],
+     "edges": [
+      "val>db"
+     ]
+    },
+    {
+     "text": "Under pressure, the cart shows \"code will be checked at checkout\"; redeem still makes the real decision.",
+     "fail": [
+      "cache"
+     ],
+     "nodes": [
+      "red",
+      "db"
+     ],
+     "edges": [
+      "gw>red",
+      "red>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Twist: one per customer",
+   "tone": "edge",
+   "summary": "At minute 30 the interviewer adds \"one use per customer\". Absorb it at one box: a uniqueness constraint in the redeem transaction.",
+   "steps": [
+    {
+     "text": "Interviewer: \"Each customer may use a code only once.\"",
+     "nodes": [
+      "shop"
+     ],
+     "edges": [
+      "shop>gw"
+     ]
+    },
+    {
+     "text": "Redeem inserts (code_id, customer_id) into a redemptions table with a unique key, in the same transaction as the counter update.",
+     "nodes": [
+      "red",
+      "db"
+     ],
+     "edges": [
+      "red>db"
+     ]
+    },
+    {
+     "text": "A second attempt violates the key and fails cleanly. The fraud check catches one person with many accounts (device, card, address).",
+     "nodes": [
+      "red",
+      "fraud"
+     ],
+     "edges": [
+      "red>fraud"
+     ]
+    },
+    {
+     "text": "Say what didn't change: validate, campaigns and analytics.",
+     "nodes": [
+      "val",
+      "camp",
+      "q"
+     ]
+    }
+   ]
+  }
+ ]
+}

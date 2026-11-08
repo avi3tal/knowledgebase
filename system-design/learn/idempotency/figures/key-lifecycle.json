@@ -1,0 +1,379 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: the life of one idempotency key",
+ "caption": "A key is claimed, worked under a lease, finished with its stored response, replayed on every retry, and finally expired.",
+ "base_name": "First attempt",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Request + key",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "look",
+   "type": "decision",
+   "label": "Key row?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "state",
+   "type": "decision",
+   "label": "Status?",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "replay",
+   "type": "end",
+   "label": "Replay response",
+   "col": 2,
+   "row": 1,
+   "tone": "good"
+  },
+  {
+   "id": "claim",
+   "type": "step",
+   "label": "Claim: in_progress",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "lease",
+   "type": "decision",
+   "label": "Lease expired?",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "wait",
+   "type": "end",
+   "label": "409 retry later",
+   "col": 2,
+   "row": 2,
+   "tone": "bad"
+  },
+  {
+   "id": "charge",
+   "type": "step",
+   "label": "Charge PSP + key",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "known",
+   "type": "decision",
+   "label": "Outcome known?",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "pend",
+   "type": "end",
+   "label": "Leave pending",
+   "col": 1,
+   "row": 4
+  },
+  {
+   "id": "store",
+   "type": "step",
+   "label": "Store response",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "reply",
+   "type": "end",
+   "label": "201 to client",
+   "col": 0,
+   "row": 6,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "look"
+  },
+  {
+   "from": "look",
+   "to": "claim",
+   "label": "none"
+  },
+  {
+   "from": "look",
+   "to": "state",
+   "label": "found"
+  },
+  {
+   "from": "state",
+   "to": "replay",
+   "label": "done"
+  },
+  {
+   "from": "state",
+   "to": "lease",
+   "label": "in_progress"
+  },
+  {
+   "from": "lease",
+   "to": "wait",
+   "label": "no"
+  },
+  {
+   "from": "lease",
+   "to": "charge",
+   "label": "yes"
+  },
+  {
+   "from": "claim",
+   "to": "charge"
+  },
+  {
+   "from": "charge",
+   "to": "known"
+  },
+  {
+   "from": "known",
+   "to": "store",
+   "label": "yes"
+  },
+  {
+   "from": "known",
+   "to": "pend",
+   "label": "no"
+  },
+  {
+   "from": "store",
+   "to": "reply"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The request arrives with key 7f3a. Look it up in the key table.",
+   "nodes": [
+    "in",
+    "look"
+   ],
+   "edges": [
+    "in>look"
+   ]
+  },
+  {
+   "text": "No row: insert it as in_progress with the request hash and a 30 s lease. The unique index makes this the only winner.",
+   "nodes": [
+    "claim"
+   ],
+   "edges": [
+    "look>claim"
+   ]
+  },
+  {
+   "text": "Charge the card and send the key along, so the processor dedups as well.",
+   "nodes": [
+    "charge"
+   ],
+   "edges": [
+    "claim>charge"
+   ]
+  },
+  {
+   "text": "The processor answers: approved (or declined; a decline is an outcome too).",
+   "nodes": [
+    "known"
+   ],
+   "edges": [
+    "charge>known"
+   ]
+  },
+  {
+   "text": "Save the full response with the key and mark it done, in the same transaction as the payment row.",
+   "nodes": [
+    "store",
+    "reply"
+   ],
+   "edges": [
+    "known>store",
+    "store>reply"
+   ]
+  },
+  {
+   "text": "Any later retry finds the row done and gets the stored response byte for byte, until the key expires after 7 days.",
+   "nodes": [
+    "look",
+    "state",
+    "replay"
+   ],
+   "edges": [
+    "look>state",
+    "state>replay"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Crash mid-charge",
+   "tone": "failure",
+   "summary": "The worker dies after calling the processor: the lease lets a retry take over, and the processor's own dedup prevents a second charge.",
+   "steps": [
+    {
+     "text": "Attempt 1 claims the key and calls the processor.",
+     "nodes": [
+      "claim",
+      "charge"
+     ],
+     "edges": [
+      "look>claim",
+      "claim>charge"
+     ]
+    },
+    {
+     "text": "Its pod is killed before it stores anything. The row stays in_progress.",
+     "fail": [
+      "charge",
+      "charge>known"
+     ],
+     "nodes": [
+      "charge"
+     ]
+    },
+    {
+     "text": "The client retries. The row is found, still in_progress.",
+     "nodes": [
+      "look",
+      "state"
+     ],
+     "edges": [
+      "in>look",
+      "look>state",
+      "state>lease"
+     ]
+    },
+    {
+     "text": "The 30 s lease has run out, so this attempt takes over the key.",
+     "nodes": [
+      "lease",
+      "charge"
+     ],
+     "edges": [
+      "lease>charge"
+     ]
+    },
+    {
+     "text": "It charges again with the same key; the processor returns the first charge instead of making a new one. Store and reply.",
+     "nodes": [
+      "known",
+      "store",
+      "reply"
+     ],
+     "edges": [
+      "charge>known",
+      "known>store",
+      "store>reply"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Outcome unknown",
+   "tone": "edge",
+   "summary": "The processor times out: the money may or may not have moved. Don't guess; keep the key pending until the truth arrives.",
+   "steps": [
+    {
+     "text": "Claimed and charging as usual.",
+     "nodes": [
+      "claim",
+      "charge"
+     ],
+     "edges": [
+      "look>claim",
+      "claim>charge"
+     ]
+    },
+    {
+     "text": "The processor call times out after 10 s.",
+     "fail": [
+      "charge>known"
+     ],
+     "nodes": [
+      "known"
+     ],
+     "edges": [
+      "charge>known"
+     ]
+    },
+    {
+     "text": "Marking it failed would invite a retry with a fresh key (double charge); marking it done would be a lie. Leave it pending and tell the app 'processing'.",
+     "nodes": [
+      "pend"
+     ],
+     "edges": [
+      "known>pend"
+     ]
+    },
+    {
+     "text": "The webhook or a status query by key settles it later; only then is the response stored and the key done.",
+     "nodes": [
+      "store"
+     ],
+     "edges": [
+      "known>store"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Concurrent retry",
+   "tone": "edge",
+   "summary": "A double-tap sends two requests 50 ms apart: the second must not wait forever, and must not start a second charge.",
+   "steps": [
+    {
+     "text": "Request A claims the key and starts charging.",
+     "nodes": [
+      "claim",
+      "charge"
+     ],
+     "edges": [
+      "look>claim",
+      "claim>charge"
+     ]
+    },
+    {
+     "text": "Request B arrives with the same key and finds in_progress.",
+     "nodes": [
+      "look",
+      "state"
+     ],
+     "edges": [
+      "in>look",
+      "look>state",
+      "state>lease"
+     ]
+    },
+    {
+     "text": "A's lease is still valid, so B gets 409 with Retry-After: 1 instead of holding a connection.",
+     "nodes": [
+      "lease",
+      "wait"
+     ],
+     "edges": [
+      "lease>wait"
+     ]
+    },
+    {
+     "text": "B retries a second later, finds done, and gets A's response.",
+     "nodes": [
+      "state",
+      "replay"
+     ],
+     "edges": [
+      "look>state",
+      "state>replay"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,424 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the database: from one instance to many primaries",
+ "caption": "Each stage removes the bottleneck of the previous one and gives up a little of 'everything in one box'; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: one instance",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "pg",
+   "kind": "sql",
+   "label": "PostgreSQL",
+   "sub": "one instance",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "bk",
+   "kind": "blob",
+   "label": "Nightly backups",
+   "x": 560,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "pg",
+   "label": "all reads + writes"
+  },
+  {
+   "from": "pg",
+   "to": "bk",
+   "label": "pg_dump"
+  }
+ ],
+ "steps": [
+  {
+   "text": "One instance holds every table: any transaction, join or constraint across the whole data model just works.",
+   "nodes": [
+    "app",
+    "pg"
+   ],
+   "edges": [
+    "app>pg"
+   ]
+  },
+  {
+   "text": "Limits: one machine's writes (~5k–20k/s), reads competing with writes, a few hundred direct connections, and a restore that loses up to a day.",
+   "nodes": [
+    "pg",
+    "bk"
+   ],
+   "edges": [
+    "pg>bk"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: replicas + pooler",
+   "tone": "scale",
+   "summary": "A pooler caps connections and replicas take the reads; still one writer.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "autoscaled",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "pool",
+     "kind": "service",
+     "label": "Pooler",
+     "sub": "PgBouncer pool",
+     "x": 270,
+     "y": 160
+    },
+    {
+     "id": "pri",
+     "kind": "sql",
+     "label": "Primary",
+     "x": 540,
+     "y": 160
+    },
+    {
+     "id": "r1",
+     "kind": "sql",
+     "label": "Replica 1",
+     "x": 820,
+     "y": 40
+    },
+    {
+     "id": "r2",
+     "kind": "sql",
+     "label": "Replica 2",
+     "x": 820,
+     "y": 280
+    },
+    {
+     "id": "wal",
+     "kind": "blob",
+     "label": "WAL archive",
+     "sub": "PITR",
+     "x": 540,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "pool"
+    },
+    {
+     "from": "pool",
+     "to": "pri",
+     "label": "writes"
+    },
+    {
+     "from": "pri",
+     "to": "r1",
+     "label": "WAL"
+    },
+    {
+     "from": "pri",
+     "to": "r2",
+     "label": "WAL"
+    },
+    {
+     "from": "pool",
+     "to": "r1",
+     "label": "reads"
+    },
+    {
+     "from": "pool",
+     "to": "r2",
+     "label": "reads"
+    },
+    {
+     "from": "pri",
+     "to": "wal"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The pooler turns thousands of app connections into ~150 database connections.",
+     "nodes": [
+      "app",
+      "pool"
+     ],
+     "edges": [
+      "app>pool"
+     ]
+    },
+    {
+     "text": "Replicas serve the read-only traffic: read capacity grows with each replica.",
+     "nodes": [
+      "r1",
+      "r2",
+      "pool"
+     ],
+     "edges": [
+      "pool>r1",
+      "pool>r2",
+      "pri>r1",
+      "pri>r2"
+     ]
+    },
+    {
+     "text": "Continuous WAL archiving replaces nightly dumps: restore to any second.",
+     "nodes": [
+      "pri",
+      "wal"
+     ],
+     "edges": [
+      "pri>wal"
+     ]
+    },
+    {
+     "text": "Cost: replica lag (stale reads, read-your-writes routing) and the next wall is the single primary's write rate and table size.",
+     "nodes": [
+      "pri"
+     ],
+     "edges": [
+      "pool>pri"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: partitioned tables",
+   "tone": "scale",
+   "summary": "Split the giant bookings table by month inside the same primary: small indexes, cheap retention, but no more write capacity.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "pool",
+     "kind": "service",
+     "label": "Pooler",
+     "x": 270,
+     "y": 160
+    },
+    {
+     "id": "pri",
+     "kind": "sql",
+     "label": "Primary",
+     "sub": "bookings (parent)",
+     "x": 540,
+     "y": 160
+    },
+    {
+     "id": "p1",
+     "kind": "sql",
+     "label": "bookings_2026_10",
+     "sub": "older, rarely written",
+     "x": 820,
+     "y": 20
+    },
+    {
+     "id": "p2",
+     "kind": "sql",
+     "label": "bookings_2026_11",
+     "sub": "hot partition",
+     "x": 820,
+     "y": 160
+    },
+    {
+     "id": "p3",
+     "kind": "sql",
+     "label": "bookings_2026_12",
+     "sub": "future stays",
+     "x": 820,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "pool"
+    },
+    {
+     "from": "pool",
+     "to": "pri"
+    },
+    {
+     "from": "pri",
+     "to": "p1"
+    },
+    {
+     "from": "pri",
+     "to": "p2",
+     "label": "pruned to"
+    },
+    {
+     "from": "pri",
+     "to": "p3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Range-partition bookings by stay month. A query with the month in its WHERE clause touches one partition.",
+     "nodes": [
+      "pri",
+      "p2"
+     ],
+     "edges": [
+      "pool>pri",
+      "pri>p2"
+     ]
+    },
+    {
+     "text": "Vacuum and index builds run per partition (gigabytes, not terabytes); old months are detached and archived instead of DELETEd.",
+     "nodes": [
+      "p1"
+     ],
+     "edges": [
+      "pri>p1"
+     ]
+    },
+    {
+     "text": "Cost: the partition key must be part of every primary key and unique constraint, and queries without it scan every partition. Writes still all go to one machine.",
+     "nodes": [
+      "pri",
+      "p1",
+      "p2",
+      "p3"
+     ],
+     "edges": [
+      "pri>p1",
+      "pri>p2",
+      "pri>p3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: shards or domains",
+   "tone": "scale",
+   "summary": "Several primaries: split by domain first (bookings, payments, users), then shard the biggest one by hotel_id.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "coord",
+     "kind": "coordinator",
+     "label": "Shard router",
+     "sub": "routes by hotel_id",
+     "x": 270,
+     "y": 160
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard A",
+     "sub": "hotels 0–33%",
+     "x": 560,
+     "y": 20
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard B",
+     "sub": "hotels 33–66%",
+     "x": 560,
+     "y": 160
+    },
+    {
+     "id": "s3",
+     "kind": "sql",
+     "label": "Shard C",
+     "sub": "hotels 66–100%",
+     "x": 560,
+     "y": 300
+    },
+    {
+     "id": "pay",
+     "kind": "sql",
+     "label": "Payments DB",
+     "sub": "own primary",
+     "x": 270,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "coord",
+     "label": "bookings"
+    },
+    {
+     "from": "coord",
+     "to": "s1"
+    },
+    {
+     "from": "coord",
+     "to": "s2"
+    },
+    {
+     "from": "coord",
+     "to": "s3"
+    },
+    {
+     "from": "app",
+     "to": "pay",
+     "label": "payments"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Split by domain: payments get their own primary. No shared transactions across domains; they talk through events.",
+     "nodes": [
+      "app",
+      "pay"
+     ],
+     "edges": [
+      "app>pay"
+     ]
+    },
+    {
+     "text": "Shard bookings by hotel_id (Citus-style): one hotel's rooms, bookings and availability live on one shard, so a booking is still a local ACID transaction.",
+     "nodes": [
+      "coord",
+      "s2"
+     ],
+     "edges": [
+      "app>coord",
+      "coord>s2"
+     ]
+    },
+    {
+     "text": "Writes now scale with shards. Cost: cross-shard queries fan out, cross-shard transactions need two-phase commit, and moving a hot hotel to a new shard is an operation you plan.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "coord>s1",
+      "coord>s2",
+      "coord>s3"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,397 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: each number that breaks one box buys the next one",
+ "caption": "Follow the peak through the read path: the CDN, the API pool and the cache each exist because a number crossed a single-node limit.",
+ "base_name": "Peak, 95% hits",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "client",
+   "label": "Peak reads",
+   "sub": "17 400 views/s",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN edge",
+   "sub": "95% hit · 66 Gbps",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Photo store",
+   "sub": "870/s · 3.5 Gbps",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "sub": "17 400 req/s",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Photo API ×4",
+   "sub": "~4 400 req/s each",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "cache",
+   "kind": "cache",
+   "label": "Metadata cache",
+   "sub": "95% hit · 16.5k/s",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Metadata DB",
+   "sub": "870 reads/s",
+   "x": 690,
+   "y": 280
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "cdn",
+   "label": "70 Gbps"
+  },
+  {
+   "from": "cdn",
+   "to": "blob",
+   "label": "miss"
+  },
+  {
+   "from": "app",
+   "to": "lb"
+  },
+  {
+   "from": "lb",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "cache"
+  },
+  {
+   "from": "api",
+   "to": "db",
+   "label": "miss"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Start from the peak, not the average: 17 400 views/s.",
+   "nodes": [
+    "app"
+   ]
+  },
+  {
+   "text": "Bytes: 17 400 × 500 KB × 8 ≈ 70 Gbps. A server NIC carries ~10 Gbps, so this needs a CDN. At 95% hits the origin sends ~3.5 Gbps.",
+   "nodes": [
+    "app",
+    "cdn",
+    "blob"
+   ],
+   "edges": [
+    "app>cdn",
+    "cdn>blob"
+   ]
+  },
+  {
+   "text": "Requests: at ~5 000 simple req/s per server, 17 400/s needs 4 stateless servers plus one for headroom, behind a load balancer.",
+   "nodes": [
+    "lb",
+    "api"
+   ],
+   "edges": [
+    "app>lb",
+    "lb>api"
+   ]
+  },
+  {
+   "text": "Metadata: 17 400 reads/s is past one database (~5–10k). One cache node does ~100k ops/s; at 95% hits the DB sees ~870/s.",
+   "nodes": [
+    "api",
+    "cache",
+    "db"
+   ],
+   "edges": [
+    "api>cache",
+    "api>db"
+   ]
+  },
+  {
+   "text": "Writes are 23/s and 2 GB/day: nothing on this path needs sharding yet. Say so; it is part of the answer.",
+   "nodes": [
+    "db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Hit rate drops to 80%",
+   "tone": "edge",
+   "summary": "Hit rate is the lever: going from 95% to 80% multiplies what the origin and the DB see by 4, so quote it with every estimate.",
+   "steps": [
+    {
+     "text": "A new feature shows older photos; both caches drop to 80% hits.",
+     "nodes": [
+      "cdn",
+      "cache"
+     ]
+    },
+    {
+     "text": "The origin now serves 3 500 req/s and ~14 Gbps: 4× more than at 95%.",
+     "nodes": [
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "app>cdn",
+      "cdn>blob"
+     ]
+    },
+    {
+     "text": "The DB gets ~3 500 reads/s: still fine for a primary plus replicas, but the headroom is gone.",
+     "nodes": [
+      "api",
+      "db"
+     ],
+     "edges": [
+      "api>cache",
+      "api>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: no CDN",
+   "tone": "alternative",
+   "summary": "Serve bytes from your own servers: one fewer vendor, but 70 Gbps means a dozen servers just for bandwidth and users far from the region wait 100+ ms.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "client",
+     "label": "Peak reads",
+     "sub": "17 400 views/s",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "sub": "70 Gbps in/out",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Photo API ×12",
+     "sub": "NIC-bound",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Photo store",
+     "sub": "17 400 req/s",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "cache",
+     "kind": "cache",
+     "label": "Metadata cache",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Metadata DB",
+     "x": 690,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "blob",
+     "label": "70 Gbps"
+    },
+    {
+     "from": "api",
+     "to": "cache"
+    },
+    {
+     "from": "api",
+     "to": "db",
+     "label": "miss"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Every photo byte now crosses your load balancer and API servers.",
+     "nodes": [
+      "app",
+      "lb",
+      "api"
+     ],
+     "edges": [
+      "app>lb",
+      "lb>api"
+     ]
+    },
+    {
+     "text": "70 Gbps ÷ ~6 Gbps usable per server ≈ 12 servers, sized by bandwidth instead of CPU.",
+     "nodes": [
+      "api"
+     ],
+     "edges": [
+      "lb>api"
+     ]
+    },
+    {
+     "text": "The photo store serves all 17 400 req/s, and distant users see full round-trip latency on every image.",
+     "nodes": [
+      "blob"
+     ],
+     "edges": [
+      "api>blob"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: 100× users",
+   "tone": "risk",
+   "summary": "At 1 B users, writes reach 2 300/s and metadata ~360 TB over 5 years: now the write path and size force sharding.",
+   "nodes": [
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "sub": "1.7M req/s",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Photo API ×400",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "cache",
+     "kind": "cache",
+     "label": "Cache cluster",
+     "sub": "~20 nodes",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "sub": "users 0–…",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "s3",
+     "kind": "sql",
+     "label": "Shard N",
+     "x": 690,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "lb",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "cache"
+    },
+    {
+     "from": "api",
+     "to": "s1"
+    },
+    {
+     "from": "api",
+     "to": "s2"
+    },
+    {
+     "from": "api",
+     "to": "s3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Multiply every number by 100 and re-ask which box breaks.",
+     "nodes": [
+      "lb",
+      "api"
+     ],
+     "edges": [
+      "lb>api"
+     ]
+    },
+    {
+     "text": "1.7 M reads/s needs a cache cluster: ~20 nodes at ~100k ops/s each.",
+     "nodes": [
+      "cache"
+     ],
+     "edges": [
+      "api>cache"
+     ]
+    },
+    {
+     "text": "2 300 writes/s and ~360 TB of rows exceed one primary: shard metadata by user id so \"my photos\" stays on one shard.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "api>s1",
+      "api>s2",
+      "api>s3"
+     ]
+    }
+   ]
+  }
+ ]
+}

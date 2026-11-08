@@ -1,0 +1,497 @@
+{
+ "kind": "architecture",
+ "title": "The system: an online store's product cache with a client-side ring",
+ "caption": "Every app server holds the same ring in memory and picks the cache node itself; a membership service only changes the ring when nodes come and go.",
+ "base_name": "Cache hit / miss",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "Shoppers",
+   "x": 0,
+   "y": 135
+  },
+  {
+   "id": "auto",
+   "kind": "scheduler",
+   "label": "Autoscaler",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "x": 230,
+   "y": 135
+  },
+  {
+   "id": "mon",
+   "kind": "external",
+   "label": "Metrics & alerts",
+   "x": 230,
+   "y": 270
+  },
+  {
+   "id": "cfg",
+   "kind": "coordinator",
+   "label": "Membership",
+   "sub": "versioned ring",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "sub": "client-side ring",
+   "x": 460,
+   "y": 135
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Catalog DB",
+   "sub": "source of truth",
+   "x": 460,
+   "y": 270
+  },
+  {
+   "id": "c1",
+   "kind": "cache",
+   "label": "Cache A",
+   "sub": "128 vnodes",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "c2",
+   "kind": "cache",
+   "label": "Cache B",
+   "sub": "128 vnodes",
+   "x": 690,
+   "y": 135
+  },
+  {
+   "id": "c3",
+   "kind": "cache",
+   "label": "Cache C",
+   "sub": "128 vnodes",
+   "x": 690,
+   "y": 270
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "lb"
+  },
+  {
+   "from": "lb",
+   "to": "app"
+  },
+  {
+   "from": "auto",
+   "to": "cfg",
+   "label": "add / remove"
+  },
+  {
+   "from": "cfg",
+   "to": "app",
+   "label": "ring updates"
+  },
+  {
+   "from": "app",
+   "to": "c1"
+  },
+  {
+   "from": "app",
+   "to": "c2",
+   "label": "get / set"
+  },
+  {
+   "from": "app",
+   "to": "c3"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "on miss"
+  },
+  {
+   "from": "app",
+   "to": "mon",
+   "label": "hit rate, skew"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A shopper opens a product page. The load balancer sends the request to any app server: they are stateless and interchangeable.",
+   "nodes": [
+    "users",
+    "lb",
+    "app"
+   ],
+   "edges": [
+    "users>lb",
+    "lb>app"
+   ]
+  },
+  {
+   "text": "Each app server keeps the ring in memory: a sorted array of vnode tokens, pushed by the membership service whenever it changes. No lookup service sits on the request path.",
+   "nodes": [
+    "cfg",
+    "app"
+   ],
+   "edges": [
+    "cfg>app"
+   ]
+  },
+  {
+   "text": "hash(\"product:42\") lands between two tokens; a binary search finds the next token clockwise, which belongs to Cache B. One hop, decided locally.",
+   "nodes": [
+    "app",
+    "c2"
+   ],
+   "edges": [
+    "app>c2"
+   ]
+  },
+  {
+   "text": "Hit: Cache B answers in under a millisecond. The other caches never see this key.",
+   "nodes": [
+    "c2",
+    "app"
+   ],
+   "edges": [
+    "app>c2"
+   ]
+  },
+  {
+   "text": "Miss: read the product from the catalog DB and write it back to the same node with a TTL, so the next request for that key hits.",
+   "nodes": [
+    "app",
+    "db",
+    "c2"
+   ],
+   "edges": [
+    "app>db",
+    "app>c2"
+   ]
+  },
+  {
+   "text": "Emit hit rate and per-node key share. A node holding far more than its share, or a sudden hit-rate drop, means the ring or a key is misbehaving.",
+   "nodes": [
+    "app",
+    "mon"
+   ],
+   "edges": [
+    "app>mon"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Scale out for a sale",
+   "tone": "edge",
+   "summary": "Adding a node moves only the keys on its new arcs; the database sees a short bump, not a stampede.",
+   "nodes": [
+    {
+     "id": "users",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "auto",
+     "kind": "scheduler",
+     "label": "Autoscaler",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 230,
+     "y": 135
+    },
+    {
+     "id": "mon",
+     "kind": "external",
+     "label": "Metrics & alerts",
+     "x": 230,
+     "y": 270
+    },
+    {
+     "id": "cfg",
+     "kind": "coordinator",
+     "label": "Membership",
+     "sub": "versioned ring",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "client-side ring",
+     "x": 460,
+     "y": 135
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Catalog DB",
+     "sub": "source of truth",
+     "x": 460,
+     "y": 270
+    },
+    {
+     "id": "c1",
+     "kind": "cache",
+     "label": "Cache A",
+     "sub": "128 vnodes",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "c2",
+     "kind": "cache",
+     "label": "Cache B",
+     "sub": "128 vnodes",
+     "x": 690,
+     "y": 135
+    },
+    {
+     "id": "c3",
+     "kind": "cache",
+     "label": "Cache C",
+     "sub": "128 vnodes",
+     "x": 690,
+     "y": 270
+    },
+    {
+     "id": "c4",
+     "kind": "cache",
+     "label": "Cache D",
+     "sub": "new, empty",
+     "x": 690,
+     "y": 405
+    }
+   ],
+   "edges": [
+    {
+     "from": "users",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "app"
+    },
+    {
+     "from": "auto",
+     "to": "cfg",
+     "label": "add / remove"
+    },
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring updates"
+    },
+    {
+     "from": "app",
+     "to": "c1"
+    },
+    {
+     "from": "app",
+     "to": "c2",
+     "label": "get / set"
+    },
+    {
+     "from": "app",
+     "to": "c3"
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "on miss"
+    },
+    {
+     "from": "app",
+     "to": "mon",
+     "label": "hit rate, skew"
+    },
+    {
+     "from": "app",
+     "to": "c4"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A flash sale starts and the caches run hot. The autoscaler boots Cache D and registers it with the membership service.",
+     "nodes": [
+      "auto",
+      "cfg",
+      "c4"
+     ],
+     "edges": [
+      "auto>cfg"
+     ]
+    },
+    {
+     "text": "Membership places D's 128 tokens on the ring and pushes the new version; every app server swaps its array atomically.",
+     "nodes": [
+      "cfg",
+      "app"
+     ],
+     "edges": [
+      "cfg>app"
+     ]
+    },
+    {
+     "text": "Keys that now fall just before one of D's tokens move to D, about a quarter of them. They miss once there.",
+     "nodes": [
+      "app",
+      "c4"
+     ],
+     "edges": [
+      "app>c4"
+     ]
+    },
+    {
+     "text": "Those misses fill from the catalog DB. A, B and C keep roughly three quarters of their keys hot.",
+     "nodes": [
+      "app",
+      "db",
+      "c1",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "app>db",
+      "app>c1",
+      "app>c2",
+      "app>c3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Cache B crashes",
+   "tone": "failure",
+   "summary": "B's arcs fall to the next tokens clockwise, which belong to many nodes, so its load spreads out instead of doubling one neighbour.",
+   "steps": [
+    {
+     "text": "Cache B stops answering; calls for its keys time out after 20 ms.",
+     "fail": [
+      "c2",
+      "app>c2"
+     ],
+     "nodes": [
+      "app"
+     ]
+    },
+    {
+     "text": "After 3 failed health checks, membership removes B and pushes a ring without its tokens.",
+     "fail": [
+      "c2"
+     ],
+     "nodes": [
+      "cfg",
+      "app"
+     ],
+     "edges": [
+      "cfg>app"
+     ]
+    },
+    {
+     "text": "Each of B's 128 arcs now belongs to whichever token comes next, so the keys scatter across A and C.",
+     "fail": [
+      "c2"
+     ],
+     "nodes": [
+      "c1",
+      "c3"
+     ],
+     "edges": [
+      "app>c1",
+      "app>c3"
+     ]
+    },
+    {
+     "text": "About a third of the keys miss at once. Coalesce concurrent misses so the DB reads each key once, not once per request.",
+     "fail": [
+      "c2"
+     ],
+     "nodes": [
+      "app",
+      "db"
+     ],
+     "edges": [
+      "app>db"
+     ]
+    },
+    {
+     "text": "Hit rate dips and recovers within a few minutes as A and C warm.",
+     "nodes": [
+      "mon"
+     ],
+     "edges": [
+      "app>mon"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Ring rollout lags",
+   "tone": "risk",
+   "summary": "While app servers disagree about the ring, some keys have two owners: a write goes to one, a read comes from the other.",
+   "steps": [
+    {
+     "text": "An operator replaces Cache C with a box twice the size and doubles its weight to 256 tokens.",
+     "nodes": [
+      "auto",
+      "cfg"
+     ],
+     "edges": [
+      "auto>cfg"
+     ]
+    },
+    {
+     "text": "The push reaches half the app servers; the rest still run the old ring for a few seconds.",
+     "nodes": [
+      "cfg",
+      "app"
+     ],
+     "edges": [
+      "cfg>app"
+     ]
+    },
+    {
+     "text": "A price update invalidates the key on its new owner C; a server on the old ring still reads the stale price from B.",
+     "nodes": [
+      "app",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "app>c2",
+      "app>c3"
+     ]
+    },
+    {
+     "text": "Mitigate: carry the ring version in metrics and alert on mixed versions, invalidate on both old and new owners during a rollout, and keep TTLs short.",
+     "nodes": [
+      "app",
+      "mon"
+     ],
+     "edges": [
+      "app>mon"
+     ]
+    }
+   ]
+  }
+ ]
+}

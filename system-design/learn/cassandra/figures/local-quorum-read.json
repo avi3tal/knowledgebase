@@ -1,0 +1,246 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: reading a chat at LOCAL_QUORUM, one full read plus one digest",
+ "caption": "Only one replica sends the rows; the other sends a hash. A mismatch triggers a repair before the answer goes back.",
+ "base_name": "Digests match",
+ "actors": [
+  {
+   "id": "svc",
+   "label": "Message service",
+   "kind": "service"
+  },
+  {
+   "id": "co",
+   "label": "Coordinator",
+   "kind": "coordinator"
+  },
+  {
+   "id": "ra",
+   "label": "Replica A",
+   "kind": "nosql"
+  },
+  {
+   "id": "rb",
+   "label": "Replica B",
+   "kind": "nosql"
+  },
+  {
+   "id": "rc",
+   "label": "Replica C",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "svc",
+   "to": "co",
+   "label": "last 50 of conv c7 (LOCAL_QUORUM)",
+   "note": "A single partition, read in clustering order (newest first)."
+  },
+  {
+   "from": "co",
+   "to": "ra",
+   "label": "full read",
+   "note": "The fastest replica (by recent latency) sends the data."
+  },
+  {
+   "from": "co",
+   "to": "rb",
+   "label": "digest read",
+   "note": "Another replica only returns a hash of the same result, which saves bandwidth."
+  },
+  {
+   "from": "ra",
+   "to": "co",
+   "label": "50 rows",
+   "style": "reply"
+  },
+  {
+   "from": "rb",
+   "to": "co",
+   "label": "digest",
+   "style": "reply",
+   "note": "The hashes match: two replicas agree."
+  },
+  {
+   "from": "co",
+   "to": "svc",
+   "label": "50 messages",
+   "style": "reply"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Digest mismatch",
+   "tone": "edge",
+   "summary": "The two replicas disagree: fetch both full results, keep the newest cell, and fix the stale replica before answering.",
+   "messages": [
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "last 50 of conv c7"
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "full read"
+    },
+    {
+     "from": "co",
+     "to": "rb",
+     "label": "digest read"
+    },
+    {
+     "from": "rb",
+     "to": "co",
+     "label": "digest (differs)",
+     "style": "reply",
+     "note": "B missed a message while it was briefly down."
+    },
+    {
+     "from": "co",
+     "to": "rb",
+     "label": "full read",
+     "note": "Get B's full result and merge: the newest timestamp wins per cell."
+    },
+    {
+     "from": "co",
+     "to": "rb",
+     "label": "repair write",
+     "note": "Read repair: B gets the missing message."
+    },
+    {
+     "from": "co",
+     "to": "svc",
+     "label": "50 messages",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Replica A stalls",
+   "tone": "failure",
+   "summary": "Don't wait for a slow replica: after its usual p99, ask another one (speculative retry).",
+   "messages": [
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "last 50 of conv c7"
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "full read",
+     "style": "lost",
+     "note": "A is in a long GC pause and doesn't answer."
+    },
+    {
+     "from": "co",
+     "to": "rb",
+     "label": "digest read"
+    },
+    {
+     "from": "co",
+     "to": "rc",
+     "label": "full read (speculative)",
+     "note": "Sent once A takes longer than its p99."
+    },
+    {
+     "from": "rc",
+     "to": "co",
+     "label": "50 rows",
+     "style": "reply"
+    },
+    {
+     "from": "rb",
+     "to": "co",
+     "label": "digest",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "svc",
+     "label": "50 messages",
+     "style": "reply",
+     "note": "A slow node adds a few ms instead of a timeout."
+    }
+   ]
+  },
+  {
+   "name": "Risk: read in another DC",
+   "tone": "risk",
+   "summary": "LOCAL_QUORUM is only strong inside one DC. A user who writes in DC2 and reads in DC1 straight away may not see their message.",
+   "actors": [
+    {
+     "id": "svc",
+     "label": "Message service",
+     "kind": "service"
+    },
+    {
+     "id": "co",
+     "label": "Coordinator",
+     "kind": "coordinator"
+    },
+    {
+     "id": "ra",
+     "label": "Replica A",
+     "kind": "nosql"
+    },
+    {
+     "id": "rb",
+     "label": "Replica B",
+     "kind": "nosql"
+    },
+    {
+     "id": "rc",
+     "label": "Replica C",
+     "kind": "nosql"
+    },
+    {
+     "id": "dc2",
+     "label": "DC2 coordinator",
+     "kind": "coordinator"
+    }
+   ],
+   "messages": [
+    {
+     "from": "svc",
+     "to": "dc2",
+     "label": "INSERT msg (via DC2)",
+     "note": "The user's phone switched networks and reached the other region."
+    },
+    {
+     "from": "dc2",
+     "to": "co",
+     "label": "mutation",
+     "style": "async",
+     "note": "On its way to DC1, about 80 ms."
+    },
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "last 50 of conv c7",
+     "note": "The next request lands in DC1 straight away."
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "full read"
+    },
+    {
+     "from": "ra",
+     "to": "co",
+     "label": "49 rows (new one missing)",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "svc",
+     "label": "stale page",
+     "style": "error",
+     "note": "Mitigate: pin each user to a home DC, or have the client show its own sent messages until they appear."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,392 @@
+{
+ "kind": "architecture",
+ "title": "Scaling Kafka: from one broker to mirrored clusters",
+ "caption": "Each stage removes the previous bottleneck and adds a cost; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: one broker",
+ "nodes": [
+  {
+   "id": "p",
+   "kind": "service",
+   "label": "Services",
+   "x": 0,
+   "y": 130
+  },
+  {
+   "id": "b",
+   "kind": "stream",
+   "label": "Broker",
+   "sub": "1 node, 3 partitions",
+   "x": 280,
+   "y": 130
+  },
+  {
+   "id": "c",
+   "kind": "worker",
+   "label": "Consumers",
+   "x": 560,
+   "y": 130
+  }
+ ],
+ "edges": [
+  {
+   "from": "p",
+   "to": "b"
+  },
+  {
+   "from": "b",
+   "to": "c"
+  }
+ ],
+ "steps": [
+  {
+   "text": "One broker holds every partition. Simple to run and fine for a prototype.",
+   "nodes": [
+    "p",
+    "b"
+   ],
+   "edges": [
+    "p>b"
+   ]
+  },
+  {
+   "text": "But there is one copy of the data: a dead disk loses the log, and a restart stops every producer and consumer.",
+   "nodes": [
+    "b",
+    "c"
+   ],
+   "edges": [
+    "b>c"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: 3 brokers, RF=3",
+   "tone": "scale",
+   "summary": "Replicate every partition across three brokers so a broker loss costs neither data nor availability.",
+   "nodes": [
+    {
+     "id": "p",
+     "kind": "service",
+     "label": "Services",
+     "sub": "acks=all",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "b1",
+     "kind": "stream",
+     "label": "Broker 1",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "b2",
+     "kind": "stream",
+     "label": "Broker 2",
+     "x": 280,
+     "y": 150
+    },
+    {
+     "id": "b3",
+     "kind": "stream",
+     "label": "Broker 3",
+     "x": 280,
+     "y": 300
+    },
+    {
+     "id": "c",
+     "kind": "worker",
+     "label": "Consumers",
+     "x": 560,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "p",
+     "to": "b1"
+    },
+    {
+     "from": "p",
+     "to": "b2"
+    },
+    {
+     "from": "p",
+     "to": "b3"
+    },
+    {
+     "from": "b1",
+     "to": "c"
+    },
+    {
+     "from": "b2",
+     "to": "c"
+    },
+    {
+     "from": "b3",
+     "to": "c"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Three brokers, replication factor 3, min.insync.replicas=2. Leaders are spread so writes go to all three.",
+     "nodes": [
+      "p",
+      "b1",
+      "b2",
+      "b3"
+     ],
+     "edges": [
+      "p>b1",
+      "p>b2",
+      "p>b3"
+     ]
+    },
+    {
+     "text": "Any one broker can die or be patched without losing acknowledged data or stopping writes.",
+     "nodes": [
+      "b1",
+      "b2",
+      "b3"
+     ]
+    },
+    {
+     "text": "Cost: 3× the disk and replication traffic, and a few ms more per produce waiting for followers.",
+     "nodes": [
+      "c"
+     ],
+     "edges": [
+      "b1>c",
+      "b2>c",
+      "b3>c"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: more partitions",
+   "tone": "scale",
+   "summary": "Partitions are the unit of parallelism: more of them let every consumer group add members.",
+   "nodes": [
+    {
+     "id": "p",
+     "kind": "service",
+     "label": "Services",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "t",
+     "kind": "stream",
+     "label": "Brokers × 6",
+     "sub": "orders: 48 partitions",
+     "x": 280,
+     "y": 150
+    },
+    {
+     "id": "g1",
+     "kind": "worker",
+     "label": "Search group",
+     "sub": "up to 48 members",
+     "x": 560,
+     "y": 0
+    },
+    {
+     "id": "g2",
+     "kind": "worker",
+     "label": "Notify group",
+     "sub": "12 members",
+     "x": 560,
+     "y": 150
+    },
+    {
+     "id": "g3",
+     "kind": "worker",
+     "label": "Analytics group",
+     "sub": "4 members",
+     "x": 560,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "p",
+     "to": "t"
+    },
+    {
+     "from": "t",
+     "to": "g1"
+    },
+    {
+     "from": "t",
+     "to": "g2"
+    },
+    {
+     "from": "t",
+     "to": "g3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Consumers stopped keeping up because a group can't have more active members than partitions. Grow orders from 6 to 48 partitions and add brokers to hold them.",
+     "nodes": [
+      "p",
+      "t"
+     ],
+     "edges": [
+      "p>t"
+     ]
+    },
+    {
+     "text": "Each group now scales independently up to 48 members.",
+     "nodes": [
+      "g1",
+      "g2",
+      "g3"
+     ],
+     "edges": [
+      "t>g1",
+      "t>g2",
+      "t>g3"
+     ]
+    },
+    {
+     "text": "Cost: adding partitions changes hash(key) % N, so a key's new records land on a different partition than its old ones (plan it, or create a new topic). Partitions can't be removed, and more of them mean longer failovers and rebalances.",
+     "nodes": [
+      "t"
+     ],
+     "edges": [
+      "p>t"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: multi-cluster",
+   "tone": "scale",
+   "summary": "One cluster per region plus asynchronous mirroring: local latency and regional isolation, at the price of eventual copies.",
+   "nodes": [
+    {
+     "id": "pe",
+     "kind": "service",
+     "label": "EU services",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "pu",
+     "kind": "service",
+     "label": "US services",
+     "x": 0,
+     "y": 300
+    },
+    {
+     "id": "ke",
+     "kind": "stream",
+     "label": "EU cluster",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "ku",
+     "kind": "stream",
+     "label": "US cluster",
+     "x": 280,
+     "y": 300
+    },
+    {
+     "id": "mm",
+     "kind": "worker",
+     "label": "Mirror",
+     "sub": "replicates topics",
+     "x": 280,
+     "y": 150
+    },
+    {
+     "id": "ka",
+     "kind": "stream",
+     "label": "Analytics cluster",
+     "sub": "aggregate",
+     "x": 560,
+     "y": 150
+    },
+    {
+     "id": "da",
+     "kind": "blob",
+     "label": "Data lake",
+     "x": 840,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "pe",
+     "to": "ke"
+    },
+    {
+     "from": "pu",
+     "to": "ku"
+    },
+    {
+     "from": "ke",
+     "to": "mm"
+    },
+    {
+     "from": "ku",
+     "to": "mm"
+    },
+    {
+     "from": "mm",
+     "to": "ka",
+     "label": "async copy"
+    },
+    {
+     "from": "ka",
+     "to": "da"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each region runs its own cluster: producers write locally with low latency, and one region failing doesn't stop the other.",
+     "nodes": [
+      "pe",
+      "pu",
+      "ke",
+      "ku"
+     ],
+     "edges": [
+      "pe>ke",
+      "pu>ku"
+     ]
+    },
+    {
+     "text": "A mirroring process consumes from both and produces into an aggregate cluster for analytics (or into the other region for disaster recovery).",
+     "nodes": [
+      "ke",
+      "ku",
+      "mm",
+      "ka"
+     ],
+     "edges": [
+      "ke>mm",
+      "ku>mm",
+      "mm>ka"
+     ]
+    },
+    {
+     "text": "Cost: the copy is asynchronous (seconds behind), offsets differ between clusters so a failover consumer needs offset translation and will see duplicates, and cross-region traffic is billed.",
+     "nodes": [
+      "mm",
+      "ka",
+      "da"
+     ],
+     "edges": [
+      "mm>ka",
+      "ka>da"
+     ]
+    }
+   ]
+  }
+ ]
+}

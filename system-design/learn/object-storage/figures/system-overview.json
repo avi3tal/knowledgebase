@@ -1,0 +1,382 @@
+{
+ "kind": "architecture",
+ "title": "The system: a photo and video app built around an object store",
+ "caption": "The API only grants permission and keeps metadata; bytes go straight from the phone to the store, store events drive the processing, and viewers read through the CDN.",
+ "base_name": "One upload, many views",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "client",
+   "label": "Mobile & web",
+   "x": 0,
+   "y": 160
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Upload API",
+   "sub": "auth, signs URLs",
+   "x": 230,
+   "y": 20
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN",
+   "sub": "edge cache",
+   "x": 230,
+   "y": 300
+  },
+  {
+   "id": "store",
+   "kind": "blob",
+   "label": "Object store",
+   "sub": "originals + renditions",
+   "x": 460,
+   "y": 160
+  },
+  {
+   "id": "cold",
+   "kind": "blob",
+   "label": "Cold tier",
+   "sub": "untouched > 90 d",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "meta",
+   "kind": "sql",
+   "label": "Metadata DB",
+   "sub": "photo rows, status",
+   "x": 690,
+   "y": 20
+  },
+  {
+   "id": "events",
+   "kind": "queue",
+   "label": "Upload events",
+   "sub": "ObjectCreated",
+   "x": 690,
+   "y": 160
+  },
+  {
+   "id": "dlq",
+   "kind": "queue",
+   "label": "Dead letters",
+   "x": 690,
+   "y": 300
+  },
+  {
+   "id": "thumbs",
+   "kind": "worker",
+   "label": "Thumbnailer",
+   "sub": "sizes, strip EXIF",
+   "x": 920,
+   "y": 20
+  },
+  {
+   "id": "video",
+   "kind": "worker",
+   "label": "Transcoder",
+   "sub": "HLS renditions",
+   "x": 920,
+   "y": 300
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "api",
+   "label": "ask to upload"
+  },
+  {
+   "from": "api",
+   "to": "app",
+   "label": "presigned URL"
+  },
+  {
+   "from": "api",
+   "to": "meta",
+   "label": "row: pending"
+  },
+  {
+   "from": "app",
+   "to": "store",
+   "label": "PUT bytes"
+  },
+  {
+   "from": "store",
+   "to": "events",
+   "label": "ObjectCreated"
+  },
+  {
+   "from": "events",
+   "to": "thumbs"
+  },
+  {
+   "from": "events",
+   "to": "video"
+  },
+  {
+   "from": "events",
+   "to": "dlq",
+   "label": "after 5 tries"
+  },
+  {
+   "from": "thumbs",
+   "to": "store",
+   "label": "renditions"
+  },
+  {
+   "from": "video",
+   "to": "store",
+   "label": "renditions"
+  },
+  {
+   "from": "thumbs",
+   "to": "meta",
+   "label": "status: ready"
+  },
+  {
+   "from": "app",
+   "to": "cdn",
+   "label": "GET photo"
+  },
+  {
+   "from": "cdn",
+   "to": "store",
+   "label": "miss → origin"
+  },
+  {
+   "from": "store",
+   "to": "cold",
+   "label": "lifecycle rule"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The app asks to upload a photo. The API checks auth and quota, writes a pending row, and signs a URL that allows one PUT to one key for 15 minutes.",
+   "nodes": [
+    "app",
+    "api",
+    "meta"
+   ],
+   "edges": [
+    "app>api",
+    "api>meta",
+    "api>app"
+   ]
+  },
+  {
+   "text": "The app sends the bytes straight to the object store (multipart for videos). No API server ever holds them.",
+   "nodes": [
+    "app",
+    "store"
+   ],
+   "edges": [
+    "app>store"
+   ]
+  },
+  {
+   "text": "The store emits ObjectCreated to a queue. The event carries the bucket and key, not the bytes.",
+   "nodes": [
+    "store",
+    "events"
+   ],
+   "edges": [
+    "store>events"
+   ]
+  },
+  {
+   "text": "Workers read the original, write renditions under derived keys (p_77/1080.webp, p_77/hls/…) and mark the row ready.",
+   "nodes": [
+    "events",
+    "thumbs",
+    "video",
+    "store",
+    "meta"
+   ],
+   "edges": [
+    "events>thumbs",
+    "events>video",
+    "thumbs>store",
+    "video>store",
+    "thumbs>meta"
+   ]
+  },
+  {
+   "text": "Viewers fetch through the CDN. Keys never change, so edges cache them for a year; a miss costs one origin GET.",
+   "nodes": [
+    "app",
+    "cdn",
+    "store"
+   ],
+   "edges": [
+    "app>cdn",
+    "cdn>store"
+   ]
+  },
+  {
+   "text": "A lifecycle rule moves originals nobody has opened for 90 days to a cheaper tier; renditions stay hot.",
+   "nodes": [
+    "store",
+    "cold"
+   ],
+   "edges": [
+    "store>cold"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "New Year upload spike",
+   "tone": "edge",
+   "summary": "Uploads jump 10× at midnight: the store absorbs the bytes, and the queue turns the spike into a backlog instead of an outage.",
+   "steps": [
+    {
+     "text": "Millions of phones upload at 00:00. The API only signs URLs, about 1 ms of work each.",
+     "nodes": [
+      "app",
+      "api"
+     ],
+     "edges": [
+      "app>api",
+      "api>app"
+     ]
+    },
+    {
+     "text": "The object store takes the parallel PUTs; random photo ids spread the keys, so no single prefix is hot.",
+     "nodes": [
+      "app",
+      "store"
+     ],
+     "edges": [
+      "app>store"
+     ]
+    },
+    {
+     "text": "Events queue up faster than workers drain them: a backlog of 40 minutes builds.",
+     "nodes": [
+      "events"
+     ],
+     "edges": [
+      "store>events"
+     ]
+    },
+    {
+     "text": "Workers autoscale on queue depth. Until a photo is ready, the app shows its own local copy.",
+     "nodes": [
+      "thumbs",
+      "video",
+      "meta"
+     ],
+     "edges": [
+      "events>thumbs",
+      "events>video",
+      "thumbs>meta"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Thumbnailer bug",
+   "tone": "failure",
+   "summary": "A deploy crashes on one image format: those events retry, land in dead letters, and are replayed after the fix.",
+   "steps": [
+    {
+     "text": "A new thumbnailer version crashes on every HEIC photo.",
+     "fail": [
+      "thumbs"
+     ],
+     "nodes": [
+      "events"
+     ],
+     "edges": [
+      "events>thumbs"
+     ]
+    },
+    {
+     "text": "Each HEIC event is retried 5 times with backoff, then moved to dead letters; other photos keep flowing.",
+     "fail": [
+      "thumbs"
+     ],
+     "nodes": [
+      "events",
+      "dlq"
+     ],
+     "edges": [
+      "events>dlq"
+     ]
+    },
+    {
+     "text": "Those rows stay pending; the app shows a placeholder. The original is safe in the store.",
+     "nodes": [
+      "meta",
+      "store"
+     ]
+    },
+    {
+     "text": "Roll back, replay the dead letters, and the renditions appear. Workers are idempotent by key, so replays are harmless.",
+     "nodes": [
+      "dlq",
+      "thumbs",
+      "store",
+      "meta"
+     ],
+     "edges": [
+      "events>thumbs",
+      "thumbs>store",
+      "thumbs>meta"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "New rendition size",
+   "tone": "edge",
+   "summary": "Product wants a 2048 px WebP for new tablets: backfill billions of photos without hurting live uploads, or render on demand.",
+   "steps": [
+    {
+     "text": "Add 2048 px to the thumbnailer for every new upload.",
+     "nodes": [
+      "thumbs"
+     ],
+     "edges": [
+      "events>thumbs",
+      "thumbs>store"
+     ]
+    },
+    {
+     "text": "Backfill: list keys by prefix in batches and enqueue synthetic events at a fixed rate, at low priority.",
+     "nodes": [
+      "store",
+      "events"
+     ],
+     "edges": [
+      "store>events"
+     ]
+    },
+    {
+     "text": "Or render lazily: on a CDN miss for a missing size, generate it once and store it; old photos that nobody views never cost anything.",
+     "nodes": [
+      "cdn",
+      "store"
+     ],
+     "edges": [
+      "app>cdn",
+      "cdn>store"
+     ]
+    },
+    {
+     "text": "Cold-tier originals cost a retrieval fee to read, so skip them or render them only on demand.",
+     "nodes": [
+      "cold"
+     ],
+     "edges": [
+      "store>cold"
+     ]
+    }
+   ]
+  }
+ ]
+}

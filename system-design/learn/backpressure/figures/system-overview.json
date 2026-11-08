@@ -1,0 +1,403 @@
+{
+ "kind": "architecture",
+ "title": "The system: concert ticketing on sale day, where demand outruns checkout",
+ "caption": "Each layer has a limit and a policy for when it's reached: wait at the edge, reject fast at the API, and never queue more than the workers can finish in time.",
+ "base_name": "Sale opens",
+ "nodes": [
+  {
+   "id": "fans",
+   "kind": "client",
+   "label": "Fans",
+   "sub": "web + app",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "edge",
+   "kind": "cdn",
+   "label": "CDN / edge",
+   "sub": "cached event page",
+   "x": 230,
+   "y": 150
+  },
+  {
+   "id": "room",
+   "kind": "service",
+   "label": "Waiting room",
+   "sub": "FIFO line, tokens",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "api",
+   "kind": "api-gateway",
+   "label": "Checkout API",
+   "sub": "admission control",
+   "x": 460,
+   "y": 150
+  },
+  {
+   "id": "recs",
+   "kind": "service",
+   "label": "Recommendations",
+   "sub": "sheddable",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "sig",
+   "kind": "coordinator",
+   "label": "Load signals",
+   "sub": "depth, age, p99",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Order queue",
+   "sub": "bounded: 2 000",
+   "x": 690,
+   "y": 150
+  },
+  {
+   "id": "ntf",
+   "kind": "external",
+   "label": "Email / push",
+   "sub": "deferrable",
+   "x": 690,
+   "y": 300
+  },
+  {
+   "id": "w",
+   "kind": "worker",
+   "label": "Order workers",
+   "sub": "40 slots",
+   "x": 920,
+   "y": 150
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Seat inventory",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "pay",
+   "kind": "external",
+   "label": "Payment provider",
+   "x": 920,
+   "y": 300
+  }
+ ],
+ "edges": [
+  {
+   "from": "fans",
+   "to": "edge"
+  },
+  {
+   "from": "edge",
+   "to": "room",
+   "label": "over capacity"
+  },
+  {
+   "from": "room",
+   "to": "api",
+   "label": "signed token"
+  },
+  {
+   "from": "api",
+   "to": "edge",
+   "label": "503 + Retry-After"
+  },
+  {
+   "from": "api",
+   "to": "q",
+   "label": "accept: 202"
+  },
+  {
+   "from": "api",
+   "to": "recs",
+   "label": "best effort"
+  },
+  {
+   "from": "q",
+   "to": "w",
+   "label": "pull"
+  },
+  {
+   "from": "w",
+   "to": "db",
+   "label": "hold seats"
+  },
+  {
+   "from": "w",
+   "to": "pay",
+   "label": "charge"
+  },
+  {
+   "from": "w",
+   "to": "ntf",
+   "label": "later"
+  },
+  {
+   "from": "q",
+   "to": "sig",
+   "label": "depth, age"
+  },
+  {
+   "from": "sig",
+   "to": "room",
+   "label": "admit rate"
+  },
+  {
+   "from": "sig",
+   "to": "api",
+   "label": "shed level"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Sale opens at 10:00 and a million fans arrive within a minute. The event page is static and served from the edge, so browsing costs the core nothing.",
+   "nodes": [
+    "fans",
+    "edge"
+   ],
+   "edges": [
+    "fans>edge"
+   ]
+  },
+  {
+   "text": "Above the core's capacity the edge sends new arrivals to the waiting room: a FIFO line that shows each fan a position and an ETA.",
+   "nodes": [
+    "edge",
+    "room"
+   ],
+   "edges": [
+    "edge>room"
+   ]
+  },
+  {
+   "text": "The room admits fans at the rate the core can take, handing each a signed token. That rate is not fixed: it comes from live load signals.",
+   "nodes": [
+    "room",
+    "api",
+    "sig"
+   ],
+   "edges": [
+    "sig>room",
+    "room>api"
+   ]
+  },
+  {
+   "text": "The Checkout API admits a request only if it holds a token and the order queue has room; otherwise it answers 503 with Retry-After in about a millisecond.",
+   "nodes": [
+    "api",
+    "edge"
+   ],
+   "edges": [
+    "room>api",
+    "api>edge"
+   ]
+  },
+  {
+   "text": "Accepted orders go into a bounded queue (about 20 s of work). Workers pull at their own pace, hold seats and charge the card.",
+   "nodes": [
+    "api",
+    "q",
+    "w",
+    "db",
+    "pay"
+   ],
+   "edges": [
+    "api>q",
+    "q>w",
+    "w>db",
+    "w>pay"
+   ]
+  },
+  {
+   "text": "Queue depth and age feed back: they slow the waiting room and raise the shed level. Optional work goes first: recommendations are skipped and emails deferred.",
+   "nodes": [
+    "q",
+    "sig",
+    "recs",
+    "ntf"
+   ],
+   "edges": [
+    "q>sig",
+    "sig>api",
+    "api>recs",
+    "w>ntf"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "On-sale spike",
+   "tone": "edge",
+   "summary": "100× the normal traffic, and the core sees a steady stream: the crowd waits in the cheapest place, at the edge.",
+   "steps": [
+    {
+     "text": "Arrivals jump to 100× what checkout can process.",
+     "nodes": [
+      "fans",
+      "edge"
+     ],
+     "edges": [
+      "fans>edge"
+     ]
+    },
+    {
+     "text": "Almost all of them wait in the room. A fan in the line costs a cached page and a poll every 10 s.",
+     "nodes": [
+      "room"
+     ],
+     "edges": [
+      "edge>room"
+     ]
+    },
+    {
+     "text": "Admission stays at 3 000 per minute, so the order queue hovers well below its bound.",
+     "nodes": [
+      "room",
+      "api",
+      "q"
+     ],
+     "edges": [
+      "room>api",
+      "api>q"
+     ]
+    },
+    {
+     "text": "Workers run at full speed, but never beyond it.",
+     "nodes": [
+      "w",
+      "db",
+      "pay"
+     ],
+     "edges": [
+      "q>w",
+      "w>db",
+      "w>pay"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Payment provider slows",
+   "tone": "failure",
+   "summary": "A slow dependency fills the bounded queue; the full queue turns into fast rejections and a slower line instead of a crash.",
+   "steps": [
+    {
+     "text": "Payment latency goes from 300 ms to 3 s. Each worker slot is busy 10× longer.",
+     "nodes": [
+      "w"
+     ],
+     "edges": [
+      "q>w"
+     ],
+     "fail": [
+      "pay",
+      "w>pay"
+     ]
+    },
+    {
+     "text": "Workers pull less, so the queue fills: 2 000 orders in under a minute.",
+     "nodes": [
+      "q"
+     ],
+     "edges": [
+      "api>q"
+     ],
+     "fail": [
+      "pay"
+     ]
+    },
+    {
+     "text": "At the bound, the API rejects new orders with 503 + Retry-After. Nothing is queued that would time out anyway.",
+     "nodes": [
+      "api",
+      "edge"
+     ],
+     "edges": [
+      "api>edge"
+     ],
+     "fail": [
+      "pay"
+     ]
+    },
+    {
+     "text": "The signals lower the admit rate, the room's ETA goes up, and fans see an honest wait instead of a spinner. When payment recovers, the rate rises again.",
+     "nodes": [
+      "sig",
+      "room"
+     ],
+     "edges": [
+      "q>sig",
+      "sig>room"
+     ],
+     "fail": [
+      "pay"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: raise the bound",
+   "tone": "risk",
+   "summary": "Raising the queue limit to stop the 503s only moves the failure: the work outlives its callers. Tune the admit rate, not the buffer.",
+   "steps": [
+    {
+     "text": "An operator raises the order queue's bound from 2 000 to 50 000 to make the 503s go away.",
+     "nodes": [
+      "q"
+     ],
+     "edges": [
+      "api>q"
+     ]
+    },
+    {
+     "text": "The queue now holds about 8 minutes of work. Clients time out after 30 s and retry, adding more orders.",
+     "nodes": [
+      "fans",
+      "api",
+      "q"
+     ],
+     "edges": [
+      "fans>edge",
+      "room>api",
+      "api>q"
+     ]
+    },
+    {
+     "text": "Workers process orders whose buyers have already left; their seats sit in holds that nobody pays for.",
+     "nodes": [
+      "w",
+      "db"
+     ],
+     "edges": [
+      "q>w",
+      "w>db"
+     ],
+     "fail": [
+      "q"
+     ]
+    },
+    {
+     "text": "Fix: restore the bound, drop orders older than the client deadline before working on them, and let the waiting room absorb the crowd.",
+     "nodes": [
+      "q",
+      "sig",
+      "room"
+     ],
+     "edges": [
+      "q>sig",
+      "sig>room"
+     ]
+    }
+   ]
+  }
+ ]
+}

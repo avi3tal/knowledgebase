@@ -1,0 +1,336 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: how the router picks a shard for one query",
+ "caption": "The common path is two in-memory lookups; the shard itself double-checks ownership so a stale map can't write to the wrong place.",
+ "base_name": "Cached route",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Query in",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "tid",
+   "type": "step",
+   "label": "Read tenant_id",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "has",
+   "type": "decision",
+   "label": "Has tenant_id?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "rep",
+   "type": "end",
+   "label": "Reporting store",
+   "col": 1,
+   "row": 2,
+   "tone": "bad"
+  },
+  {
+   "id": "hit",
+   "type": "decision",
+   "label": "Tenant in cache?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "load",
+   "type": "step",
+   "label": "Load map entry",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "look",
+   "type": "step",
+   "label": "Look up shard",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "q",
+   "type": "step",
+   "label": "Run on that shard",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "own",
+   "type": "decision",
+   "label": "Shard owns tenant?",
+   "col": 0,
+   "row": 6
+  },
+  {
+   "id": "retry",
+   "type": "end",
+   "label": "Refresh map, retry",
+   "col": 1,
+   "row": 6,
+   "tone": "bad"
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "Rows returned",
+   "col": 0,
+   "row": 7,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "tid"
+  },
+  {
+   "from": "tid",
+   "to": "has"
+  },
+  {
+   "from": "has",
+   "to": "rep",
+   "label": "no"
+  },
+  {
+   "from": "has",
+   "to": "hit",
+   "label": "yes"
+  },
+  {
+   "from": "hit",
+   "to": "load",
+   "label": "no"
+  },
+  {
+   "from": "hit",
+   "to": "look",
+   "label": "yes"
+  },
+  {
+   "from": "load",
+   "to": "look"
+  },
+  {
+   "from": "look",
+   "to": "q"
+  },
+  {
+   "from": "q",
+   "to": "own"
+  },
+  {
+   "from": "own",
+   "to": "retry",
+   "label": "no"
+  },
+  {
+   "from": "own",
+   "to": "ok",
+   "label": "yes"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A query arrives from an app server with tenant 812's id attached.",
+   "nodes": [
+    "in",
+    "tid"
+   ],
+   "edges": [
+    "in>tid"
+   ]
+  },
+  {
+   "text": "It has a tenant_id, so it belongs to exactly one shard.",
+   "nodes": [
+    "has"
+   ],
+   "edges": [
+    "tid>has",
+    "has>hit"
+   ]
+  },
+  {
+   "text": "The router's in-memory map already has tenant 812.",
+   "nodes": [
+    "hit",
+    "look"
+   ],
+   "edges": [
+    "hit>look"
+   ]
+  },
+  {
+   "text": "map[812] = shard 2, at map version 17.",
+   "nodes": [
+    "look",
+    "q"
+   ],
+   "edges": [
+    "look>q"
+   ]
+  },
+  {
+   "text": "Shard 2 checks that it owns tenant 812 at version 17 and runs the query.",
+   "nodes": [
+    "own"
+   ],
+   "edges": [
+    "q>own"
+   ]
+  },
+  {
+   "text": "Rows come back. Total routing overhead: microseconds.",
+   "nodes": [
+    "ok"
+   ],
+   "edges": [
+    "own>ok"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Cold router",
+   "tone": "edge",
+   "summary": "A freshly started router fetches entries on demand; one extra round trip per tenant, then it's cached.",
+   "steps": [
+    {
+     "text": "A router just restarted; its cache is empty.",
+     "nodes": [
+      "in",
+      "tid",
+      "has"
+     ],
+     "edges": [
+      "in>tid",
+      "tid>has",
+      "has>hit"
+     ]
+    },
+    {
+     "text": "Tenant 812 is not cached.",
+     "nodes": [
+      "hit"
+     ],
+     "edges": [
+      "has>hit"
+     ]
+    },
+    {
+     "text": "Fetch the entry from the map store (about 1 ms) and keep watching it for changes.",
+     "nodes": [
+      "load"
+     ],
+     "edges": [
+      "hit>load"
+     ]
+    },
+    {
+     "text": "Continue as usual.",
+     "nodes": [
+      "look",
+      "q",
+      "own",
+      "ok"
+     ],
+     "edges": [
+      "load>look",
+      "look>q",
+      "q>own",
+      "own>ok"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Tenant just moved",
+   "tone": "failure",
+   "summary": "The router's map is stale for a moment; the shard refuses the query instead of serving or writing the wrong data.",
+   "steps": [
+    {
+     "text": "The rebalancer moved tenant 812 to shard 4, but this router missed the update.",
+     "nodes": [
+      "look"
+     ],
+     "edges": [
+      "hit>look"
+     ]
+    },
+    {
+     "text": "It still sends the write to shard 2.",
+     "nodes": [
+      "q"
+     ],
+     "edges": [
+      "look>q"
+     ]
+    },
+    {
+     "text": "Shard 2 no longer owns tenant 812 and rejects the write with \"moved, map v18\".",
+     "fail": [
+      "q"
+     ],
+     "nodes": [
+      "own"
+     ],
+     "edges": [
+      "q>own"
+     ]
+    },
+    {
+     "text": "The router reloads the entry and retries once on shard 4. The user sees a few extra milliseconds.",
+     "nodes": [
+      "retry"
+     ],
+     "edges": [
+      "own>retry"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Query without a tenant",
+   "tone": "risk",
+   "summary": "A query with no shard key would have to ask every shard. Keep it off the serving path.",
+   "steps": [
+    {
+     "text": "An internal job asks for \"all overdue tasks across every tenant\".",
+     "nodes": [
+      "in",
+      "tid"
+     ],
+     "edges": [
+      "in>tid"
+     ]
+    },
+    {
+     "text": "There is no tenant_id to route on.",
+     "nodes": [
+      "has"
+     ],
+     "edges": [
+      "tid>has"
+     ]
+    },
+    {
+     "text": "Rather than fan out to all shards on every request, send it to a reporting store fed from the shards' change logs.",
+     "nodes": [
+      "rep"
+     ],
+     "edges": [
+      "has>rep"
+     ]
+    }
+   ]
+  }
+ ]
+}

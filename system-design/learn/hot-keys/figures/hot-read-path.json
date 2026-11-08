@@ -1,0 +1,277 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: what a pod does with a read for a hot key",
+ "caption": "Local copy first, one shared refill per pod, and the refill reads one of several copies of the key.",
+ "base_name": "Refill a hot key",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "GET item:777",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "hot",
+   "type": "decision",
+   "label": "On hot list?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "plain",
+   "type": "end",
+   "label": "Normal GET",
+   "col": 1,
+   "row": 1,
+   "tone": "good"
+  },
+  {
+   "id": "fresh",
+   "type": "decision",
+   "label": "Local copy fresh?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "retl",
+   "type": "end",
+   "label": "Return local",
+   "col": 1,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "flight",
+   "type": "decision",
+   "label": "Refill running?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "join",
+   "type": "step",
+   "label": "Wait for it",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "copy",
+   "type": "step",
+   "label": "GET item:777#r",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "store",
+   "type": "step",
+   "label": "Keep locally 1 s",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "ret",
+   "type": "end",
+   "label": "Return",
+   "col": 0,
+   "row": 6,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "hot"
+  },
+  {
+   "from": "hot",
+   "to": "plain",
+   "label": "no"
+  },
+  {
+   "from": "hot",
+   "to": "fresh",
+   "label": "yes"
+  },
+  {
+   "from": "fresh",
+   "to": "retl",
+   "label": "yes"
+  },
+  {
+   "from": "fresh",
+   "to": "flight",
+   "label": "no"
+  },
+  {
+   "from": "flight",
+   "to": "join",
+   "label": "yes"
+  },
+  {
+   "from": "flight",
+   "to": "copy",
+   "label": "no"
+  },
+  {
+   "from": "join",
+   "to": "retl",
+   "label": "result"
+  },
+  {
+   "from": "copy",
+   "to": "store"
+  },
+  {
+   "from": "store",
+   "to": "ret"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The key is on the hot list.",
+   "nodes": [
+    "in",
+    "hot"
+   ],
+   "edges": [
+    "in>hot",
+    "hot>fresh"
+   ]
+  },
+  {
+   "text": "The local copy has just passed its 1 s lifetime, and no refill is running.",
+   "nodes": [
+    "fresh",
+    "flight"
+   ],
+   "edges": [
+    "fresh>flight"
+   ]
+  },
+  {
+   "text": "Read one of 8 copies of the key (item:777#0..7, spread over shards), chosen at random, so even refills don't all hit one shard.",
+   "nodes": [
+    "copy"
+   ],
+   "edges": [
+    "flight>copy"
+   ]
+  },
+  {
+   "text": "Keep it in pod memory for 1 s and return.",
+   "nodes": [
+    "store",
+    "ret"
+   ],
+   "edges": [
+    "copy>store",
+    "store>ret"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Burst of misses",
+   "tone": "edge",
+   "summary": "Hundreds of requests on one pod find the copy expired in the same millisecond: request coalescing sends one refill.",
+   "steps": [
+    {
+     "text": "The first request finds no refill running and starts one.",
+     "nodes": [
+      "flight",
+      "copy"
+     ],
+     "edges": [
+      "fresh>flight",
+      "flight>copy"
+     ]
+    },
+    {
+     "text": "Every other request sees the refill in flight and waits on it instead of calling the shard.",
+     "nodes": [
+      "join"
+     ],
+     "edges": [
+      "flight>join"
+     ]
+    },
+    {
+     "text": "When the refill returns, all waiters get the same value.",
+     "nodes": [
+      "retl"
+     ],
+     "edges": [
+      "join>retl"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Copy unavailable",
+   "tone": "failure",
+   "summary": "The shard holding copy #3 is down. A copy is just a replica of the value, so try another one.",
+   "steps": [
+    {
+     "text": "The GET for item:777#3 times out after 20 ms.",
+     "fail": [
+      "copy",
+      "flight>copy"
+     ],
+     "nodes": [
+      "flight"
+     ]
+    },
+    {
+     "text": "Retry once with a different copy number on a different shard.",
+     "nodes": [
+      "copy",
+      "store"
+     ],
+     "edges": [
+      "copy>store"
+     ]
+    },
+    {
+     "text": "If every copy fails, return the expired local value for up to a few seconds: slightly stale beats an error during a sale.",
+     "fail": [
+      "copy"
+     ],
+     "nodes": [
+      "retl"
+     ],
+     "edges": [
+      "fresh>retl"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Not hot yet",
+   "tone": "risk",
+   "summary": "A key that just went viral isn't on the list: every read takes the normal path until detection catches up.",
+   "steps": [
+    {
+     "text": "item:512 is not on the hot list.",
+     "nodes": [
+      "hot",
+      "plain"
+     ],
+     "edges": [
+      "in>hot",
+      "hot>plain"
+     ]
+    },
+    {
+     "text": "Its single shard takes every read. Shorten the detection window or let each pod protect itself with a small local top-K.",
+     "nodes": [
+      "plain"
+     ],
+     "edges": [
+      "hot>plain"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,227 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: a cache node joins the ring, and only its arcs change owner",
+ "caption": "The ring is data pushed to every app server; the only cost of a join is one miss per moved key.",
+ "base_name": "Planned join",
+ "actors": [
+  {
+   "id": "auto",
+   "label": "Autoscaler",
+   "kind": "scheduler"
+  },
+  {
+   "id": "cfg",
+   "label": "Membership",
+   "kind": "coordinator"
+  },
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "old",
+   "label": "Cache C (owner)",
+   "kind": "cache"
+  },
+  {
+   "id": "d",
+   "label": "Cache D (new)",
+   "kind": "cache"
+  },
+  {
+   "id": "db",
+   "label": "Catalog DB",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "auto",
+   "to": "cfg",
+   "label": "register D, weight 1",
+   "note": "D boots empty and registers. It is not on the ring yet, so it gets no traffic."
+  },
+  {
+   "from": "cfg",
+   "to": "cfg",
+   "label": "place 128 tokens for D",
+   "style": "self",
+   "note": "hash(\"D#0\") … hash(\"D#127\"). Each token takes over the part of an arc between the previous token and itself."
+  },
+  {
+   "from": "cfg",
+   "to": "app",
+   "label": "ring v42",
+   "style": "async",
+   "note": "Every app server swaps in the new sorted token array in one step: no request sees half a ring."
+  },
+  {
+   "from": "app",
+   "to": "d",
+   "label": "get product:42",
+   "note": "This key sits on one of D's new arcs, so it now maps to D."
+  },
+  {
+   "from": "d",
+   "to": "app",
+   "label": "miss",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "read product:42"
+  },
+  {
+   "from": "app",
+   "to": "d",
+   "label": "set product:42, TTL 10 min",
+   "note": "D warms from real traffic. Keys outside D's arcs never moved and still hit on C and the others."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Warm before going live",
+   "tone": "alternative",
+   "summary": "No miss spike, at the price of a dual-read window and more client logic.",
+   "messages": [
+    {
+     "from": "auto",
+     "to": "cfg",
+     "label": "register D as warming"
+    },
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring v42 (D shadow)",
+     "style": "async",
+     "note": "App servers learn D's future arcs but keep reading from the current owner."
+    },
+    {
+     "from": "app",
+     "to": "old",
+     "label": "get product:42",
+     "note": "Still served by C."
+    },
+    {
+     "from": "old",
+     "to": "app",
+     "label": "hit",
+     "style": "reply"
+    },
+    {
+     "from": "app",
+     "to": "d",
+     "label": "copy product:42",
+     "style": "async",
+     "note": "Hits on keys that will move are copied to D in the background."
+    },
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring v43 (D live)",
+     "style": "async",
+     "note": "After a few minutes D holds most of its hot keys; flip it live."
+    },
+    {
+     "from": "app",
+     "to": "d",
+     "label": "get product:42"
+    },
+    {
+     "from": "d",
+     "to": "app",
+     "label": "hit",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Graceful leave",
+   "tone": "edge",
+   "summary": "Removing a node is a join in reverse: its arcs merge into the next tokens, and only its keys miss.",
+   "messages": [
+    {
+     "from": "auto",
+     "to": "cfg",
+     "label": "drain Cache C",
+     "note": "Scale-in after the sale."
+    },
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring v44 without C",
+     "style": "async",
+     "note": "C's tokens are deleted; each of its arcs now belongs to the next token clockwise."
+    },
+    {
+     "from": "app",
+     "to": "d",
+     "label": "get product:42",
+     "note": "The key's next owner happens to be D."
+    },
+    {
+     "from": "d",
+     "to": "app",
+     "label": "miss",
+     "style": "reply"
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "read product:42"
+    },
+    {
+     "from": "app",
+     "to": "d",
+     "label": "set product:42"
+    },
+    {
+     "from": "auto",
+     "to": "old",
+     "label": "terminate C",
+     "note": "Only once no app server still runs a ring that includes C."
+    }
+   ]
+  },
+  {
+   "name": "D dies during the join",
+   "tone": "failure",
+   "summary": "Treat a timeout as a miss and let health checks take D out; its arcs return to owners that still hold most of those keys.",
+   "messages": [
+    {
+     "from": "auto",
+     "to": "cfg",
+     "label": "register D, weight 1"
+    },
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring v42",
+     "style": "async"
+    },
+    {
+     "from": "app",
+     "to": "d",
+     "label": "get product:42",
+     "style": "lost",
+     "note": "D's process crashed after registering. The call hangs until the 20 ms timeout."
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "read product:42",
+     "note": "Fallback: serve from the DB rather than fail the page."
+    },
+    {
+     "from": "cfg",
+     "to": "app",
+     "label": "ring v43 without D",
+     "style": "async",
+     "note": "Health checks fail; D is removed and its arcs go back to their previous owners, whose old entries are mostly still cached."
+    }
+   ]
+  }
+ ]
+}

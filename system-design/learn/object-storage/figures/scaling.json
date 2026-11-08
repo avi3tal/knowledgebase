@@ -1,0 +1,468 @@
+{
+ "kind": "architecture",
+ "title": "Scaling object storage: from one bucket to deduplicated content in many regions",
+ "caption": "Each stage removes a cost or a risk of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: one bucket",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Mobile & web",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "API",
+   "sub": "presigns PUT + GET",
+   "x": 280,
+   "y": 20
+  },
+  {
+   "id": "b",
+   "kind": "blob",
+   "label": "Bucket",
+   "sub": "everything hot",
+   "x": 280,
+   "y": 220
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Metadata DB",
+   "x": 560,
+   "y": 20
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "db"
+  },
+  {
+   "from": "c",
+   "to": "b",
+   "label": "PUT + GET"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The API signs both uploads and downloads; clients talk to one bucket directly.",
+   "nodes": [
+    "c",
+    "api",
+    "db"
+   ],
+   "edges": [
+    "c>api",
+    "api>db"
+   ]
+  },
+  {
+   "text": "Simple and durable. Costs: every view is a paid GET plus egress from one region, and every byte is in the most expensive tier.",
+   "nodes": [
+    "c",
+    "b"
+   ],
+   "edges": [
+    "c>b"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: CDN + lifecycle tiers",
+   "tone": "scale",
+   "summary": "Put a CDN in front for reads and let lifecycle rules move old bytes to cheaper tiers.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Mobile & web",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN",
+     "sub": "hit ratio ~95%",
+     "x": 270,
+     "y": 40
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "API",
+     "sub": "presigns uploads",
+     "x": 270,
+     "y": 280
+    },
+    {
+     "id": "hot",
+     "kind": "blob",
+     "label": "Hot tier",
+     "x": 540,
+     "y": 160
+    },
+    {
+     "id": "ia",
+     "kind": "blob",
+     "label": "Infrequent tier",
+     "sub": "after 30 days",
+     "x": 820,
+     "y": 40
+    },
+    {
+     "id": "arc",
+     "kind": "blob",
+     "label": "Archive tier",
+     "sub": "after 1 year",
+     "x": 820,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "cdn",
+     "label": "views"
+    },
+    {
+     "from": "c",
+     "to": "api",
+     "label": "uploads"
+    },
+    {
+     "from": "cdn",
+     "to": "hot",
+     "label": "misses only"
+    },
+    {
+     "from": "api",
+     "to": "hot",
+     "label": "presign"
+    },
+    {
+     "from": "hot",
+     "to": "ia",
+     "label": "lifecycle"
+    },
+    {
+     "from": "ia",
+     "to": "arc",
+     "label": "lifecycle"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Views go through the CDN; ~95% are served from edges and never reach the bucket.",
+     "nodes": [
+      "c",
+      "cdn",
+      "hot"
+     ],
+     "edges": [
+      "c>cdn",
+      "cdn>hot"
+     ]
+    },
+    {
+     "text": "Uploads still go straight to the bucket with presigned URLs.",
+     "nodes": [
+      "c",
+      "api",
+      "hot"
+     ],
+     "edges": [
+      "c>api",
+      "api>hot"
+     ]
+    },
+    {
+     "text": "Lifecycle rules move bytes by age: hot, then infrequent (cheaper per GB, a fee per read), then archive (cheapest, hours to restore).",
+     "nodes": [
+      "hot",
+      "ia",
+      "arc"
+     ],
+     "edges": [
+      "hot>ia",
+      "ia>arc"
+     ]
+    },
+    {
+     "text": "Cost: purges for deletes, retrieval fees and delays for old photos, and rules that must match how people really browse.",
+     "nodes": [
+      "cdn",
+      "arc"
+     ],
+     "edges": [
+      "cdn>hot"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: multi-region replication",
+   "tone": "scale",
+   "summary": "Write to the nearest region and replicate asynchronously; the CDN fails over between origins.",
+   "nodes": [
+    {
+     "id": "ue",
+     "kind": "client",
+     "label": "Users (EU)",
+     "x": 0,
+     "y": 40
+    },
+    {
+     "id": "uu",
+     "kind": "client",
+     "label": "Users (US)",
+     "x": 0,
+     "y": 280
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN",
+     "sub": "origin failover",
+     "x": 280,
+     "y": 160
+    },
+    {
+     "id": "be",
+     "kind": "blob",
+     "label": "EU bucket",
+     "x": 560,
+     "y": 40
+    },
+    {
+     "id": "bu",
+     "kind": "blob",
+     "label": "US bucket",
+     "x": 560,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "ue",
+     "to": "be",
+     "label": "upload"
+    },
+    {
+     "from": "uu",
+     "to": "bu",
+     "label": "upload"
+    },
+    {
+     "from": "ue",
+     "to": "cdn"
+    },
+    {
+     "from": "uu",
+     "to": "cdn"
+    },
+    {
+     "from": "cdn",
+     "to": "be"
+    },
+    {
+     "from": "cdn",
+     "to": "bu"
+    },
+    {
+     "from": "be",
+     "to": "bu",
+     "label": "async replication"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each user uploads to the nearest region: faster uploads, and data can stay where the law wants it.",
+     "nodes": [
+      "ue",
+      "be",
+      "uu",
+      "bu"
+     ],
+     "edges": [
+      "ue>be",
+      "uu>bu"
+     ]
+    },
+    {
+     "text": "Buckets replicate to each other asynchronously, usually within minutes.",
+     "nodes": [
+      "be",
+      "bu"
+     ],
+     "edges": [
+      "be>bu"
+     ]
+    },
+    {
+     "text": "The CDN knows both origins and fails over when one returns errors, so a region outage no longer takes photos down.",
+     "nodes": [
+      "cdn",
+      "be",
+      "bu"
+     ],
+     "edges": [
+      "ue>cdn",
+      "uu>cdn",
+      "cdn>be",
+      "cdn>bu"
+     ]
+    },
+    {
+     "text": "Cost: 2× storage plus transfer between regions, a new photo can 404 in the other region until replicated, and deletes replicate too: replication is not a backup (use versioning and object lock).",
+     "nodes": [
+      "be",
+      "bu"
+     ],
+     "edges": [
+      "be>bu"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: content addressing",
+   "tone": "scale",
+   "summary": "Key objects by the hash of their content: identical bytes are stored once, however many people post them.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Mobile & web",
+     "sub": "hashes the file",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Upload API",
+     "sub": "have sha256?",
+     "x": 270,
+     "y": 160
+    },
+    {
+     "id": "idx",
+     "kind": "nosql",
+     "label": "Hash index",
+     "sub": "hash → refcount",
+     "x": 540,
+     "y": 40
+    },
+    {
+     "id": "store",
+     "kind": "blob",
+     "label": "Content store",
+     "sub": "key = sha256",
+     "x": 540,
+     "y": 280
+    },
+    {
+     "id": "man",
+     "kind": "sql",
+     "label": "Photo manifests",
+     "sub": "photo → hash",
+     "x": 820,
+     "y": 160
+    },
+    {
+     "id": "gc",
+     "kind": "scheduler",
+     "label": "Garbage collector",
+     "sub": "refcount 0 → delete",
+     "x": 820,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "api",
+     "label": "hash first"
+    },
+    {
+     "from": "api",
+     "to": "idx"
+    },
+    {
+     "from": "api",
+     "to": "man"
+    },
+    {
+     "from": "c",
+     "to": "store",
+     "label": "only new bytes"
+    },
+    {
+     "from": "gc",
+     "to": "man"
+    },
+    {
+     "from": "gc",
+     "to": "store"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The app hashes the file and asks whether the store already has it.",
+     "nodes": [
+      "c",
+      "api",
+      "idx"
+     ],
+     "edges": [
+      "c>api",
+      "api>idx"
+     ]
+    },
+    {
+     "text": "Known hash: skip the upload, add a manifest row and bump the refcount. A sticker forwarded a million times is stored once.",
+     "nodes": [
+      "api",
+      "man",
+      "idx"
+     ],
+     "edges": [
+      "api>man",
+      "api>idx"
+     ]
+    },
+    {
+     "text": "New hash: upload it under its hash; the key itself proves the content.",
+     "nodes": [
+      "c",
+      "store"
+     ],
+     "edges": [
+      "c>store"
+     ]
+    },
+    {
+     "text": "Cost: deletes become refcount decrements plus a delayed garbage collector, the hash index is a new hot path, and cross-user dedup can reveal that a file exists, so scope it per account for private data.",
+     "nodes": [
+      "gc",
+      "store",
+      "man"
+     ],
+     "edges": [
+      "gc>man",
+      "gc>store"
+     ]
+    }
+   ]
+  }
+ ]
+}

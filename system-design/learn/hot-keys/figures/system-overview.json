@@ -1,0 +1,363 @@
+{
+ "kind": "architecture",
+ "title": "The system: a flash sale where one item gets most of the traffic",
+ "caption": "Sharding spreads keys, not requests: one popular key still lands on one shard, so the design adds detection, local copies and split counters.",
+ "base_name": "Drop opens",
+ "nodes": [
+  {
+   "id": "shop",
+   "kind": "client",
+   "label": "Shoppers",
+   "sub": "app + web",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN",
+   "sub": "page shell, assets",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "det",
+   "kind": "worker",
+   "label": "Hot-key detector",
+   "sub": "top-K from samples",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "Product API",
+   "sub": "local hot cache",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "chk",
+   "kind": "service",
+   "label": "Checkout API",
+   "sub": "reserves stock",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "s1",
+   "kind": "cache",
+   "label": "Cache shard 1",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "s2",
+   "kind": "cache",
+   "label": "Cache shard 2",
+   "sub": "owns item:777",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "stock",
+   "kind": "cache",
+   "label": "Stock counters",
+   "sub": "stock:777#0..7",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Order queue",
+   "x": 690,
+   "y": 420
+  },
+  {
+   "id": "cat",
+   "kind": "sql",
+   "label": "Catalog DB",
+   "sub": "sharded by item",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "inv",
+   "kind": "sql",
+   "label": "Orders DB",
+   "x": 920,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "shop",
+   "to": "cdn"
+  },
+  {
+   "from": "cdn",
+   "to": "lb",
+   "label": "API calls"
+  },
+  {
+   "from": "lb",
+   "to": "app"
+  },
+  {
+   "from": "lb",
+   "to": "chk"
+  },
+  {
+   "from": "app",
+   "to": "s1"
+  },
+  {
+   "from": "app",
+   "to": "s2",
+   "label": "GET item:777"
+  },
+  {
+   "from": "app",
+   "to": "cat",
+   "label": "miss"
+  },
+  {
+   "from": "app",
+   "to": "det",
+   "label": "key samples"
+  },
+  {
+   "from": "det",
+   "to": "app",
+   "label": "hot list"
+  },
+  {
+   "from": "chk",
+   "to": "stock",
+   "label": "DECR one part"
+  },
+  {
+   "from": "chk",
+   "to": "q"
+  },
+  {
+   "from": "q",
+   "to": "inv"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A limited sneaker drop opens at 10:00. The CDN serves the page shell and images; only the item data and checkout calls reach the backend.",
+   "nodes": [
+    "shop",
+    "cdn",
+    "lb"
+   ],
+   "edges": [
+    "shop>cdn",
+    "cdn>lb"
+   ]
+  },
+  {
+   "text": "The product API reads items from a sharded cache. Every request for item 777 hashes to the same key, so they all land on shard 2.",
+   "nodes": [
+    "app",
+    "s1",
+    "s2"
+   ],
+   "edges": [
+    "lb>app",
+    "app>s1",
+    "app>s2"
+   ]
+  },
+  {
+   "text": "Each API pod samples the keys it reads and reports counts every second. The detector keeps a top-K and marks keys far above the rest as hot.",
+   "nodes": [
+    "app",
+    "det"
+   ],
+   "edges": [
+    "app>det",
+    "det>app"
+   ]
+  },
+  {
+   "text": "Hot keys are served from each pod's memory for 1 s. Shard 2 now sees about one read per pod per second instead of every request; one refill per key per pod at a time.",
+   "nodes": [
+    "app",
+    "s2"
+   ],
+   "edges": [
+    "app>s2"
+   ]
+  },
+  {
+   "text": "Checkout needs a correct count, not a cached one: stock is split into 8 parts on different shards, each holding a share. A checkout decrements one part and tries another when it's empty.",
+   "nodes": [
+    "chk",
+    "stock"
+   ],
+   "edges": [
+    "lb>chk",
+    "chk>stock"
+   ]
+  },
+  {
+   "text": "Reserved orders go to a queue and are written to the orders DB at the pace it can take.",
+   "nodes": [
+    "chk",
+    "q",
+    "inv"
+   ],
+   "edges": [
+    "chk>q",
+    "q>inv"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Unplanned viral item",
+   "tone": "edge",
+   "summary": "A celebrity posts a link to a different item with no warning. The system is unprotected until the detector catches up.",
+   "steps": [
+    {
+     "text": "Traffic to item 512 goes from nothing to a large share of all reads within a minute.",
+     "nodes": [
+      "shop",
+      "lb",
+      "app"
+     ],
+     "edges": [
+      "shop>cdn",
+      "cdn>lb",
+      "lb>app"
+     ]
+    },
+    {
+     "text": "Its key lives on shard 1, whose CPU climbs while the other shards idle.",
+     "nodes": [
+      "app",
+      "s1"
+     ],
+     "edges": [
+      "app>s1"
+     ]
+    },
+    {
+     "text": "Within a few seconds the samples show it; the detector adds it to the hot list and pods start serving it locally.",
+     "nodes": [
+      "det",
+      "app"
+     ],
+     "edges": [
+      "app>det",
+      "det>app"
+     ]
+    },
+    {
+     "text": "Shard 1 drops back to normal load. The gap between spike and detection is the window to keep short.",
+     "nodes": [
+      "s1"
+     ],
+     "edges": [
+      "app>s1"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Hot shard saturates",
+   "tone": "failure",
+   "summary": "Before mitigation kicks in, the hot shard slows down for every key it owns, not just the hot one.",
+   "steps": [
+    {
+     "text": "Shard 2 hits 100% CPU on item 777 and starts timing out.",
+     "fail": [
+      "s2",
+      "app>s2"
+     ],
+     "nodes": [
+      "app"
+     ]
+    },
+    {
+     "text": "Thousands of unrelated items that also hash to shard 2 now time out too: the collateral damage of a hot key.",
+     "fail": [
+      "s2"
+     ],
+     "nodes": [
+      "app"
+     ]
+    },
+    {
+     "text": "Pods trip a circuit breaker for shard 2 and serve stale local copies where they have them, rather than retrying and making it worse.",
+     "fail": [
+      "s2"
+     ],
+     "nodes": [
+      "app"
+     ],
+     "edges": [
+      "app>s1"
+     ]
+    },
+    {
+     "text": "Misses for shard-2 keys fall back to the catalog DB within a concurrency cap until the hot list takes the load off.",
+     "nodes": [
+      "app",
+      "cat"
+     ],
+     "edges": [
+      "app>cat"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Pre-warm before the drop",
+   "tone": "edge",
+   "summary": "Planned events don't have to wait for detection: mark the keys hot ahead of time.",
+   "steps": [
+    {
+     "text": "An hour before 10:00 an operator adds item 777 to the hot list with a 2-hour expiry.",
+     "nodes": [
+      "det"
+     ],
+     "edges": [
+      "det>app"
+     ]
+    },
+    {
+     "text": "Pods load it into local memory before the first shopper arrives.",
+     "nodes": [
+      "app",
+      "s2"
+     ],
+     "edges": [
+      "app>s2"
+     ]
+    },
+    {
+     "text": "The stock is pre-split into its 8 parts, so checkout never touches a single counter.",
+     "nodes": [
+      "chk",
+      "stock"
+     ],
+     "edges": [
+      "chk>stock"
+     ]
+    }
+   ]
+  }
+ ]
+}

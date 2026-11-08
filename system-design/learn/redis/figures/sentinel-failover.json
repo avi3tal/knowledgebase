@@ -1,0 +1,233 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: how a Sentinel failover replaces a dead primary",
+ "caption": "Sentinels agree the primary is down, promote one replica and hand clients the new address; anything not yet replicated is lost.",
+ "base_name": "Failover",
+ "actors": [
+  {
+   "id": "app",
+   "label": "Game API",
+   "kind": "service"
+  },
+  {
+   "id": "p",
+   "label": "Primary",
+   "kind": "cache"
+  },
+  {
+   "id": "r",
+   "label": "Replica",
+   "kind": "cache"
+  },
+  {
+   "id": "s",
+   "label": "Sentinels (3)",
+   "kind": "coordinator"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "p",
+   "label": "ZINCRBY board 30 p7"
+  },
+  {
+   "from": "p",
+   "to": "r",
+   "label": "replicate",
+   "style": "async",
+   "note": "Replication is asynchronous: the primary has already answered the client."
+  },
+  {
+   "from": "s",
+   "to": "p",
+   "label": "PING",
+   "style": "lost",
+   "note": "The primary's machine dies. Each Sentinel stops getting replies."
+  },
+  {
+   "from": "s",
+   "to": "s",
+   "label": "agree: primary down",
+   "style": "self",
+   "note": "After the timeout, a quorum (2 of 3) must agree before anything happens, so one Sentinel's network blip can't trigger a failover."
+  },
+  {
+   "from": "s",
+   "to": "r",
+   "label": "REPLICAOF NO ONE",
+   "note": "The most up-to-date replica is promoted."
+  },
+  {
+   "from": "app",
+   "to": "s",
+   "label": "where is the primary?",
+   "note": "Sentinel-aware clients ask on reconnect, or get a switch notification."
+  },
+  {
+   "from": "s",
+   "to": "app",
+   "label": "replica address",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "r",
+   "label": "ZINCRBY board 30 p8",
+   "note": "Writes resume after roughly 10–30 s in total."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Lost writes",
+   "tone": "failure",
+   "summary": "A write acknowledged just before the crash never reached the replica. After failover it is simply gone.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "p",
+     "label": "HSET session:abc",
+     "note": "The client gets OK."
+    },
+    {
+     "from": "p",
+     "to": "app",
+     "label": "OK",
+     "style": "reply"
+    },
+    {
+     "from": "p",
+     "to": "r",
+     "label": "replicate",
+     "style": "lost",
+     "note": "The primary dies before the stream reaches the replica."
+    },
+    {
+     "from": "s",
+     "to": "r",
+     "label": "REPLICAOF NO ONE"
+    },
+    {
+     "from": "app",
+     "to": "r",
+     "label": "HGETALL session:abc",
+     "note": "The new primary has never heard of this session: the player logs in again."
+    },
+    {
+     "from": "r",
+     "to": "app",
+     "label": "(empty)",
+     "style": "error"
+    }
+   ]
+  },
+  {
+   "name": "Stale client address",
+   "tone": "edge",
+   "summary": "A client that cached the old address keeps talking to the old node after it comes back as a replica.",
+   "messages": [
+    {
+     "from": "s",
+     "to": "r",
+     "label": "REPLICAOF NO ONE"
+    },
+    {
+     "from": "s",
+     "to": "p",
+     "label": "REPLICAOF new primary",
+     "note": "The old primary restarts and is turned into a replica."
+    },
+    {
+     "from": "app",
+     "to": "p",
+     "label": "ZINCRBY board 10 p3",
+     "note": "This client never re-asked the Sentinels."
+    },
+    {
+     "from": "p",
+     "to": "app",
+     "label": "READONLY",
+     "style": "error",
+     "note": "Replicas refuse writes."
+    },
+    {
+     "from": "app",
+     "to": "s",
+     "label": "where is the primary?",
+     "note": "Fix: on READONLY or a connection error, ask the Sentinels again and retry."
+    },
+    {
+     "from": "app",
+     "to": "r",
+     "label": "ZINCRBY board 10 p3"
+    }
+   ]
+  },
+  {
+   "name": "Alternative: Redis Cluster",
+   "tone": "alternative",
+   "summary": "No Sentinels: the other primaries of the cluster detect the failure and vote. Same async-replication trade-off, but data is also sharded over slots.",
+   "actors": [
+    {
+     "id": "app",
+     "label": "Game API",
+     "kind": "service"
+    },
+    {
+     "id": "p1",
+     "label": "Primary A",
+     "kind": "cache"
+    },
+    {
+     "id": "r1",
+     "label": "Replica of A",
+     "kind": "cache"
+    },
+    {
+     "id": "p2",
+     "label": "Primaries B, C",
+     "kind": "cache"
+    }
+   ],
+   "messages": [
+    {
+     "from": "p2",
+     "to": "p1",
+     "label": "gossip ping",
+     "style": "lost",
+     "note": "Primary A stops answering the cluster bus."
+    },
+    {
+     "from": "p2",
+     "to": "p2",
+     "label": "majority: A failed",
+     "style": "self"
+    },
+    {
+     "from": "r1",
+     "to": "p2",
+     "label": "vote for me",
+     "note": "A's replica asks the other primaries for votes and takes over A's slots."
+    },
+    {
+     "from": "app",
+     "to": "p2",
+     "label": "GET {u7}:rank",
+     "note": "The client still thinks A owns this slot."
+    },
+    {
+     "from": "p2",
+     "to": "app",
+     "label": "MOVED to replica of A",
+     "style": "reply"
+    },
+    {
+     "from": "app",
+     "to": "r1",
+     "label": "GET {u7}:rank",
+     "note": "Cluster clients refresh their slot map on MOVED."
+    }
+   ]
+  }
+ ]
+}

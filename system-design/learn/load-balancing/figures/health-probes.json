@@ -1,0 +1,223 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: health checks decide who gets traffic",
+ "caption": "Active probes catch dead instances; real traffic (passive checks) catches slow or erroring ones. Thresholds stop one blip from flapping an instance.",
+ "base_name": "Instance goes bad",
+ "actors": [
+  {
+   "id": "lb",
+   "label": "L7 proxy",
+   "kind": "load-balancer"
+  },
+  {
+   "id": "i1",
+   "label": "Checkout 1",
+   "kind": "service"
+  },
+  {
+   "id": "i2",
+   "label": "Checkout 2",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "lb",
+   "to": "i1",
+   "label": "GET /healthz",
+   "note": "Every 5 s the proxy probes each instance."
+  },
+  {
+   "from": "i1",
+   "to": "lb",
+   "label": "200",
+   "style": "reply"
+  },
+  {
+   "from": "lb",
+   "to": "i2",
+   "label": "GET /healthz"
+  },
+  {
+   "from": "i2",
+   "to": "lb",
+   "label": "no reply (2 s)",
+   "style": "lost",
+   "note": "Instance 2 is stuck in a GC pause or deadlock. One miss is not enough to act."
+  },
+  {
+   "from": "lb",
+   "to": "i2",
+   "label": "GET /healthz ×2",
+   "note": "Two more misses in a row: 3 failures over ~15 s."
+  },
+  {
+   "from": "lb",
+   "to": "lb",
+   "label": "eject Checkout 2",
+   "style": "self",
+   "note": "Unhealthy threshold reached: no new requests go to it."
+  },
+  {
+   "from": "lb",
+   "to": "i1",
+   "label": "all /api/cart traffic",
+   "note": "Checkout 1 takes the whole load: the pool needs N+1 headroom."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Recovery + slow start",
+   "tone": "happy",
+   "summary": "Re-admit after several passes, then ramp traffic up over ~30 s so a cold instance isn't knocked over again.",
+   "messages": [
+    {
+     "from": "lb",
+     "to": "i2",
+     "label": "GET /healthz",
+     "note": "Probes continue while it is ejected."
+    },
+    {
+     "from": "i2",
+     "to": "lb",
+     "label": "200",
+     "style": "reply"
+    },
+    {
+     "from": "lb",
+     "to": "i2",
+     "label": "GET /healthz",
+     "note": "Healthy threshold: 2 passes in a row."
+    },
+    {
+     "from": "i2",
+     "to": "lb",
+     "label": "200",
+     "style": "reply"
+    },
+    {
+     "from": "lb",
+     "to": "lb",
+     "label": "re-admit, weight 10%",
+     "style": "self",
+     "note": "Slow start: its share grows to normal over ~30 s while caches warm."
+    },
+    {
+     "from": "lb",
+     "to": "i2",
+     "label": "requests (ramping)"
+    }
+   ]
+  },
+  {
+   "name": "Risk: deep check cascade",
+   "tone": "risk",
+   "summary": "A health check that pings the database fails on every instance at once when the DB blips: the LB ejects the whole pool. Keep liveness shallow, and fail open when all are unhealthy.",
+   "actors": [
+    {
+     "id": "lb",
+     "label": "L7 proxy",
+     "kind": "load-balancer"
+    },
+    {
+     "id": "i1",
+     "label": "Checkout 1",
+     "kind": "service"
+    },
+    {
+     "id": "i2",
+     "label": "Checkout 2",
+     "kind": "service"
+    },
+    {
+     "id": "db",
+     "label": "Orders DB",
+     "kind": "sql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "lb",
+     "to": "i1",
+     "label": "GET /healthz",
+     "note": "This check also runs SELECT 1 on the database."
+    },
+    {
+     "from": "i1",
+     "to": "db",
+     "label": "SELECT 1",
+     "style": "lost",
+     "note": "The database has a 10 s failover."
+    },
+    {
+     "from": "i1",
+     "to": "lb",
+     "label": "500",
+     "style": "error"
+    },
+    {
+     "from": "lb",
+     "to": "i2",
+     "label": "GET /healthz"
+    },
+    {
+     "from": "i2",
+     "to": "lb",
+     "label": "500",
+     "style": "error",
+     "note": "Every instance fails for the same shared reason."
+    },
+    {
+     "from": "lb",
+     "to": "lb",
+     "label": "eject all → 100% errors",
+     "style": "self",
+     "note": "Ejecting everyone turns a 10 s DB blip into a full outage. Mitigation: shallow /healthz, plus panic mode that keeps routing when all instances look unhealthy."
+    }
+   ]
+  },
+  {
+   "name": "Passive outlier check",
+   "tone": "alternative",
+   "summary": "Watch real responses instead of probes: an instance with 5 straight 5xx is ejected within seconds, even if /healthz still says 200.",
+   "messages": [
+    {
+     "from": "lb",
+     "to": "i2",
+     "label": "POST /api/cart"
+    },
+    {
+     "from": "i2",
+     "to": "lb",
+     "label": "503",
+     "style": "error",
+     "note": "Its disk is full: /healthz still passes, real requests fail."
+    },
+    {
+     "from": "lb",
+     "to": "i2",
+     "label": "GET /api/cart ×4"
+    },
+    {
+     "from": "i2",
+     "to": "lb",
+     "label": "503 ×4",
+     "style": "error",
+     "note": "5 consecutive errors from real traffic."
+    },
+    {
+     "from": "lb",
+     "to": "lb",
+     "label": "eject Checkout 2 for 30 s",
+     "style": "self",
+     "note": "Outlier detection: ejection time grows each time it happens again."
+    },
+    {
+     "from": "lb",
+     "to": "i1",
+     "label": "traffic moves here"
+    }
+   ]
+  }
+ ]
+}

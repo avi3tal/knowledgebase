@@ -1,0 +1,224 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: moving one tenant to another shard while it stays online",
+ "caption": "Copy and catch up while the tenant keeps working; the only pause is a second-long freeze of that one tenant before the map flips.",
+ "base_name": "Live move",
+ "actors": [
+  {
+   "id": "rebal",
+   "label": "Rebalancer",
+   "kind": "worker"
+  },
+  {
+   "id": "map",
+   "label": "Shard map",
+   "kind": "coordinator"
+  },
+  {
+   "id": "router",
+   "label": "Shard router",
+   "kind": "service"
+  },
+  {
+   "id": "src",
+   "label": "Shard 2 (source)",
+   "kind": "sql"
+  },
+  {
+   "id": "dst",
+   "label": "Shard 4 (target)",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "rebal",
+   "to": "src",
+   "label": "snapshot tenant 812",
+   "note": "Take a consistent snapshot of the tenant's rows and remember the change-log position."
+  },
+  {
+   "from": "src",
+   "to": "dst",
+   "label": "bulk copy",
+   "style": "async",
+   "note": "Tenant 812 keeps reading and writing on shard 2 the whole time."
+  },
+  {
+   "from": "src",
+   "to": "dst",
+   "label": "stream changes since snapshot",
+   "style": "async",
+   "note": "Replay the change log until shard 4 is only milliseconds behind."
+  },
+  {
+   "from": "rebal",
+   "to": "dst",
+   "label": "verify counts + checksums"
+  },
+  {
+   "from": "rebal",
+   "to": "map",
+   "label": "tenant 812: pause writes",
+   "note": "Writes for this one tenant wait (about a second); every other tenant is unaffected."
+  },
+  {
+   "from": "src",
+   "to": "dst",
+   "label": "drain last changes",
+   "style": "async"
+  },
+  {
+   "from": "rebal",
+   "to": "map",
+   "label": "tenant 812 → shard 4 (v18)",
+   "note": "The single atomic step that makes the move real."
+  },
+  {
+   "from": "map",
+   "to": "router",
+   "label": "push v18",
+   "style": "async",
+   "note": "Routers switch; held writes resume on shard 4."
+  },
+  {
+   "from": "rebal",
+   "to": "src",
+   "label": "delete tenant 812 rows",
+   "style": "async",
+   "note": "Later, after a rollback window of a day or so."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Target fails mid-copy",
+   "tone": "failure",
+   "summary": "Because the map flips last, a failed move is simply abandoned: the source was authoritative all along.",
+   "messages": [
+    {
+     "from": "rebal",
+     "to": "src",
+     "label": "snapshot tenant 812"
+    },
+    {
+     "from": "src",
+     "to": "dst",
+     "label": "bulk copy",
+     "style": "async"
+    },
+    {
+     "from": "src",
+     "to": "dst",
+     "label": "stream changes",
+     "style": "lost",
+     "note": "Shard 4's disk fails halfway through the catch-up."
+    },
+    {
+     "from": "rebal",
+     "to": "dst",
+     "label": "verify counts",
+     "style": "error",
+     "note": "No answer: the move is marked failed."
+    },
+    {
+     "from": "rebal",
+     "to": "map",
+     "label": "no change",
+     "note": "The map still says shard 2; the tenant never noticed."
+    },
+    {
+     "from": "rebal",
+     "to": "src",
+     "label": "retry to shard 3 later",
+     "note": "Partial data on shard 4 is discarded."
+    }
+   ]
+  },
+  {
+   "name": "Copy can't catch up",
+   "tone": "risk",
+   "summary": "If a tenant writes faster than changes can be replayed, the lag never reaches zero. Throttle, or move it at a quiet hour.",
+   "messages": [
+    {
+     "from": "rebal",
+     "to": "src",
+     "label": "snapshot tenant 812"
+    },
+    {
+     "from": "src",
+     "to": "dst",
+     "label": "bulk copy",
+     "style": "async"
+    },
+    {
+     "from": "src",
+     "to": "dst",
+     "label": "stream changes (lag 40 s)",
+     "style": "async",
+     "note": "A nightly import writes faster than shard 4 applies changes."
+    },
+    {
+     "from": "src",
+     "to": "dst",
+     "label": "stream changes (lag 55 s)",
+     "style": "async",
+     "note": "The lag grows, so the write pause before the flip would be far too long."
+    },
+    {
+     "from": "rebal",
+     "to": "rebal",
+     "label": "back off until 02:00",
+     "style": "self",
+     "note": "Abort or pause, and retry when the tenant is quiet; alert if a move keeps failing."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: dual writes",
+   "tone": "alternative",
+   "summary": "Writing to both shards from the app avoids a change-log pipeline, but every write path must handle one side failing.",
+   "messages": [
+    {
+     "from": "rebal",
+     "to": "map",
+     "label": "tenant 812: dual-write mode"
+    },
+    {
+     "from": "map",
+     "to": "router",
+     "label": "push mode",
+     "style": "async"
+    },
+    {
+     "from": "router",
+     "to": "src",
+     "label": "write",
+     "note": "Every write for tenant 812 goes to both shards."
+    },
+    {
+     "from": "router",
+     "to": "dst",
+     "label": "write"
+    },
+    {
+     "from": "src",
+     "to": "dst",
+     "label": "backfill old rows",
+     "style": "async"
+    },
+    {
+     "from": "router",
+     "to": "dst",
+     "label": "write fails",
+     "style": "error",
+     "note": "If one side fails the two copies diverge, so a repair job must compare and fix them."
+    },
+    {
+     "from": "rebal",
+     "to": "map",
+     "label": "tenant 812 → shard 4"
+    }
+   ]
+  }
+ ]
+}

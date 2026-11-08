@@ -1,0 +1,361 @@
+{
+ "kind": "architecture",
+ "title": "The system: a photo-sharing app, every box labelled with its number",
+ "caption": "Read the sub-labels: 23 writes/s, 17k reads/s, 5.5 PB and 23 Gbps each pick a different component.",
+ "base_name": "Average day",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "client",
+   "label": "Mobile app",
+   "sub": "10M DAU",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN",
+   "sub": "23 Gbps avg out",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "sub": "17k req/s peak",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "up",
+   "kind": "service",
+   "label": "Upload API",
+   "sub": "23 uploads/s",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "photo",
+   "kind": "service",
+   "label": "Photo API",
+   "sub": "17k reads/s peak",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Photo store",
+   "sub": "1 TB/day ×3",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Resize queue",
+   "sub": "23 msgs/s",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "rz",
+   "kind": "worker",
+   "label": "Resizer",
+   "sub": "3 sizes/photo",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "cache",
+   "kind": "cache",
+   "label": "Metadata cache",
+   "sub": "~20 GB hot set",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Metadata DB",
+   "sub": "2 GB/day",
+   "x": 690,
+   "y": 420
+  },
+  {
+   "id": "rep",
+   "kind": "sql",
+   "label": "Read replicas",
+   "sub": "serve misses",
+   "x": 920,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "cdn",
+   "label": "photo bytes"
+  },
+  {
+   "from": "app",
+   "to": "lb"
+  },
+  {
+   "from": "cdn",
+   "to": "blob",
+   "label": "miss ~5%"
+  },
+  {
+   "from": "lb",
+   "to": "up"
+  },
+  {
+   "from": "lb",
+   "to": "photo"
+  },
+  {
+   "from": "up",
+   "to": "blob",
+   "label": "original"
+  },
+  {
+   "from": "up",
+   "to": "q"
+  },
+  {
+   "from": "q",
+   "to": "rz"
+  },
+  {
+   "from": "rz",
+   "to": "blob",
+   "label": "sizes"
+  },
+  {
+   "from": "rz",
+   "to": "db",
+   "label": "photo row"
+  },
+  {
+   "from": "photo",
+   "to": "cache"
+  },
+  {
+   "from": "photo",
+   "to": "db",
+   "label": "miss"
+  },
+  {
+   "from": "db",
+   "to": "rep"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Five assumptions drive everything: 10 M daily users, 1 in 5 posts a photo a day, each views 50, 500 KB per photo, peak = 3× average.",
+   "nodes": [
+    "app"
+   ]
+  },
+  {
+   "text": "Writes: 2 M uploads/day ÷ 1e5 s ≈ 23/s. That is tiny: one Upload API pool and one database primary, no sharding.",
+   "nodes": [
+    "app",
+    "lb",
+    "up"
+   ],
+   "edges": [
+    "app>lb",
+    "lb>up"
+   ]
+  },
+  {
+   "text": "Bytes: 2 M × 500 KB = 1 TB/day, ×3 replicas, ×5 years ≈ 5.5 PB. That number alone says object storage, never database rows. Resizing goes through a queue so uploads return fast.",
+   "nodes": [
+    "up",
+    "blob",
+    "q",
+    "rz"
+   ],
+   "edges": [
+    "up>blob",
+    "up>q",
+    "q>rz",
+    "rz>blob"
+   ]
+  },
+  {
+   "text": "Metadata is a different number: 1 KB per photo ≈ 2 GB/day, about 3.6 TB in 5 years. One relational primary holds it.",
+   "nodes": [
+    "rz",
+    "db"
+   ],
+   "edges": [
+    "rz>db"
+   ]
+  },
+  {
+   "text": "Reads: 500 M views/day ≈ 5 800/s, 17 400/s at peak, past one database. A cache with ~95% hits leaves under 1 000 reads/s for the DB and its replicas.",
+   "nodes": [
+    "lb",
+    "photo",
+    "cache",
+    "db",
+    "rep"
+   ],
+   "edges": [
+    "lb>photo",
+    "photo>cache",
+    "photo>db",
+    "db>rep"
+   ]
+  },
+  {
+   "text": "Egress: 5 800 × 500 KB × 8 ≈ 23 Gbps on average, ~70 Gbps at peak. Only a CDN serves that; the photo store sees misses only.",
+   "nodes": [
+    "app",
+    "cdn",
+    "blob"
+   ],
+   "edges": [
+    "app>cdn",
+    "cdn>blob"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "8 pm peak",
+   "tone": "edge",
+   "summary": "Design for the peak, not the average: 3× the reads and egress arrive at once, and only the read path and the edge feel it.",
+   "steps": [
+    {
+     "text": "Evening peak: 17 400 views/s and ~70 Gbps of photo bytes.",
+     "nodes": [
+      "app"
+     ],
+     "edges": [
+      "app>cdn",
+      "app>lb"
+     ]
+    },
+    {
+     "text": "The CDN serves ~66 Gbps from the edge; the origin sends ~3.5 Gbps.",
+     "nodes": [
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "app>cdn",
+      "cdn>blob"
+     ]
+    },
+    {
+     "text": "The Photo API pool scales out to ~4 servers; the cache takes ~16 500 reads/s.",
+     "nodes": [
+      "lb",
+      "photo",
+      "cache"
+     ],
+     "edges": [
+      "lb>photo",
+      "photo>cache"
+     ]
+    },
+    {
+     "text": "Uploads peak at ~70/s: still nothing for the write path.",
+     "nodes": [
+      "up",
+      "db"
+     ],
+     "edges": [
+      "lb>up",
+      "rz>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Cache down",
+   "tone": "failure",
+   "summary": "Lose the cache and 17 400 reads/s land on a tier sized for 900: the estimate tells you the replicas or a warm standby cache must exist.",
+   "steps": [
+    {
+     "text": "The metadata cache cluster restarts empty during peak.",
+     "fail": [
+      "cache",
+      "photo>cache"
+     ],
+     "nodes": [
+      "photo"
+     ]
+    },
+    {
+     "text": "All 17 400 reads/s go to a database tier sized for ~900 misses/s: about 20× its normal load.",
+     "fail": [
+      "cache"
+     ],
+     "nodes": [
+      "photo",
+      "db",
+      "rep"
+     ],
+     "edges": [
+      "photo>db",
+      "db>rep"
+     ]
+    },
+    {
+     "text": "Mitigate: shed non-critical reads, warm the cache from recent photos, and keep a replica cache in another zone.",
+     "nodes": [
+      "cache",
+      "db"
+     ],
+     "edges": [
+      "photo>cache"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Viral photo",
+   "tone": "edge",
+   "summary": "One photo, 1 M views in an hour (~280/s): per-key load is small, and the CDN and cache serve it. The total, not one key, drives the design here.",
+   "steps": [
+    {
+     "text": "A photo goes viral: 1 M views in an hour ≈ 280/s, ~1 Gbps for that one object.",
+     "nodes": [
+      "app"
+     ],
+     "edges": [
+      "app>cdn"
+     ]
+    },
+    {
+     "text": "The first request per edge misses and fetches from the store; then the edge serves it.",
+     "nodes": [
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "cdn>blob"
+     ]
+    },
+    {
+     "text": "Its metadata is one hot cache key at 280 reads/s: fine for one cache node.",
+     "nodes": [
+      "photo",
+      "cache"
+     ],
+     "edges": [
+      "lb>photo",
+      "photo>cache"
+     ]
+    }
+   ]
+  }
+ ]
+}

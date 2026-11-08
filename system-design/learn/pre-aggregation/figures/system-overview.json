@@ -1,0 +1,372 @@
+{
+ "kind": "architecture",
+ "title": "The system: ad-click analytics that counts once on ingest and reconciles nightly",
+ "caption": "A streaming job folds clicks into minute rows as they arrive; the raw archive is the source of truth that a nightly batch uses to correct and finalise the numbers.",
+ "base_name": "Normal day",
+ "nodes": [
+  {
+   "id": "ads",
+   "kind": "service",
+   "label": "Ad servers",
+   "sub": "emit click events",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "stream",
+   "kind": "stream",
+   "label": "Click stream",
+   "sub": "partitioned by ad",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "proc",
+   "kind": "worker",
+   "label": "Stream processor",
+   "sub": "1-min windows",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "roll",
+   "kind": "nosql",
+   "label": "Rollup store",
+   "sub": "minute/hour/day",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "query",
+   "kind": "service",
+   "label": "Query API",
+   "sub": "picks a tier",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "raw",
+   "kind": "blob",
+   "label": "Raw archive",
+   "sub": "hourly files",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "recon",
+   "kind": "scheduler",
+   "label": "Nightly recon",
+   "sub": "batch recompute",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "cat",
+   "kind": "sql",
+   "label": "Ad catalog",
+   "sub": "ads, owners",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "dash",
+   "kind": "client",
+   "label": "Dashboards",
+   "sub": "advertisers",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "olap",
+   "kind": "sql",
+   "label": "OLAP warehouse",
+   "sub": "ad-hoc analysis",
+   "x": 230,
+   "y": 280
+  },
+  {
+   "id": "bill",
+   "kind": "service",
+   "label": "Billing",
+   "sub": "final daily spend",
+   "x": 460,
+   "y": 280
+  }
+ ],
+ "edges": [
+  {
+   "from": "ads",
+   "to": "stream",
+   "label": "click events"
+  },
+  {
+   "from": "stream",
+   "to": "proc"
+  },
+  {
+   "from": "proc",
+   "to": "roll",
+   "label": "upsert rows"
+  },
+  {
+   "from": "stream",
+   "to": "raw",
+   "label": "archive sink"
+  },
+  {
+   "from": "raw",
+   "to": "recon"
+  },
+  {
+   "from": "recon",
+   "to": "roll",
+   "label": "overwrite hour/day"
+  },
+  {
+   "from": "recon",
+   "to": "bill"
+  },
+  {
+   "from": "raw",
+   "to": "olap",
+   "label": "load"
+  },
+  {
+   "from": "dash",
+   "to": "query"
+  },
+  {
+   "from": "query",
+   "to": "roll",
+   "label": "read one tier"
+  },
+  {
+   "from": "query",
+   "to": "cat",
+   "label": "owner check"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Ad servers emit one event per click (event id, ad id, timestamp, price) to a stream partitioned by ad id: about 40 000 events/s at peak.",
+   "nodes": [
+    "ads",
+    "stream"
+   ],
+   "edges": [
+    "ads>stream"
+   ]
+  },
+  {
+   "text": "The stream processor keeps an open one-minute window per active ad in memory and, when the window closes, upserts an (ad, minute) row with count and spend.",
+   "nodes": [
+    "stream",
+    "proc",
+    "roll"
+   ],
+   "edges": [
+    "stream>proc",
+    "proc>roll"
+   ]
+  },
+  {
+   "text": "Hour and day rows are built from the minute rows, and each tier is kept for longer: 30 days, 1 year, forever.",
+   "nodes": [
+    "roll"
+   ],
+   "edges": [
+    "proc>roll"
+   ]
+  },
+  {
+   "text": "The same events are archived untouched in hourly files: the raw archive is the source of truth, and analysts query it through the warehouse.",
+   "nodes": [
+    "stream",
+    "raw",
+    "olap"
+   ],
+   "edges": [
+    "stream>raw",
+    "raw>olap"
+   ]
+  },
+  {
+   "text": "Every night a batch job recomputes yesterday from raw (dedup by event id, invalid-click filtering), overwrites the hour and day rows, and sends final spend to billing.",
+   "nodes": [
+    "raw",
+    "recon",
+    "roll",
+    "bill"
+   ],
+   "edges": [
+    "raw>recon",
+    "recon>roll",
+    "recon>bill"
+   ]
+  },
+  {
+   "text": "A dashboard asks for 'clicks per hour, last 7 days, my campaign'. The query API checks ownership, picks the hour tier and reads 168 rows per ad.",
+   "nodes": [
+    "dash",
+    "query",
+    "cat",
+    "roll"
+   ],
+   "edges": [
+    "dash>query",
+    "query>cat",
+    "query>roll"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Traffic spike",
+   "tone": "edge",
+   "summary": "A live sports final brings 8× the usual clicks. The stream buffers, the processor lags a little, and dashboards stay fast.",
+   "steps": [
+    {
+     "text": "Clicks jump to 320 000/s for 20 minutes.",
+     "nodes": [
+      "ads",
+      "stream"
+     ],
+     "edges": [
+      "ads>stream"
+     ]
+    },
+    {
+     "text": "The stream absorbs the burst; processors scale out up to one per partition and lag by about a minute.",
+     "nodes": [
+      "stream",
+      "proc"
+     ],
+     "edges": [
+      "stream>proc"
+     ]
+    },
+    {
+     "text": "Rollup write volume grows with active ads, not with clicks: one row per ad per minute either way.",
+     "nodes": [
+      "proc",
+      "roll"
+     ],
+     "edges": [
+      "proc>roll"
+     ]
+    },
+    {
+     "text": "Dashboard queries are unchanged in cost; they show 'data as of 12:41' so the lag is visible, not hidden.",
+     "nodes": [
+      "dash",
+      "query",
+      "roll"
+     ],
+     "edges": [
+      "dash>query",
+      "query>roll"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Processor crash",
+   "tone": "failure",
+   "summary": "A processor dies with open windows in memory. It restarts from a checkpoint and replays; rows are written as absolute values, so nothing is double counted.",
+   "steps": [
+    {
+     "text": "One processor instance dies; its open windows for 2 000 ads vanish from memory.",
+     "fail": [
+      "proc",
+      "proc>roll"
+     ],
+     "nodes": [
+      "stream"
+     ]
+    },
+    {
+     "text": "A replacement loads the last checkpoint (window state plus stream offsets, taken every 30 s) and replays the stream from there.",
+     "nodes": [
+      "stream",
+      "proc"
+     ],
+     "edges": [
+      "stream>proc"
+     ]
+    },
+    {
+     "text": "It rewrites the same (ad, minute) rows with the full value (set, not increment), so replayed events don't add twice.",
+     "nodes": [
+      "proc",
+      "roll"
+     ],
+     "edges": [
+      "proc>roll"
+     ]
+    },
+    {
+     "text": "Nightly recon from raw would correct any drift anyway.",
+     "nodes": [
+      "raw",
+      "recon",
+      "roll"
+     ],
+     "edges": [
+      "raw>recon",
+      "recon>roll"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Fraud rule change",
+   "tone": "edge",
+   "summary": "The fraud team tightens the invalid-click rule. Streaming numbers keep the old rule for today; recon restates the past from raw.",
+   "steps": [
+    {
+     "text": "A new rule ships to the batch job first; the streaming job gets it on its next deploy.",
+     "nodes": [
+      "recon"
+     ],
+     "edges": [
+      "raw>recon"
+     ]
+    },
+    {
+     "text": "Tonight's recon recomputes yesterday with the new rule and overwrites the hour and day rows.",
+     "nodes": [
+      "raw",
+      "recon",
+      "roll"
+     ],
+     "edges": [
+      "raw>recon",
+      "recon>roll"
+     ]
+    },
+    {
+     "text": "A backfill reruns recon for the last 30 days, oldest day first; billing gets corrected totals and a credit note.",
+     "nodes": [
+      "recon",
+      "bill"
+     ],
+     "edges": [
+      "recon>bill"
+     ]
+    },
+    {
+     "text": "Dashboards label days as 'final' or 'provisional', so a changed number is explained, not a surprise.",
+     "nodes": [
+      "dash",
+      "query",
+      "roll"
+     ],
+     "edges": [
+      "dash>query",
+      "query>roll"
+     ]
+    }
+   ]
+  }
+ ]
+}

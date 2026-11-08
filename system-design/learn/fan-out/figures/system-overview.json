@@ -1,0 +1,392 @@
+{
+ "kind": "architecture",
+ "title": "The system: a social network's home timeline, built on write and merged on read",
+ "caption": "One post is written once, then fanned out asynchronously to follower timelines and to notifications; the feed service merges in the few accounts too big to push.",
+ "base_name": "Normal post",
+ "nodes": [
+  {
+   "id": "author",
+   "kind": "client",
+   "label": "Author app",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "postapi",
+   "kind": "service",
+   "label": "Post API",
+   "sub": "write path",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "log",
+   "kind": "stream",
+   "label": "Post events",
+   "sub": "partitioned by author",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "notif",
+   "kind": "worker",
+   "label": "Notifier",
+   "sub": "2nd consumer",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "push",
+   "kind": "external",
+   "label": "Push provider",
+   "sub": "APNs / FCM",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "posts",
+   "kind": "nosql",
+   "label": "Post store",
+   "sub": "by id + by author",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "workers",
+   "kind": "worker",
+   "label": "Fan-out workers",
+   "sub": "push to followers",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "graph",
+   "kind": "nosql",
+   "label": "Follow graph",
+   "sub": "followers by user",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "reader",
+   "kind": "client",
+   "label": "Reader app",
+   "x": 0,
+   "y": 280
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "API gateway",
+   "x": 230,
+   "y": 280
+  },
+  {
+   "id": "feed",
+   "kind": "service",
+   "label": "Feed service",
+   "sub": "merge + hydrate",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "tl",
+   "kind": "cache",
+   "label": "Timeline cache",
+   "sub": "post ids per user",
+   "x": 690,
+   "y": 280
+  }
+ ],
+ "edges": [
+  {
+   "from": "author",
+   "to": "postapi"
+  },
+  {
+   "from": "postapi",
+   "to": "posts",
+   "label": "write once"
+  },
+  {
+   "from": "postapi",
+   "to": "log",
+   "label": "PostCreated"
+  },
+  {
+   "from": "log",
+   "to": "notif"
+  },
+  {
+   "from": "notif",
+   "to": "push"
+  },
+  {
+   "from": "log",
+   "to": "workers"
+  },
+  {
+   "from": "workers",
+   "to": "graph",
+   "label": "follower pages"
+  },
+  {
+   "from": "workers",
+   "to": "tl",
+   "label": "add post id"
+  },
+  {
+   "from": "reader",
+   "to": "gw"
+  },
+  {
+   "from": "gw",
+   "to": "feed"
+  },
+  {
+   "from": "feed",
+   "to": "tl",
+   "label": "read ids"
+  },
+  {
+   "from": "feed",
+   "to": "posts",
+   "label": "celebs + bodies"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The author posts. The post API writes it once to the post store, by id and onto the author's own recent-posts list.",
+   "nodes": [
+    "author",
+    "postapi",
+    "posts"
+   ],
+   "edges": [
+    "author>postapi",
+    "postapi>posts"
+   ]
+  },
+  {
+   "text": "It publishes a PostCreated event to a log partitioned by author and returns. The author waits about 20 ms, not for the fan-out.",
+   "nodes": [
+    "postapi",
+    "log"
+   ],
+   "edges": [
+    "postapi>log"
+   ]
+  },
+  {
+   "text": "Fan-out workers consume the event, page through the author's followers 1 000 at a time and add the post id to each follower's timeline (capped at the newest 800 ids).",
+   "nodes": [
+    "log",
+    "workers",
+    "graph",
+    "tl"
+   ],
+   "edges": [
+    "log>workers",
+    "workers>graph",
+    "workers>tl"
+   ]
+  },
+  {
+   "text": "Notifications are a second, independent consumer of the same event: only the followers who turned alerts on get a push.",
+   "nodes": [
+    "log",
+    "notif",
+    "push"
+   ],
+   "edges": [
+    "log>notif",
+    "notif>push"
+   ]
+  },
+  {
+   "text": "A reader opens the app. The feed service reads their timeline ids and the short list of very big accounts they follow, one cache read.",
+   "nodes": [
+    "reader",
+    "gw",
+    "feed",
+    "tl"
+   ],
+   "edges": [
+    "reader>gw",
+    "gw>feed",
+    "feed>tl"
+   ]
+  },
+  {
+   "text": "It pulls the recent posts of those big accounts from the post store, merges everything by time and hydrates the bodies in one multi-get.",
+   "nodes": [
+    "feed",
+    "posts"
+   ],
+   "edges": [
+    "feed>posts"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Celebrity posts",
+   "tone": "edge",
+   "summary": "An account with 30 M followers posts. Pushing would be 30 M writes; the hybrid writes once and lets readers pull it.",
+   "steps": [
+    {
+     "text": "The post is written once, exactly like any other.",
+     "nodes": [
+      "author",
+      "postapi",
+      "posts"
+     ],
+     "edges": [
+      "author>postapi",
+      "postapi>posts"
+     ]
+    },
+    {
+     "text": "The event carries the author's follower count. The workers see it is above the threshold (say 500 k) and skip the timeline writes.",
+     "nodes": [
+      "log",
+      "workers"
+     ],
+     "edges": [
+      "postapi>log",
+      "log>workers"
+     ]
+    },
+    {
+     "text": "The notifier still runs, but only for opted-in followers, spread over a few minutes so the push provider is not flooded.",
+     "nodes": [
+      "notif",
+      "push"
+     ],
+     "edges": [
+      "log>notif",
+      "notif>push"
+     ]
+    },
+    {
+     "text": "Each reader who follows the account gets the post merged in at read time from the author's recent list.",
+     "nodes": [
+      "feed",
+      "posts",
+      "tl"
+     ],
+     "edges": [
+      "feed>tl",
+      "feed>posts"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Fan-out worker crash",
+   "tone": "failure",
+   "summary": "A worker dies half-way through a big follower list. The event is not lost and the retry does no harm.",
+   "steps": [
+    {
+     "text": "A worker crashes after writing to 400 k of 900 k followers. It never committed its log offset.",
+     "fail": [
+      "workers",
+      "workers>tl"
+     ],
+     "nodes": [
+      "log"
+     ],
+     "edges": [
+      "log>workers"
+     ]
+    },
+    {
+     "text": "The log redelivers the event to another worker, which resumes from the last follower page it checkpointed.",
+     "nodes": [
+      "log",
+      "workers",
+      "graph"
+     ],
+     "edges": [
+      "log>workers",
+      "workers>graph"
+     ]
+    },
+    {
+     "text": "Timeline entries are keyed by post id, so any page written twice is a no-op. Followers late in the list just see the post a few seconds later.",
+     "nodes": [
+      "workers",
+      "tl"
+     ],
+     "edges": [
+      "workers>tl"
+     ]
+    },
+    {
+     "text": "Readers were never blocked: the feed kept serving whatever each timeline held.",
+     "nodes": [
+      "reader",
+      "feed",
+      "tl"
+     ],
+     "edges": [
+      "reader>gw",
+      "gw>feed",
+      "feed>tl"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Threshold change",
+   "tone": "edge",
+   "summary": "Operators lower the celebrity threshold from 1 M to 500 k followers to cut fan-out cost: a config change, not a migration.",
+   "steps": [
+    {
+     "text": "The new threshold is published as config; workers and the feed service pick it up within seconds.",
+     "nodes": [
+      "workers",
+      "feed"
+     ],
+     "edges": [
+      "log>workers"
+     ]
+    },
+    {
+     "text": "Accounts between 500 k and 1 M stop being pushed: their next posts are written once and skipped by the workers.",
+     "nodes": [
+      "postapi",
+      "posts",
+      "workers"
+     ],
+     "edges": [
+      "postapi>posts",
+      "log>workers"
+     ]
+    },
+    {
+     "text": "Their followers' lists of big accounts are refreshed, so the feed starts pulling those authors.",
+     "nodes": [
+      "feed",
+      "tl",
+      "posts"
+     ],
+     "edges": [
+      "feed>tl",
+      "feed>posts"
+     ]
+    },
+    {
+     "text": "Older pushed posts from those authors are still in the timelines; the merge drops duplicates by post id until they age out.",
+     "nodes": [
+      "feed",
+      "tl"
+     ],
+     "edges": [
+      "feed>tl"
+     ]
+    }
+   ]
+  }
+ ]
+}

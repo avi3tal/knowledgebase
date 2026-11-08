@@ -1,0 +1,324 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: a message is ready, leased, acked, retried or parked",
+ "caption": "The broker deletes a message only on ack; every failure path leads back to ready or to the dead-letter queue.",
+ "base_name": "Acked first time",
+ "nodes": [
+  {
+   "id": "pub",
+   "kind": "service",
+   "label": "Checkout API",
+   "x": 0,
+   "y": 130
+  },
+  {
+   "id": "ready",
+   "kind": "queue",
+   "label": "Payment queue",
+   "sub": "ready",
+   "x": 230,
+   "y": 130
+  },
+  {
+   "id": "fly",
+   "kind": "queue",
+   "label": "In flight",
+   "sub": "leased for 30 s",
+   "x": 460,
+   "y": 130
+  },
+  {
+   "id": "w",
+   "kind": "worker",
+   "label": "Payment worker",
+   "x": 690,
+   "y": 130
+  },
+  {
+   "id": "psp",
+   "kind": "external",
+   "label": "Payment provider",
+   "x": 920,
+   "y": 130
+  },
+  {
+   "id": "delay",
+   "kind": "scheduler",
+   "label": "Retry scheduler",
+   "sub": "backoff + jitter",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "dlq",
+   "kind": "queue",
+   "label": "Dead letters",
+   "x": 460,
+   "y": 270
+  },
+  {
+   "id": "tool",
+   "kind": "service",
+   "label": "Redrive tool",
+   "x": 230,
+   "y": 270
+  }
+ ],
+ "edges": [
+  {
+   "from": "pub",
+   "to": "ready",
+   "label": "publish"
+  },
+  {
+   "from": "ready",
+   "to": "fly",
+   "label": "receive"
+  },
+  {
+   "from": "fly",
+   "to": "w",
+   "label": "deliver"
+  },
+  {
+   "from": "w",
+   "to": "psp",
+   "label": "charge, key = order"
+  },
+  {
+   "from": "w",
+   "to": "fly",
+   "label": "ack → delete"
+  },
+  {
+   "from": "w",
+   "to": "delay",
+   "label": "nack"
+  },
+  {
+   "from": "delay",
+   "to": "ready",
+   "label": "due again"
+  },
+  {
+   "from": "fly",
+   "to": "ready",
+   "label": "lease expired"
+  },
+  {
+   "from": "fly",
+   "to": "dlq",
+   "label": "attempts > 5"
+  },
+  {
+   "from": "dlq",
+   "to": "tool",
+   "label": "inspect"
+  },
+  {
+   "from": "tool",
+   "to": "ready",
+   "label": "redrive"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The message is published and waits in the ready state.",
+   "nodes": [
+    "pub",
+    "ready"
+   ],
+   "edges": [
+    "pub>ready"
+   ]
+  },
+  {
+   "text": "A worker receives it. The broker doesn't delete it; it leases it: the message is invisible to other workers for 30 s.",
+   "nodes": [
+    "ready",
+    "fly"
+   ],
+   "edges": [
+    "ready>fly",
+    "fly>w"
+   ]
+  },
+  {
+   "text": "The worker charges the card, sending the order id as the provider's idempotency key.",
+   "nodes": [
+    "w",
+    "psp"
+   ],
+   "edges": [
+    "w>psp"
+   ]
+  },
+  {
+   "text": "Success: the worker acks, and only then is the message deleted. Ack after the effect, never before.",
+   "nodes": [
+    "w",
+    "fly"
+   ],
+   "edges": [
+    "w>fly"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Provider times out",
+   "tone": "failure",
+   "summary": "A transient error is retried later, not immediately, so a struggling provider isn't hammered while it recovers.",
+   "steps": [
+    {
+     "text": "The charge times out after 3 s.",
+     "nodes": [
+      "w"
+     ],
+     "edges": [
+      "fly>w"
+     ],
+     "fail": [
+      "psp",
+      "w>psp"
+     ]
+    },
+    {
+     "text": "The worker nacks with a delay: retry in 10 s, plus random jitter so a thousand failures don't all return at the same instant.",
+     "nodes": [
+      "w",
+      "delay"
+     ],
+     "edges": [
+      "w>delay"
+     ]
+    },
+    {
+     "text": "When the delay is due the message is ready again, with its attempt count raised to 2.",
+     "nodes": [
+      "delay",
+      "ready"
+     ],
+     "edges": [
+      "delay>ready"
+     ]
+    },
+    {
+     "text": "The second attempt succeeds. If the first charge had actually gone through, the same key makes the provider return that result instead of charging again.",
+     "nodes": [
+      "fly",
+      "w",
+      "psp"
+     ],
+     "edges": [
+      "ready>fly",
+      "fly>w",
+      "w>psp",
+      "w>fly"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Worker crashes",
+   "tone": "failure",
+   "summary": "No ack means no delete: the lease runs out and the message comes back by itself. At-least-once delivery, so handlers must be idempotent.",
+   "steps": [
+    {
+     "text": "The worker receives the message and is killed mid-charge (out of memory).",
+     "nodes": [
+      "fly"
+     ],
+     "edges": [
+      "ready>fly",
+      "fly>w"
+     ],
+     "fail": [
+      "w"
+     ]
+    },
+    {
+     "text": "Nobody acks. After 30 s the lease expires and the broker makes the message ready again.",
+     "nodes": [
+      "fly",
+      "ready"
+     ],
+     "edges": [
+      "fly>ready"
+     ],
+     "fail": [
+      "w"
+     ]
+    },
+    {
+     "text": "Another worker picks it up and charges with the same key: the customer is charged once.",
+     "nodes": [
+      "fly",
+      "w",
+      "psp"
+     ],
+     "edges": [
+      "ready>fly",
+      "fly>w",
+      "w>psp",
+      "w>fly"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Poison message",
+   "tone": "edge",
+   "summary": "A message that can never succeed is moved aside after N attempts, so it costs five tries and an alert instead of an endless loop.",
+   "steps": [
+    {
+     "text": "An order carries a malformed currency code: the handler throws every time.",
+     "nodes": [
+      "w"
+     ],
+     "edges": [
+      "fly>w"
+     ],
+     "fail": [
+      "w"
+     ]
+    },
+    {
+     "text": "Each failure returns it via the retry scheduler; the attempt count climbs.",
+     "nodes": [
+      "delay",
+      "ready",
+      "fly"
+     ],
+     "edges": [
+      "w>delay",
+      "delay>ready",
+      "ready>fly"
+     ]
+    },
+    {
+     "text": "At attempt 6 the broker moves it to the dead-letter queue instead of delivering it again. The rest of the queue keeps flowing.",
+     "nodes": [
+      "fly",
+      "dlq"
+     ],
+     "edges": [
+      "fly>dlq"
+     ]
+    },
+    {
+     "text": "An engineer inspects it, ships the fix, and the redrive tool sends it back to the ready queue.",
+     "nodes": [
+      "dlq",
+      "tool",
+      "ready"
+     ],
+     "edges": [
+      "dlq>tool",
+      "tool>ready"
+     ]
+    }
+   ]
+  }
+ ]
+}

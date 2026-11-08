@@ -1,0 +1,386 @@
+{
+ "kind": "architecture",
+ "title": "The system: a food-delivery checkout that charges exactly once",
+ "caption": "The key is born on the phone, claimed in the payments DB, passed on to the card processor, and every event downstream carries an id that consumers dedup on.",
+ "base_name": "One checkout",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "client",
+   "label": "Mobile app",
+   "sub": "key per Pay tap",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "API gateway",
+   "sub": "auth, routing",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "recon",
+   "kind": "scheduler",
+   "label": "Reconciler",
+   "sub": "daily vs PSP report",
+   "x": 230,
+   "y": 280
+  },
+  {
+   "id": "pay",
+   "kind": "service",
+   "label": "Payment service",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Payments DB",
+   "sub": "idem keys + ledger",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "psp",
+   "kind": "external",
+   "label": "Card processor",
+   "sub": "dedups on key too",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "relay",
+   "kind": "worker",
+   "label": "Outbox relay",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "pdb",
+   "kind": "sql",
+   "label": "Points DB",
+   "sub": "points + seen ids",
+   "x": 690,
+   "y": 420
+  },
+  {
+   "id": "rcpt",
+   "kind": "worker",
+   "label": "Receipts",
+   "sub": "email per payment",
+   "x": 920,
+   "y": 140
+  },
+  {
+   "id": "bus",
+   "kind": "stream",
+   "label": "Event stream",
+   "sub": "at-least-once",
+   "x": 920,
+   "y": 280
+  },
+  {
+   "id": "pts",
+   "kind": "worker",
+   "label": "Loyalty points",
+   "sub": "dedup by event_id",
+   "x": 920,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "gw",
+   "label": "POST /pay + key"
+  },
+  {
+   "from": "gw",
+   "to": "pay"
+  },
+  {
+   "from": "pay",
+   "to": "db",
+   "label": "claim key"
+  },
+  {
+   "from": "pay",
+   "to": "psp",
+   "label": "charge, same key"
+  },
+  {
+   "from": "psp",
+   "to": "pay",
+   "label": "webhook"
+  },
+  {
+   "from": "gw",
+   "to": "app",
+   "label": "201 or replay"
+  },
+  {
+   "from": "db",
+   "to": "relay",
+   "label": "outbox rows"
+  },
+  {
+   "from": "relay",
+   "to": "bus",
+   "label": "PaymentSucceeded"
+  },
+  {
+   "from": "bus",
+   "to": "rcpt"
+  },
+  {
+   "from": "bus",
+   "to": "pts"
+  },
+  {
+   "from": "pts",
+   "to": "pdb",
+   "label": "effect + seen id"
+  },
+  {
+   "from": "recon",
+   "to": "db",
+   "label": "match ledger"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The guest taps Pay. The app creates one UUID for this checkout and stores it, so every retry, even after the app restarts, sends the same Idempotency-Key.",
+   "nodes": [
+    "app",
+    "gw"
+   ],
+   "edges": [
+    "app>gw"
+   ]
+  },
+  {
+   "text": "The payment service inserts the key with status in_progress and a hash of the request. The unique index lets exactly one attempt win the claim.",
+   "nodes": [
+    "pay",
+    "db"
+   ],
+   "edges": [
+    "gw>pay",
+    "pay>db"
+   ]
+  },
+  {
+   "text": "The winner charges the card and passes a key derived from the same one, so the processor also refuses a second charge.",
+   "nodes": [
+    "pay",
+    "psp"
+   ],
+   "edges": [
+    "pay>psp"
+   ]
+  },
+  {
+   "text": "One local transaction writes the payment, marks the key done with the stored response, and adds an outbox row. The 201 goes back to the app.",
+   "nodes": [
+    "pay",
+    "db",
+    "gw",
+    "app"
+   ],
+   "edges": [
+    "pay>db",
+    "gw>app"
+   ]
+  },
+  {
+   "text": "The outbox relay publishes PaymentSucceeded. The stream promises at-least-once delivery, so duplicates are normal.",
+   "nodes": [
+    "db",
+    "relay",
+    "bus"
+   ],
+   "edges": [
+    "db>relay",
+    "relay>bus"
+   ]
+  },
+  {
+   "text": "Each consumer dedups on event_id: points are added and the id recorded in one transaction; the receipt email is keyed by payment id.",
+   "nodes": [
+    "bus",
+    "rcpt",
+    "pts",
+    "pdb"
+   ],
+   "edges": [
+    "bus>rcpt",
+    "bus>pts",
+    "pts>pdb"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Dinner rush",
+   "tone": "edge",
+   "summary": "Mobile networks drop 2% of replies at peak: retries become steady traffic, and the key turns them into cheap reads.",
+   "steps": [
+    {
+     "text": "20 000 checkouts a minute; 400 of them never see their reply and retry with backoff and jitter.",
+     "nodes": [
+      "app",
+      "gw"
+     ],
+     "edges": [
+      "app>gw"
+     ]
+    },
+    {
+     "text": "A retry that finds the key done gets the stored response straight from the DB: no charge, ~2 ms.",
+     "nodes": [
+      "pay",
+      "db"
+     ],
+     "edges": [
+      "gw>pay",
+      "pay>db",
+      "gw>app"
+     ]
+    },
+    {
+     "text": "A retry that arrives while the first attempt is still charging finds in_progress and gets 409 with Retry-After.",
+     "nodes": [
+      "pay",
+      "db",
+      "app"
+     ],
+     "edges": [
+      "pay>db",
+      "gw>app"
+     ]
+    },
+    {
+     "text": "The processor sees one charge per checkout; the reconciler finds nothing to fix.",
+     "nodes": [
+      "psp",
+      "recon"
+     ],
+     "edges": [
+      "pay>psp",
+      "recon>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Relay publishes twice",
+   "tone": "failure",
+   "summary": "The relay crashes after publishing but before marking the outbox row sent: the event goes out again, and the consumers absorb it.",
+   "steps": [
+    {
+     "text": "The relay publishes PaymentSucceeded for pay_42.",
+     "nodes": [
+      "relay",
+      "bus"
+     ],
+     "edges": [
+      "db>relay",
+      "relay>bus"
+     ]
+    },
+    {
+     "text": "It dies before recording that the row was sent.",
+     "fail": [
+      "relay"
+     ],
+     "nodes": [
+      "relay"
+     ]
+    },
+    {
+     "text": "A new relay instance reads the same unsent row and publishes pay_42 again.",
+     "nodes": [
+      "relay",
+      "bus"
+     ],
+     "edges": [
+      "db>relay",
+      "relay>bus"
+     ]
+    },
+    {
+     "text": "Loyalty points tries to insert event_id into its seen table; the conflict means skip. Points are added once.",
+     "nodes": [
+      "pts",
+      "pdb"
+     ],
+     "edges": [
+      "bus>pts",
+      "pts>pdb"
+     ]
+    },
+    {
+     "text": "The receipt sender checks 'already sent for pay_42' and stays quiet.",
+     "nodes": [
+      "rcpt"
+     ],
+     "edges": [
+      "bus>rcpt"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Retention cut",
+   "tone": "risk",
+   "summary": "To save storage, someone shortens key retention from 7 days to 1 hour. An app that retries later is no longer recognised.",
+   "steps": [
+    {
+     "text": "A cleanup change deletes key rows older than 1 hour.",
+     "fail": [
+      "db"
+     ],
+     "nodes": [
+      "db"
+     ]
+    },
+    {
+     "text": "A phone that lost signal on a train comes back 3 hours later and retries the stored request with its key.",
+     "nodes": [
+      "app",
+      "gw",
+      "pay"
+     ],
+     "edges": [
+      "app>gw",
+      "gw>pay"
+     ]
+    },
+    {
+     "text": "The key looks new, the claim succeeds, and only the processor's own dedup window (or nothing) stands between the guest and a second charge.",
+     "nodes": [
+      "pay",
+      "psp"
+     ],
+     "edges": [
+      "pay>db",
+      "pay>psp"
+     ]
+    },
+    {
+     "text": "Mitigation: retention longer than the longest client retry horizon, plus a UNIQUE(order_id) on payments as a second referee.",
+     "nodes": [
+      "db",
+      "recon"
+     ],
+     "edges": [
+      "recon>db"
+     ]
+    }
+   ]
+  }
+ ]
+}

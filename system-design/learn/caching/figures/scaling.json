@@ -1,0 +1,398 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the read path: from no cache to caches in every region",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: no cache",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Shoppers",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "x": 260,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Catalog DB",
+   "x": 520,
+   "y": 140
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "app"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "3–5 queries/page"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Every page view runs a few queries against the catalog DB. Simple, and always fresh.",
+   "nodes": [
+    "app",
+    "db"
+   ],
+   "edges": [
+    "c>app",
+    "app>db"
+   ]
+  },
+  {
+   "text": "The DB is the bottleneck: read replicas help for a while, but p99 latency climbs with load and each replica costs a full DB.",
+   "nodes": [
+    "db"
+   ],
+   "edges": [
+    "app>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: one cache node",
+   "tone": "scale",
+   "summary": "Put one in-memory cache in front of the DB with cache-aside reads and a TTL.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "cache",
+     "kind": "cache",
+     "label": "Cache node",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Catalog DB",
+     "x": 520,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "app"
+    },
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "GET / SET"
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "misses"
+    }
+   ],
+   "steps": [
+    {
+     "text": "At a 95% hit rate, the DB sees one read in twenty and pages come back in about 1 ms.",
+     "nodes": [
+      "app",
+      "cache"
+     ],
+     "edges": [
+      "c>app",
+      "app>cache"
+     ]
+    },
+    {
+     "text": "Misses fill the cache from the DB.",
+     "nodes": [
+      "app",
+      "db"
+     ],
+     "edges": [
+      "app>db"
+     ]
+    },
+    {
+     "text": "Cost: stale data up to the TTL, and one node is a single point of failure. A restart empties it and the DB takes the full load until it warms up.",
+     "nodes": [
+      "cache"
+     ],
+     "edges": [
+      "app>cache"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: cache cluster",
+   "tone": "scale",
+   "summary": "Shard keys over several cache nodes with consistent hashing, each with a replica.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "client-side hashing",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "s1",
+     "kind": "cache",
+     "label": "Cache shard 1",
+     "sub": "+ replica",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "cache",
+     "label": "Cache shard 2",
+     "sub": "+ replica",
+     "x": 520,
+     "y": 140
+    },
+    {
+     "id": "s3",
+     "kind": "cache",
+     "label": "Cache shard 3",
+     "sub": "+ replica",
+     "x": 520,
+     "y": 280
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Catalog DB",
+     "x": 780,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "app"
+    },
+    {
+     "from": "app",
+     "to": "s1"
+    },
+    {
+     "from": "app",
+     "to": "s2"
+    },
+    {
+     "from": "app",
+     "to": "s3"
+    },
+    {
+     "from": "s2",
+     "to": "db",
+     "label": "misses via app"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Memory and throughput now grow with the number of shards; each key lives on exactly one.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "app>s1",
+      "app>s2",
+      "app>s3"
+     ]
+    },
+    {
+     "text": "A shard that dies fails over to its replica; adding a shard moves only about 1/N of the keys.",
+     "nodes": [
+      "s2"
+     ],
+     "edges": [
+      "app>s2"
+     ]
+    },
+    {
+     "text": "Cost: more to operate, and a single very popular key still lands on one shard, so the cluster doesn't fix hot keys.",
+     "nodes": [
+      "s2",
+      "db"
+     ],
+     "edges": [
+      "s2>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: multi-tier, multi-region",
+   "tone": "scale",
+   "summary": "Add a CDN and per-pod local caches, and run a cache cluster in each region fed by the same change events.",
+   "nodes": [
+    {
+     "id": "ue",
+     "kind": "client",
+     "label": "Shoppers (EU)",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "us",
+     "kind": "client",
+     "label": "Shoppers (US)",
+     "x": 0,
+     "y": 280
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN",
+     "x": 260,
+     "y": 140
+    },
+    {
+     "id": "ae",
+     "kind": "service",
+     "label": "EU app + LRU",
+     "x": 520,
+     "y": 0
+    },
+    {
+     "id": "as",
+     "kind": "service",
+     "label": "US app + LRU",
+     "x": 520,
+     "y": 280
+    },
+    {
+     "id": "ce",
+     "kind": "cache",
+     "label": "EU cache cluster",
+     "x": 780,
+     "y": 0
+    },
+    {
+     "id": "cs",
+     "kind": "cache",
+     "label": "US cache cluster",
+     "x": 780,
+     "y": 280
+    },
+    {
+     "id": "ev",
+     "kind": "stream",
+     "label": "Change events",
+     "sub": "fan-out to regions",
+     "x": 780,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "ue",
+     "to": "cdn"
+    },
+    {
+     "from": "us",
+     "to": "cdn"
+    },
+    {
+     "from": "cdn",
+     "to": "ae"
+    },
+    {
+     "from": "cdn",
+     "to": "as"
+    },
+    {
+     "from": "ae",
+     "to": "ce"
+    },
+    {
+     "from": "as",
+     "to": "cs"
+    },
+    {
+     "from": "ev",
+     "to": "ce",
+     "label": "DEL"
+    },
+    {
+     "from": "ev",
+     "to": "cs",
+     "label": "DEL"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The CDN answers most reads near the user; the rest go to the nearest region.",
+     "nodes": [
+      "ue",
+      "us",
+      "cdn"
+     ],
+     "edges": [
+      "ue>cdn",
+      "us>cdn",
+      "cdn>ae",
+      "cdn>as"
+     ]
+    },
+    {
+     "text": "Each region has its own local caches and cache cluster, so a read never crosses an ocean.",
+     "nodes": [
+      "ae",
+      "ce",
+      "as",
+      "cs"
+     ],
+     "edges": [
+      "ae>ce",
+      "as>cs"
+     ]
+    },
+    {
+     "text": "Cost: one change must now be invalidated in every tier and every region. Events reach the far region a little later, so its copies stay stale for a moment longer.",
+     "nodes": [
+      "ev",
+      "ce",
+      "cs"
+     ],
+     "edges": [
+      "ev>ce",
+      "ev>cs"
+     ]
+    }
+   ]
+  }
+ ]
+}

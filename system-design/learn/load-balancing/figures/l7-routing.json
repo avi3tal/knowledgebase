@@ -1,0 +1,432 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: what the L7 proxy decides for one request",
+ "caption": "Routing, instance choice and retries all happen per request: that is what L7 buys over L4, at the cost of TLS and parsing CPU.",
+ "base_name": "Routed and served",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "HTTPS request",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "tls",
+   "type": "step",
+   "label": "Terminate TLS",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "match",
+   "type": "decision",
+   "label": "Route matches?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "nf",
+   "type": "end",
+   "label": "404 at the edge",
+   "col": 1,
+   "row": 2,
+   "tone": "bad"
+  },
+  {
+   "id": "pool",
+   "type": "step",
+   "label": "Pool by path",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "hl",
+   "type": "decision",
+   "label": "Healthy instance?",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "none",
+   "type": "end",
+   "label": "503 + fallback",
+   "col": 1,
+   "row": 4,
+   "tone": "bad"
+  },
+  {
+   "id": "pick",
+   "type": "step",
+   "label": "Least requests",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "fwd",
+   "type": "step",
+   "label": "Forward, timeout",
+   "col": 0,
+   "row": 6
+  },
+  {
+   "id": "err",
+   "type": "decision",
+   "label": "5xx or timeout?",
+   "col": 0,
+   "row": 7
+  },
+  {
+   "id": "retry",
+   "type": "step",
+   "label": "Retry 1× elsewhere",
+   "col": 1,
+   "row": 7
+  },
+  {
+   "id": "r2",
+   "type": "end",
+   "label": "Response or 502",
+   "col": 1,
+   "row": 8,
+   "tone": "bad"
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "200 to shopper",
+   "col": 0,
+   "row": 8,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "tls"
+  },
+  {
+   "from": "tls",
+   "to": "match"
+  },
+  {
+   "from": "match",
+   "to": "nf",
+   "label": "no"
+  },
+  {
+   "from": "match",
+   "to": "pool",
+   "label": "yes"
+  },
+  {
+   "from": "pool",
+   "to": "hl"
+  },
+  {
+   "from": "hl",
+   "to": "none",
+   "label": "no"
+  },
+  {
+   "from": "hl",
+   "to": "pick",
+   "label": "yes"
+  },
+  {
+   "from": "pick",
+   "to": "fwd"
+  },
+  {
+   "from": "fwd",
+   "to": "err"
+  },
+  {
+   "from": "err",
+   "to": "ok",
+   "label": "no"
+  },
+  {
+   "from": "err",
+   "to": "retry",
+   "label": "yes"
+  },
+  {
+   "from": "retry",
+   "to": "r2"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Decrypt once at the proxy: certificates live here, not on every service.",
+   "nodes": [
+    "in",
+    "tls"
+   ],
+   "edges": [
+    "in>tls"
+   ]
+  },
+  {
+   "text": "Match host and path against the route table: /api/cart/* → checkout pool.",
+   "nodes": [
+    "match",
+    "pool"
+   ],
+   "edges": [
+    "tls>match",
+    "match>pool"
+   ]
+  },
+  {
+   "text": "The pool has healthy instances (the health checker keeps this list fresh).",
+   "nodes": [
+    "hl"
+   ],
+   "edges": [
+    "pool>hl",
+    "hl>pick"
+   ]
+  },
+  {
+   "text": "Pick the instance with the fewest requests in flight: slow instances naturally get less.",
+   "nodes": [
+    "pick",
+    "fwd"
+   ],
+   "edges": [
+    "hl>pick",
+    "pick>fwd"
+   ]
+  },
+  {
+   "text": "Forward with a timeout; a normal response goes straight back.",
+   "nodes": [
+    "err",
+    "ok"
+   ],
+   "edges": [
+    "fwd>err",
+    "err>ok"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Instance returns 503",
+   "tone": "edge",
+   "summary": "One retry on another instance hides a single bad instance, but only for idempotent requests, and with a retry budget so retries don't double the load.",
+   "steps": [
+    {
+     "text": "Same route and pool; the chosen instance is overloaded.",
+     "nodes": [
+      "pool",
+      "pick"
+     ],
+     "edges": [
+      "match>pool",
+      "pool>hl",
+      "hl>pick",
+      "pick>fwd"
+     ]
+    },
+    {
+     "text": "It answers 503 after 200 ms.",
+     "nodes": [
+      "fwd",
+      "err"
+     ],
+     "edges": [
+      "fwd>err"
+     ]
+    },
+    {
+     "text": "GET /api/cart is idempotent: retry once on a different instance. A POST /checkout is not retried unless it carries an idempotency key.",
+     "nodes": [
+      "retry",
+      "r2"
+     ],
+     "edges": [
+      "err>retry",
+      "retry>r2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Whole pool unhealthy",
+   "tone": "failure",
+   "summary": "No healthy checkout instance: fail fast with 503 and a friendly page instead of queueing requests until every proxy runs out of connections.",
+   "steps": [
+    {
+     "text": "A bad deploy makes every checkout instance fail its health check.",
+     "fail": [
+      "pick"
+     ],
+     "nodes": [
+      "pool",
+      "hl"
+     ],
+     "edges": [
+      "pool>hl"
+     ]
+    },
+    {
+     "text": "The proxy has nowhere to send /api/cart: return 503 with Retry-After immediately.",
+     "nodes": [
+      "none"
+     ],
+     "edges": [
+      "hl>none"
+     ]
+    },
+    {
+     "text": "Other routes still work: / and /api/search use different pools.",
+     "nodes": [
+      "match",
+      "pool"
+     ],
+     "edges": [
+      "tls>match",
+      "match>pool"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: sticky routing",
+   "tone": "alternative",
+   "summary": "Hash a session cookie to pick the instance: in-memory session state works, but load skews and a restart loses those sessions.",
+   "nodes": [
+    {
+     "id": "in",
+     "type": "start",
+     "label": "HTTPS request",
+     "col": 0,
+     "row": 0
+    },
+    {
+     "id": "tls",
+     "type": "step",
+     "label": "Terminate TLS",
+     "col": 0,
+     "row": 1
+    },
+    {
+     "id": "ck",
+     "type": "decision",
+     "label": "Session cookie?",
+     "col": 0,
+     "row": 2
+    },
+    {
+     "id": "rr",
+     "type": "step",
+     "label": "Least requests",
+     "col": 1,
+     "row": 2
+    },
+    {
+     "id": "hash",
+     "type": "step",
+     "label": "Hash cookie → inst",
+     "col": 0,
+     "row": 3
+    },
+    {
+     "id": "up",
+     "type": "decision",
+     "label": "Instance healthy?",
+     "col": 0,
+     "row": 4
+    },
+    {
+     "id": "lost",
+     "type": "end",
+     "label": "New one: cart lost",
+     "col": 1,
+     "row": 4,
+     "tone": "bad"
+    },
+    {
+     "id": "ok",
+     "type": "end",
+     "label": "Same instance",
+     "col": 0,
+     "row": 5,
+     "tone": "good"
+    }
+   ],
+   "edges": [
+    {
+     "from": "in",
+     "to": "tls"
+    },
+    {
+     "from": "tls",
+     "to": "ck"
+    },
+    {
+     "from": "ck",
+     "to": "rr",
+     "label": "no"
+    },
+    {
+     "from": "ck",
+     "to": "hash",
+     "label": "yes"
+    },
+    {
+     "from": "hash",
+     "to": "up"
+    },
+    {
+     "from": "up",
+     "to": "lost",
+     "label": "no"
+    },
+    {
+     "from": "up",
+     "to": "ok",
+     "label": "yes"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A returning shopper sends a session cookie.",
+     "nodes": [
+      "in",
+      "tls",
+      "ck"
+     ],
+     "edges": [
+      "in>tls",
+      "tls>ck"
+     ]
+    },
+    {
+     "text": "The proxy hashes it to the same instance every time.",
+     "nodes": [
+      "hash",
+      "up",
+      "ok"
+     ],
+     "edges": [
+      "ck>hash",
+      "hash>up",
+      "up>ok"
+     ]
+    },
+    {
+     "text": "If that instance restarts, the shopper lands elsewhere and the in-memory cart is gone. Hence: shared session store.",
+     "nodes": [
+      "lost"
+     ],
+     "edges": [
+      "up>lost"
+     ]
+    }
+   ]
+  }
+ ]
+}

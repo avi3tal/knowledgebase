@@ -1,0 +1,179 @@
+{
+ "kind": "sequence",
+ "title": "Deep dive: redeem a limited code without overselling",
+ "caption": "Read-then-write lets two checkouts take the last use; one conditional update makes the database decide.",
+ "base_name": "The bug: read, then write",
+ "actors": [
+  {
+   "id": "r1",
+   "label": "Redeem API 1",
+   "kind": "service"
+  },
+  {
+   "id": "db",
+   "label": "Coupon DB",
+   "kind": "sql"
+  },
+  {
+   "id": "r2",
+   "label": "Redeem API 2",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "r1",
+   "to": "db",
+   "label": "SELECT uses → 9 999",
+   "note": "Code LAUNCH10K has a limit of 10 000. Checkout 1 sees one use left."
+  },
+  {
+   "from": "r2",
+   "to": "db",
+   "label": "SELECT uses → 9 999",
+   "note": "Checkout 2 reads before checkout 1 writes: it also sees one left."
+  },
+  {
+   "from": "r1",
+   "to": "db",
+   "label": "SET uses = 10 000",
+   "note": "Checkout 1 applies the discount."
+  },
+  {
+   "from": "r2",
+   "to": "db",
+   "label": "SET uses = 10 000",
+   "style": "error",
+   "note": "Checkout 2 does too: 10 001 discounts given, and the counter says 10 000. The lost update grows with traffic."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Fix: conditional update",
+   "tone": "happy",
+   "summary": "One statement checks and increments: UPDATE … SET uses = uses + 1 WHERE id = ? AND uses < limit. Rows affected tells you the answer.",
+   "messages": [
+    {
+     "from": "r1",
+     "to": "db",
+     "label": "UPDATE … WHERE uses < limit",
+     "note": "Checkout 1's update runs first and takes the row lock."
+    },
+    {
+     "from": "db",
+     "to": "r1",
+     "label": "1 row → apply",
+     "style": "reply",
+     "note": "uses is now 10 000: the last use."
+    },
+    {
+     "from": "r2",
+     "to": "db",
+     "label": "UPDATE … WHERE uses < limit",
+     "note": "Checkout 2's update runs after the lock is released."
+    },
+    {
+     "from": "db",
+     "to": "r2",
+     "label": "0 rows → used up",
+     "style": "error",
+     "note": "The condition fails: checkout 2 shows \"code fully redeemed\". No oversell is possible."
+    }
+   ]
+  },
+  {
+   "name": "Payment fails after redeem",
+   "tone": "failure",
+   "summary": "A use taken by an order that never completes must come back: redeem inside the order transaction, or reserve with a TTL and release on failure.",
+   "messages": [
+    {
+     "from": "r1",
+     "to": "db",
+     "label": "UPDATE uses + 1",
+     "note": "Checkout 1 takes a use."
+    },
+    {
+     "from": "db",
+     "to": "r1",
+     "label": "1 row",
+     "style": "reply"
+    },
+    {
+     "from": "r1",
+     "to": "r1",
+     "label": "payment declined",
+     "style": "error",
+     "note": "The order fails after the use was counted."
+    },
+    {
+     "from": "r1",
+     "to": "db",
+     "label": "release (uses − 1)",
+     "style": "lost",
+     "note": "If the release is lost, the code runs out early. Mitigation: reservation rows with a 10-minute TTL and a sweeper."
+    },
+    {
+     "from": "r2",
+     "to": "db",
+     "label": "UPDATE uses + 1",
+     "note": "With the reservation expired, the use is available again."
+    },
+    {
+     "from": "db",
+     "to": "r2",
+     "label": "1 row → apply",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Alternative: token pool",
+   "tone": "alternative",
+   "summary": "For a doorbuster, pre-issue 10 000 tokens into an in-memory list and pop one per redeem: no hot row lock, but you must reconcile tokens lost to crashes.",
+   "actors": [
+    {
+     "id": "r1",
+     "label": "Redeem API 1",
+     "kind": "service"
+    },
+    {
+     "id": "tp",
+     "label": "Token pool",
+     "kind": "cache"
+    },
+    {
+     "id": "r2",
+     "label": "Redeem API 2",
+     "kind": "service"
+    }
+   ],
+   "messages": [
+    {
+     "from": "r1",
+     "to": "tp",
+     "label": "LPOP LAUNCH10K",
+     "note": "One atomic pop per redeem: ~100k ops/s on one cache node."
+    },
+    {
+     "from": "tp",
+     "to": "r1",
+     "label": "token 7 312",
+     "style": "reply",
+     "note": "Checkout 1 owns that use; the order row records the token."
+    },
+    {
+     "from": "r2",
+     "to": "tp",
+     "label": "LPOP LAUNCH10K"
+    },
+    {
+     "from": "tp",
+     "to": "r2",
+     "label": "empty → used up",
+     "style": "error",
+     "note": "The pool is empty: rejected without touching the database."
+    }
+   ]
+  }
+ ]
+}

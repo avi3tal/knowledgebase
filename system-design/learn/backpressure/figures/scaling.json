@@ -1,0 +1,445 @@
+{
+ "kind": "architecture",
+ "title": "Scaling checkout under pressure: from one big buffer to bounded stages",
+ "caption": "Each stage removes the previous bottleneck and adds a cost; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: unbounded queue",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Buyers",
+   "x": 0,
+   "y": 130
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Checkout API",
+   "x": 260,
+   "y": 130
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "In-memory queue",
+   "sub": "unbounded",
+   "x": 520,
+   "y": 130
+  },
+  {
+   "id": "w",
+   "kind": "worker",
+   "label": "Workers",
+   "sub": "fixed: 10",
+   "x": 780,
+   "y": 130
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "q"
+  },
+  {
+   "from": "q",
+   "to": "w"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The API accepts everything and appends it to an in-memory queue.",
+   "nodes": [
+    "c",
+    "api",
+    "q"
+   ],
+   "edges": [
+    "c>api",
+    "api>q"
+   ]
+  },
+  {
+   "text": "A burst is absorbed. Sustained overload isn't: at 400/s in and 250/s out the backlog grows by 150 every second.",
+   "nodes": [
+    "q",
+    "w"
+   ],
+   "edges": [
+    "q>w"
+   ]
+  },
+  {
+   "text": "After minutes the wait exceeds every client timeout, and then memory runs out and the process dies with the queue inside it.",
+   "nodes": [
+    "q"
+   ],
+   "fail": [
+    "q"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: bounded + shed",
+   "tone": "scale",
+   "summary": "A bound and a fast rejection make overload safe; they don't add capacity.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Buyers",
+     "x": 0,
+     "y": 130
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Checkout API",
+     "sub": "admission",
+     "x": 260,
+     "y": 130
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Durable queue",
+     "sub": "max 2 000",
+     "x": 520,
+     "y": 130
+    },
+    {
+     "id": "w",
+     "kind": "worker",
+     "label": "Workers",
+     "sub": "fixed: 10",
+     "x": 780,
+     "y": 130
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "503 when full"
+    },
+    {
+     "from": "api",
+     "to": "q"
+    },
+    {
+     "from": "q",
+     "to": "w",
+     "label": "pull"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Bound the queue to a few seconds of work and move it to a durable broker.",
+     "nodes": [
+      "api",
+      "q"
+     ],
+     "edges": [
+      "api>q"
+     ]
+    },
+    {
+     "text": "When it's full, reject at once with 503 and Retry-After. Latency is capped and memory can't run out.",
+     "nodes": [
+      "api",
+      "c"
+     ],
+     "edges": [
+      "api>c"
+     ]
+    },
+    {
+     "text": "Cost: capacity hasn't changed. At peak, more buyers see errors; the bound only makes overload safe.",
+     "nodes": [
+      "w"
+     ],
+     "edges": [
+      "q>w"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: autoscaled workers",
+   "tone": "scale",
+   "summary": "Scale consumers on queue depth and age, up to what the database can take.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Buyers",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Checkout API",
+     "sub": "admission",
+     "x": 250,
+     "y": 150
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Order queue",
+     "sub": "max 2 000",
+     "x": 500,
+     "y": 150
+    },
+    {
+     "id": "w",
+     "kind": "worker",
+     "label": "Workers",
+     "sub": "10–80",
+     "x": 750,
+     "y": 150
+    },
+    {
+     "id": "as",
+     "kind": "scheduler",
+     "label": "Autoscaler",
+     "sub": "on depth + age",
+     "x": 500,
+     "y": 0
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Seat DB",
+     "sub": "max 400 conns",
+     "x": 1000,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "q"
+    },
+    {
+     "from": "q",
+     "to": "w",
+     "label": "pull"
+    },
+    {
+     "from": "q",
+     "to": "as",
+     "label": "depth"
+    },
+    {
+     "from": "as",
+     "to": "w",
+     "label": "add workers"
+    },
+    {
+     "from": "w",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The autoscaler watches the queue's depth and age and adds workers when it stays high.",
+     "nodes": [
+      "q",
+      "as",
+      "w"
+     ],
+     "edges": [
+      "q>as",
+      "as>w"
+     ]
+    },
+    {
+     "text": "Capacity now follows demand, so shedding only happens during the ramp-up.",
+     "nodes": [
+      "api",
+      "q",
+      "w"
+     ],
+     "edges": [
+      "c>api",
+      "api>q",
+      "q>w"
+     ]
+    },
+    {
+     "text": "Cost: new workers take a minute or two to start, so the bound and the 503s stay. And the database becomes the limit: cap total connections, or 80 workers will overload it.",
+     "nodes": [
+      "w",
+      "db"
+     ],
+     "edges": [
+      "w>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: bounded stages",
+   "tone": "scale",
+   "summary": "A pipeline of bounded stages, so each slow part pushes back on the one before it, and optional work is shed instead.",
+   "nodes": [
+    {
+     "id": "room",
+     "kind": "service",
+     "label": "Waiting room",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Checkout API",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "qr",
+     "kind": "queue",
+     "label": "Reserve queue",
+     "sub": "max 2 000",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "wr",
+     "kind": "worker",
+     "label": "Seat holders",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "qp",
+     "kind": "queue",
+     "label": "Payment queue",
+     "sub": "max 1 000",
+     "x": 460,
+     "y": 150
+    },
+    {
+     "id": "wp",
+     "kind": "worker",
+     "label": "Payment workers",
+     "x": 690,
+     "y": 150
+    },
+    {
+     "id": "qn",
+     "kind": "queue",
+     "label": "Notify queue",
+     "sub": "drop oldest",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "wn",
+     "kind": "worker",
+     "label": "Notifiers",
+     "x": 690,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "room",
+     "to": "api",
+     "label": "admit rate"
+    },
+    {
+     "from": "api",
+     "to": "qr"
+    },
+    {
+     "from": "qr",
+     "to": "wr"
+    },
+    {
+     "from": "wr",
+     "to": "qp",
+     "label": "seats held"
+    },
+    {
+     "from": "qp",
+     "to": "wp"
+    },
+    {
+     "from": "wp",
+     "to": "qn",
+     "label": "confirmed"
+    },
+    {
+     "from": "qn",
+     "to": "wn"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Split the flow into stages, each with its own queue, bound and policy: reserve seats, take payment, notify.",
+     "nodes": [
+      "qr",
+      "qp",
+      "qn"
+     ],
+     "edges": [
+      "api>qr",
+      "wr>qp",
+      "wp>qn"
+     ]
+    },
+    {
+     "text": "A slow payment provider fills only the payment queue; the seat holders block on it and slow down, so the pressure walks back stage by stage to the waiting room.",
+     "nodes": [
+      "qp",
+      "wr",
+      "qr",
+      "room"
+     ],
+     "edges": [
+      "wr>qp",
+      "qr>wr",
+      "room>api"
+     ]
+    },
+    {
+     "text": "Notifications are optional, so that queue drops its oldest messages instead of pushing back on payments.",
+     "nodes": [
+      "qn",
+      "wn"
+     ],
+     "edges": [
+      "qn>wn"
+     ]
+    },
+    {
+     "text": "Cost: more moving parts, a bound to tune per stage, and held seats that must expire if a later stage stays slow.",
+     "nodes": [
+      "wr",
+      "wp"
+     ],
+     "edges": [
+      "qr>wr",
+      "qp>wp"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,153 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: how a key gets on the hot list",
+ "caption": "Pods sample and count locally, a detector merges the counts into a top-K, and the hot list flows back to every pod.",
+ "base_name": "Detect",
+ "actors": [
+  {
+   "id": "app",
+   "label": "Product API pods",
+   "kind": "service"
+  },
+  {
+   "id": "det",
+   "label": "Detector",
+   "kind": "worker"
+  },
+  {
+   "id": "list",
+   "label": "Hot-key list",
+   "kind": "coordinator"
+  },
+  {
+   "id": "sh",
+   "label": "Cache shard 2",
+   "kind": "cache"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "sh",
+   "label": "GET item:777",
+   "note": "Every read still goes to the shard at this point."
+  },
+  {
+   "from": "app",
+   "to": "app",
+   "label": "sample 1 in 100",
+   "style": "self",
+   "note": "Counting every key would cost more than the reads; a sample finds the heavy ones."
+  },
+  {
+   "from": "app",
+   "to": "det",
+   "label": "counts for last 1 s",
+   "style": "async"
+  },
+  {
+   "from": "det",
+   "to": "det",
+   "label": "merge into top-K",
+   "style": "self",
+   "note": "A key is hot when it is far above the average key, here over 1% of all reads."
+  },
+  {
+   "from": "det",
+   "to": "list",
+   "label": "add item:777, 5 min",
+   "note": "Entries expire, so a key that cools down drops off by itself."
+  },
+  {
+   "from": "list",
+   "to": "app",
+   "label": "hot list changed",
+   "style": "async"
+  },
+  {
+   "from": "app",
+   "to": "sh",
+   "label": "refill item:777",
+   "note": "Now about one read per pod per second; the rest are served from pod memory."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Key cools down",
+   "tone": "edge",
+   "summary": "The drop sells out and traffic falls. Removal needs a lower threshold than adding, or the key flips in and out of the list.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "det",
+     "label": "counts for last 1 s",
+     "style": "async"
+    },
+    {
+     "from": "det",
+     "to": "det",
+     "label": "777 under 0.2% for 2 min",
+     "style": "self",
+     "note": "Two thresholds (add above 1%, remove below 0.2%) stop flapping."
+    },
+    {
+     "from": "det",
+     "to": "list",
+     "label": "remove item:777"
+    },
+    {
+     "from": "list",
+     "to": "app",
+     "label": "hot list changed",
+     "style": "async"
+    },
+    {
+     "from": "app",
+     "to": "sh",
+     "label": "GET item:777",
+     "note": "Back to normal reads with no local copy."
+    }
+   ]
+  },
+  {
+   "name": "Detector down",
+   "tone": "failure",
+   "summary": "Detection is an optimisation. If it stops, existing entries live out their expiry and new hot keys go unnoticed.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "det",
+     "label": "counts for last 1 s",
+     "style": "lost",
+     "note": "The detector is down; samples go nowhere."
+    },
+    {
+     "from": "app",
+     "to": "app",
+     "label": "keep current hot list",
+     "style": "self",
+     "note": "Entries already on the list keep working until they expire."
+    },
+    {
+     "from": "app",
+     "to": "sh",
+     "label": "GET item:512",
+     "note": "A newly viral item is not protected: its shard takes every read."
+    },
+    {
+     "from": "sh",
+     "to": "app",
+     "label": "timeout",
+     "style": "error"
+    },
+    {
+     "from": "app",
+     "to": "app",
+     "label": "local fallback: top keys",
+     "style": "self",
+     "note": "Mitigation: each pod also keeps its own small top-K, so it can protect itself without the detector."
+    }
+   ]
+  }
+ ]
+}

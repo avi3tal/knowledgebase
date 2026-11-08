@@ -1,0 +1,294 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: one product read, from local memory to the database",
+ "caption": "Each check is cheaper than the next; only one request per key goes all the way to the database.",
+ "base_name": "Local miss, shared hit",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "GET product 42",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "local",
+   "type": "decision",
+   "label": "In local LRU?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "retl",
+   "type": "end",
+   "label": "Return local",
+   "col": 1,
+   "row": 1,
+   "tone": "good"
+  },
+  {
+   "id": "shared",
+   "type": "decision",
+   "label": "In cache cluster?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "rets",
+   "type": "end",
+   "label": "Return, fill LRU",
+   "col": 1,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "lock",
+   "type": "decision",
+   "label": "Won the fill lock?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "wait",
+   "type": "step",
+   "label": "Wait, read again",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "db",
+   "type": "step",
+   "label": "Read DB replica",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "set",
+   "type": "step",
+   "label": "SET with TTL",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "ret",
+   "type": "end",
+   "label": "Return product",
+   "col": 0,
+   "row": 6,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "local"
+  },
+  {
+   "from": "local",
+   "to": "retl",
+   "label": "yes"
+  },
+  {
+   "from": "local",
+   "to": "shared",
+   "label": "no"
+  },
+  {
+   "from": "shared",
+   "to": "rets",
+   "label": "yes"
+  },
+  {
+   "from": "shared",
+   "to": "lock",
+   "label": "no"
+  },
+  {
+   "from": "lock",
+   "to": "db",
+   "label": "yes"
+  },
+  {
+   "from": "lock",
+   "to": "wait",
+   "label": "no"
+  },
+  {
+   "from": "wait",
+   "to": "shared",
+   "label": "retry"
+  },
+  {
+   "from": "db",
+   "to": "set"
+  },
+  {
+   "from": "set",
+   "to": "ret"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Check the pod's own memory first: about 50 µs, but only the hottest products and only for 5 s.",
+   "nodes": [
+    "in",
+    "local"
+   ],
+   "edges": [
+    "in>local"
+   ]
+  },
+  {
+   "text": "Not there: one GET to the cache cluster, about 1 ms.",
+   "nodes": [
+    "local",
+    "shared"
+   ],
+   "edges": [
+    "local>shared"
+   ]
+  },
+  {
+   "text": "Hit: copy it into the local LRU for the next 5 s and return.",
+   "nodes": [
+    "shared",
+    "rets"
+   ],
+   "edges": [
+    "shared>rets"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Full miss",
+   "tone": "edge",
+   "summary": "The first reader after an expiry pays for everyone: DB read, then SET with a jittered TTL.",
+   "steps": [
+    {
+     "text": "Both caches miss.",
+     "nodes": [
+      "local",
+      "shared"
+     ],
+     "edges": [
+      "in>local",
+      "local>shared"
+     ]
+    },
+    {
+     "text": "This request takes a short fill lock for the key (SET NX with a 2 s expiry).",
+     "nodes": [
+      "lock"
+     ],
+     "edges": [
+      "shared>lock"
+     ]
+    },
+    {
+     "text": "Read the row from a replica.",
+     "nodes": [
+      "db"
+     ],
+     "edges": [
+      "lock>db"
+     ]
+    },
+    {
+     "text": "SET it with 10 min plus up to 1 min of random jitter, so keys filled together don't expire together.",
+     "nodes": [
+      "set",
+      "ret"
+     ],
+     "edges": [
+      "db>set",
+      "set>ret"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Many misses at once",
+   "tone": "edge",
+   "summary": "Hundreds of requests miss the same key in the same millisecond; only the lock winner reads the DB.",
+   "steps": [
+    {
+     "text": "400 requests for a popular product all miss after its TTL ends.",
+     "nodes": [
+      "shared"
+     ],
+     "edges": [
+      "local>shared"
+     ]
+    },
+    {
+     "text": "One wins the fill lock and reads the DB.",
+     "nodes": [
+      "lock",
+      "db"
+     ],
+     "edges": [
+      "shared>lock",
+      "lock>db"
+     ]
+    },
+    {
+     "text": "The other 399 wait a few ms and read the cache again, which the winner has filled by then.",
+     "nodes": [
+      "wait",
+      "shared",
+      "rets"
+     ],
+     "edges": [
+      "lock>wait",
+      "wait>shared",
+      "shared>rets"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Cache timeout",
+   "tone": "failure",
+   "summary": "The cache cluster is slow or down: don't wait on it and don't let every request fall through to the DB.",
+   "steps": [
+    {
+     "text": "The GET times out after 20 ms.",
+     "fail": [
+      "shared",
+      "local>shared"
+     ],
+     "nodes": [
+      "local"
+     ]
+    },
+    {
+     "text": "Serve the local copy even if it is a few seconds past its TTL (stale beats down for a product page).",
+     "fail": [
+      "shared"
+     ],
+     "nodes": [
+      "retl"
+     ],
+     "edges": [
+      "local>retl"
+     ]
+    },
+    {
+     "text": "No local copy: read the DB, but only within a small per-pod limit of concurrent reads. Above it, return an error the page can render around.",
+     "fail": [
+      "shared"
+     ],
+     "nodes": [
+      "db",
+      "ret"
+     ],
+     "edges": [
+      "db>set",
+      "set>ret"
+     ]
+    }
+   ]
+  }
+ ]
+}

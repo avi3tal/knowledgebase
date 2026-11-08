@@ -1,0 +1,407 @@
+{
+ "kind": "architecture",
+ "title": "The system: a food-delivery platform whose services talk through Kafka",
+ "caption": "Services only write their own data or produce events; every consumer group reads the same retained log at its own pace.",
+ "base_name": "Normal flow",
+ "nodes": [
+  {
+   "id": "osvc",
+   "kind": "service",
+   "label": "Order service",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "odb",
+   "kind": "sql",
+   "label": "Orders DB",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "reg",
+   "kind": "coordinator",
+   "label": "Schema registry",
+   "sub": "compatibility checks",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "cdc",
+   "kind": "worker",
+   "label": "CDC connector",
+   "sub": "DB log → topic",
+   "x": 230,
+   "y": 150
+  },
+  {
+   "id": "csvc",
+   "kind": "service",
+   "label": "Courier service",
+   "sub": "GPS every 4 s",
+   "x": 230,
+   "y": 300
+  },
+  {
+   "id": "kafka",
+   "kind": "stream",
+   "label": "Kafka cluster",
+   "sub": "3 brokers, RF=3",
+   "x": 460,
+   "y": 150
+  },
+  {
+   "id": "proc",
+   "kind": "worker",
+   "label": "Stream processor",
+   "sub": "ETA + fraud score",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "ana",
+   "kind": "worker",
+   "label": "Analytics sink",
+   "sub": "group: analytics",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "idx",
+   "kind": "worker",
+   "label": "Search indexer",
+   "sub": "group: search",
+   "x": 690,
+   "y": 150
+  },
+  {
+   "id": "ntf",
+   "kind": "worker",
+   "label": "Notifier",
+   "sub": "group: notify",
+   "x": 690,
+   "y": 300
+  },
+  {
+   "id": "lake",
+   "kind": "blob",
+   "label": "Data lake",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "search",
+   "kind": "search",
+   "label": "Order search",
+   "x": 920,
+   "y": 150
+  },
+  {
+   "id": "push",
+   "kind": "external",
+   "label": "Push / SMS",
+   "x": 920,
+   "y": 300
+  }
+ ],
+ "edges": [
+  {
+   "from": "osvc",
+   "to": "odb",
+   "label": "write order"
+  },
+  {
+   "from": "odb",
+   "to": "cdc",
+   "label": "change log"
+  },
+  {
+   "from": "cdc",
+   "to": "reg",
+   "label": "schema id"
+  },
+  {
+   "from": "cdc",
+   "to": "kafka",
+   "label": "orders"
+  },
+  {
+   "from": "csvc",
+   "to": "kafka",
+   "label": "courier-locations"
+  },
+  {
+   "from": "kafka",
+   "to": "proc",
+   "label": "orders + locations"
+  },
+  {
+   "from": "proc",
+   "to": "kafka",
+   "label": "eta-updates"
+  },
+  {
+   "from": "kafka",
+   "to": "ana"
+  },
+  {
+   "from": "kafka",
+   "to": "idx"
+  },
+  {
+   "from": "kafka",
+   "to": "ntf"
+  },
+  {
+   "from": "ana",
+   "to": "lake",
+   "label": "hourly files"
+  },
+  {
+   "from": "idx",
+   "to": "search",
+   "label": "upsert by id"
+  },
+  {
+   "from": "ntf",
+   "to": "push"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The order service only writes its own database. It never publishes to Kafka itself, so there is no dual write that can half-fail.",
+   "nodes": [
+    "osvc",
+    "odb"
+   ],
+   "edges": [
+    "osvc>odb"
+   ]
+  },
+  {
+   "text": "A CDC connector tails the database's change log and turns every committed row change into a record on the orders topic, keyed by order_id. Its schema is registered first; an incompatible change is rejected there.",
+   "nodes": [
+    "odb",
+    "cdc",
+    "reg",
+    "kafka"
+   ],
+   "edges": [
+    "odb>cdc",
+    "cdc>reg",
+    "cdc>kafka"
+   ]
+  },
+  {
+   "text": "The courier service produces a GPS ping every 4 s per courier to courier-locations, keyed by courier_id, with acks=all.",
+   "nodes": [
+    "csvc",
+    "kafka"
+   ],
+   "edges": [
+    "csvc>kafka"
+   ]
+  },
+  {
+   "text": "The cluster splits each topic into partitions, keeps 3 replicas of each on different brokers, and retains records for 7 days whether or not anyone has read them.",
+   "nodes": [
+    "kafka"
+   ],
+   "edges": [
+    "cdc>kafka",
+    "csvc>kafka"
+   ]
+  },
+  {
+   "text": "A stream processor joins orders with courier positions, computes ETAs and fraud scores, and writes eta-updates back to Kafka.",
+   "nodes": [
+    "kafka",
+    "proc"
+   ],
+   "edges": [
+    "kafka>proc",
+    "proc>kafka"
+   ]
+  },
+  {
+   "text": "Three consumer groups read the same records independently, each at its own offset: analytics to the lake, the indexer to search, the notifier to customers' phones.",
+   "nodes": [
+    "ana",
+    "idx",
+    "ntf",
+    "lake",
+    "search",
+    "push"
+   ],
+   "edges": [
+    "kafka>ana",
+    "kafka>idx",
+    "kafka>ntf",
+    "ana>lake",
+    "idx>search",
+    "ntf>push"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Dinner rush",
+   "tone": "edge",
+   "summary": "Producers never slow down for consumers: each group falls behind on its own, and lag tells you which one to scale.",
+   "steps": [
+    {
+     "text": "At 19:00 orders and GPS pings triple. Producers write at full speed; brokers only append.",
+     "nodes": [
+      "cdc",
+      "csvc",
+      "kafka"
+     ],
+     "edges": [
+      "cdc>kafka",
+      "csvc>kafka"
+     ]
+    },
+    {
+     "text": "The notifier keeps up, but the search indexer's lag climbs to 90 s: its writes to the search cluster are the slow part.",
+     "nodes": [
+      "idx",
+      "search"
+     ],
+     "edges": [
+      "kafka>idx",
+      "idx>search"
+     ]
+    },
+    {
+     "text": "Add indexer instances. They can only help up to the number of partitions; beyond that, extra members sit idle.",
+     "nodes": [
+      "idx"
+     ],
+     "edges": [
+      "kafka>idx"
+     ]
+    },
+    {
+     "text": "Analytics is hours behind and nobody cares: it batches into hourly files anyway. Alert on lag per group, with a different threshold for each.",
+     "nodes": [
+      "ana",
+      "lake",
+      "ntf"
+     ],
+     "edges": [
+      "kafka>ana",
+      "ana>lake",
+      "kafka>ntf"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Bad indexer deploy",
+   "tone": "failure",
+   "summary": "Because Kafka keeps the log, a corrupted downstream store is rebuilt by rewinding one group's offset; nobody else is affected.",
+   "steps": [
+    {
+     "text": "A bug in a new indexer version writes wrong prices into the search index for 2 days.",
+     "nodes": [
+      "idx"
+     ],
+     "edges": [
+      "kafka>idx"
+     ],
+     "fail": [
+      "search",
+      "idx>search"
+     ]
+    },
+    {
+     "text": "Ship the fix, stop the group, and reset its committed offsets to the time before the bug (still inside the 7-day retention).",
+     "nodes": [
+      "idx",
+      "kafka"
+     ],
+     "edges": [
+      "kafka>idx"
+     ]
+    },
+    {
+     "text": "The indexer replays 2 days of orders. Upserts by order id make the replay safe: each document ends up in its latest correct state.",
+     "nodes": [
+      "idx",
+      "search"
+     ],
+     "edges": [
+      "kafka>idx",
+      "idx>search"
+     ]
+    },
+    {
+     "text": "Analytics and notifier never noticed: their offsets didn't move.",
+     "nodes": [
+      "ana",
+      "ntf"
+     ],
+     "edges": [
+      "kafka>ana",
+      "kafka>ntf"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Schema change",
+   "tone": "edge",
+   "summary": "The registry turns a breaking change into a failed deploy instead of a 3 a.m. consumer crash.",
+   "steps": [
+    {
+     "text": "The order team adds an optional tip field to the order schema.",
+     "nodes": [
+      "osvc",
+      "odb"
+     ],
+     "edges": [
+      "osvc>odb"
+     ]
+    },
+    {
+     "text": "The connector registers version 4. It has a default value, so it is backward compatible and accepted.",
+     "nodes": [
+      "cdc",
+      "reg"
+     ],
+     "edges": [
+      "odb>cdc",
+      "cdc>reg"
+     ]
+    },
+    {
+     "text": "Old consumers keep reading and ignore the new field; the indexer upgrades when it wants to.",
+     "nodes": [
+      "kafka",
+      "ana",
+      "idx",
+      "ntf"
+     ],
+     "edges": [
+      "cdc>kafka",
+      "kafka>ana",
+      "kafka>idx",
+      "kafka>ntf"
+     ]
+    },
+    {
+     "text": "Next month someone tries to rename order_id. The registry rejects the incompatible schema, and the change has to be made as a new field or a new topic.",
+     "nodes": [
+      "reg"
+     ],
+     "edges": [
+      "cdc>reg"
+     ],
+     "fail": [
+      "cdc>reg"
+     ]
+    }
+   ]
+  }
+ ]
+}

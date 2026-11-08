@@ -1,0 +1,291 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: the API's admission decision, cheapest rejection first",
+ "caption": "Three questions, all answered locally in microseconds: token, estimated wait, and room in the queue.",
+ "base_name": "Admitted",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Order request",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "tok",
+   "type": "decision",
+   "label": "Valid token?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "room",
+   "type": "end",
+   "label": "To waiting room",
+   "col": 1,
+   "row": 1,
+   "tone": "bad"
+  },
+  {
+   "id": "wait",
+   "type": "decision",
+   "label": "Wait < deadline?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "late",
+   "type": "end",
+   "label": "503: too slow now",
+   "col": 1,
+   "row": 2,
+   "tone": "bad"
+  },
+  {
+   "id": "full",
+   "type": "decision",
+   "label": "Queue full?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "crit",
+   "type": "decision",
+   "label": "Holds seats?",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "shed",
+   "type": "end",
+   "label": "503 + Retry-After",
+   "col": 2,
+   "row": 3,
+   "tone": "bad"
+  },
+  {
+   "id": "enq",
+   "type": "end",
+   "label": "Enqueue, 202",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "tok"
+  },
+  {
+   "from": "tok",
+   "to": "room",
+   "label": "no"
+  },
+  {
+   "from": "tok",
+   "to": "wait",
+   "label": "yes"
+  },
+  {
+   "from": "wait",
+   "to": "late",
+   "label": "no"
+  },
+  {
+   "from": "wait",
+   "to": "full",
+   "label": "yes"
+  },
+  {
+   "from": "full",
+   "to": "crit",
+   "label": "yes"
+  },
+  {
+   "from": "full",
+   "to": "enq",
+   "label": "no"
+  },
+  {
+   "from": "crit",
+   "to": "shed",
+   "label": "no"
+  },
+  {
+   "from": "crit",
+   "to": "enq",
+   "label": "yes: reserve"
+  }
+ ],
+ "steps": [
+  {
+   "text": "An order arrives at the Checkout API.",
+   "nodes": [
+    "in"
+   ],
+   "edges": [
+    "in>tok"
+   ]
+  },
+  {
+   "text": "It carries a valid, unexpired token from the waiting room.",
+   "nodes": [
+    "tok"
+   ],
+   "edges": [
+    "tok>wait"
+   ]
+  },
+  {
+   "text": "Estimate its wait: queue depth ÷ drain rate (Little's law). 600 orders at 100/s is 6 s, well under the client's 30 s timeout.",
+   "nodes": [
+    "wait"
+   ],
+   "edges": [
+    "wait>full"
+   ]
+  },
+  {
+   "text": "The queue is below its bound.",
+   "nodes": [
+    "full"
+   ],
+   "edges": [
+    "full>enq"
+   ]
+  },
+  {
+   "text": "Enqueue it and answer 202 with an order id the client can poll.",
+   "nodes": [
+    "enq"
+   ],
+   "edges": [
+    "full>enq"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Queue full",
+   "tone": "edge",
+   "summary": "At the bound, a new order is rejected in a millisecond with a hint for when to retry, instead of waiting to fail.",
+   "steps": [
+    {
+     "text": "Same checks: valid token, estimated wait under the deadline.",
+     "nodes": [
+      "tok",
+      "wait"
+     ],
+     "edges": [
+      "in>tok",
+      "tok>wait",
+      "wait>full"
+     ]
+    },
+    {
+     "text": "The queue holds 2 000 orders: it is full.",
+     "nodes": [
+      "full"
+     ],
+     "edges": [
+      "full>crit"
+     ]
+    },
+    {
+     "text": "A new order doesn't hold seats yet, so it gets no reserved space.",
+     "nodes": [
+      "crit"
+     ],
+     "edges": [
+      "crit>shed"
+     ]
+    },
+    {
+     "text": "503 with Retry-After: 15, plus jitter on the client so retries don't arrive together.",
+     "nodes": [
+      "shed"
+     ],
+     "edges": [
+      "crit>shed"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Drain slows",
+   "tone": "failure",
+   "summary": "When workers slow down, the estimated wait crosses the deadline before the queue is even full, and admission stops early.",
+   "steps": [
+    {
+     "text": "Payment is slow, so the drain rate falls from 100/s to 20/s.",
+     "nodes": [
+      "in",
+      "tok"
+     ],
+     "edges": [
+      "in>tok",
+      "tok>wait"
+     ]
+    },
+    {
+     "text": "1 000 queued orders at 20/s is a 50 s wait, longer than the 30 s client timeout.",
+     "nodes": [
+      "wait"
+     ],
+     "edges": [
+      "wait>late"
+     ]
+    },
+    {
+     "text": "Reject now: the order would expire in the queue and its work would be wasted.",
+     "nodes": [
+      "late"
+     ],
+     "edges": [
+      "wait>late"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Held seats, queue full",
+   "tone": "edge",
+   "summary": "Shed the cheapest work first: a buyer already holding seats is finishing a sale, so it may use a small reserved slice.",
+   "steps": [
+    {
+     "text": "The queue is full, but this request confirms payment for seats the buyer already holds.",
+     "nodes": [
+      "full",
+      "crit"
+     ],
+     "edges": [
+      "in>tok",
+      "tok>wait",
+      "wait>full",
+      "full>crit"
+     ]
+    },
+    {
+     "text": "10% of capacity is reserved for this kind of request, so it is admitted.",
+     "nodes": [
+      "crit",
+      "enq"
+     ],
+     "edges": [
+      "crit>enq"
+     ]
+    },
+    {
+     "text": "Without the reservation the hold would expire and the seats would go back on sale unpaid.",
+     "nodes": [
+      "enq"
+     ],
+     "edges": [
+      "crit>enq"
+     ]
+    }
+   ]
+  }
+ ]
+}

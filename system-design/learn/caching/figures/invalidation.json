@@ -1,0 +1,206 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: a price change removes every stale copy",
+ "caption": "The change event comes from the DB's own log, so an update that commits is always followed by its invalidations.",
+ "base_name": "Event-driven invalidation",
+ "actors": [
+  {
+   "id": "m",
+   "label": "Merchant",
+   "kind": "client"
+  },
+  {
+   "id": "w",
+   "label": "Catalog writer",
+   "kind": "service"
+  },
+  {
+   "id": "db",
+   "label": "Catalog DB",
+   "kind": "sql"
+  },
+  {
+   "id": "ev",
+   "label": "Change events",
+   "kind": "stream"
+  },
+  {
+   "id": "inv",
+   "label": "Invalidator",
+   "kind": "worker"
+  },
+  {
+   "id": "c",
+   "label": "Cache cluster",
+   "kind": "cache"
+  },
+  {
+   "id": "cdn",
+   "label": "CDN",
+   "kind": "cdn"
+  },
+  {
+   "id": "app",
+   "label": "Product pods",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "m",
+   "to": "w",
+   "label": "PUT price = 79"
+  },
+  {
+   "from": "w",
+   "to": "db",
+   "label": "UPDATE products",
+   "note": "The DB is the source of truth; nothing is written to a cache here."
+  },
+  {
+   "from": "w",
+   "to": "m",
+   "label": "200 OK",
+   "style": "reply"
+  },
+  {
+   "from": "db",
+   "to": "ev",
+   "label": "row 42 changed",
+   "style": "async",
+   "note": "A CDC connector tails the DB log, so even a writer that crashes right after commit can't skip the event."
+  },
+  {
+   "from": "ev",
+   "to": "inv",
+   "label": "product 42",
+   "style": "async"
+  },
+  {
+   "from": "inv",
+   "to": "c",
+   "label": "DEL product:42",
+   "note": "Delete, don't SET: the next reader loads the committed row."
+  },
+  {
+   "from": "inv",
+   "to": "cdn",
+   "label": "purge /api/p/42"
+  },
+  {
+   "from": "inv",
+   "to": "app",
+   "label": "evict 42",
+   "style": "async",
+   "note": "Pub/sub to every pod; the 5 s local TTL covers a pod that misses it."
+  },
+  {
+   "from": "inv",
+   "to": "ev",
+   "label": "commit offset",
+   "note": "Only after the removals succeed, so a crash replays the event instead of losing it."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Lost DEL",
+   "tone": "failure",
+   "summary": "The DEL never arrives. Because the offset is committed only after success, the event is replayed and the key is removed late, not never.",
+   "messages": [
+    {
+     "from": "w",
+     "to": "db",
+     "label": "UPDATE products"
+    },
+    {
+     "from": "db",
+     "to": "ev",
+     "label": "row 42 changed",
+     "style": "async"
+    },
+    {
+     "from": "ev",
+     "to": "inv",
+     "label": "product 42",
+     "style": "async"
+    },
+    {
+     "from": "inv",
+     "to": "c",
+     "label": "DEL product:42",
+     "style": "lost",
+     "note": "A network blip: the cache never sees the DEL and still holds price 89."
+    },
+    {
+     "from": "app",
+     "to": "c",
+     "label": "GET product:42",
+     "note": "Readers see the old price until the retry."
+    },
+    {
+     "from": "c",
+     "to": "app",
+     "label": "89 (stale)",
+     "style": "reply"
+    },
+    {
+     "from": "inv",
+     "to": "c",
+     "label": "retry DEL product:42",
+     "note": "Offset not committed, so the invalidator retries with backoff."
+    },
+    {
+     "from": "inv",
+     "to": "ev",
+     "label": "commit offset"
+    }
+   ]
+  },
+  {
+   "name": "Alternative: TTL only",
+   "tone": "alternative",
+   "summary": "No invalidation pipeline at all: every copy lives for its TTL. Much simpler, and fine for descriptions and reviews, but a price can be wrong for the whole TTL.",
+   "messages": [
+    {
+     "from": "m",
+     "to": "w",
+     "label": "PUT price = 79"
+    },
+    {
+     "from": "w",
+     "to": "db",
+     "label": "UPDATE products"
+    },
+    {
+     "from": "app",
+     "to": "c",
+     "label": "GET product:42",
+     "note": "Nobody told the cache: it still serves 89."
+    },
+    {
+     "from": "c",
+     "to": "app",
+     "label": "89 (stale)",
+     "style": "reply"
+    },
+    {
+     "from": "c",
+     "to": "c",
+     "label": "TTL expires",
+     "style": "self",
+     "note": "Staleness is bounded by the TTL, here up to 10 min."
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "read row 42"
+    },
+    {
+     "from": "app",
+     "to": "c",
+     "label": "SET product:42 = 79"
+    }
+   ]
+  }
+ ]
+}

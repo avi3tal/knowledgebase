@@ -1,0 +1,395 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the database: from one Postgres to sharded, then regional shards",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: one database",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "x": 0,
+   "y": 135
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Postgres",
+   "sub": "one primary",
+   "x": 280,
+   "y": 135
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "db",
+   "label": "all reads + writes"
+  }
+ ],
+ "steps": [
+  {
+   "text": "One primary holds every tenant: joins, transactions and ad-hoc queries just work.",
+   "nodes": [
+    "app",
+    "db"
+   ],
+   "edges": [
+    "app>db"
+   ]
+  },
+  {
+   "text": "It hits its limit on whichever comes first: read CPU, write IOPS, or a dataset that no longer fits in memory.",
+   "nodes": [
+    "db"
+   ],
+   "edges": [
+    "app>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: read replicas",
+   "tone": "scale",
+   "summary": "Replicas take the reads off the primary. Every write and every byte still lives on one primary.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "r1",
+     "kind": "sql",
+     "label": "Replica 1",
+     "sub": "reads",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "p",
+     "kind": "sql",
+     "label": "Primary",
+     "sub": "all writes",
+     "x": 280,
+     "y": 135
+    },
+    {
+     "id": "r2",
+     "kind": "sql",
+     "label": "Replica 2",
+     "sub": "reads",
+     "x": 280,
+     "y": 270
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "p",
+     "label": "writes"
+    },
+    {
+     "from": "p",
+     "to": "r1",
+     "label": "replication"
+    },
+    {
+     "from": "p",
+     "to": "r2",
+     "label": "replication"
+    },
+    {
+     "from": "app",
+     "to": "r1",
+     "label": "reads"
+    },
+    {
+     "from": "app",
+     "to": "r2"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Reads spread over replicas; the primary only takes writes.",
+     "nodes": [
+      "app",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "app>r1",
+      "app>r2"
+     ]
+    },
+    {
+     "text": "Replicas trail by milliseconds to seconds, so a user may not see their own write. Read those from the primary.",
+     "nodes": [
+      "p",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "p>r1",
+      "p>r2"
+     ]
+    },
+    {
+     "text": "Cost: writes and total size are still capped by one machine, and every replica stores everything.",
+     "nodes": [
+      "p"
+     ],
+     "edges": [
+      "app>p"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: sharded by tenant",
+   "tone": "scale",
+   "summary": "Split tenants across shards so writes and storage grow with the shard count, at the price of a router and cross-shard limits.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "router",
+     "kind": "service",
+     "label": "Shard router",
+     "x": 280,
+     "y": 135
+    },
+    {
+     "id": "map",
+     "kind": "coordinator",
+     "label": "Shard map",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "sub": "+ replica",
+     "x": 560,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "sub": "+ replica",
+     "x": 560,
+     "y": 135
+    },
+    {
+     "id": "s3",
+     "kind": "sql",
+     "label": "Shard 3",
+     "sub": "+ replica",
+     "x": 560,
+     "y": 270
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "router"
+    },
+    {
+     "from": "map",
+     "to": "router"
+    },
+    {
+     "from": "router",
+     "to": "s1"
+    },
+    {
+     "from": "router",
+     "to": "s2"
+    },
+    {
+     "from": "router",
+     "to": "s3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each tenant lives on one shard; the router reads the shard map to find it.",
+     "nodes": [
+      "app",
+      "router",
+      "map"
+     ],
+     "edges": [
+      "app>router",
+      "map>router"
+     ]
+    },
+    {
+     "text": "Writes and data size now scale with the number of shards; each still has its own replica.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "router>s1",
+      "router>s2",
+      "router>s3"
+     ]
+    },
+    {
+     "text": "Cost: no joins or transactions across tenants, cross-tenant reports need another store, and someone must operate rebalancing.",
+     "nodes": [
+      "router"
+     ],
+     "edges": [
+      "app>router"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: regional shards",
+   "tone": "scale",
+   "summary": "Place each tenant's shard in its home region: lower latency and data residency, with a small global directory.",
+   "nodes": [
+    {
+     "id": "ueu",
+     "kind": "client",
+     "label": "EU tenants",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "uus",
+     "kind": "client",
+     "label": "US tenants",
+     "x": 0,
+     "y": 270
+    },
+    {
+     "id": "dir",
+     "kind": "coordinator",
+     "label": "Tenant directory",
+     "sub": "tenant → region",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "aeu",
+     "kind": "service",
+     "label": "EU app + router",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "aus",
+     "kind": "service",
+     "label": "US app + router",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "seu",
+     "kind": "sql",
+     "label": "EU shards 1–8",
+     "x": 560,
+     "y": 0
+    },
+    {
+     "id": "sus",
+     "kind": "sql",
+     "label": "US shards 1–12",
+     "x": 560,
+     "y": 270
+    }
+   ],
+   "edges": [
+    {
+     "from": "ueu",
+     "to": "aeu"
+    },
+    {
+     "from": "uus",
+     "to": "aus"
+    },
+    {
+     "from": "dir",
+     "to": "aeu",
+     "label": "home region"
+    },
+    {
+     "from": "dir",
+     "to": "aus"
+    },
+    {
+     "from": "aeu",
+     "to": "seu"
+    },
+    {
+     "from": "aus",
+     "to": "sus"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A small global directory maps each tenant to its home region; DNS or the edge sends users there.",
+     "nodes": [
+      "dir",
+      "aeu",
+      "aus"
+     ],
+     "edges": [
+      "dir>aeu",
+      "dir>aus"
+     ]
+    },
+    {
+     "text": "Each region runs its own app servers, router and shards, so queries never cross an ocean.",
+     "nodes": [
+      "ueu",
+      "uus",
+      "aeu",
+      "aus",
+      "seu",
+      "sus"
+     ],
+     "edges": [
+      "ueu>aeu",
+      "uus>aus",
+      "aeu>seu",
+      "aus>sus"
+     ]
+    },
+    {
+     "text": "EU tenants' data stays in the EU, which is often a contract requirement.",
+     "nodes": [
+      "seu"
+     ],
+     "edges": [
+      "aeu>seu"
+     ]
+    },
+    {
+     "text": "Cost: moving a tenant between regions is a slow, planned migration, and the directory must be highly available.",
+     "nodes": [
+      "dir"
+     ],
+     "edges": [
+      "dir>aeu"
+     ]
+    }
+   ]
+  }
+ ]
+}

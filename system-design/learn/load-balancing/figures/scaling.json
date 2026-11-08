@@ -1,0 +1,464 @@
+{
+ "kind": "architecture",
+ "title": "From one server to many regions: each stage removes one single point of failure",
+ "caption": "Every stage adds capacity and removes the previous stage's single point of failure; switch the 📈 tabs.",
+ "base_name": "v1: one server",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Shoppers",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "s",
+   "kind": "service",
+   "label": "Web server",
+   "sub": "app + sessions",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Database",
+   "x": 560,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "s"
+  },
+  {
+   "from": "s",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "DNS points straight at one server: no load balancer, about 1–5k req/s, simple to run.",
+   "nodes": [
+    "c",
+    "s"
+   ],
+   "edges": [
+    "c>s"
+   ]
+  },
+  {
+   "text": "Ceiling: one machine's CPU and connections. A crash or deploy is downtime.",
+   "nodes": [
+    "s",
+    "db"
+   ],
+   "edges": [
+    "s>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: server pool",
+   "tone": "scale",
+   "summary": "Put a load balancer in front of N stateless servers and move sessions out: capacity scales, but the LB is now the single box to protect.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "sub": "active/passive",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "s1",
+     "kind": "service",
+     "label": "Web 1",
+     "x": 460,
+     "y": 20
+    },
+    {
+     "id": "s2",
+     "kind": "service",
+     "label": "Web 2",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "s3",
+     "kind": "service",
+     "label": "Web 3",
+     "x": 460,
+     "y": 260
+    },
+    {
+     "id": "sess",
+     "kind": "cache",
+     "label": "Session store",
+     "x": 690,
+     "y": 20
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Database",
+     "x": 690,
+     "y": 260
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "s1"
+    },
+    {
+     "from": "lb",
+     "to": "s2"
+    },
+    {
+     "from": "lb",
+     "to": "s3"
+    },
+    {
+     "from": "s1",
+     "to": "sess"
+    },
+    {
+     "from": "s3",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "One VIP; the load balancer spreads requests over three identical servers.",
+     "nodes": [
+      "c",
+      "lb",
+      "s1",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "c>lb",
+      "lb>s1",
+      "lb>s2",
+      "lb>s3"
+     ]
+    },
+    {
+     "text": "Sessions move to a shared store, so any server can serve any request and one can die.",
+     "nodes": [
+      "s1",
+      "sess"
+     ],
+     "edges": [
+      "s1>sess"
+     ]
+    },
+    {
+     "text": "Cost: one more hop, and the LB must run as a pair (floating IP) or it is the new single point of failure.",
+     "nodes": [
+      "lb"
+     ],
+     "edges": [
+      "c>lb"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: multi-AZ",
+   "tone": "scale",
+   "summary": "Spread the pool over availability zones behind a regional L4/L7 pair: a whole data center can fail without an outage, at the cost of cross-zone traffic.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "l4",
+     "kind": "load-balancer",
+     "label": "Regional L4",
+     "sub": "zone-redundant",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "pa",
+     "kind": "load-balancer",
+     "label": "L7 pool, zone A",
+     "x": 460,
+     "y": 60
+    },
+    {
+     "id": "pb",
+     "kind": "load-balancer",
+     "label": "L7 pool, zone B",
+     "x": 460,
+     "y": 220
+    },
+    {
+     "id": "sa",
+     "kind": "service",
+     "label": "Services, zone A",
+     "x": 690,
+     "y": 60
+    },
+    {
+     "id": "sb",
+     "kind": "service",
+     "label": "Services, zone B",
+     "x": 690,
+     "y": 220
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "DB primary/standby",
+     "sub": "sync across zones",
+     "x": 920,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "l4"
+    },
+    {
+     "from": "l4",
+     "to": "pa"
+    },
+    {
+     "from": "l4",
+     "to": "pb"
+    },
+    {
+     "from": "pa",
+     "to": "sa"
+    },
+    {
+     "from": "pb",
+     "to": "sb"
+    },
+    {
+     "from": "sa",
+     "to": "db"
+    },
+    {
+     "from": "sb",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The regional L4 load balancer spans zones and sends connections to L7 proxies in each.",
+     "nodes": [
+      "c",
+      "l4",
+      "pa",
+      "pb"
+     ],
+     "edges": [
+      "c>l4",
+      "l4>pa",
+      "l4>pb"
+     ]
+    },
+    {
+     "text": "Each zone runs a full copy of the services; proxies prefer their own zone to avoid cross-zone hops.",
+     "nodes": [
+      "pa",
+      "sa",
+      "pb",
+      "sb"
+     ],
+     "edges": [
+      "pa>sa",
+      "pb>sb"
+     ]
+    },
+    {
+     "text": "Zone B fails: health checks pull it out and zone A carries everything. Each zone must be sized for ~100% of peak (or 50% with 3 zones).",
+     "fail": [
+      "pb",
+      "sb"
+     ],
+     "nodes": [
+      "l4",
+      "pa",
+      "sa"
+     ],
+     "edges": [
+      "l4>pa",
+      "pa>sa"
+     ]
+    },
+    {
+     "text": "Cost: double capacity for headroom, cross-zone data charges, and a synchronous standby database.",
+     "nodes": [
+      "db"
+     ],
+     "edges": [
+      "sa>db",
+      "sb>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: multi-region",
+   "tone": "scale",
+   "summary": "GeoDNS or anycast sends users to the nearest region: lower latency and survives a region loss, but data replication across regions is now the hard part.",
+   "nodes": [
+    {
+     "id": "eu",
+     "kind": "client",
+     "label": "Shoppers (EU)",
+     "x": 0,
+     "y": 40
+    },
+    {
+     "id": "us",
+     "kind": "client",
+     "label": "Shoppers (US)",
+     "x": 0,
+     "y": 240
+    },
+    {
+     "id": "g",
+     "kind": "dns",
+     "label": "GeoDNS / GSLB",
+     "sub": "health per region",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "ra",
+     "kind": "load-balancer",
+     "label": "EU region stack",
+     "x": 460,
+     "y": 40
+    },
+    {
+     "id": "rb",
+     "kind": "load-balancer",
+     "label": "US region stack",
+     "x": 460,
+     "y": 240
+    },
+    {
+     "id": "da",
+     "kind": "sql",
+     "label": "EU database",
+     "x": 690,
+     "y": 40
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "US database",
+     "x": 690,
+     "y": 240
+    }
+   ],
+   "edges": [
+    {
+     "from": "eu",
+     "to": "g"
+    },
+    {
+     "from": "us",
+     "to": "g"
+    },
+    {
+     "from": "g",
+     "to": "ra",
+     "label": "EU users"
+    },
+    {
+     "from": "g",
+     "to": "rb",
+     "label": "US users"
+    },
+    {
+     "from": "ra",
+     "to": "da"
+    },
+    {
+     "from": "rb",
+     "to": "db"
+    },
+    {
+     "from": "da",
+     "to": "db",
+     "label": "async replication"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The GSLB answers each user with the nearest healthy region: ~20 ms instead of ~120 ms across the ocean.",
+     "nodes": [
+      "eu",
+      "us",
+      "g"
+     ],
+     "edges": [
+      "eu>g",
+      "us>g"
+     ]
+    },
+    {
+     "text": "Each region is a complete v3 stack (multi-AZ L4, L7 and services).",
+     "nodes": [
+      "ra",
+      "rb"
+     ],
+     "edges": [
+      "g>ra",
+      "g>rb"
+     ]
+    },
+    {
+     "text": "Data is the hard part: replicate asynchronously and decide who owns writes (home region per user, or one primary region).",
+     "nodes": [
+      "da",
+      "db"
+     ],
+     "edges": [
+      "ra>da",
+      "rb>db",
+      "da>db"
+     ]
+    },
+    {
+     "text": "Cost: two full stacks, replication lag on failover, and DNS TTLs bound how fast users move.",
+     "nodes": [
+      "g"
+     ],
+     "edges": [
+      "g>ra",
+      "g>rb"
+     ]
+    }
+   ]
+  }
+ ]
+}

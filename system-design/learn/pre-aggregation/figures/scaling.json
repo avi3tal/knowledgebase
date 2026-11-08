@@ -1,0 +1,445 @@
+{
+ "kind": "architecture",
+ "title": "Scaling click analytics: from scanning raw rows to streaming rollups with reconciliation",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: query raw",
+ "nodes": [
+  {
+   "id": "ads",
+   "kind": "service",
+   "label": "Ad servers",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Clicks table",
+   "sub": "one row per click",
+   "x": 230,
+   "y": 120
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Dashboard API",
+   "sub": "GROUP BY per call",
+   "x": 460,
+   "y": 120
+  },
+  {
+   "id": "dash",
+   "kind": "client",
+   "label": "Dashboards",
+   "x": 690,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "ads",
+   "to": "db"
+  },
+  {
+   "from": "dash",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "db",
+   "label": "scan"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Every click is a row; every dashboard refresh runs a GROUP BY over the range.",
+   "nodes": [
+    "ads",
+    "db",
+    "api",
+    "dash"
+   ],
+   "edges": [
+    "ads>db",
+    "dash>api",
+    "api>db"
+   ]
+  },
+  {
+   "text": "Exact and always fresh, and fine at a few clicks per second. At thousands per second a week-long panel scans hundreds of millions of rows and times out.",
+   "nodes": [
+    "db"
+   ],
+   "edges": [
+    "api>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: batch rollups",
+   "tone": "scale",
+   "summary": "Write raw events to files and let an hourly batch job count them into small rollup tables.",
+   "nodes": [
+    {
+     "id": "ads",
+     "kind": "service",
+     "label": "Ad servers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "raw",
+     "kind": "blob",
+     "label": "Raw event files",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "job",
+     "kind": "scheduler",
+     "label": "Hourly batch job",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "roll",
+     "kind": "sql",
+     "label": "Rollup tables",
+     "sub": "hour, day",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Dashboard API",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "dash",
+     "kind": "client",
+     "label": "Dashboards",
+     "x": 920,
+     "y": 0
+    }
+   ],
+   "edges": [
+    {
+     "from": "ads",
+     "to": "raw"
+    },
+    {
+     "from": "raw",
+     "to": "job"
+    },
+    {
+     "from": "job",
+     "to": "roll"
+    },
+    {
+     "from": "dash",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "roll",
+     "label": "read"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Raw clicks become cheap append-only files; once an hour a job counts them per ad.",
+     "nodes": [
+      "ads",
+      "raw",
+      "job",
+      "roll"
+     ],
+     "edges": [
+      "ads>raw",
+      "raw>job",
+      "job>roll"
+     ]
+    },
+    {
+     "text": "Dashboards read small rollup rows: the scan bottleneck is gone.",
+     "nodes": [
+      "dash",
+      "api",
+      "roll"
+     ],
+     "edges": [
+      "dash>api",
+      "api>roll"
+     ]
+    },
+    {
+     "text": "Cost: numbers are 1–2 hours stale, so advertisers can't react to a broken campaign in time.",
+     "nodes": [
+      "job"
+     ],
+     "edges": [
+      "raw>job"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: streaming rollups",
+   "tone": "scale",
+   "summary": "Count as events arrive: a stream processor keeps one-minute windows and writes rows within seconds.",
+   "nodes": [
+    {
+     "id": "ads",
+     "kind": "service",
+     "label": "Ad servers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "st",
+     "kind": "stream",
+     "label": "Click stream",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "proc",
+     "kind": "worker",
+     "label": "Stream processor",
+     "sub": "windows + state",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "roll",
+     "kind": "nosql",
+     "label": "Rollup store",
+     "sub": "minute/hour/day",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Query API",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "dash",
+     "kind": "client",
+     "label": "Dashboards",
+     "x": 920,
+     "y": 0
+    }
+   ],
+   "edges": [
+    {
+     "from": "ads",
+     "to": "st"
+    },
+    {
+     "from": "st",
+     "to": "proc"
+    },
+    {
+     "from": "proc",
+     "to": "roll"
+    },
+    {
+     "from": "dash",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "roll",
+     "label": "read"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Events flow through a stream; the processor folds them into minute windows and upserts rows.",
+     "nodes": [
+      "ads",
+      "st",
+      "proc",
+      "roll"
+     ],
+     "edges": [
+      "ads>st",
+      "st>proc",
+      "proc>roll"
+     ]
+    },
+    {
+     "text": "Dashboards are seconds behind instead of hours: the staleness bottleneck is gone.",
+     "nodes": [
+      "dash",
+      "api",
+      "roll"
+     ],
+     "edges": [
+      "dash>api",
+      "api>roll"
+     ]
+    },
+    {
+     "text": "Cost: late and duplicate events, checkpointed state, and a bug in the streaming code now corrupts numbers with no easy way to recompute.",
+     "nodes": [
+      "proc"
+     ],
+     "edges": [
+      "st>proc"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: stream + reconciliation",
+   "tone": "scale",
+   "summary": "Keep the fast streaming rows, and recompute from the raw archive to correct and finalise them (lambda), or replay the log with a fixed job (kappa).",
+   "nodes": [
+    {
+     "id": "ads",
+     "kind": "service",
+     "label": "Ad servers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "st",
+     "kind": "stream",
+     "label": "Click stream",
+     "sub": "7-day retention",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "proc",
+     "kind": "worker",
+     "label": "Stream processor",
+     "sub": "speed layer",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "raw",
+     "kind": "blob",
+     "label": "Raw archive",
+     "sub": "source of truth",
+     "x": 460,
+     "y": 280
+    },
+    {
+     "id": "recon",
+     "kind": "scheduler",
+     "label": "Batch recon",
+     "sub": "nightly",
+     "x": 690,
+     "y": 280
+    },
+    {
+     "id": "roll",
+     "kind": "nosql",
+     "label": "Rollup store",
+     "sub": "provisional/final",
+     "x": 690,
+     "y": 140
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Query API",
+     "x": 920,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "ads",
+     "to": "st"
+    },
+    {
+     "from": "st",
+     "to": "proc"
+    },
+    {
+     "from": "proc",
+     "to": "roll",
+     "label": "provisional"
+    },
+    {
+     "from": "st",
+     "to": "raw"
+    },
+    {
+     "from": "raw",
+     "to": "recon"
+    },
+    {
+     "from": "recon",
+     "to": "roll",
+     "label": "final"
+    },
+    {
+     "from": "api",
+     "to": "roll",
+     "label": "read"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The streaming path still writes provisional rows within seconds.",
+     "nodes": [
+      "ads",
+      "st",
+      "proc",
+      "roll"
+     ],
+     "edges": [
+      "ads>st",
+      "st>proc",
+      "proc>roll"
+     ]
+    },
+    {
+     "text": "Lambda: a nightly batch recomputes each day from the raw archive and overwrites it as final. Bugs and rule changes are fixed by rerunning it.",
+     "nodes": [
+      "st",
+      "raw",
+      "recon",
+      "roll"
+     ],
+     "edges": [
+      "st>raw",
+      "raw>recon",
+      "recon>roll"
+     ]
+    },
+    {
+     "text": "Kappa alternative: no batch code. Keep the stream long enough and replay it through a new version of the same job.",
+     "nodes": [
+      "st",
+      "proc"
+     ],
+     "edges": [
+      "st>proc"
+     ]
+    },
+    {
+     "text": "Cost: lambda means two code paths that must agree; kappa means long log retention and replay time. Either way you buy correctness.",
+     "nodes": [
+      "api",
+      "roll"
+     ],
+     "edges": [
+      "api>roll"
+     ]
+    }
+   ]
+  }
+ ]
+}

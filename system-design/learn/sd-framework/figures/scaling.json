@@ -1,0 +1,416 @@
+{
+ "kind": "architecture",
+ "title": "Evolve the design: every change answers a new number or requirement",
+ "caption": "The interviewer keeps raising the bar; each stage names the bottleneck it removes and what it costs. Switch the 📈 tabs.",
+ "base_name": "v1: the 20-minute design",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Shoppers",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "Coupon service",
+   "sub": "validate + redeem",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Coupon DB",
+   "sub": "codes + usage",
+   "x": 560,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "app"
+  },
+  {
+   "from": "app",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The first high-level design: one service, one relational table, redeem as a conditional update. Correct, and it fits 1 200 validates/s on a normal day.",
+   "nodes": [
+    "app",
+    "db"
+   ],
+   "edges": [
+    "c>app",
+    "app>db"
+   ]
+  },
+  {
+   "text": "Say its limits out loud: a single point of failure, and every cart preview is a database read.",
+   "nodes": [
+    "db"
+   ],
+   "edges": [
+    "app>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: 10× validates",
+   "tone": "scale",
+   "summary": "Black Friday's 12 000 validates/s: split validate from redeem and cache the rules. The database sees misses and real redeems only.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Shoppers",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "v",
+     "kind": "service",
+     "label": "Validate ×6",
+     "x": 460,
+     "y": 20
+    },
+    {
+     "id": "r",
+     "kind": "service",
+     "label": "Redeem API",
+     "x": 460,
+     "y": 260
+    },
+    {
+     "id": "cache",
+     "kind": "cache",
+     "label": "Code cache",
+     "sub": "~95% hits",
+     "x": 690,
+     "y": 20
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Coupon DB",
+     "sub": "primary + replica",
+     "x": 690,
+     "y": 260
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "v"
+    },
+    {
+     "from": "lb",
+     "to": "r"
+    },
+    {
+     "from": "v",
+     "to": "cache"
+    },
+    {
+     "from": "v",
+     "to": "db",
+     "label": "miss"
+    },
+    {
+     "from": "r",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Interviewer: \"Black Friday is 10× the traffic.\" 12 000 validates/s is past one database.",
+     "nodes": [
+      "c",
+      "lb"
+     ],
+     "edges": [
+      "c>lb"
+     ]
+    },
+    {
+     "text": "Validate scales on its own and reads the code cache; ~600 misses/s go to a replica.",
+     "nodes": [
+      "v",
+      "cache",
+      "db"
+     ],
+     "edges": [
+      "lb>v",
+      "v>cache",
+      "v>db"
+     ]
+    },
+    {
+     "text": "Redeem stays a small, correct pool writing to the primary.",
+     "nodes": [
+      "r",
+      "db"
+     ],
+     "edges": [
+      "lb>r",
+      "r>db"
+     ]
+    },
+    {
+     "text": "Cost: the cached remaining count is stale, so a validate can say yes and the redeem say \"used up\". Say it's acceptable.",
+     "nodes": [
+      "cache"
+     ],
+     "edges": [
+      "v>cache"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: one hot code",
+   "tone": "scale",
+   "summary": "2 000 redeems/s on one code serialise on one row lock. Move that code's uses into a token pool; the DB keeps the order record.",
+   "nodes": [
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "r",
+     "kind": "service",
+     "label": "Redeem ×4",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "tp",
+     "kind": "cache",
+     "label": "Token pool",
+     "sub": "10 000 pre-issued",
+     "x": 460,
+     "y": 20
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Coupon DB",
+     "sub": "orders + audit",
+     "x": 460,
+     "y": 260
+    },
+    {
+     "id": "rec",
+     "kind": "worker",
+     "label": "Reconciler",
+     "sub": "every minute",
+     "x": 690,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "lb",
+     "to": "r"
+    },
+    {
+     "from": "r",
+     "to": "tp",
+     "label": "pop token"
+    },
+    {
+     "from": "r",
+     "to": "db",
+     "label": "record use"
+    },
+    {
+     "from": "rec",
+     "to": "tp"
+    },
+    {
+     "from": "rec",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Interviewer: \"A doorbuster code gets 2 000 redeems/s.\" One row lock allows a few hundred updates/s.",
+     "nodes": [
+      "lb",
+      "r"
+     ],
+     "edges": [
+      "lb>r"
+     ]
+    },
+    {
+     "text": "Codes flagged hot get a token pool; one atomic pop per redeem, ~100k ops/s.",
+     "nodes": [
+      "r",
+      "tp"
+     ],
+     "edges": [
+      "r>tp"
+     ]
+    },
+    {
+     "text": "The order row records which token was used; the DB stays the audit trail.",
+     "nodes": [
+      "r",
+      "db"
+     ],
+     "edges": [
+      "r>db"
+     ]
+    },
+    {
+     "text": "Cost: a crash between pop and order loses a token; the reconciler compares pool and orders and returns it.",
+     "nodes": [
+      "rec",
+      "tp",
+      "db"
+     ],
+     "edges": [
+      "rec>tp",
+      "rec>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: real-time abuse",
+   "tone": "scale",
+   "summary": "New requirement: stop code-sharing bots within seconds. Stream redemptions to a scorer that updates a block list the redeem path reads.",
+   "nodes": [
+    {
+     "id": "r",
+     "kind": "service",
+     "label": "Redeem ×4",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "bl",
+     "kind": "cache",
+     "label": "Block list",
+     "sub": "accounts, devices",
+     "x": 280,
+     "y": 20
+    },
+    {
+     "id": "st",
+     "kind": "stream",
+     "label": "Redemption stream",
+     "sub": "by customer",
+     "x": 280,
+     "y": 260
+    },
+    {
+     "id": "sc",
+     "kind": "worker",
+     "label": "Abuse scorer",
+     "sub": "1-min windows",
+     "x": 560,
+     "y": 260
+    },
+    {
+     "id": "ops",
+     "kind": "client",
+     "label": "Fraud analysts",
+     "x": 560,
+     "y": 20
+    }
+   ],
+   "edges": [
+    {
+     "from": "r",
+     "to": "bl",
+     "label": "check"
+    },
+    {
+     "from": "r",
+     "to": "st",
+     "label": "publish"
+    },
+    {
+     "from": "st",
+     "to": "sc"
+    },
+    {
+     "from": "sc",
+     "to": "bl",
+     "label": "block"
+    },
+    {
+     "from": "ops",
+     "to": "bl",
+     "label": "review"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Interviewer: \"A leaked code is being drained by bots with thousands of accounts.\"",
+     "nodes": [
+      "r"
+     ],
+     "edges": [
+      "r>st"
+     ]
+    },
+    {
+     "text": "Every redemption is published; the scorer counts per device, card and IP per minute.",
+     "nodes": [
+      "st",
+      "sc"
+     ],
+     "edges": [
+      "r>st",
+      "st>sc"
+     ]
+    },
+    {
+     "text": "Suspicious accounts go on a block list that redeem checks in under a millisecond.",
+     "nodes": [
+      "sc",
+      "bl",
+      "r"
+     ],
+     "edges": [
+      "sc>bl",
+      "r>bl"
+     ]
+    },
+    {
+     "text": "Cost: blocking is seconds behind, and false positives need a human review path.",
+     "nodes": [
+      "ops",
+      "bl"
+     ],
+     "edges": [
+      "ops>bl"
+     ]
+    }
+   ]
+  }
+ ]
+}

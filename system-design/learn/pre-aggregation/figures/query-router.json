@@ -1,0 +1,305 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: the query router reads the coarsest tier that answers the question",
+ "caption": "The range and the step pick the tier; the still-open part of the range is stitched in from the finer tier.",
+ "base_name": "Last 7 days, hourly",
+ "nodes": [
+  {
+   "id": "q",
+   "type": "start",
+   "label": "Query in",
+   "col": 1,
+   "row": 0
+  },
+  {
+   "id": "parse",
+   "type": "step",
+   "label": "Range and step",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "tier",
+   "type": "decision",
+   "label": "Which tier?",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "min",
+   "type": "step",
+   "label": "Minute rows",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "hour",
+   "type": "step",
+   "label": "Hour rows",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "day",
+   "type": "step",
+   "label": "Day rows",
+   "col": 2,
+   "row": 3
+  },
+  {
+   "id": "now",
+   "type": "decision",
+   "label": "Covers now?",
+   "col": 1,
+   "row": 4
+  },
+  {
+   "id": "stitch",
+   "type": "step",
+   "label": "Add live minutes",
+   "col": 2,
+   "row": 4
+  },
+  {
+   "id": "ret",
+   "type": "end",
+   "label": "Return series",
+   "col": 1,
+   "row": 5,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "q",
+   "to": "parse"
+  },
+  {
+   "from": "parse",
+   "to": "tier"
+  },
+  {
+   "from": "tier",
+   "to": "min",
+   "label": "≤ 6 h"
+  },
+  {
+   "from": "tier",
+   "to": "hour",
+   "label": "≤ 60 d"
+  },
+  {
+   "from": "tier",
+   "to": "day",
+   "label": "longer"
+  },
+  {
+   "from": "min",
+   "to": "now"
+  },
+  {
+   "from": "hour",
+   "to": "now"
+  },
+  {
+   "from": "day",
+   "to": "now"
+  },
+  {
+   "from": "now",
+   "to": "stitch",
+   "label": "yes"
+  },
+  {
+   "from": "now",
+   "to": "ret",
+   "label": "no"
+  },
+  {
+   "from": "stitch",
+   "to": "ret"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Parse the request: last 7 days, one point per hour, for one campaign.",
+   "nodes": [
+    "q",
+    "parse"
+   ],
+   "edges": [
+    "q>parse"
+   ]
+  },
+  {
+   "text": "7 days fits the hour tier: the coarsest tier whose step is no bigger than the one asked for.",
+   "nodes": [
+    "tier",
+    "hour"
+   ],
+   "edges": [
+    "parse>tier",
+    "tier>hour"
+   ]
+  },
+  {
+   "text": "Read one row per ad per hour: a few hundred rows instead of millions of raw events.",
+   "nodes": [
+    "hour",
+    "now"
+   ],
+   "edges": [
+    "hour>now"
+   ]
+  },
+  {
+   "text": "The range ends at 'now', and the current hour has no hour row yet: add it up from its minute rows.",
+   "nodes": [
+    "now",
+    "stitch"
+   ],
+   "edges": [
+    "now>stitch"
+   ]
+  },
+  {
+   "text": "Return one series; the client can't tell which points came from which tier.",
+   "nodes": [
+    "ret"
+   ],
+   "edges": [
+    "stitch>ret"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Live 1-hour panel",
+   "tone": "edge",
+   "summary": "A short range at fine resolution reads minute rows directly; the newest minute is still open and is marked partial.",
+   "steps": [
+    {
+     "text": "Last hour, one point per minute.",
+     "nodes": [
+      "q",
+      "parse",
+      "tier"
+     ],
+     "edges": [
+      "q>parse",
+      "parse>tier"
+     ]
+    },
+    {
+     "text": "Read 60 minute rows per ad.",
+     "nodes": [
+      "min"
+     ],
+     "edges": [
+      "tier>min"
+     ]
+    },
+    {
+     "text": "The current minute's window hasn't closed; return it flagged 'partial' instead of a misleading dip.",
+     "nodes": [
+      "now",
+      "ret"
+     ],
+     "edges": [
+      "min>now",
+      "now>ret"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Past retention",
+   "tone": "edge",
+   "summary": "Minute-level data from 5 months ago was deleted after 30 days. Serve the finest tier that still exists, and say so.",
+   "steps": [
+    {
+     "text": "Asked: per-minute clicks for a day in June.",
+     "nodes": [
+      "q",
+      "parse",
+      "tier"
+     ],
+     "edges": [
+      "q>parse",
+      "parse>tier"
+     ]
+    },
+    {
+     "text": "Minute rows for that day are gone; fall back to hour rows and tell the client the step became 1 h.",
+     "nodes": [
+      "hour"
+     ],
+     "edges": [
+      "tier>hour"
+     ]
+    },
+    {
+     "text": "Old range, so nothing to stitch.",
+     "nodes": [
+      "now",
+      "ret"
+     ],
+     "edges": [
+      "hour>now",
+      "now>ret"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Hour rollup lagging",
+   "tone": "failure",
+   "summary": "The job that builds hour rows from minute rows is behind. Fill the missing hours from minutes: correct, just more rows read.",
+   "steps": [
+    {
+     "text": "Asked: last 7 days, hourly.",
+     "nodes": [
+      "parse",
+      "tier"
+     ],
+     "edges": [
+      "q>parse",
+      "parse>tier"
+     ]
+    },
+    {
+     "text": "The hour tier stops 3 hours short of now: its builder is lagging.",
+     "fail": [
+      "hour"
+     ],
+     "nodes": [
+      "tier"
+     ],
+     "edges": [
+      "tier>hour"
+     ]
+    },
+    {
+     "text": "Stitch the missing 3 hours from minute rows (180 per ad instead of 3) and raise a freshness alert.",
+     "nodes": [
+      "now",
+      "stitch"
+     ],
+     "edges": [
+      "hour>now",
+      "now>stitch"
+     ]
+    },
+    {
+     "text": "The answer is the same; only the query got more expensive.",
+     "nodes": [
+      "ret"
+     ],
+     "edges": [
+      "stitch>ret"
+     ]
+    }
+   ]
+  }
+ ]
+}

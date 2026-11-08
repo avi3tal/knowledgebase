@@ -1,0 +1,660 @@
+{
+ "kind": "architecture",
+ "title": "The system: a multi-tenant SaaS whose database is split by tenant",
+ "caption": "Every query carries a tenant_id; a router turns it into one shard, and a rebalancer moves tenants by editing the shard map.",
+ "base_name": "One tenant's request",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "Tenant users",
+   "x": 0,
+   "y": 135
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "x": 230,
+   "y": 135
+  },
+  {
+   "id": "mon",
+   "kind": "external",
+   "label": "Metrics",
+   "sub": "size, QPS per shard",
+   "x": 230,
+   "y": 270
+  },
+  {
+   "id": "acct",
+   "kind": "sql",
+   "label": "Accounts DB",
+   "sub": "unsharded: billing",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "sub": "tenant from token",
+   "x": 460,
+   "y": 135
+  },
+  {
+   "id": "rebal",
+   "kind": "worker",
+   "label": "Rebalancer",
+   "x": 460,
+   "y": 270
+  },
+  {
+   "id": "router",
+   "kind": "service",
+   "label": "Shard router",
+   "sub": "cached shard map",
+   "x": 690,
+   "y": 135
+  },
+  {
+   "id": "map",
+   "kind": "coordinator",
+   "label": "Shard map",
+   "sub": "tenant → shard",
+   "x": 690,
+   "y": 270
+  },
+  {
+   "id": "s1",
+   "kind": "sql",
+   "label": "Shard 1",
+   "sub": "primary + replica",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "s2",
+   "kind": "sql",
+   "label": "Shard 2",
+   "sub": "primary + replica",
+   "x": 920,
+   "y": 135
+  },
+  {
+   "id": "s3",
+   "kind": "sql",
+   "label": "Shard 3",
+   "sub": "primary + replica",
+   "x": 920,
+   "y": 270
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "lb"
+  },
+  {
+   "from": "lb",
+   "to": "app"
+  },
+  {
+   "from": "app",
+   "to": "acct",
+   "label": "plans, billing"
+  },
+  {
+   "from": "app",
+   "to": "router",
+   "label": "query + tenant_id"
+  },
+  {
+   "from": "map",
+   "to": "router",
+   "label": "watch"
+  },
+  {
+   "from": "router",
+   "to": "s1"
+  },
+  {
+   "from": "router",
+   "to": "s2"
+  },
+  {
+   "from": "router",
+   "to": "s3"
+  },
+  {
+   "from": "mon",
+   "to": "rebal",
+   "label": "shard load"
+  },
+  {
+   "from": "rebal",
+   "to": "map",
+   "label": "flip entry"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A user of tenant 812 (a 300-person company on a project-tracking SaaS) loads their board. Any app server can take the request.",
+   "nodes": [
+    "users",
+    "lb",
+    "app"
+   ],
+   "edges": [
+    "users>lb",
+    "lb>app"
+   ]
+  },
+  {
+   "text": "The app server reads tenant_id from the auth token. Small global data (plans, billing, the tenant list) lives in one unsharded Accounts DB.",
+   "nodes": [
+    "app",
+    "acct"
+   ],
+   "edges": [
+    "app>acct"
+   ]
+  },
+  {
+   "text": "Tenant data goes through the shard router with the tenant_id attached. The router keeps the shard map in memory and watches the map store for changes.",
+   "nodes": [
+    "app",
+    "router",
+    "map"
+   ],
+   "edges": [
+    "app>router",
+    "map>router"
+   ]
+  },
+  {
+   "text": "The map says tenant 812 lives on shard 2. The query runs there and only there: one tenant's rows never span shards, so joins and transactions still work.",
+   "nodes": [
+    "router",
+    "s2"
+   ],
+   "edges": [
+    "router>s2"
+   ]
+  },
+  {
+   "text": "Each shard is an ordinary primary with a replica. Writes go to the primary; dashboards that tolerate a second of lag read the replica.",
+   "nodes": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "edges": [
+    "router>s1",
+    "router>s2",
+    "router>s3"
+   ]
+  },
+  {
+   "text": "Per-shard size, QPS and p99 latency feed the rebalancer. It moves tenants by copying their rows and then flipping one map entry.",
+   "nodes": [
+    "mon",
+    "rebal",
+    "map"
+   ],
+   "edges": [
+    "mon>rebal",
+    "rebal>map"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Big tenant onboards",
+   "tone": "edge",
+   "summary": "A shard is sized for its tenants' combined load; when one tenant outgrows its share, move its neighbours, or give it a shard of its own.",
+   "nodes": [
+    {
+     "id": "users",
+     "kind": "client",
+     "label": "Tenant users",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 230,
+     "y": 135
+    },
+    {
+     "id": "mon",
+     "kind": "external",
+     "label": "Metrics",
+     "sub": "size, QPS per shard",
+     "x": 230,
+     "y": 270
+    },
+    {
+     "id": "acct",
+     "kind": "sql",
+     "label": "Accounts DB",
+     "sub": "unsharded: billing",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "tenant from token",
+     "x": 460,
+     "y": 135
+    },
+    {
+     "id": "rebal",
+     "kind": "worker",
+     "label": "Rebalancer",
+     "x": 460,
+     "y": 270
+    },
+    {
+     "id": "router",
+     "kind": "service",
+     "label": "Shard router",
+     "sub": "cached shard map",
+     "x": 690,
+     "y": 135
+    },
+    {
+     "id": "map",
+     "kind": "coordinator",
+     "label": "Shard map",
+     "sub": "tenant → shard",
+     "x": 690,
+     "y": 270
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "sub": "primary + replica",
+     "x": 920,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "sub": "primary + replica",
+     "x": 920,
+     "y": 135
+    },
+    {
+     "id": "s3",
+     "kind": "sql",
+     "label": "Shard 3",
+     "sub": "primary + replica",
+     "x": 920,
+     "y": 270
+    }
+   ],
+   "edges": [
+    {
+     "from": "users",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "app"
+    },
+    {
+     "from": "app",
+     "to": "acct",
+     "label": "plans, billing"
+    },
+    {
+     "from": "app",
+     "to": "router",
+     "label": "query + tenant_id"
+    },
+    {
+     "from": "map",
+     "to": "router",
+     "label": "watch"
+    },
+    {
+     "from": "router",
+     "to": "s1"
+    },
+    {
+     "from": "router",
+     "to": "s2"
+    },
+    {
+     "from": "router",
+     "to": "s3"
+    },
+    {
+     "from": "mon",
+     "to": "rebal",
+     "label": "shard load"
+    },
+    {
+     "from": "rebal",
+     "to": "map",
+     "label": "flip entry"
+    },
+    {
+     "from": "s2",
+     "to": "s3",
+     "label": "move small tenants"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A new enterprise tenant lands on shard 2 and imports five years of history, then runs heavy daily usage.",
+     "nodes": [
+      "users",
+      "app",
+      "router",
+      "s2"
+     ],
+     "edges": [
+      "users>lb",
+      "lb>app",
+      "app>router",
+      "router>s2"
+     ]
+    },
+    {
+     "text": "Shard 2's write latency and disk climb while shards 1 and 3 are idle. Metrics flag it.",
+     "nodes": [
+      "s2",
+      "mon",
+      "rebal"
+     ],
+     "edges": [
+      "mon>rebal"
+     ]
+    },
+    {
+     "text": "The rebalancer moves a batch of small tenants from shard 2 to shard 3, one tenant at a time.",
+     "nodes": [
+      "rebal",
+      "s2",
+      "s3"
+     ],
+     "edges": [
+      "s2>s3"
+     ]
+    },
+    {
+     "text": "Each move ends with a map flip; routers pick it up and the big tenant has shard 2 nearly to itself.",
+     "nodes": [
+      "map",
+      "router"
+     ],
+     "edges": [
+      "rebal>map",
+      "map>router"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Shard 2 primary fails",
+   "tone": "failure",
+   "summary": "Sharding limits the blast radius: only tenants on shard 2 see errors, and only until its replica is promoted.",
+   "steps": [
+    {
+     "text": "Shard 2's primary dies. Writes for its tenants fail; tenants on shards 1 and 3 notice nothing.",
+     "fail": [
+      "s2",
+      "router>s2"
+     ],
+     "nodes": [
+      "router",
+      "s1",
+      "s3"
+     ],
+     "edges": [
+      "router>s1",
+      "router>s3"
+     ]
+    },
+    {
+     "text": "Failover promotes shard 2's replica within about 30 seconds. The map still says shard 2: only its address changes.",
+     "fail": [
+      "router>s2"
+     ],
+     "nodes": [
+      "s2"
+     ]
+    },
+    {
+     "text": "The router reconnects to the new primary; app servers retry idempotent writes.",
+     "nodes": [
+      "router",
+      "s2"
+     ],
+     "edges": [
+      "router>s2",
+      "app>router"
+     ]
+    },
+    {
+     "text": "Writes acknowledged by the old primary but not yet replicated may be lost. Alert, and say so in the interview.",
+     "nodes": [
+      "mon"
+     ],
+     "edges": [
+      "mon>rebal"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Add shard 4",
+   "tone": "edge",
+   "summary": "Adding capacity is a series of tenant moves: copy, catch up, flip the map. No downtime and no global rehash.",
+   "nodes": [
+    {
+     "id": "users",
+     "kind": "client",
+     "label": "Tenant users",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 230,
+     "y": 135
+    },
+    {
+     "id": "mon",
+     "kind": "external",
+     "label": "Metrics",
+     "sub": "size, QPS per shard",
+     "x": 230,
+     "y": 270
+    },
+    {
+     "id": "acct",
+     "kind": "sql",
+     "label": "Accounts DB",
+     "sub": "unsharded: billing",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "tenant from token",
+     "x": 460,
+     "y": 135
+    },
+    {
+     "id": "rebal",
+     "kind": "worker",
+     "label": "Rebalancer",
+     "x": 460,
+     "y": 270
+    },
+    {
+     "id": "router",
+     "kind": "service",
+     "label": "Shard router",
+     "sub": "cached shard map",
+     "x": 690,
+     "y": 135
+    },
+    {
+     "id": "map",
+     "kind": "coordinator",
+     "label": "Shard map",
+     "sub": "tenant → shard",
+     "x": 690,
+     "y": 270
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "sub": "primary + replica",
+     "x": 920,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "sub": "primary + replica",
+     "x": 920,
+     "y": 135
+    },
+    {
+     "id": "s3",
+     "kind": "sql",
+     "label": "Shard 3",
+     "sub": "primary + replica",
+     "x": 920,
+     "y": 270
+    },
+    {
+     "id": "s4",
+     "kind": "sql",
+     "label": "Shard 4",
+     "sub": "new, empty",
+     "x": 920,
+     "y": 405
+    }
+   ],
+   "edges": [
+    {
+     "from": "users",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "app"
+    },
+    {
+     "from": "app",
+     "to": "acct",
+     "label": "plans, billing"
+    },
+    {
+     "from": "app",
+     "to": "router",
+     "label": "query + tenant_id"
+    },
+    {
+     "from": "map",
+     "to": "router",
+     "label": "watch"
+    },
+    {
+     "from": "router",
+     "to": "s1"
+    },
+    {
+     "from": "router",
+     "to": "s2"
+    },
+    {
+     "from": "router",
+     "to": "s3"
+    },
+    {
+     "from": "mon",
+     "to": "rebal",
+     "label": "shard load"
+    },
+    {
+     "from": "rebal",
+     "to": "map",
+     "label": "flip entry"
+    },
+    {
+     "from": "router",
+     "to": "s4"
+    },
+    {
+     "from": "s3",
+     "to": "s4",
+     "label": "copy + catch up"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Shards are at 70% disk. An operator adds an empty shard 4 to the map with no tenants on it.",
+     "nodes": [
+      "rebal",
+      "map",
+      "s4"
+     ],
+     "edges": [
+      "rebal>map"
+     ]
+    },
+    {
+     "text": "The rebalancer picks tenants from the fullest shard and copies their rows to shard 4 while they stay live.",
+     "nodes": [
+      "rebal",
+      "s3",
+      "s4"
+     ],
+     "edges": [
+      "s3>s4"
+     ]
+    },
+    {
+     "text": "Once a copy has caught up, a short per-tenant write pause, then the map entry flips to shard 4.",
+     "nodes": [
+      "map",
+      "router"
+     ],
+     "edges": [
+      "rebal>map",
+      "map>router"
+     ]
+    },
+    {
+     "text": "New traffic for the moved tenants goes to shard 4; their old rows are deleted from shard 3 later.",
+     "nodes": [
+      "router",
+      "s4"
+     ],
+     "edges": [
+      "router>s4"
+     ]
+    }
+   ]
+  }
+ ]
+}

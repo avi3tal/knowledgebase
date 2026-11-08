@@ -1,0 +1,363 @@
+{
+ "kind": "architecture",
+ "title": "The system: a game backend with Redis in four roles",
+ "caption": "Redis keeps the fast, rebuildable state (sessions, counters, boards, live events); the player DB stays the source of truth.",
+ "base_name": "Normal traffic",
+ "nodes": [
+  {
+   "id": "players",
+   "kind": "client",
+   "label": "Players",
+   "sub": "mobile game clients",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "sess",
+   "kind": "cache",
+   "label": "Session store",
+   "sub": "Redis hashes + TTL",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "API gateway",
+   "sub": "auth, rate limits",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "rate",
+   "kind": "cache",
+   "label": "Rate counters",
+   "sub": "Redis INCR + EXPIRE",
+   "x": 230,
+   "y": 280
+  },
+  {
+   "id": "game",
+   "kind": "service",
+   "label": "Game API",
+   "sub": "matches, scores",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "social",
+   "kind": "service",
+   "label": "Social API",
+   "sub": "friends, chat",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "push",
+   "kind": "service",
+   "label": "Push gateways",
+   "sub": "WebSockets",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "board",
+   "kind": "cache",
+   "label": "Leaderboards",
+   "sub": "Redis sorted sets",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Player DB",
+   "sub": "source of truth",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "pubsub",
+   "kind": "cache",
+   "label": "Live events",
+   "sub": "Redis pub/sub",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "rebuild",
+   "kind": "worker",
+   "label": "Board rebuilder",
+   "sub": "replays results",
+   "x": 920,
+   "y": 140
+  }
+ ],
+ "edges": [
+  {
+   "from": "players",
+   "to": "gw"
+  },
+  {
+   "from": "gw",
+   "to": "rate",
+   "label": "INCR"
+  },
+  {
+   "from": "gw",
+   "to": "sess",
+   "label": "HGETALL"
+  },
+  {
+   "from": "gw",
+   "to": "game"
+  },
+  {
+   "from": "gw",
+   "to": "social"
+  },
+  {
+   "from": "gw",
+   "to": "push",
+   "label": "socket"
+  },
+  {
+   "from": "game",
+   "to": "board",
+   "label": "ZINCRBY"
+  },
+  {
+   "from": "game",
+   "to": "db",
+   "label": "match result"
+  },
+  {
+   "from": "social",
+   "to": "db"
+  },
+  {
+   "from": "social",
+   "to": "pubsub",
+   "label": "PUBLISH"
+  },
+  {
+   "from": "pubsub",
+   "to": "push",
+   "label": "SUBSCRIBE"
+  },
+  {
+   "from": "db",
+   "to": "rebuild"
+  },
+  {
+   "from": "rebuild",
+   "to": "board"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Every call reaches the gateway, which first increments a per-player counter that expires with its window: one round trip of well under 1 ms.",
+   "nodes": [
+    "players",
+    "gw",
+    "rate"
+   ],
+   "edges": [
+    "players>gw",
+    "gw>rate"
+   ]
+  },
+  {
+   "text": "The gateway resolves the session token with one hash read. Each request refreshes the TTL, so idle sessions disappear on their own.",
+   "nodes": [
+    "gw",
+    "sess"
+   ],
+   "edges": [
+    "gw>sess"
+   ]
+  },
+  {
+   "text": "A match ends: the game API writes the result to the player DB first, then adds the points to this week's sorted set.",
+   "nodes": [
+    "game",
+    "db",
+    "board"
+   ],
+   "edges": [
+    "gw>game",
+    "game>db",
+    "game>board"
+   ]
+  },
+  {
+   "text": "Reading the board is a range of the sorted set for the top 100 plus one rank lookup for the player: both O(log n).",
+   "nodes": [
+    "game",
+    "board"
+   ],
+   "edges": [
+    "game>board"
+   ]
+  },
+  {
+   "text": "A friend comes online: the social API publishes on that player's channel, and whichever push gateway holds the socket forwards it.",
+   "nodes": [
+    "social",
+    "pubsub",
+    "push",
+    "players"
+   ],
+   "edges": [
+    "gw>social",
+    "social>pubsub",
+    "pubsub>push",
+    "gw>push"
+   ]
+  },
+  {
+   "text": "Redis holds derived data only. If a board is lost, the rebuilder replays match results from the DB and refills the sorted set.",
+   "nodes": [
+    "db",
+    "rebuild",
+    "board"
+   ],
+   "edges": [
+    "db>rebuild",
+    "rebuild>board"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Tournament final",
+   "tone": "edge",
+   "summary": "Score writes jump tenfold for an hour. Throughput per node is fine; the risk is one board key living on one node.",
+   "steps": [
+    {
+     "text": "A live tournament ends; hundreds of thousands of matches finish within minutes.",
+     "nodes": [
+      "players",
+      "gw",
+      "game"
+     ],
+     "edges": [
+      "players>gw",
+      "gw>game"
+     ]
+    },
+    {
+     "text": "Every result updates the same tournament board key, so one Redis node takes all of it.",
+     "nodes": [
+      "game",
+      "board"
+     ],
+     "edges": [
+      "game>board"
+     ]
+    },
+    {
+     "text": "The game API batches: it sums points per player for 200 ms and sends them pipelined, turning thousands of commands into a few round trips.",
+     "nodes": [
+      "game",
+      "board"
+     ],
+     "edges": [
+      "game>board"
+     ]
+    },
+    {
+     "text": "Rate counters protect the gateway from clients that retry too eagerly.",
+     "nodes": [
+      "gw",
+      "rate"
+     ],
+     "edges": [
+      "gw>rate"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Session primary fails",
+   "tone": "failure",
+   "summary": "The session store's primary dies: a replica takes over in seconds, and the last moment of writes may be gone.",
+   "steps": [
+    {
+     "text": "The session primary stops answering; logins and token checks start timing out.",
+     "fail": [
+      "sess",
+      "gw>sess"
+     ],
+     "nodes": [
+      "gw"
+     ]
+    },
+    {
+     "text": "Rate checks fail open for a few seconds rather than block every player.",
+     "fail": [
+      "sess"
+     ],
+     "nodes": [
+      "gw",
+      "rate"
+     ],
+     "edges": [
+      "gw>rate"
+     ]
+    },
+    {
+     "text": "Sentinel promotes a replica (about 10–30 s). Sessions created in the last second before the crash were never replicated, so those players log in again.",
+     "nodes": [
+      "sess",
+      "gw"
+     ],
+     "edges": [
+      "gw>sess"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Push gateway deploy",
+   "tone": "risk",
+   "summary": "Pub/sub is fire and forget: a gateway that is restarting misses every message sent meanwhile.",
+   "steps": [
+    {
+     "text": "A rolling deploy restarts push gateways one at a time; their sockets reconnect to other gateways.",
+     "nodes": [
+      "push",
+      "players"
+     ],
+     "edges": [
+      "gw>push"
+     ]
+    },
+    {
+     "text": "Messages published during the gap reach no subscriber and are dropped, with no error to the publisher.",
+     "fail": [
+      "pubsub>push"
+     ],
+     "nodes": [
+      "social",
+      "pubsub"
+     ],
+     "edges": [
+      "social>pubsub"
+     ]
+    },
+    {
+     "text": "On reconnect, the client asks the social API for anything since its last seen message id, read from the DB. Must-deliver data never relies on pub/sub alone.",
+     "nodes": [
+      "social",
+      "db"
+     ],
+     "edges": [
+      "gw>social",
+      "social>db"
+     ]
+    }
+   ]
+  }
+ ]
+}
