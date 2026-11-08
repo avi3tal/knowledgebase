@@ -224,6 +224,22 @@ def _public(ref: dict[str, Any], index: dict[str, dict[str, Any]]) -> dict[str, 
     }
 
 
+def topic_ref_counts(subject: str) -> dict[str, int]:
+    """topic id -> number of refs `for_topic` could show (same filters, no limit)."""
+    index = source_index()
+    pdir = ROOT / subject / "problems"
+    titles = title_index(pdir) if pdir.is_dir() else {}
+    out: dict[str, int] = defaultdict(int)
+    for r in load_refs():
+        if r.get("subject") != subject or _verdict(r, index) == "skip":
+            continue
+        if match_problem(r.get("problem_title"), titles) is not None:
+            continue
+        for t in r.get("topics", []):
+            out[t] += 1
+    return dict(out)
+
+
 def for_topic(subject: str, topic: str, limit: int = MAX_PER_TOPIC) -> list[dict[str, Any]]:
     """Top refs for a topic. Refs about one of OUR practice problems are excluded here (they would
     spoil it) and shown on that problem's page instead."""

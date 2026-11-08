@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react";
 import type { Feedback, Subject } from "../api";
 import { SUBJECT_ICON, groupLabel, groupTopics, topicIcon } from "../catalog";
-import { bestHref, homeStats, lessonHref, suggestions, topicNavGroups } from "../learn-bench";
+import {
+  bestHref,
+  homeStats,
+  lessonHref,
+  suggestions,
+  topicNavGroups,
+  topicStateOf,
+} from "../learn-bench";
 import { NavList } from "./panes";
 import { Ring } from "./Ring";
 import { Workbench } from "./Workbench";
@@ -271,11 +278,14 @@ export function SubjectHome({
                 {shown.map((t) => {
                   const f = fb.get(t.id);
                   const total = f?.problems.length ?? 0;
+                  const state = topicStateOf(t);
                   return (
                     <a
                       key={t.id}
-                      className={`topic-card ${t.has_lesson ? "has-lesson" : ""}`}
-                      href={bestHref(subject.id, t)}
+                      className={`topic-card ${t.has_lesson ? "has-lesson" : ""} ${state === "planned" ? "planned" : ""}`}
+                      href={state === "planned" ? undefined : bestHref(subject.id, t)}
+                      aria-disabled={state === "planned" || undefined}
+                      title={state === "planned" ? "Planned: no lesson or problem yet" : undefined}
                       style={{ ["--i" as string]: card++ }}
                     >
                       <div className="tc-head">
@@ -295,8 +305,12 @@ export function SubjectHome({
                       <div className="tc-foot">
                         {t.has_lesson ? (
                           <span className="tc-pill lesson">▶ lesson</span>
+                        ) : state === "planned" ? (
+                          <span className="tc-pill">planned</span>
                         ) : (
-                          <span className="tc-pill">topic page</span>
+                          <span className="tc-pill">
+                            🧪 practise · {t.problems ?? total} problems
+                          </span>
                         )}
                         {f?.review_due && feedback && f.review_due <= feedback.today && (
                           <span className="tc-pill due">review due</span>

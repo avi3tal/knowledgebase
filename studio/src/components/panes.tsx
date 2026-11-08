@@ -21,6 +21,8 @@ export interface NavItem {
   hint?: string;
   /** dimmed (e.g. no lesson yet) */
   muted?: boolean;
+  /** shown but not a link (e.g. a planned topic with nothing to show yet) */
+  disabled?: boolean;
 }
 
 export interface NavGroup {
@@ -102,8 +104,9 @@ export function NavList({
             {g.items.map((it, i) => (
               <li key={it.id} style={{ ["--i" as string]: i }}>
                 <a
-                  className={`rd-prob ${it.current ? "current" : ""} ${it.muted ? "muted" : ""}`}
-                  href={it.href}
+                  className={`rd-prob ${it.current ? "current" : ""} ${it.muted ? "muted" : ""} ${it.disabled ? "disabled" : ""}`}
+                  href={it.disabled ? undefined : it.href}
+                  aria-disabled={it.disabled || undefined}
                   aria-current={it.current ? "page" : undefined}
                   title={it.title}
                 >

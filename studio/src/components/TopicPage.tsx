@@ -2,7 +2,8 @@ import { useContext, useMemo, useState } from "react";
 import type { TopicPageData } from "../api";
 import { SubjectContext } from "../context";
 import { lessonHref, prevNext, topicNavGroups, topicPageHref } from "../learn-bench";
-import { problemHref } from "../route";
+import { problemsHref } from "../practice-bench";
+import { DESIGN_SUBJECTS, problemHref } from "../route";
 import {
   PaneLoading,
   PrevNextFooter,
@@ -12,12 +13,17 @@ import {
 } from "./LearnBenchParts";
 import { NeighbourhoodGraph } from "./NeighbourhoodGraph";
 import { NavList } from "./panes";
+import { CoTopics, TopicProblemList } from "./PracticeLinks";
 import { ResourceList } from "./Resources";
 import { Workbench } from "./Workbench";
 
 type View = "overview" | "practice" | "resources";
 
-/** A topic in the Workbench: Overview (usage + neighbourhood) | Practice | Resources. */
+/**
+ * A topic in the Workbench: Overview | Practice | Resources. The Overview is never empty: without a
+ * lesson it leads with where the topic shows up (problems by role, often-used-with topics,
+ * resources); a planned topic says so and points at its neighbours.
+ */
 export function TopicPage({ data }: { data: TopicPageData }) {
   const { subject: subj, topic, names } = data;
   const { subject } = useContext(SubjectContext);
@@ -33,6 +39,9 @@ export function TopicPage({ data }: { data: TopicPageData }) {
   usePrevNextKeys(pn.prev?.href ?? null, pn.next?.href ?? null);
 
   const byDiff = (d: string) => data.problems.filter((p) => p.difficulty === d);
+  const practiseHref = problemsHref(subj, { topic: topic.id, difficulty: "" });
+  const state = data.state ?? (data.has_lesson ? "lesson" : "practice-only");
+  const coTopics = data.co_topics ?? [];
   const lessonCount = nav.flatMap((g) => g.items).filter((i) => !i.muted).length;
 
   const tab = (v: View, icon: string, label: string, colour: string, badge?: number) => (
@@ -63,6 +72,10 @@ export function TopicPage({ data }: { data: TopicPageData }) {
         data.has_lesson ? (
           <a className="rd-btn primary big" href={lessonHref(subj, topic.id)}>
             ▶ Lesson<span className="rd-btn-sub">open the lesson</span>
+          </a>
+        ) : data.problems.length > 0 ? (
+          <a className="rd-btn primary big" href={practiseHref}>
+            🧪 Practise<span className="rd-btn-sub">{data.problems.length} problems</span>
           </a>
         ) : undefined
       }
@@ -124,7 +137,60 @@ export function TopicPage({ data }: { data: TopicPageData }) {
           {topic.ds.length > 0 && (
             <p className="muted small">Data structures: {topic.ds.join(", ")}</p>
           )}
+          {data.problems.length > 0 && (
+            <p className="lb-hero-actions">
+              {data.has_lesson && (
+                <a className="rd-btn primary" href={lessonHref(subj, topic.id)}>
+                  ▶ Learn it
+                </a>
+              )}
+              <a className={`rd-btn ${data.has_lesson ? "" : "primary"}`} href={practiseHref}>
+                🧪 Practise {data.problems.length} problem{data.problems.length === 1 ? "" : "s"}
+              </a>
+            </p>
+          )}
         </section>
+        {state === "planned" && (
+          <section className="rd-card lb-planned">
+            <h2>Planned</h2>
+            <p>
+              No lesson, problem or resource uses this topic yet. Start from its neighbours below,
+              or write the lesson in Claude Code:{" "}
+              <code>
+                /learn {subj} {topic.id}
+              </code>
+            </p>
+            <TopicLinks
+              subject={subj}
+              ids={[...(topic.prereqs ?? []), ...(topic.related ?? [])]}
+              topics={topics}
+              names={names}
+            />
+          </section>
+        )}
+        {data.problems.length > 0 && (
+          <section>
+            <h2>Where it shows up</h2>
+            <TopicProblemList
+              subject={subj}
+              problems={data.problems}
+              names={names}
+              roles={DESIGN_SUBJECTS.has(subj)}
+            />
+          </section>
+        )}
+        {coTopics.length > 0 && (
+          <section>
+            <h2>Often used with</h2>
+            <p className="muted small">
+              Topics that appear in the same problems: learn them together.
+            </p>
+            <CoTopics subject={subj} items={coTopics} names={names} />
+          </section>
+        )}
+        {!data.has_lesson && data.resources.length > 0 && (
+          <ResourceList items={data.resources.slice(0, 4)} title="Read about it" />
+        )}
         {data.graph.center && (
           <section>
             <h2>Neighbourhood</h2>

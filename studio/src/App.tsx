@@ -26,7 +26,7 @@ import { SubjectMap } from "./components/SubjectMap";
 import { TopicPage } from "./components/TopicPage";
 import { RootContext, SubjectContext } from "./context";
 import type { Route, Tab } from "./route";
-import { TAB_HREF, designHref, parseRoute, tabOf } from "./route";
+import { TAB_HREF, designHref, parseRoute, problemHref, tabOf } from "./route";
 import { DesignConsole } from "./components/DesignConsole";
 import { DesignProblemPage } from "./components/DesignProblemPage";
 
@@ -90,7 +90,14 @@ function load(route: Route): Promise<Page> {
     case "problems":
       return api.problems(route.subject).then((data) => ({ kind: "problems", data }));
     case "topic":
-      return api.topic(route.subject, route.topic).then((data) => ({ kind: "topic", data }));
+      return api.topic(route.subject, route.topic).then((data) => {
+        if ("redirect_problem" in data) {
+          // case studies are problems now: old topic links open the problem
+          window.location.replace(problemHref(data.subject, data.redirect_problem));
+          return new Promise<never>(() => {});
+        }
+        return { kind: "topic", data };
+      });
     case "map":
       return api.graph(route.subject).then((data) => ({ kind: "map", data }));
     case "sessions":

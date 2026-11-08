@@ -1,5 +1,5 @@
 /** Pure helpers of the Learn pages on the Workbench (home, lesson, topic, map); tested in learn-bench.test.ts. */
-import type { Block, Feedback, Graph, Topic, TopicFeedback } from "./api";
+import type { Block, Feedback, Graph, Topic, TopicFeedback, TopicRole, TopicState } from "./api";
 import { groupLabel, groupTopics, topicIcon } from "./catalog";
 import type { NavGroup } from "./components/panes";
 import type { TocEntry } from "./toc";
@@ -32,17 +32,49 @@ export function topicNavGroups(
       key: g.group,
       label: groupLabel(g.group),
       color: g.color,
-      items: g.topics.map((t) => ({
-        id: t.id,
-        title: t.name,
-        href: opts.href(t),
-        icon: opts.lessonsOnly ? topicIcon(t) : t.has_lesson ? "📖" : "○",
-        hint: `${t.usage} ${g.group}`,
-        current: t.id === opts.current,
-        muted: !opts.lessonsOnly && !t.has_lesson,
-        badge: opts.badge?.(t),
-      })),
+      items: g.topics.map((t) => {
+        const state = topicStateOf(t);
+        return {
+          id: t.id,
+          title: t.name,
+          href: opts.href(t),
+          icon: opts.lessonsOnly ? topicIcon(t) : STATE_ICON[state],
+          hint: `${t.usage} ${g.group}${state === "planned" ? " planned" : ""}`,
+          current: t.id === opts.current,
+          muted: !opts.lessonsOnly && !t.has_lesson,
+          disabled: state === "planned" && t.id !== opts.current,
+          badge: opts.badge?.(t),
+        };
+      }),
     }));
+}
+
+export const STATE_ICON: Record<TopicState, string> = {
+  lesson: "📖",
+  "practice-only": "🧪",
+  planned: "○",
+};
+
+/** A topic's state; older payloads without `state` fall back to has_lesson. */
+export function topicStateOf(t: Pick<Topic, "has_lesson" | "state">): TopicState {
+  return t.state ?? (t.has_lesson ? "lesson" : "practice-only");
+}
+
+export const ROLE_ORDER: TopicRole[] = ["topic", "technology", "pattern"];
+export const ROLE_LABEL: Record<TopicRole, string> = {
+  topic: "As a core topic",
+  technology: "As a technology",
+  pattern: "As a pattern",
+};
+
+/** Items grouped by role in ROLE_ORDER (items without a role count as "pattern"); empty groups dropped. */
+export function groupByRole<T extends { role?: TopicRole }>(
+  items: T[],
+): { role: TopicRole; items: T[] }[] {
+  return ROLE_ORDER.map((role) => ({
+    role,
+    items: items.filter((x) => (x.role ?? "pattern") === role),
+  })).filter((g) => g.items.length > 0);
 }
 
 /** Previous / next item of the flattened groups (left-list order); null at the ends or if absent. */

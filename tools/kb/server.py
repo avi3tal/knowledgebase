@@ -63,7 +63,19 @@ def subjects_payload() -> dict[str, Any]:
     out = []
     for s in learn.subjects():
         cat = learn.catalog(s)
-        topics = [{**t, "has_lesson": learn.has_lesson(s, t["id"])} for t in cat["topics"]]
+        counts = learn.topic_counts(s)
+        topics = []
+        for t in cat["topics"]:
+            lesson = learn.has_lesson(s, t["id"])
+            n_problems, n_refs = counts.get(t["id"], (0, 0))
+            topics.append(
+                {
+                    **t,
+                    "has_lesson": lesson,
+                    "problems": n_problems,
+                    "state": learn.topic_state(lesson, n_problems, n_refs),
+                }
+            )
         out.append(
             {
                 "id": s,

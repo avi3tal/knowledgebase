@@ -10,6 +10,40 @@ export interface Topic {
   ds: string[];
   samples: string[];
   has_lesson: boolean;
+  /** problems that practise it (from /api/subjects) */
+  problems?: number;
+  state?: TopicState;
+}
+/** lesson | practice-only (problems or refs, no lesson yet) | planned (nothing to show yet) */
+export type TopicState = "lesson" | "practice-only" | "planned";
+/** How a problem uses a topic: design meta key (topic / technology / pattern); algo is "pattern". */
+export type TopicRole = "topic" | "technology" | "pattern";
+export interface TopicLink {
+  id: string;
+  role: TopicRole;
+  name: string;
+  has_lesson: boolean;
+}
+export interface SimilarProblem {
+  slug: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  status: "solved" | "failing" | "untried";
+  score: number;
+  shared: string[];
+}
+/** Practice -> Learn links every problem page carries. */
+export interface ProblemContext {
+  topic_links?: TopicLink[];
+  similar?: SimilarProblem[];
+}
+export interface TopicProblem {
+  slug: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  role?: TopicRole;
+  status?: "solved" | "failing" | "untried";
+  other_topics?: string[];
 }
 export interface Subject {
   id: string;
@@ -63,9 +97,16 @@ export interface TopicPageData {
   topic: Topic & { prereqs: string[]; related: string[]; group?: string; status?: string };
   names: Record<string, string>;
   has_lesson: boolean;
-  problems: { slug: string; title: string; difficulty: "easy" | "medium" | "hard" }[];
+  state?: TopicState;
+  problems: TopicProblem[];
+  co_topics?: { id: string; count: number }[];
   resources: Resource[];
   graph: Graph;
+}
+/** A case-study id that is a problem, not a topic: the studio opens the problem instead. */
+export interface TopicRedirect {
+  subject: string;
+  redirect_problem: string;
 }
 export interface SubjectsResponse {
   root: string;
@@ -80,7 +121,7 @@ export interface RunRecord {
   fit: string | null;
   verdict: boolean | null;
 }
-export interface ProblemCardData {
+export interface ProblemCardData extends ProblemContext {
   slug: string;
   title: string;
   difficulty: "easy" | "medium" | "hard";
@@ -186,7 +227,7 @@ export interface DesignCheckItem {
   stage: DesignStage;
   label: string;
 }
-export interface DesignProblemData {
+export interface DesignProblemData extends ProblemContext {
   subject: string;
   slug: string;
   title: string;
@@ -429,7 +470,8 @@ export const api = {
     get<ProblemCardData>(`/api/problem/${subject}/${slug}`),
   feedback: (subject: string) => get<Feedback>(`/api/feedback/${subject}`),
   problems: (subject: string) => get<ProblemRow[]>(`/api/problems/${subject}`),
-  topic: (subject: string, topic: string) => get<TopicPageData>(`/api/topic/${subject}/${topic}`),
+  topic: (subject: string, topic: string) =>
+    get<TopicPageData | TopicRedirect>(`/api/topic/${subject}/${topic}`),
   graph: (subject: string) => get<Graph>(`/api/graph/${subject}`),
   design: (subject: string, slug: string) =>
     get<DesignProblemData>(`/api/design/${subject}/${slug}`),

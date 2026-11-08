@@ -410,6 +410,9 @@ def topic_page(subject: str, topic: str, history: list[dict[str, Any]] | None = 
     cat = catalog(subject)
     entry = next((t for t in cat["topics"] if t["id"] == _check_id(topic, "topic")), None)
     if entry is None:
+        # Case studies are practice problems, not topics: old topic links land on the problem.
+        if topic in {p.slug for p in subject_problems(subject)}:
+            return {"subject": subject, "redirect_problem": topic}
         raise ProblemError(f"unknown topic {subject}/{topic}")
     from kb import feedback
 
@@ -451,6 +454,18 @@ def topic_page(subject: str, topic: str, history: list[dict[str, Any]] | None = 
         "resources": resources,
         "graph": refs.neighbourhood(subject, f"topic:{topic}"),
     }
+
+
+def topic_counts(subject: str) -> dict[str, tuple[int, int]]:
+    """topic id -> (problems using it, curated refs covering it), in one pass each."""
+    from kb import refs
+
+    problems: dict[str, int] = {}
+    for links in problem_links(subject).values():
+        for link in links:
+            problems[link["id"]] = problems.get(link["id"], 0) + 1
+    covered = refs.topic_ref_counts(subject)
+    return {t["id"]: (problems.get(t["id"], 0), covered.get(t["id"], 0)) for t in catalog(subject)["topics"]}
 
 
 def topic_state(lesson: bool, problems: int, resources: int) -> str:

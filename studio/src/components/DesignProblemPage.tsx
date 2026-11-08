@@ -22,6 +22,7 @@ import { Chips, OnThisPage, ProblemList } from "./DesignReaderPanes";
 import { Markdown } from "./Markdown";
 import { RevealGate, SolutionArticle, VERSIONS_ID } from "./SolutionArticle";
 import { Workbench } from "./Workbench";
+import { SimilarProblemsCard } from "./PracticeLinks";
 
 // The page remounts on every hash change (App keys it), so keep fetched data across tabs.
 const problemsCache = new Map<string, ProblemRow[]>();
@@ -262,6 +263,7 @@ export function DesignProblemPage({
           <Chips ids={patterns} subject={p.subject} names={names} kind="pattern" />
         </section>
       )}
+      <SimilarProblemsCard subject={p.subject} items={p.similar} names={names} />
     </OnThisPage>
   );
 

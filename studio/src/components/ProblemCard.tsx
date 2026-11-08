@@ -23,6 +23,7 @@ import { NavList, useCenterScroller } from "./panes";
 import { Copy } from "./PracticeBench";
 import { ResourceList } from "./Resources";
 import { Workbench } from "./Workbench";
+import { SimilarProblemsCard } from "./PracticeLinks";
 
 /**
  * An algo problem. `open` (the problem page, `#/problem/<subject>/<slug>[/<tab>]`) renders the full
@@ -198,6 +199,10 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
     [rows, subject, tab, p.slug],
   );
 
+  const topicNames = useMemo(
+    () => Object.fromEntries((subj?.topics ?? []).map((t) => [t.id, t.name])),
+    [subj],
+  );
   const topics = useMemo(() => {
     const byId = new Map((subj?.topics ?? []).map((t) => [t.id, t]));
     return (row?.topics ?? []).map((id) => ({ id, topic: byId.get(id) }));
@@ -317,6 +322,7 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
           </div>
         </section>
       )}
+      <SimilarProblemsCard subject={subject} items={p.similar} names={topicNames} />
     </OnThisPage>
   );
 

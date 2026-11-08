@@ -3,6 +3,7 @@ import type { Block, Feedback, Graph, Topic, TopicFeedback } from "./api";
 import {
   bestHref,
   edgePath,
+  groupByRole,
   homeStats,
   lessonSections,
   lessonToc,
@@ -16,6 +17,7 @@ import {
   topicCounts,
   topicEdges,
   topicNavGroups,
+  topicStateOf,
 } from "./learn-bench";
 import type { Trace } from "./trace";
 
@@ -71,7 +73,7 @@ describe("topicNavGroups + prevNext", () => {
       ["fundamental", ["arrays", "heaps"]],
     ]);
     const tp = g[0]!.items[0]!;
-    expect([tp.href, tp.icon, tp.muted]).toEqual(["#/topic/algo/two-pointers", "○", true]);
+    expect([tp.href, tp.icon, tp.muted]).toEqual(["#/topic/algo/two-pointers", "🧪", true]); // no lesson, practice available
     expect(g[0]!.items[2]!.current).toBe(true);
     expect(g[0]!.items[2]!.href).toBe("#/learn/algo/bfs");
   });
@@ -289,5 +291,41 @@ describe("knowledge map", () => {
     expect(mapLabel("In-place reversal of a linked list")).toHaveLength(22);
     expect(nodeRadius(0)).toBe(5);
     expect(nodeRadius(1000)).toBe(13);
+  });
+});
+
+describe("topic states and roles", () => {
+  it("falls back to has_lesson when the payload has no state", () => {
+    expect(topicStateOf({ has_lesson: true })).toBe("lesson");
+    expect(topicStateOf({ has_lesson: false })).toBe("practice-only");
+    expect(topicStateOf({ has_lesson: false, state: "planned" })).toBe("planned");
+  });
+
+  it("disables planned topics in the nav, except the current one", () => {
+    const topics = [
+      { ...topic("a", "pattern", false, 1), state: "planned" as const },
+      { ...topic("b", "pattern", false, 2), state: "planned" as const },
+      { ...topic("c", "pattern", false, 3), state: "practice-only" as const },
+    ];
+    const items = topicNavGroups(topics, { current: "b", href: (t) => t.id }).flatMap(
+      (g) => g.items,
+    );
+    expect(items.map((i) => [i.id, i.icon, Boolean(i.disabled)])).toEqual([
+      ["a", "○", true],
+      ["b", "○", false],
+      ["c", "🧪", false],
+    ]);
+  });
+
+  it("groups by role in a fixed order and drops empty roles", () => {
+    const items = [
+      { slug: "x", role: "pattern" as const },
+      { slug: "y", role: "topic" as const },
+      { slug: "z" },
+    ];
+    expect(groupByRole(items).map((g) => [g.role, g.items.map((i) => i.slug)])).toEqual([
+      ["topic", ["y"]],
+      ["pattern", ["x", "z"]],
+    ]);
   });
 });

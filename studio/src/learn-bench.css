@@ -600,3 +600,61 @@
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- topic ↔ practice links */
+.lb-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+.lb-role h3 {
+  margin: 14px 0 8px;
+  font-size: 0.95rem;
+}
+.lb-problem-rich a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lb-prob-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lb-prob-title {
+  flex: 1;
+  min-width: 0;
+}
+.lb-prob-with {
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-planned {
+  border-left: 4px solid var(--border);
+}
+.lb-similar {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.lb-similar a {
+  font-weight: 600;
+}
+.rd-prob.disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.rd-prob.disabled:hover {
+  background: none;
+}
+.topic-card.planned,
+.topic-tile.planned {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}

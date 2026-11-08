@@ -69,3 +69,10 @@ def test_topic_page_roles_co_topics_and_state() -> None:
 )
 def test_topic_state(lesson: bool, problems: int, resources: int, want: str) -> None:
     assert learn.topic_state(lesson, problems, resources) == want
+
+
+def test_topic_counts_match_topic_pages() -> None:
+    counts = learn.topic_counts("system-design")
+    page = learn.topic_page("system-design", "fan-out")
+    assert counts["fan-out"][0] == len(page["problems"])
+    assert set(counts) == {t["id"] for t in learn.catalog("system-design")["topics"]}

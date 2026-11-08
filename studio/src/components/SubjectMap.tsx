@@ -366,7 +366,12 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
               </h2>
               <div className="grid">
                 {ts.map((t) => (
-                  <a key={t.id} className="tile topic-tile" href={topicPageHref(subject.id, t.id)}>
+                  <a
+                    key={t.id}
+                    className={`tile topic-tile ${t.state === "planned" ? "planned" : ""}`}
+                    href={t.state === "planned" ? undefined : topicPageHref(subject.id, t.id)}
+                    aria-disabled={t.state === "planned" || undefined}
+                  >
                     <b>
                       {topicIcon(t)} {t.name}
                     </b>
