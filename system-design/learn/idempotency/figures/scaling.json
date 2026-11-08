@@ -1,76 +1,63 @@
 {
  "kind": "architecture",
- "title": "Scaling idempotency: from one table to keys and dedup across regions",
- "caption": "Each stage moves the 'have I seen this?' check to where it stays cheap; switch the 📈 tabs to grow the system.",
- "base_name": "v1: one DB table",
+ "title": "Scaling idempotency: from a key table to dedup across regions and partitions",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: keys in the inventory DB",
  "nodes": [
   {
-   "id": "c",
-   "kind": "client",
-   "label": "Mobile app",
+   "id": "orders",
+   "kind": "service",
+   "label": "Order service",
    "x": 0,
    "y": 120
   },
   {
-   "id": "api",
+   "id": "inv",
    "kind": "service",
-   "label": "Payment API",
+   "label": "Inventory API",
    "x": 280,
    "y": 120
   },
   {
    "id": "db",
    "kind": "sql",
-   "label": "Payments DB",
-   "sub": "payments + idem_keys",
+   "label": "Inventory DB",
+   "sub": "stock + key table",
    "x": 560,
    "y": 120
-  },
-  {
-   "id": "job",
-   "kind": "scheduler",
-   "label": "Cleanup job",
-   "sub": "delete > 7 days",
-   "x": 560,
-   "y": 270
   }
  ],
  "edges": [
   {
-   "from": "c",
-   "to": "api",
-   "label": "key header"
+   "from": "orders",
+   "to": "inv",
+   "label": "reserve + key"
   },
   {
-   "from": "api",
+   "from": "inv",
    "to": "db",
-   "label": "claim + store, one txn"
-  },
-  {
-   "from": "job",
-   "to": "db"
+   "label": "one transaction"
   }
  ],
  "steps": [
   {
-   "text": "The key table sits in the payments database: claim, payment and stored response commit in one transaction. The strongest guarantee there is.",
+   "text": "The key table sits next to the reservations, so claim, reserve and stored reply commit together. Nothing can be half done.",
    "nodes": [
-    "api",
+    "inv",
     "db"
    ],
    "edges": [
-    "c>api",
-    "api>db"
+    "orders>inv",
+    "inv>db"
    ]
   },
   {
-   "text": "Cost: an extra indexed write per request on the primary, and a cleanup job that deletes millions of rows a day.",
+   "text": "Good for a long time. It strains when key rows (one insert and one update per call, kept for days) outgrow the reservations and fill the primary's write budget and disk.",
    "nodes": [
-    "db",
-    "job"
+    "db"
    ],
    "edges": [
-    "job>db"
+    "inv>db"
    ]
   }
  ],
@@ -78,117 +65,109 @@
   {
    "name": "v2: key store with TTL",
    "tone": "scale",
-   "summary": "Move keys to a dedicated store that expires them by itself; keep a business unique constraint in the DB as the backstop.",
+   "summary": "Move keys to a dedicated, replicated key store that expires them on its own. The primary only writes stock; a unique constraint keeps duplicates out if the two ever disagree.",
    "nodes": [
     {
-     "id": "c",
-     "kind": "client",
-     "label": "Mobile app",
+     "id": "orders",
+     "kind": "service",
+     "label": "Order service",
      "x": 0,
      "y": 160
     },
     {
-     "id": "lb",
-     "kind": "load-balancer",
-     "label": "Load balancer",
-     "x": 270,
-     "y": 160
-    },
-    {
-     "id": "a1",
+     "id": "i1",
      "kind": "service",
-     "label": "Payment API 1",
-     "x": 540,
+     "label": "Inventory API 1",
+     "x": 280,
      "y": 40
     },
     {
-     "id": "ks",
-     "kind": "cache",
-     "label": "Key store",
-     "sub": "SET NX, TTL 7 d",
-     "x": 540,
-     "y": 160
+     "id": "i2",
+     "kind": "service",
+     "label": "Inventory API 2",
+     "x": 280,
+     "y": 280
     },
     {
-     "id": "a2",
-     "kind": "service",
-     "label": "Payment API 2",
-     "x": 540,
-     "y": 280
+     "id": "ks",
+     "kind": "nosql",
+     "label": "Key store",
+     "sub": "TTL > retry window",
+     "x": 560,
+     "y": 40
     },
     {
      "id": "db",
      "kind": "sql",
-     "label": "Payments DB",
-     "sub": "UNIQUE(order_id)",
-     "x": 820,
-     "y": 160
+     "label": "Inventory DB",
+     "sub": "UNIQUE order+line",
+     "x": 560,
+     "y": 280
     }
    ],
    "edges": [
     {
-     "from": "c",
-     "to": "lb"
+     "from": "orders",
+     "to": "i1"
     },
     {
-     "from": "lb",
-     "to": "a1"
+     "from": "orders",
+     "to": "i2"
     },
     {
-     "from": "lb",
-     "to": "a2"
+     "from": "i1",
+     "to": "ks",
+     "label": "claim / reply"
     },
     {
-     "from": "a1",
+     "from": "i2",
      "to": "ks"
     },
     {
-     "from": "a2",
-     "to": "ks"
+     "from": "i1",
+     "to": "db",
+     "label": "reserve"
     },
     {
-     "from": "a1",
-     "to": "db"
-    },
-    {
-     "from": "a2",
+     "from": "i2",
      "to": "db"
     }
    ],
    "steps": [
     {
-     "text": "Any API instance can take any retry; all of them claim keys in one shared store.",
+     "text": "Any API instance claims the key with a conditional write in the key store, which deletes keys once they are older than the longest retry.",
      "nodes": [
-      "lb",
-      "a1",
-      "a2"
+      "i1",
+      "i2",
+      "ks"
      ],
      "edges": [
-      "c>lb",
-      "lb>a1",
-      "lb>a2"
+      "orders>i1",
+      "orders>i2",
+      "i1>ks",
+      "i2>ks"
      ]
     },
     {
-     "text": "SET key NX with a TTL claims and expires in one operation: no cleanup job, and the primary loses a write per request.",
+     "text": "The reservation commits in the inventory DB, then the reply is written back to the key. The primary no longer carries key traffic or cleanup.",
+     "nodes": [
+      "i1",
+      "db",
+      "ks"
+     ],
+     "edges": [
+      "i1>db",
+      "i1>ks"
+     ]
+    },
+    {
+     "text": "Cost: key and reservation are no longer one transaction. A crash between them leaves the key in progress, so the unique constraint is the backstop and the store must be durable.",
      "nodes": [
       "ks",
-      "a1",
-      "a2"
-     ],
-     "edges": [
-      "a1>ks",
-      "a2>ks"
-     ]
-    },
-    {
-     "text": "Cost: key and payment no longer commit together. Store the response before marking done, keep UNIQUE(order_id) in the DB, and run the store with replication and persistence; a store that forgets keys lets duplicates in.",
-     "nodes": [
       "db"
      ],
      "edges": [
-      "a1>db",
-      "a2>db"
+      "i2>db"
      ]
     }
    ]
@@ -196,137 +175,107 @@
   {
    "name": "v3: per-region keys",
    "tone": "scale",
-   "summary": "Each user's payments live in a home region; keys are claimed there, so a key never needs a global lock.",
+   "summary": "Each region has its own warehouses, stock and key store. A key belongs to the region that created it, so claims never wait on another continent.",
    "nodes": [
     {
-     "id": "ue",
-     "kind": "client",
-     "label": "Users (EU)",
+     "id": "oe",
+     "kind": "service",
+     "label": "Orders (EU)",
      "x": 0,
      "y": 40
     },
     {
-     "id": "uu",
-     "kind": "client",
-     "label": "Users (US)",
+     "id": "ou",
+     "kind": "service",
+     "label": "Orders (US)",
      "x": 0,
      "y": 280
     },
     {
-     "id": "ae",
+     "id": "ie",
      "kind": "service",
-     "label": "EU payment API",
+     "label": "Inventory (EU)",
      "x": 280,
      "y": 40
     },
     {
-     "id": "au",
+     "id": "iu",
      "kind": "service",
-     "label": "US payment API",
+     "label": "Inventory (US)",
      "x": 280,
      "y": 280
     },
     {
      "id": "ke",
-     "kind": "cache",
-     "label": "EU key store",
+     "kind": "nosql",
+     "label": "EU keys + stock",
      "x": 560,
      "y": 40
     },
     {
-     "id": "psp",
-     "kind": "external",
-     "label": "Card processor",
-     "sub": "last-line dedup",
-     "x": 560,
-     "y": 160
-    },
-    {
      "id": "ku",
-     "kind": "cache",
-     "label": "US key store",
+     "kind": "nosql",
+     "label": "US keys + stock",
      "x": 560,
      "y": 280
     }
    ],
    "edges": [
     {
-     "from": "ue",
-     "to": "ae"
+     "from": "oe",
+     "to": "ie"
     },
     {
-     "from": "uu",
-     "to": "au"
+     "from": "ou",
+     "to": "iu"
     },
     {
-     "from": "ae",
+     "from": "ie",
      "to": "ke"
     },
     {
-     "from": "au",
+     "from": "iu",
      "to": "ku"
     },
     {
-     "from": "ae",
-     "to": "psp"
-    },
-    {
-     "from": "au",
-     "to": "psp"
-    },
-    {
-     "from": "au",
-     "to": "ae",
-     "label": "forward to home"
+     "from": "iu",
+     "to": "ie",
+     "label": "forward by prefix"
     }
    ],
    "steps": [
     {
-     "text": "Users are routed to their home region, and keys are claimed in that region's store at local latency.",
+     "text": "Orders reserve from the warehouses in their own region; claims and reservations stay local and fast.",
      "nodes": [
-      "ue",
-      "ae",
+      "oe",
+      "ie",
       "ke",
-      "uu",
-      "au",
+      "ou",
+      "iu",
       "ku"
      ],
      "edges": [
-      "ue>ae",
-      "uu>au",
-      "ae>ke",
-      "au>ku"
+      "oe>ie",
+      "ie>ke",
+      "ou>iu",
+      "iu>ku"
      ]
     },
     {
-     "text": "An EU user's retry that lands in the US (DNS failover, travel) is forwarded to the EU store instead of being claimed locally.",
+     "text": "Keys carry their home region as a prefix (eu_…, us_…), so the owner is known without a lookup.",
      "nodes": [
-      "au",
-      "ae"
-     ],
-     "edges": [
-      "au>ae",
-      "ae>ke"
+      "ke",
+      "ku"
      ]
     },
     {
-     "text": "Both regions pass the key on to the processor, a second referee if routing ever goes wrong.",
+     "text": "Cost: a retry routed to the wrong region after a failover is forwarded home, at the price of one cross-region hop. Replicating keys everywhere would put that hop on every claim.",
      "nodes": [
-      "psp"
+      "iu",
+      "ie"
      ],
      "edges": [
-      "ae>psp",
-      "au>psp"
-     ]
-    },
-    {
-     "text": "Cost: +80 ms for forwarded retries, and while a home region is down its users' payments pause rather than risk a double charge.",
-     "nodes": [
-      "ae",
-      "ke"
-     ],
-     "edges": [
-      "au>ae"
+      "iu>ie"
      ]
     }
    ]
@@ -334,52 +283,57 @@
   {
    "name": "v4: consumer dedup at scale",
    "tone": "scale",
-   "summary": "Billions of events a day: partition by payment id so duplicates always meet the same consumer, and bound the dedup window.",
+   "summary": "Partition the stream by order id so all events of one order reach one consumer, and give each partition its own seen-id table.",
    "nodes": [
     {
-     "id": "pay",
-     "kind": "service",
-     "label": "Payment service",
-     "sub": "outbox relay",
+     "id": "relay",
+     "kind": "worker",
+     "label": "Outbox relay",
      "x": 0,
      "y": 160
     },
     {
      "id": "st",
      "kind": "stream",
-     "label": "Payments topic",
-     "sub": "keyed by payment_id",
-     "x": 270,
+     "label": "Event stream",
+     "sub": "keyed by order id",
+     "x": 280,
      "y": 160
     },
     {
      "id": "c1",
      "kind": "worker",
-     "label": "Points consumer 1",
-     "sub": "partitions 0–15",
-     "x": 540,
+     "label": "Picking consumer 1",
+     "sub": "partitions 0–7",
+     "x": 560,
      "y": 40
     },
     {
      "id": "c2",
      "kind": "worker",
-     "label": "Points consumer 2",
-     "sub": "partitions 16–31",
-     "x": 540,
+     "label": "Picking consumer 2",
+     "sub": "partitions 8–15",
+     "x": 560,
      "y": 280
     },
     {
-     "id": "pdb",
+     "id": "s1",
      "kind": "sql",
-     "label": "Points DB",
-     "sub": "seen ids by day",
-     "x": 820,
-     "y": 160
+     "label": "Seen ids 0–7",
+     "x": 840,
+     "y": 40
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Seen ids 8–15",
+     "x": 840,
+     "y": 280
     }
    ],
    "edges": [
     {
-     "from": "pay",
+     "from": "relay",
      "to": "st"
     },
     {
@@ -392,59 +346,48 @@
     },
     {
      "from": "c1",
-     "to": "pdb",
-     "label": "effect + id"
+     "to": "s1",
+     "label": "id + effect, 1 txn"
     },
     {
      "from": "c2",
-     "to": "pdb",
-     "label": "effect + id"
+     "to": "s2"
     }
    ],
    "steps": [
     {
-     "text": "Events are keyed by payment_id, so every copy of one event lands on the same partition and the same consumer.",
+     "text": "The relay publishes with the order id as the partition key: every event for an order lands on the same partition, in order.",
      "nodes": [
-      "pay",
-      "st",
-      "c1",
-      "c2"
-     ],
-     "edges": [
-      "pay>st",
-      "st>c1",
-      "st>c2"
-     ]
-    },
-    {
-     "text": "Each consumer writes its effect and the event id in one transaction; the seen-id table is partitioned by day.",
-     "nodes": [
-      "c1",
-      "c2",
-      "pdb"
-     ],
-     "edges": [
-      "c1>pdb",
-      "c2>pdb"
-     ]
-    },
-    {
-     "text": "Old days are dropped as whole partitions once they are older than the topic's retention (no duplicate can be older than that).",
-     "nodes": [
-      "pdb"
-     ],
-     "edges": [
-      "c1>pdb"
-     ]
-    },
-    {
-     "text": "Cost: storage grows with events × window, and a window shorter than the longest replay lets old duplicates through.",
-     "nodes": [
-      "pdb",
+      "relay",
       "st"
      ],
      "edges": [
-      "c2>pdb"
+      "relay>st"
+     ]
+    },
+    {
+     "text": "Each consumer writes the event id and the effect (a pick task) in one transaction against the seen-ids for its own partitions, so no global table is shared.",
+     "nodes": [
+      "c1",
+      "c2",
+      "s1",
+      "s2"
+     ],
+     "edges": [
+      "st>c1",
+      "st>c2",
+      "c1>s1",
+      "c2>s2"
+     ]
+    },
+    {
+     "text": "Cost: seen ids must outlive the stream's retention, or a replay processes old events again. Store them in daily partitions and drop whole days once they're older than retention.",
+     "nodes": [
+      "s1",
+      "s2"
+     ],
+     "edges": [
+      "c1>s1"
      ]
     }
    ]

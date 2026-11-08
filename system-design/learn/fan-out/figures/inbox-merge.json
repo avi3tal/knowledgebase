@@ -1,0 +1,320 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: building one inbox page",
+ "caption": "Pushed entries are already in the user's list; the read only adds the few popular repos they watch, then hydrates and filters the page.",
+ "base_name": "Warm inbox",
+ "nodes": [
+  {
+   "id": "open",
+   "type": "start",
+   "label": "Open inbox",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "ids",
+   "type": "step",
+   "label": "Read inbox ids",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "found",
+   "type": "decision",
+   "label": "List present?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "rebuild",
+   "type": "step",
+   "label": "Rebuild from repos",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "pop",
+   "type": "step",
+   "label": "Popular watched",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "fetch",
+   "type": "step",
+   "label": "Fetch recents",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "intime",
+   "type": "decision",
+   "label": "Back in time?",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "partial",
+   "type": "step",
+   "label": "Skip, mark partial",
+   "col": 1,
+   "row": 5
+  },
+  {
+   "id": "merge",
+   "type": "step",
+   "label": "Merge by time",
+   "col": 0,
+   "row": 6
+  },
+  {
+   "id": "hyd",
+   "type": "step",
+   "label": "Hydrate + filter",
+   "col": 0,
+   "row": 7
+  },
+  {
+   "id": "page",
+   "type": "end",
+   "label": "Inbox page",
+   "col": 0,
+   "row": 8,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "open",
+   "to": "ids"
+  },
+  {
+   "from": "ids",
+   "to": "found"
+  },
+  {
+   "from": "found",
+   "to": "pop",
+   "label": "yes"
+  },
+  {
+   "from": "found",
+   "to": "rebuild",
+   "label": "no"
+  },
+  {
+   "from": "rebuild",
+   "to": "pop"
+  },
+  {
+   "from": "pop",
+   "to": "fetch"
+  },
+  {
+   "from": "fetch",
+   "to": "intime"
+  },
+  {
+   "from": "intime",
+   "to": "merge",
+   "label": "yes"
+  },
+  {
+   "from": "intime",
+   "to": "partial",
+   "label": "no"
+  },
+  {
+   "from": "partial",
+   "to": "merge"
+  },
+  {
+   "from": "merge",
+   "to": "hyd"
+  },
+  {
+   "from": "hyd",
+   "to": "page"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Read the user's inbox list: event ids pushed by the fan-out workers, newest first.",
+   "nodes": [
+    "open",
+    "ids",
+    "found"
+   ],
+   "edges": [
+    "open>ids",
+    "ids>found"
+   ]
+  },
+  {
+   "text": "From the user's watch list, keep only the repos above the threshold. Usually that is zero to a few.",
+   "nodes": [
+    "pop"
+   ],
+   "edges": [
+    "found>pop"
+   ]
+  },
+  {
+   "text": "Fetch the recent events of those repos from the replicated recents, in parallel, with a short timeout.",
+   "nodes": [
+    "fetch",
+    "intime"
+   ],
+   "edges": [
+    "pop>fetch",
+    "fetch>intime"
+   ]
+  },
+  {
+   "text": "Merge both lists by time and drop repeats by event id (an event can be pushed and merged if the threshold changed).",
+   "nodes": [
+    "merge"
+   ],
+   "edges": [
+    "intime>merge"
+   ]
+  },
+  {
+   "text": "Hydrate the page's ids into titles and authors in one batch, drop anything deleted or no longer visible, and return the page.",
+   "nodes": [
+    "hyd",
+    "page"
+   ],
+   "edges": [
+    "merge>hyd",
+    "hyd>page"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Returning user",
+   "tone": "edge",
+   "summary": "Someone opens the inbox after a year away. Their list was evicted to save memory, so it is rebuilt once by pulling.",
+   "steps": [
+    {
+     "text": "No inbox list is found: inactive users' lists are evicted.",
+     "nodes": [
+      "ids",
+      "found"
+     ],
+     "edges": [
+      "open>ids",
+      "ids>found"
+     ]
+    },
+    {
+     "text": "Pull recent events from each watched repo, merge them and store the result as the new list. This one open is slow.",
+     "nodes": [
+      "rebuild"
+     ],
+     "edges": [
+      "found>rebuild"
+     ]
+    },
+    {
+     "text": "From here the normal path runs, and later opens are fast again.",
+     "nodes": [
+      "pop",
+      "merge",
+      "page"
+     ],
+     "edges": [
+      "rebuild>pop",
+      "pop>fetch",
+      "fetch>intime",
+      "intime>merge",
+      "merge>hyd",
+      "hyd>page"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Recents fetch times out",
+   "tone": "failure",
+   "summary": "One popular repo's recents don't answer in time. The page is served without them instead of failing.",
+   "steps": [
+    {
+     "text": "The fetch for one popular repo misses its 50 ms timeout.",
+     "fail": [
+      "fetch",
+      "fetch>intime"
+     ],
+     "nodes": [
+      "intime"
+     ],
+     "edges": [
+      "pop>fetch"
+     ]
+    },
+    {
+     "text": "Skip that repo and mark the page partial; the client can refresh in a moment.",
+     "nodes": [
+      "partial"
+     ],
+     "edges": [
+      "intime>partial"
+     ]
+    },
+    {
+     "text": "The pushed entries and the other repos still make a full page.",
+     "nodes": [
+      "merge",
+      "hyd",
+      "page"
+     ],
+     "edges": [
+      "partial>merge",
+      "merge>hyd",
+      "hyd>page"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Repo made private",
+   "tone": "edge",
+   "summary": "The owner makes a repo private after its events were pushed. Copies stay in inboxes, so access is checked at hydration, not at fan-out.",
+   "steps": [
+    {
+     "text": "The list still holds event ids from the repo that is now private.",
+     "nodes": [
+      "ids",
+      "merge"
+     ],
+     "edges": [
+      "ids>found",
+      "found>pop",
+      "pop>fetch",
+      "fetch>intime",
+      "intime>merge"
+     ]
+    },
+    {
+     "text": "Hydration checks the reader's access for each event's repo and drops the ones they can no longer see.",
+     "nodes": [
+      "hyd"
+     ],
+     "edges": [
+      "merge>hyd"
+     ]
+    },
+    {
+     "text": "The page is a little shorter, and nothing leaks. Capped lists age the stale ids out on their own.",
+     "nodes": [
+      "page"
+     ],
+     "edges": [
+      "hyd>page"
+     ]
+    }
+   ]
+  }
+ ]
+}

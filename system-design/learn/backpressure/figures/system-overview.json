@@ -1,400 +1,390 @@
 {
  "kind": "architecture",
- "title": "The system: concert ticketing on sale day, where demand outruns checkout",
- "caption": "Each layer has a limit and a policy for when it's reached: wait at the edge, reject fast at the API, and never queue more than the workers can finish in time.",
- "base_name": "Sale opens",
+ "title": "The system: smart-meter telemetry ingest, where midnight outruns the validators",
+ "caption": "Each layer has a bound and a policy for when it's reached: billing reads wait at the edge and are never lost, diagnostics are sampled or dropped, and consumers only take what they can finish.",
+ "base_name": "Normal night",
  "nodes": [
   {
-   "id": "fans",
-   "kind": "client",
-   "label": "Fans",
-   "sub": "web + app",
-   "x": 0,
-   "y": 150
-  },
-  {
-   "id": "edge",
-   "kind": "cdn",
-   "label": "CDN / edge",
-   "sub": "cached event page",
-   "x": 230,
-   "y": 150
-  },
-  {
-   "id": "room",
-   "kind": "service",
-   "label": "Waiting room",
-   "sub": "FIFO line, tokens",
-   "x": 230,
+   "id": "policy",
+   "kind": "coordinator",
+   "label": "Admission policy",
+   "sub": "classes, quotas",
+   "x": 460,
    "y": 0
+  },
+  {
+   "id": "blog",
+   "kind": "stream",
+   "label": "Billing log",
+   "sub": "bounded, 3 replicas",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "val",
+   "kind": "worker",
+   "label": "Validators",
+   "sub": "pull with credits",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "meters",
+   "kind": "client",
+   "label": "Smart meters",
+   "sub": "5 M meters",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "Edge gateways",
+   "sub": "store & forward",
+   "x": 230,
+   "y": 140
   },
   {
    "id": "api",
    "kind": "api-gateway",
-   "label": "Checkout API",
+   "label": "Ingest API",
    "sub": "admission control",
    "x": 460,
-   "y": 150
+   "y": 140
   },
   {
-   "id": "recs",
-   "kind": "service",
-   "label": "Recommendations",
-   "sub": "sheddable",
-   "x": 460,
-   "y": 300
-  },
-  {
-   "id": "sig",
-   "kind": "coordinator",
-   "label": "Load signals",
-   "sub": "depth, age, p99",
-   "x": 690,
-   "y": 0
-  },
-  {
-   "id": "q",
-   "kind": "queue",
-   "label": "Order queue",
-   "sub": "bounded: 2 000",
-   "x": 690,
-   "y": 150
-  },
-  {
-   "id": "ntf",
-   "kind": "external",
-   "label": "Email / push",
-   "sub": "deferrable",
-   "x": 690,
-   "y": 300
-  },
-  {
-   "id": "w",
+   "id": "bw",
    "kind": "worker",
-   "label": "Order workers",
-   "sub": "40 slots",
-   "x": 920,
-   "y": 150
+   "label": "Billing workers",
+   "sub": "daily usage",
+   "x": 690,
+   "y": 140
   },
   {
-   "id": "db",
-   "kind": "sql",
-   "label": "Seat inventory",
+   "id": "tsdb",
+   "kind": "nosql",
+   "label": "Time-series DB",
+   "sub": "readings by meter",
    "x": 920,
-   "y": 0
+   "y": 140
   },
   {
-   "id": "pay",
+   "id": "mon",
    "kind": "external",
-   "label": "Payment provider",
+   "label": "Metrics & alerts",
+   "sub": "depth, lag, sheds",
+   "x": 460,
+   "y": 280
+  },
+  {
+   "id": "dq",
+   "kind": "queue",
+   "label": "Diagnostics queue",
+   "sub": "bounded, drop old",
+   "x": 690,
+   "y": 280
+  },
+  {
+   "id": "ds",
+   "kind": "worker",
+   "label": "Diag sampler",
+   "sub": "sample under load",
    "x": 920,
-   "y": 300
+   "y": 280
   }
  ],
  "edges": [
   {
-   "from": "fans",
-   "to": "edge"
+   "from": "meters",
+   "to": "gw"
   },
   {
-   "from": "edge",
-   "to": "room",
-   "label": "over capacity"
+   "from": "gw",
+   "to": "api"
   },
   {
-   "from": "room",
+   "from": "policy",
    "to": "api",
-   "label": "signed token"
+   "label": "hot reload"
   },
   {
    "from": "api",
-   "to": "edge",
-   "label": "503 + Retry-After"
+   "to": "blog",
+   "label": "billing reads"
   },
   {
    "from": "api",
-   "to": "q",
-   "label": "accept: 202"
+   "to": "dq",
+   "label": "diagnostics"
   },
   {
-   "from": "api",
-   "to": "recs",
-   "label": "best effort"
-  },
-  {
-   "from": "q",
-   "to": "w",
+   "from": "blog",
+   "to": "val",
    "label": "pull"
   },
   {
-   "from": "w",
-   "to": "db",
-   "label": "hold seats"
+   "from": "val",
+   "to": "tsdb",
+   "label": "idempotent write"
   },
   {
-   "from": "w",
-   "to": "pay",
-   "label": "charge"
+   "from": "dq",
+   "to": "ds",
+   "label": "pull"
   },
   {
-   "from": "w",
-   "to": "ntf",
-   "label": "later"
+   "from": "ds",
+   "to": "tsdb"
   },
   {
-   "from": "q",
-   "to": "sig",
-   "label": "depth, age"
+   "from": "tsdb",
+   "to": "bw",
+   "label": "read"
   },
   {
-   "from": "sig",
-   "to": "room",
-   "label": "admit rate"
+   "from": "api",
+   "to": "gw",
+   "label": "429 + Retry-After"
   },
   {
-   "from": "sig",
-   "to": "api",
-   "label": "shed level"
+   "from": "api",
+   "to": "mon",
+   "label": "depth, lag"
   }
  ],
  "steps": [
   {
-   "text": "Sale opens at 10:00 and a million fans arrive within a minute. The event page is static and served from the edge, so browsing costs the core nothing.",
+   "text": "Meters report over the cellular network to edge gateways, one per tower. A gateway stores and forwards: it keeps every reading on local disk until the ingest API acknowledges it.",
    "nodes": [
-    "fans",
-    "edge"
+    "meters",
+    "gw"
    ],
    "edges": [
-    "fans>edge"
+    "meters>gw",
+    "gw>api"
    ]
   },
   {
-   "text": "Above the core's capacity the edge sends new arrivals to the waiting room: a FIFO line that shows each fan a position and an ETA.",
+   "text": "Two classes of data. Billing reads (the daily register plus 96 quarter-hour values) must never be lost. Diagnostics (voltage, signal strength, tamper events) can be sampled. The admission policy holds the bounds and quotas per class and reloads them live.",
    "nodes": [
-    "edge",
-    "room"
+    "policy",
+    "api"
    ],
    "edges": [
-    "edge>room"
+    "policy>api"
    ]
   },
   {
-   "text": "The room admits fans at the rate the core can take, handing each a signed token. That rate is not fixed: it comes from live load signals.",
-   "nodes": [
-    "room",
-    "api",
-    "sig"
-   ],
-   "edges": [
-    "sig>room",
-    "room>api"
-   ]
-  },
-  {
-   "text": "The Checkout API admits a request only if it holds a token and the order queue has room; otherwise it answers 503 with Retry-After in about a millisecond.",
+   "text": "Billing reads are appended to a bounded, replicated log, and only then acknowledged, so the gateway can delete its copy. The bound is about an hour of validator throughput.",
    "nodes": [
     "api",
-    "edge"
+    "blog"
    ],
    "edges": [
-    "room>api",
-    "api>edge"
+    "api>blog"
    ]
   },
   {
-   "text": "Accepted orders go into a bounded queue (about 20 s of work). Workers pull at their own pace, hold seats and charge the card.",
+   "text": "Diagnostics go to a separate bounded queue that drops its oldest entries when full; under load the sampler keeps 1 in 10 per meter.",
    "nodes": [
     "api",
-    "q",
-    "w",
-    "db",
-    "pay"
+    "dq",
+    "ds",
+    "tsdb"
    ],
    "edges": [
-    "api>q",
-    "q>w",
-    "w>db",
-    "w>pay"
+    "api>dq",
+    "dq>ds",
+    "ds>tsdb"
    ]
   },
   {
-   "text": "Queue depth and age feed back: they slow the waiting room and raise the shed level. Optional work goes first: recommendations are skipped and emails deferred.",
+   "text": "Validators pull only as many batches as they have free slots, check for gaps and duplicates, and write idempotently to the time-series DB. Billing workers compute daily usage from it.",
    "nodes": [
-    "q",
-    "sig",
-    "recs",
-    "ntf"
+    "blog",
+    "val",
+    "tsdb",
+    "bw"
    ],
    "edges": [
-    "q>sig",
-    "sig>api",
-    "api>recs",
-    "w>ntf"
+    "blog>val",
+    "val>tsdb",
+    "tsdb>bw"
+   ]
+  },
+  {
+   "text": "When the log nears its bound, the API answers 429 + Retry-After: the gateway keeps the data and tries later. Depth, consumer lag and shed counts go to monitoring.",
+   "nodes": [
+    "api",
+    "gw",
+    "mon"
+   ],
+   "edges": [
+    "api>gw",
+    "api>mon"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "On-sale spike",
+   "name": "Midnight burst",
    "tone": "edge",
-   "summary": "100× the normal traffic, and the core sees a steady stream: the crowd waits in the cheapest place, at the edge.",
+   "summary": "Firmware sends the daily read at 00:00: 5 M batches in about two minutes against validators that finish 10k/s. The log absorbs it; diagnostics give way.",
    "steps": [
     {
-     "text": "Arrivals jump to 100× what checkout can process.",
+     "text": "At midnight 5 M meters send their billing batch within ~2 minutes: about 40 000 batches/s, 4× what the validators can finish.",
      "nodes": [
-      "fans",
-      "edge"
+      "meters",
+      "gw",
+      "api"
      ],
      "edges": [
-      "fans>edge"
+      "meters>gw",
+      "gw>api"
      ]
     },
     {
-     "text": "Almost all of them wait in the room. A fan in the line costs a cached page and a poll every 10 s.",
+     "text": "The log's bound is an hour of work (36 M batches), so all 5 M are appended and acknowledged. Nothing waits at the edge.",
      "nodes": [
-      "room"
-     ],
-     "edges": [
-      "edge>room"
-     ]
-    },
-    {
-     "text": "Admission stays at 3 000 per minute, so the order queue hovers well below its bound.",
-     "nodes": [
-      "room",
       "api",
-      "q"
+      "blog"
      ],
      "edges": [
-      "room>api",
-      "api>q"
+      "api>blog"
      ]
     },
     {
-     "text": "Workers run at full speed, but never beyond it.",
+     "text": "Diagnostics keep arriving at ~5 000/s. With the log's lag above a minute, the policy turns on 1-in-10 sampling and the queue drops its oldest entries.",
      "nodes": [
-      "w",
-      "db",
-      "pay"
+      "policy",
+      "dq",
+      "ds"
      ],
      "edges": [
-      "q>w",
-      "w>db",
-      "w>pay"
+      "policy>api",
+      "api>dq",
+      "dq>ds"
+     ]
+    },
+    {
+     "text": "Validators drain the log at 10 000/s: 5 M ÷ 10k ≈ 500 s, so the night's reads are in the time-series DB about 8 minutes after midnight.",
+     "nodes": [
+      "blog",
+      "val",
+      "tsdb"
+     ],
+     "edges": [
+      "blog>val",
+      "val>tsdb"
      ]
     }
    ]
   },
   {
-   "name": "Payment provider slows",
+   "name": "Time-series DB slows",
    "tone": "failure",
-   "summary": "A slow dependency fills the bounded queue; the full queue turns into fast rejections and a slower line instead of a crash.",
+   "summary": "A compaction makes writes 5× slower during the midnight drain. Credits slow the validators by themselves; lag pushes back to the edge, and no billing read is lost.",
    "steps": [
     {
-     "text": "Payment latency goes from 300 ms to 3 s. Each worker slot is busy 10× longer.",
+     "text": "A compaction starts on the time-series DB; each write takes 5× longer.",
+     "fail": [
+      "tsdb"
+     ],
      "nodes": [
-      "w"
+      "val"
      ],
      "edges": [
-      "q>w"
-     ],
-     "fail": [
-      "pay",
-      "w>pay"
+      "val>tsdb"
      ]
     },
     {
-     "text": "Workers pull less, so the queue fills: 2 000 orders in under a minute.",
+     "text": "Validator slots stay busy, so they pull less: throughput falls from 10 000 to 2 000 batches/s and the log's lag grows.",
+     "fail": [
+      "tsdb"
+     ],
      "nodes": [
-      "q"
+      "blog",
+      "val"
      ],
      "edges": [
-      "api>q"
-     ],
-     "fail": [
-      "pay"
+      "blog>val"
      ]
     },
     {
-     "text": "At the bound, the API rejects new orders with 503 + Retry-After. Nothing is queued that would time out anyway.",
+     "text": "Lag passes 30 minutes. The policy stops admitting billing reads: 429 + Retry-After, and the gateways keep them on disk. Diagnostics are dropped at the queue.",
+     "fail": [
+      "tsdb"
+     ],
      "nodes": [
+      "policy",
       "api",
-      "edge"
+      "gw",
+      "dq"
      ],
      "edges": [
-      "api>edge"
-     ],
-     "fail": [
-      "pay"
+      "policy>api",
+      "api>gw",
+      "api>dq"
      ]
     },
     {
-     "text": "The signals lower the admit rate, the room's ETA goes up, and fans see an honest wait instead of a spinner. When payment recovers, the rate rises again.",
+     "text": "Compaction ends, the lag drains, admission reopens, and the gateways replay with jitter. Every billing read arrives, just later; on-call sees the lag alert, not lost data.",
      "nodes": [
-      "sig",
-      "room"
+      "gw",
+      "api",
+      "blog",
+      "val",
+      "tsdb",
+      "mon"
      ],
      "edges": [
-      "q>sig",
-      "sig>room"
-     ],
-     "fail": [
-      "pay"
+      "gw>api",
+      "api>blog",
+      "blog>val",
+      "val>tsdb",
+      "api>mon"
      ]
     }
    ]
   },
   {
-   "name": "Risk: raise the bound",
-   "tone": "risk",
-   "summary": "Raising the queue limit to stop the 503s only moves the failure: the work outlives its callers. Tune the admit rate, not the buffer.",
+   "name": "Firmware adds jitter",
+   "tone": "edge",
+   "summary": "The cheapest capacity is load you never create: spread the daily read over four hours and the midnight peak almost disappears.",
    "steps": [
     {
-     "text": "An operator raises the order queue's bound from 2 000 to 50 000 to make the 503s go away.",
+     "text": "An operator rolls out firmware that sends the daily read at a random minute between 00:00 and 04:00, derived from the meter id.",
      "nodes": [
-      "q"
+      "meters",
+      "gw"
      ],
      "edges": [
-      "api>q"
+      "meters>gw"
      ]
     },
     {
-     "text": "The queue now holds about 8 minutes of work. Clients time out after 30 s and retry, adding more orders.",
+     "text": "5 M batches ÷ 14 400 s ≈ 350/s instead of 40 000/s: about 100× lower at the peak.",
      "nodes": [
-      "fans",
+      "gw",
       "api",
-      "q"
+      "blog"
      ],
      "edges": [
-      "fans>edge",
-      "room>api",
-      "api>q"
+      "gw>api",
+      "api>blog"
      ]
     },
     {
-     "text": "Workers process orders whose buyers have already left; their seats sit in holds that nobody pays for.",
+     "text": "The log's lag stays near zero, diagnostics are no longer sampled at night, and the validator fleet can shrink. The bounds stay: they still cover the next surprise.",
      "nodes": [
-      "w",
-      "db"
+      "blog",
+      "val",
+      "dq",
+      "ds"
      ],
      "edges": [
-      "q>w",
-      "w>db"
-     ],
-     "fail": [
-      "q"
-     ]
-    },
-    {
-     "text": "Fix: restore the bound, drop orders older than the client deadline before working on them, and let the waiting room absorb the crowd.",
-     "nodes": [
-      "q",
-      "sig",
-      "room"
-     ],
-     "edges": [
-      "q>sig",
-      "sig>room"
+      "blog>val",
+      "dq>ds"
      ]
     }
    ]

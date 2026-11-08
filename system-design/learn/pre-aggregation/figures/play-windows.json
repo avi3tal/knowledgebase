@@ -1,0 +1,204 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: counting plays in event-time windows",
+ "caption": "A play lands in the window of its start time. Short lateness is absorbed in the stream; plays that arrive hours late are counted by the nightly recompute.",
+ "base_name": "On-time play",
+ "actors": [
+  {
+   "id": "phone",
+   "label": "Phone",
+   "kind": "client"
+  },
+  {
+   "id": "st",
+   "label": "Play stream",
+   "kind": "stream"
+  },
+  {
+   "id": "win",
+   "label": "Window state",
+   "kind": "worker"
+  },
+  {
+   "id": "roll",
+   "label": "Rollup store",
+   "kind": "nosql"
+  },
+  {
+   "id": "arch",
+   "label": "Raw archive",
+   "kind": "blob"
+  }
+ ],
+ "messages": [
+  {
+   "from": "phone",
+   "to": "st",
+   "label": "play p7: track t3 @ 21:05:40, 95 s",
+   "style": "async",
+   "note": "One event per play, sent when it ends: start time and seconds listened come from the device."
+  },
+  {
+   "from": "st",
+   "to": "arch",
+   "label": "sink: keep the raw event",
+   "style": "async"
+  },
+  {
+   "from": "st",
+   "to": "win",
+   "label": "p7 → window (t3, SE, 21:05)",
+   "style": "async",
+   "note": "95 s ≥ 30 s, so it counts. The window comes from the start time, not the arrival time."
+  },
+  {
+   "from": "win",
+   "to": "win",
+   "label": "p7 not seen yet → count",
+   "style": "self",
+   "note": "Play ids seen are kept with the window, so a repeat is dropped."
+  },
+  {
+   "from": "win",
+   "to": "win",
+   "label": "watermark passes 21:06 + 3 min",
+   "style": "self",
+   "note": "The allowed lateness covers slow networks, not phones that were offline for hours."
+  },
+  {
+   "from": "win",
+   "to": "roll",
+   "label": "upsert (t3, SE, 21:05) = 1 284"
+  },
+  {
+   "from": "roll",
+   "to": "win",
+   "label": "ack",
+   "style": "reply",
+   "note": "Only now is the window state dropped and the checkpoint advanced."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Offline phone",
+   "tone": "edge",
+   "summary": "A listener on a long flight plays an album offline and syncs six hours later. The stream can't count those plays, but the final numbers do.",
+   "messages": [
+    {
+     "from": "phone",
+     "to": "phone",
+     "label": "offline: buffer 11 plays",
+     "style": "self",
+     "note": "Start times are around 14:00; the device keeps them until it has a connection."
+    },
+    {
+     "from": "phone",
+     "to": "st",
+     "label": "11 plays from 14:00, sent at 20:10",
+     "style": "async"
+    },
+    {
+     "from": "st",
+     "to": "arch",
+     "label": "sink: the raw events are kept",
+     "style": "async"
+    },
+    {
+     "from": "st",
+     "to": "win",
+     "label": "events for windows already closed",
+     "style": "async"
+    },
+    {
+     "from": "win",
+     "to": "win",
+     "label": "side output: late plays +11",
+     "style": "self",
+     "note": "A late-plays metric; the streaming minute rows stay a little low."
+    },
+    {
+     "from": "arch",
+     "to": "roll",
+     "label": "nightly recon: day row recomputed",
+     "note": "The final day row includes the 11 plays, and royalties are paid from it."
+    }
+   ]
+  },
+  {
+   "name": "Retried upload",
+   "tone": "failure",
+   "summary": "The phone never sees the ack and sends the same batch again. Dedup by play id keeps the play counted once.",
+   "messages": [
+    {
+     "from": "phone",
+     "to": "st",
+     "label": "batch [p7, p8, p9]",
+     "style": "async"
+    },
+    {
+     "from": "st",
+     "to": "phone",
+     "label": "ack",
+     "style": "lost",
+     "note": "The connection drops before the ack arrives."
+    },
+    {
+     "from": "phone",
+     "to": "st",
+     "label": "retry: the same batch",
+     "style": "async"
+    },
+    {
+     "from": "st",
+     "to": "win",
+     "label": "p7 again",
+     "style": "async"
+    },
+    {
+     "from": "win",
+     "to": "win",
+     "label": "p7 already seen → drop",
+     "style": "self",
+     "note": "Recon also dedups by play id, so the raw archive's two copies count once too."
+    },
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "upsert (t3, SE, 21:05) = 1 284, unchanged"
+    }
+   ]
+  },
+  {
+   "name": "Skipped at 12 s",
+   "tone": "edge",
+   "summary": "A listener skips after 12 seconds. The event is kept, but it is not a play and earns no royalty.",
+   "messages": [
+    {
+     "from": "phone",
+     "to": "st",
+     "label": "play p10: track t4, 12 s",
+     "style": "async"
+    },
+    {
+     "from": "st",
+     "to": "arch",
+     "label": "sink: kept for recon and analysis",
+     "style": "async"
+    },
+    {
+     "from": "st",
+     "to": "win",
+     "label": "p10 below 30 s",
+     "style": "async",
+     "note": "Counted as a skip, a separate metric, not as a play."
+    },
+    {
+     "from": "win",
+     "to": "roll",
+     "label": "upsert (t4, SE, 21:05) skips = 1",
+     "note": "Recon applies the same 30 s rule, so the stream and the final numbers agree."
+    }
+   ]
+  }
+ ]
+}

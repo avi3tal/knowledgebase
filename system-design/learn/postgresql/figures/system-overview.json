@@ -1,42 +1,51 @@
 {
  "kind": "architecture",
- "title": "The system: a hotel booking platform on one PostgreSQL primary",
- "caption": "Every booking commits on one primary and reaches a standby before it is confirmed; replicas, the WAL archive and CDC all feed from the same write-ahead log.",
- "base_name": "A booking",
+ "title": "The system: SaaS invoicing and accounting on one PostgreSQL primary",
+ "caption": "Every invoice, payment and ledger entry is committed on one primary and copied to a sync standby; reports, backups, search and analytics all hang off its WAL.",
+ "base_name": "Posting a payment",
  "nodes": [
   {
-   "id": "users",
+   "id": "apps",
    "kind": "client",
-   "label": "Web & mobile",
+   "label": "Customer apps",
+   "sub": "tenants' systems",
    "x": 0,
-   "y": 140
+   "y": 150
   },
   {
    "id": "api",
    "kind": "service",
-   "label": "Booking API",
-   "sub": "stateless, autoscaled",
+   "label": "Invoicing API",
+   "sub": "stateless",
    "x": 230,
-   "y": 140
+   "y": 150
   },
   {
-   "id": "ha",
-   "kind": "coordinator",
-   "label": "Failover manager",
-   "sub": "leader lock",
+   "id": "jobs",
+   "kind": "worker",
+   "label": "Month-end jobs",
+   "sub": "close, statements",
+   "x": 230,
+   "y": 300
+  },
+  {
+   "id": "arch",
+   "kind": "blob",
+   "label": "WAL archive",
+   "sub": "PITR backups",
    "x": 460,
    "y": 0
   },
   {
-   "id": "pool",
+   "id": "pgb",
    "kind": "service",
-   "label": "Pooler",
-   "sub": "PgBouncer pool",
+   "label": "PgBouncer",
+   "sub": "transaction pool",
    "x": 460,
-   "y": 140
+   "y": 150
   },
   {
-   "id": "sync",
+   "id": "sb",
    "kind": "sql",
    "label": "Sync standby",
    "sub": "same region",
@@ -44,341 +53,306 @@
    "y": 0
   },
   {
-   "id": "primary",
+   "id": "pri",
    "kind": "sql",
    "label": "Primary",
-   "sub": "all writes",
+   "sub": "invoices + ledger",
    "x": 690,
-   "y": 140
+   "y": 150
   },
   {
-   "id": "replica",
+   "id": "rep",
    "kind": "sql",
-   "label": "Read replica",
-   "sub": "async, lag ms–s",
+   "label": "Read replicas",
+   "sub": "reports, async",
    "x": 690,
-   "y": 280
+   "y": 300
   },
   {
-   "id": "wal",
-   "kind": "blob",
-   "label": "WAL archive",
-   "sub": "base backups + WAL",
+   "id": "srch",
+   "kind": "search",
+   "label": "Search index",
    "x": 920,
    "y": 0
   },
   {
-   "id": "search",
-   "kind": "search",
-   "label": "Search index",
-   "sub": "hotel search",
-   "x": 920,
-   "y": 140
-  },
-  {
    "id": "cdc",
-   "kind": "stream",
-   "label": "CDC stream",
+   "kind": "worker",
+   "label": "CDC pipeline",
    "sub": "logical decoding",
    "x": 920,
-   "y": 280
+   "y": 150
   },
   {
-   "id": "dw",
-   "kind": "external",
-   "label": "Analytics",
-   "sub": "warehouse",
+   "id": "wh",
+   "kind": "sql",
+   "label": "Warehouse",
+   "sub": "analytics",
    "x": 920,
-   "y": 420
+   "y": 300
   }
  ],
  "edges": [
   {
-   "from": "users",
+   "from": "apps",
    "to": "api"
   },
   {
    "from": "api",
-   "to": "pool",
-   "label": "SQL"
+   "to": "pgb"
   },
   {
-   "from": "pool",
-   "to": "primary",
-   "label": "writes + fresh reads"
+   "from": "jobs",
+   "to": "pgb",
+   "label": "batches"
   },
   {
-   "from": "pool",
-   "to": "replica",
-   "label": "read-only"
+   "from": "pgb",
+   "to": "pri",
+   "label": "writes"
   },
   {
-   "from": "primary",
-   "to": "sync",
+   "from": "pgb",
+   "to": "rep",
+   "label": "report reads"
+  },
+  {
+   "from": "pri",
+   "to": "sb",
    "label": "sync WAL"
   },
   {
-   "from": "primary",
-   "to": "replica",
+   "from": "pri",
+   "to": "rep",
    "label": "async WAL"
   },
   {
-   "from": "primary",
-   "to": "wal",
+   "from": "pri",
+   "to": "arch",
    "label": "WAL segments"
   },
   {
-   "from": "primary",
+   "from": "pri",
    "to": "cdc",
-   "label": "committed changes"
+   "label": "logical slot"
   },
   {
    "from": "cdc",
-   "to": "search"
+   "to": "srch"
   },
   {
    "from": "cdc",
-   "to": "dw"
-  },
-  {
-   "from": "ha",
-   "to": "primary",
-   "label": "health"
-  },
-  {
-   "from": "ha",
-   "to": "sync",
-   "label": "health"
-  },
-  {
-   "from": "ha",
-   "to": "pool",
-   "label": "current leader"
+   "to": "wh"
   }
  ],
  "steps": [
   {
-   "text": "A guest books two nights. The API servers are stateless and scale out; each one talks SQL to the pooler, which multiplexes thousands of client connections onto ~150 server connections.",
+   "text": "A tenant's app issues an invoice or records a customer's payment through the Invoicing API. The API keeps no state, so it autoscales freely.",
    "nodes": [
-    "users",
+    "apps",
+    "api"
+   ],
+   "edges": [
+    "apps>api"
+   ]
+  },
+  {
+   "text": "Thousands of API processes share a few hundred server connections: PgBouncer in transaction mode lends a connection for one transaction at a time.",
+   "nodes": [
     "api",
-    "pool"
+    "pgb",
+    "pri"
    ],
    "edges": [
-    "users>api",
-    "api>pool"
+    "api>pgb",
+    "pgb>pri"
    ]
   },
   {
-   "text": "The pooler sends the write transaction to the primary: lock the room-night rows, insert the booking, decrement availability, COMMIT. All of it happens, or none of it.",
+   "text": "On the primary, one transaction updates the invoice and writes balanced ledger entries (debit cash, credit receivables) into the current month's ledger partition. Constraints, not app code, refuse anything that doesn't add up.",
    "nodes": [
-    "pool",
-    "primary"
+    "pri"
    ],
    "edges": [
-    "pool>primary"
+    "pgb>pri"
    ]
   },
   {
-   "text": "The commit is acknowledged only after the sync standby has flushed its WAL record (~1 ms in the same region), so a confirmed booking survives losing the primary's disk.",
+   "text": "The commit waits for the sync standby to flush the WAL, so a confirmed payment survives the loss of the primary's machine.",
    "nodes": [
-    "primary",
-    "sync"
+    "pri",
+    "sb"
    ],
    "edges": [
-    "primary>sync"
+    "pri>sb"
    ]
   },
   {
-   "text": "Read replicas replay the same WAL a few ms behind. Browsing hotels and past trips go there; the booking page itself reads from the primary.",
+   "text": "The same WAL streams asynchronously to read replicas, which serve aging reports and dashboards, and is archived with base backups for point-in-time recovery.",
    "nodes": [
-    "pool",
-    "replica",
-    "primary"
+    "rep",
+    "arch",
+    "pri"
    ],
    "edges": [
-    "primary>replica",
-    "pool>replica"
+    "pri>rep",
+    "pri>arch",
+    "pgb>rep"
    ]
   },
   {
-   "text": "Every WAL segment is shipped to object storage next to a nightly base backup: any second of the last 14 days can be restored (point-in-time recovery).",
+   "text": "A logical replication slot feeds the CDC pipeline: only committed changes, in commit order, to the search index (find an invoice by number or customer) and the warehouse.",
    "nodes": [
-    "primary",
-    "wal"
-   ],
-   "edges": [
-    "primary>wal"
-   ]
-  },
-  {
-   "text": "Logical decoding turns committed changes into an ordered stream; CDC updates the search index and the warehouse, so the API never writes to three systems at once.",
-   "nodes": [
-    "primary",
     "cdc",
-    "search",
-    "dw"
+    "srch",
+    "wh"
    ],
    "edges": [
-    "primary>cdc",
-    "cdc>search",
-    "cdc>dw"
+    "pri>cdc",
+    "cdc>srch",
+    "cdc>wh"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "Holiday sale",
+   "name": "Month-end close",
    "tone": "edge",
-   "summary": "Traffic jumps 20× for an hour: the pooler protects the primary from connection storms and replicas absorb the browsing.",
+   "summary": "The last two days of the month bring about 8× the usual writes plus the close jobs; the pooler, small batches and replicas keep the primary steady.",
    "steps": [
     {
-     "text": "The API autoscales from 20 to 400 pods; each wants 10 connections, 4 000 in total.",
+     "text": "Tenants issue their monthly invoices in bulk and the API scales out. PgBouncer queues the extra clients instead of opening thousands of backends on the primary.",
      "nodes": [
-      "users",
-      "api"
+      "api",
+      "pgb"
      ],
      "edges": [
-      "users>api",
-      "api>pool"
+      "apps>api",
+      "api>pgb"
      ]
     },
     {
-     "text": "The pooler still opens only ~150 server connections and queues the rest for a few ms. Without it, 4 000 backend processes would eat the primary's memory.",
+     "text": "Close jobs post accruals and revaluations in batches of a few hundred entries per transaction, so row locks and WAL bursts stay short and payments don't queue behind them.",
      "nodes": [
-      "pool",
-      "primary"
+      "jobs",
+      "pgb",
+      "pri"
      ],
      "edges": [
-      "pool>primary"
+      "jobs>pgb",
+      "pgb>pri"
      ]
     },
     {
-     "text": "90% of the extra load is searching and browsing: it lands on replicas (add one more in minutes).",
+     "text": "Trial balances and aging reports run on the replicas. The final close report waits until the replica has replayed past the close's cut-off LSN, so it is complete yet off the primary.",
      "nodes": [
-      "pool",
-      "replica"
+      "rep"
      ],
      "edges": [
-      "pool>replica"
+      "pgb>rep",
+      "pri>rep"
      ]
     },
     {
-     "text": "Writes grow only 3×, well within one primary. Search catches up through CDC with a second of lag.",
+     "text": "The next month's ledger partition was created a week ago by a scheduled job, so the first payment posted on the 1st has somewhere to go.",
      "nodes": [
-      "primary",
-      "cdc",
-      "search"
+      "pri",
+      "jobs"
      ],
      "edges": [
-      "primary>cdc",
-      "cdc>search"
+      "jobs>pgb"
      ]
     }
    ]
   },
   {
-   "name": "Replica falls behind",
+   "name": "WAL archive stalls",
    "tone": "failure",
-   "summary": "A long report on the replica and a write burst push lag to 40 s: route reads away from it instead of serving stale availability.",
+   "summary": "Backups stop quietly, and WAL that can't be archived can't be recycled: the primary's disk fills unless someone notices.",
    "steps": [
     {
-     "text": "An analyst's 10-minute report runs on the replica while a bulk price update hits the primary.",
+     "text": "The archive bucket's credentials expire. archive_command starts failing for every WAL segment.",
      "nodes": [
-      "replica",
-      "primary"
+      "pri"
      ],
-     "edges": [
-      "primary>replica"
-     ]
-    },
-    {
-     "text": "Replay pauses behind the report's snapshot; lag reaches 40 s. Guests would see rooms that are already gone.",
      "fail": [
-      "replica",
-      "primary>replica"
-     ],
-     "nodes": [
-      "replica"
+      "arch",
+      "pri>arch"
      ]
     },
     {
-     "text": "The pooler's health check reads replay lag and stops sending reads to that replica above 5 s.",
+     "text": "PostgreSQL keeps every segment that hasn't been archived. At month-end write rates pg_wal grows by gigabytes per hour on the primary's disk.",
+     "nodes": [
+      "pri"
+     ],
+     "edges": [
+      "pgb>pri"
+     ],
      "fail": [
-      "pool>replica"
-     ],
-     "nodes": [
-      "pool",
-      "primary"
-     ],
-     "edges": [
-      "pool>primary"
+      "pri>arch"
      ]
     },
     {
-     "text": "Fix the cause: reports move to the warehouse (fed by CDC), and the replica catches up.",
+     "text": "Replicas and the standby still work, so nothing looks wrong, but point-in-time recovery stopped at the last archived segment. Alerts on the archiver's failure count and pg_wal size are the only early signal.",
      "nodes": [
-      "cdc",
-      "dw",
-      "replica"
+      "sb",
+      "rep"
      ],
      "edges": [
-      "primary>cdc",
-      "cdc>dw"
-     ]
-    }
-   ]
-  },
-  {
-   "name": "Schema migration",
-   "tone": "risk",
-   "summary": "Adding an index to a 2 TB bookings table can block every write; online variants and lock timeouts keep the site up.",
-   "steps": [
-    {
-     "text": "A deploy runs a plain CREATE INDEX on bookings. It holds a lock that blocks inserts for the whole build.",
+      "pri>sb",
+      "pri>rep"
+     ],
      "fail": [
-      "primary"
-     ],
-     "nodes": [
-      "primary"
-     ],
-     "edges": [
-      "pool>primary"
+      "arch"
      ]
     },
     {
-     "text": "Booking requests pile up in the pooler, and then in the API, until they time out.",
-     "fail": [
-      "pool>primary"
-     ],
+     "text": "Fix the credentials and the archiver catches up. Had the disk filled, the primary would have stopped accepting every write. A stalled CDC slot does the same, so cap it with max_slot_wal_keep_size.",
      "nodes": [
-      "pool",
-      "api"
-     ],
-     "edges": [
-      "api>pool"
-     ]
-    },
-    {
-     "text": "Safe version: CREATE INDEX CONCURRENTLY, SET lock_timeout = '2s', add columns as nullable and backfill in small batches.",
-     "nodes": [
-      "primary"
-     ],
-     "edges": [
-      "pool>primary"
-     ]
-    },
-    {
-     "text": "The change replays on standby and replicas; CDC consumers must accept the new column before it is written.",
-     "nodes": [
-      "sync",
-      "replica",
+      "pri",
+      "arch",
       "cdc"
      ],
      "edges": [
-      "primary>sync",
-      "primary>replica",
-      "primary>cdc"
+      "pri>arch",
+      "pri>cdc"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Retire a closed year",
+   "tone": "edge",
+   "summary": "With monthly partitions, removing a year of ledger history is a metadata change, not a huge DELETE.",
+   "steps": [
+    {
+     "text": "Years older than the retention policy are no longer queried by the app; only an audit request ever needs them.",
+     "nodes": [
+      "jobs"
+     ],
+     "edges": [
+      "jobs>pgb"
+     ]
+    },
+    {
+     "text": "The job detaches each old month with DETACH PARTITION … CONCURRENTLY: payments keep posting into the current month untouched.",
+     "nodes": [
+      "jobs",
+      "pri"
+     ],
+     "edges": [
+      "jobs>pgb",
+      "pgb>pri"
+     ]
+    },
+    {
+     "text": "Each detached table is dumped to the archive bucket and dropped. No row-by-row delete, no dead tuples, no vacuum debt.",
+     "nodes": [
+      "pri",
+      "arch"
+     ],
+     "edges": [
+      "pri>arch"
      ]
     }
    ]

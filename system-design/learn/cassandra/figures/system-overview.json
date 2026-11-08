@@ -1,52 +1,60 @@
 {
  "kind": "architecture",
- "title": "The system: a chat app that stores every message in a multi-DC Cassandra ring",
- "caption": "The message service writes each message once at LOCAL_QUORUM; Cassandra copies it to the other region and to an analytics DC on its own.",
- "base_name": "Send a message",
+ "title": "The system: fleet telematics on a multi-DC Cassandra ring",
+ "caption": "The ingest API writes each reading once at LOCAL_QUORUM; Cassandra copies it to the other region and to an analytics DC on its own, and a stream job watches the same readings for faults.",
+ "base_name": "One reading",
  "nodes": [
   {
-   "id": "apns",
-   "kind": "external",
-   "label": "APNs / FCM",
-   "x": 0,
-   "y": 0
-  },
-  {
-   "id": "users",
+   "id": "disp",
    "kind": "client",
-   "label": "Mobile clients",
+   "label": "Dispatch console",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "trucks",
+   "kind": "client",
+   "label": "Trucks (200k)",
+   "sub": "GPS + engine /10 s",
    "x": 0,
    "y": 135
   },
   {
-   "id": "push",
-   "kind": "worker",
-   "label": "Push workers",
-   "x": 230,
-   "y": 0
+   "id": "pager",
+   "kind": "external",
+   "label": "Ops pager / SMS",
+   "x": 0,
+   "y": 270
   },
   {
-   "id": "gw",
-   "kind": "api-gateway",
-   "label": "Chat gateway",
-   "sub": "WebSocket",
-   "x": 230,
-   "y": 135
-  },
-  {
-   "id": "q",
-   "kind": "queue",
-   "label": "Fan-out queue",
-   "x": 460,
-   "y": 0
-  },
-  {
-   "id": "msg",
+   "id": "map",
    "kind": "service",
-   "label": "Message service",
-   "sub": "LOCAL_QUORUM",
-   "x": 460,
+   "label": "Live map service",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "ingest",
+   "kind": "api-gateway",
+   "label": "Ingest API",
+   "sub": "validate + dedup",
+   "x": 230,
    "y": 135
+  },
+  {
+   "id": "alert",
+   "kind": "worker",
+   "label": "Alert job",
+   "sub": "per-truck windows",
+   "x": 230,
+   "y": 270
+  },
+  {
+   "id": "stream",
+   "kind": "stream",
+   "label": "Readings stream",
+   "x": 460,
+   "y": 270
   },
   {
    "id": "n1",
@@ -90,24 +98,21 @@
    "id": "spark",
    "kind": "worker",
    "label": "Spark jobs",
-   "sub": "full scans",
+   "sub": "monthly reports",
    "x": 920,
    "y": 405
   }
  ],
  "edges": [
   {
-   "from": "users",
-   "to": "gw"
+   "from": "trucks",
+   "to": "ingest",
+   "label": "readings"
   },
   {
-   "from": "gw",
-   "to": "msg"
-  },
-  {
-   "from": "msg",
+   "from": "ingest",
    "to": "n2",
-   "label": "write / read"
+   "label": "LOCAL_QUORUM"
   },
   {
    "from": "n2",
@@ -132,50 +137,52 @@
    "to": "spark"
   },
   {
-   "from": "msg",
-   "to": "q",
-   "label": "new message"
+   "from": "ingest",
+   "to": "stream",
+   "label": "reading events"
   },
   {
-   "from": "q",
-   "to": "push"
+   "from": "stream",
+   "to": "alert"
   },
   {
-   "from": "push",
-   "to": "gw",
-   "label": "online"
+   "from": "alert",
+   "to": "pager",
+   "label": "maintenance"
   },
   {
-   "from": "push",
-   "to": "apns",
-   "label": "offline"
+   "from": "disp",
+   "to": "map"
+  },
+  {
+   "from": "map",
+   "to": "n2",
+   "label": "latest positions"
   }
  ],
  "steps": [
   {
-   "text": "A user sends a message over their WebSocket; the gateway hands it to the stateless message service.",
+   "text": "Every truck sends a reading every 10 s: GPS position, speed, fuel level, coolant temperature, oil pressure. That is about 20 000 writes/s into a stateless ingest API, which validates them and drops exact duplicates.",
    "nodes": [
-    "users",
-    "gw",
-    "msg"
+    "trucks",
+    "ingest"
    ],
    "edges": [
-    "users>gw",
-    "gw>msg"
+    "trucks>ingest"
    ]
   },
   {
-   "text": "The service inserts into messages_by_conversation, partitioned by conversation and sorted by a time-based message id. The token-aware driver sends it straight to a replica, node B, which coordinates.",
+   "text": "The API inserts into readings_by_truck, partitioned by (vehicle_id, day) and clustered by timestamp, newest first. It also overwrites the truck's single row in latest_position, a different partition on its own replicas. The token-aware driver sends each write straight to one of its replicas; for this reading that is node B, which coordinates.",
    "nodes": [
-    "msg",
+    "ingest",
     "n2"
    ],
    "edges": [
-    "msg>n2"
+    "ingest>n2"
    ]
   },
   {
-   "text": "B appends to its commit log and memtable and forwards to the other two local replicas. With 2 of 3 acks (LOCAL_QUORUM) it answers: a few milliseconds.",
+   "text": "B appends to its commit log and memtable and forwards to A and C. With 2 of 3 local acks (LOCAL_QUORUM) it answers in a few milliseconds; there is no read before the write.",
    "nodes": [
     "n1",
     "n2",
@@ -187,7 +194,7 @@
    ]
   },
   {
-   "text": "The same mutation goes to the other region's DC and to the analytics DC asynchronously; the sender never waits for an ocean crossing.",
+   "text": "The same mutation goes to the other region's DC and to the analytics DC asynchronously. With RF 3 + 3 + 1, every row written lands on 7 replicas, and nobody waits for the far ones.",
    "nodes": [
     "dc2",
     "ana"
@@ -198,87 +205,87 @@
    ]
   },
   {
-   "text": "The service publishes the new message for fan-out. Push workers deliver it through the gateway to online members, or via APNs / FCM to offline ones.",
+   "text": "The API also publishes each reading to a stream. The alert job keeps a short window per truck and pages maintenance when, say, coolant stays too hot for five minutes. Cassandra is never polled for this.",
    "nodes": [
-    "q",
-    "push",
-    "gw",
-    "apns"
+    "stream",
+    "alert",
+    "pager"
    ],
    "edges": [
-    "msg>q",
-    "q>push",
-    "push>gw",
-    "push>apns"
+    "ingest>stream",
+    "stream>alert",
+    "alert>pager"
    ]
   },
   {
-   "text": "Opening a chat reads one partition (the latest 50 messages) at LOCAL_QUORUM. Spark jobs scan only the analytics DC, so heavy reads never touch serving nodes.",
+   "text": "Dispatchers watch the live map: it reads one latest_position row per truck in view. Monthly fuel and route reports run as Spark jobs on the analytics DC only, so full scans never touch serving nodes.",
    "nodes": [
-    "msg",
+    "disp",
+    "map",
     "n2",
     "ana",
     "spark"
    ],
    "edges": [
-    "msg>n2",
+    "disp>map",
+    "map>n2",
     "ana>spark"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "New Year's Eve spike",
+   "name": "Morning shift surge",
    "tone": "edge",
-   "summary": "Writes are appends, so they stay fast at several times normal load; the bill comes later as compaction debt and slower reads.",
+   "summary": "At shift start most trucks power on together and upload what they buffered overnight. Writes are appends, so they stay fast; the bill comes later as compaction debt.",
    "steps": [
     {
-     "text": "At midnight, message volume jumps to several times its normal peak within a minute.",
+     "text": "Around 6 a.m. tens of thousands of trucks leave depots with poor signal and flush hours of buffered readings at once. The write rate jumps to several times normal.",
      "nodes": [
-      "users",
-      "gw",
-      "msg"
+      "trucks",
+      "ingest"
      ],
      "edges": [
-      "users>gw",
-      "gw>msg"
+      "trucks>ingest"
      ]
     },
     {
-     "text": "Each write is still a commit-log append plus a memtable insert, so write latency barely moves.",
+     "text": "Old readings go into their own day's partition with their original timestamps. Cassandra sorts by clustering key, so arriving late or out of order costs nothing extra.",
      "nodes": [
+      "ingest",
       "n1",
       "n2",
       "n3"
      ],
      "edges": [
-      "msg>n2",
+      "ingest>n2",
       "n2>n1",
       "n2>n3"
      ]
     },
     {
-     "text": "Memtables flush more often and compaction falls behind; reads touch more SSTables and p99 read latency rises.",
+     "text": "Memtables flush more often and compaction falls behind; reads touch more SSTables and the map's p99 rises for a while.",
      "nodes": [
-      "n2"
+      "n2",
+      "map"
      ],
      "edges": [
-      "msg>n2"
+      "map>n2"
      ]
     },
     {
-     "text": "The fan-out queue absorbs the burst; push workers scale out and catch up within minutes.",
+     "text": "The stream absorbs the burst for the alert job. Alerts on backfilled readings are marked as late so nobody is paged for a fault from last night.",
      "nodes": [
-      "q",
-      "push"
+      "stream",
+      "alert"
      ],
      "edges": [
-      "msg>q",
-      "q>push"
+      "ingest>stream",
+      "stream>alert"
      ]
     },
     {
-     "text": "Size the ring for the peak replicated write rate, and keep disk and CPU headroom for compaction to catch up.",
+     "text": "Size the ring for the peak replicated write rate, and keep disk and CPU headroom so compaction can catch up.",
      "nodes": [
       "n1",
       "n2",
@@ -288,53 +295,56 @@
    ]
   },
   {
-   "name": "Node A goes down",
+   "name": "Link to DC2 down",
    "tone": "failure",
-   "summary": "With RF 3, LOCAL_QUORUM still gets 2 acks from B and C; A catches up from hints and repair when it returns.",
+   "summary": "LOCAL_QUORUM keeps DC1 writing during a cross-region outage; DC2 falls behind and is brought back with hints and repair.",
    "steps": [
     {
-     "text": "Node A crashes. Gossip marks it down within seconds.",
+     "text": "The cross-region link drops. DC1 nodes mark DC2 as unreachable.",
      "fail": [
-      "n1",
-      "n2>n1"
+      "dc2",
+      "n2>dc2"
      ],
      "nodes": [
-      "n2",
-      "n3"
+      "n2"
      ]
     },
     {
-     "text": "B still coordinates: it writes itself and C, gets 2 acks and answers. Senders notice nothing.",
+     "text": "Ingest keeps writing at LOCAL_QUORUM: two acks from DC1 are all it waits for, so trucks and the map notice nothing.",
      "fail": [
-      "n1"
+      "dc2"
      ],
      "nodes": [
-      "msg",
+      "trucks",
+      "ingest",
+      "n1",
       "n2",
       "n3"
      ],
      "edges": [
-      "msg>n2",
+      "trucks>ingest",
+      "ingest>n2",
+      "n2>n1",
       "n2>n3"
      ]
     },
     {
-     "text": "B keeps a hint for every write A missed, for up to 3 hours.",
+     "text": "B stores hints for the writes DC2 missed, up to the hint window (3 hours by default).",
      "fail": [
-      "n1"
+      "dc2"
      ],
      "nodes": [
       "n2"
      ]
     },
     {
-     "text": "A restarts; B replays the hints. A longer outage needs a full repair before A serves reads again.",
+     "text": "Dispatchers served by DC2 see stale positions until it catches up. After a long outage, run repair so DC2 gets every reading the hints did not cover.",
      "nodes": [
-      "n1",
+      "dc2",
       "n2"
      ],
      "edges": [
-      "n2>n1"
+      "n2>dc2"
      ]
     }
    ]
@@ -345,48 +355,56 @@
    "summary": "Adding capacity is an online operation: the new node streams its token ranges from the current replicas, then takes traffic.",
    "nodes": [
     {
-     "id": "apns",
-     "kind": "external",
-     "label": "APNs / FCM",
-     "x": 0,
-     "y": 0
-    },
-    {
-     "id": "users",
+     "id": "disp",
      "kind": "client",
-     "label": "Mobile clients",
+     "label": "Dispatch console",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "trucks",
+     "kind": "client",
+     "label": "Trucks (200k)",
+     "sub": "GPS + engine /10 s",
      "x": 0,
      "y": 135
     },
     {
-     "id": "push",
-     "kind": "worker",
-     "label": "Push workers",
-     "x": 230,
-     "y": 0
+     "id": "pager",
+     "kind": "external",
+     "label": "Ops pager / SMS",
+     "x": 0,
+     "y": 270
     },
     {
-     "id": "gw",
-     "kind": "api-gateway",
-     "label": "Chat gateway",
-     "sub": "WebSocket",
-     "x": 230,
-     "y": 135
-    },
-    {
-     "id": "q",
-     "kind": "queue",
-     "label": "Fan-out queue",
-     "x": 460,
-     "y": 0
-    },
-    {
-     "id": "msg",
+     "id": "map",
      "kind": "service",
-     "label": "Message service",
-     "sub": "LOCAL_QUORUM",
-     "x": 460,
+     "label": "Live map service",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "ingest",
+     "kind": "api-gateway",
+     "label": "Ingest API",
+     "sub": "validate + dedup",
+     "x": 230,
      "y": 135
+    },
+    {
+     "id": "alert",
+     "kind": "worker",
+     "label": "Alert job",
+     "sub": "per-truck windows",
+     "x": 230,
+     "y": 270
+    },
+    {
+     "id": "stream",
+     "kind": "stream",
+     "label": "Readings stream",
+     "x": 460,
+     "y": 270
     },
     {
      "id": "n1",
@@ -430,7 +448,7 @@
      "id": "spark",
      "kind": "worker",
      "label": "Spark jobs",
-     "sub": "full scans",
+     "sub": "monthly reports",
      "x": 920,
      "y": 405
     },
@@ -445,17 +463,14 @@
    ],
    "edges": [
     {
-     "from": "users",
-     "to": "gw"
+     "from": "trucks",
+     "to": "ingest",
+     "label": "readings"
     },
     {
-     "from": "gw",
-     "to": "msg"
-    },
-    {
-     "from": "msg",
+     "from": "ingest",
      "to": "n2",
-     "label": "write / read"
+     "label": "LOCAL_QUORUM"
     },
     {
      "from": "n2",
@@ -480,23 +495,27 @@
      "to": "spark"
     },
     {
-     "from": "msg",
-     "to": "q",
-     "label": "new message"
+     "from": "ingest",
+     "to": "stream",
+     "label": "reading events"
     },
     {
-     "from": "q",
-     "to": "push"
+     "from": "stream",
+     "to": "alert"
     },
     {
-     "from": "push",
-     "to": "gw",
-     "label": "online"
+     "from": "alert",
+     "to": "pager",
+     "label": "maintenance"
     },
     {
-     "from": "push",
-     "to": "apns",
-     "label": "offline"
+     "from": "disp",
+     "to": "map"
+    },
+    {
+     "from": "map",
+     "to": "n2",
+     "label": "latest positions"
     },
     {
      "from": "n3",
@@ -506,13 +525,13 @@
    ],
    "steps": [
     {
-     "text": "Disks in DC1 are filling up. An operator starts node D; it takes tokens on the ring and joins via gossip.",
+     "text": "A new customer adds 40 000 trucks and DC1 disks are filling. An operator starts node D; it takes tokens on the ring and joins through gossip.",
      "nodes": [
       "n4"
      ]
     },
     {
-     "text": "D streams the data for its new ranges from the replicas that own them today. Writes for those ranges also go to D during the join.",
+     "text": "D streams the data for its new ranges from the replicas that own them today. Writes for those ranges also go to D while it joins.",
      "nodes": [
       "n3",
       "n4"
@@ -522,17 +541,17 @@
      ]
     },
     {
-     "text": "Once streaming finishes, D serves reads and writes, and each node owns a smaller share.",
+     "text": "Once streaming finishes, D serves reads and writes, and every node owns a smaller share.",
      "nodes": [
       "n2",
       "n4"
      ],
      "edges": [
-      "msg>n2"
+      "ingest>n2"
      ]
     },
     {
-     "text": "Run cleanup on the old owners to delete the ranges they no longer own; until then disk usage doesn't drop.",
+     "text": "Run cleanup on the old owners to delete the ranges they gave away; until then their disk usage doesn't drop.",
      "nodes": [
       "n1",
       "n2",

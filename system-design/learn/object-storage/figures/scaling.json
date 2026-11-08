@@ -1,465 +1,420 @@
 {
  "kind": "architecture",
- "title": "Scaling object storage: from one bucket to deduplicated content in many regions",
+ "title": "Scaling build distribution: from one bucket to deduplicated chunks in many regions",
  "caption": "Each stage removes a cost or a risk of the previous one; switch the 📈 tabs to grow the system.",
  "base_name": "v1: one bucket",
  "nodes": [
   {
-   "id": "c",
+   "id": "ci",
    "kind": "client",
-   "label": "Mobile & web",
+   "label": "Studio CI",
    "x": 0,
-   "y": 120
+   "y": 0
+  },
+  {
+   "id": "pl",
+   "kind": "client",
+   "label": "Player launchers",
+   "x": 0,
+   "y": 270
   },
   {
    "id": "api",
    "kind": "service",
-   "label": "API",
-   "sub": "presigns PUT + GET",
+   "label": "Download API",
+   "sub": "presigned GETs",
    "x": 280,
-   "y": 20
+   "y": 135
   },
   {
    "id": "b",
    "kind": "blob",
-   "label": "Bucket",
-   "sub": "everything hot",
-   "x": 280,
-   "y": 220
-  },
-  {
-   "id": "db",
-   "kind": "sql",
-   "label": "Metadata DB",
+   "label": "Builds bucket",
+   "sub": "one zip per version",
    "x": 560,
-   "y": 20
+   "y": 135
   }
  ],
  "edges": [
   {
-   "from": "c",
+   "from": "ci",
+   "to": "b",
+   "label": "PUT 60 GB zip"
+  },
+  {
+   "from": "pl",
    "to": "api"
   },
   {
    "from": "api",
-   "to": "db"
+   "to": "b"
   },
   {
-   "from": "c",
+   "from": "pl",
    "to": "b",
-   "label": "PUT + GET"
+   "label": "GET whole build"
   }
  ],
  "steps": [
   {
-   "text": "The API signs both uploads and downloads; clients talk to one bucket directly.",
+   "text": "CI uploads each version as one archive (multipart, since it's 60 GB). Launchers get a presigned GET and download the whole thing.",
    "nodes": [
-    "c",
-    "api",
-    "db"
+    "ci",
+    "b",
+    "pl",
+    "api"
    ],
    "edges": [
-    "c>api",
-    "api>db"
+    "ci>b",
+    "pl>api",
+    "api>b",
+    "pl>b"
    ]
   },
   {
-   "text": "Simple and durable. Costs: every view is a paid GET plus egress from one region, and every byte is in the most expensive tier.",
+   "text": "Fine for an internal test team. For players, every patch is a full 60 GB download from one region, and egress straight from the bucket is the most expensive way to serve it.",
    "nodes": [
-    "c",
+    "pl",
     "b"
    ],
    "edges": [
-    "c>b"
+    "pl>b"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "v2: CDN + lifecycle tiers",
+   "name": "v2: CDN + tiers",
    "tone": "scale",
-   "summary": "Put a CDN in front for reads and let lifecycle rules move old bytes to cheaper tiers.",
+   "summary": "Put a CDN in front of a private bucket, and let lifecycle rules move old builds to cheaper storage.",
    "nodes": [
     {
-     "id": "c",
+     "id": "ci",
      "kind": "client",
-     "label": "Mobile & web",
+     "label": "Studio CI",
      "x": 0,
-     "y": 160
+     "y": 0
+    },
+    {
+     "id": "pl",
+     "kind": "client",
+     "label": "Player launchers",
+     "x": 0,
+     "y": 270
     },
     {
      "id": "cdn",
      "kind": "cdn",
      "label": "CDN",
-     "sub": "hit ratio ~95%",
-     "x": 270,
-     "y": 40
+     "x": 280,
+     "y": 270
     },
     {
-     "id": "api",
-     "kind": "service",
-     "label": "API",
-     "sub": "presigns uploads",
-     "x": 270,
-     "y": 280
-    },
-    {
-     "id": "hot",
+     "id": "b",
      "kind": "blob",
-     "label": "Hot tier",
-     "x": 540,
-     "y": 160
+     "label": "Builds bucket",
+     "sub": "private origin",
+     "x": 560,
+     "y": 135
     },
     {
-     "id": "ia",
+     "id": "cold",
      "kind": "blob",
-     "label": "Infrequent tier",
-     "sub": "after 30 days",
-     "x": 820,
-     "y": 40
-    },
-    {
-     "id": "arc",
-     "kind": "blob",
-     "label": "Archive tier",
-     "sub": "after 1 year",
-     "x": 820,
-     "y": 280
+     "label": "Cold tier",
+     "sub": "old versions",
+     "x": 840,
+     "y": 135
     }
    ],
    "edges": [
     {
-     "from": "c",
-     "to": "cdn",
-     "label": "views"
+     "from": "ci",
+     "to": "b"
     },
     {
-     "from": "c",
-     "to": "api",
-     "label": "uploads"
+     "from": "pl",
+     "to": "cdn"
     },
     {
      "from": "cdn",
-     "to": "hot",
-     "label": "misses only"
+     "to": "b",
+     "label": "miss"
     },
     {
-     "from": "api",
-     "to": "hot",
-     "label": "presign"
-    },
-    {
-     "from": "hot",
-     "to": "ia",
-     "label": "lifecycle"
-    },
-    {
-     "from": "ia",
-     "to": "arc",
-     "label": "lifecycle"
+     "from": "b",
+     "to": "cold",
+     "label": "after 90 days"
     }
    ],
    "steps": [
     {
-     "text": "Views go through the CDN; ~95% are served from edges and never reach the bucket.",
+     "text": "Launchers download through the CDN; the bucket is never public and answers only CDN misses.",
      "nodes": [
-      "c",
+      "pl",
       "cdn",
-      "hot"
+      "b"
      ],
      "edges": [
-      "c>cdn",
-      "cdn>hot"
+      "pl>cdn",
+      "cdn>b"
      ]
     },
     {
-     "text": "Uploads still go straight to the bucket with presigned URLs.",
+     "text": "Old versions move to a cold tier after 90 days. Most builds ever made are never downloaded again.",
      "nodes": [
-      "c",
-      "api",
-      "hot"
+      "b",
+      "cold"
      ],
      "edges": [
-      "c>api",
-      "api>hot"
+      "b>cold"
      ]
     },
     {
-     "text": "Lifecycle rules move bytes by age: hot, then infrequent (cheaper per GB, a fee per read), then archive (cheapest, hours to restore).",
+     "text": "Cost: each patch is still a 60 GB download per player, and patch day hammers the single region's origin.",
      "nodes": [
-      "hot",
-      "ia",
-      "arc"
+      "pl",
+      "cdn"
      ],
      "edges": [
-      "hot>ia",
-      "ia>arc"
-     ]
-    },
-    {
-     "text": "Cost: purges for deletes, retrieval fees and delays for old photos, and rules that must match how people really browse.",
-     "nodes": [
-      "cdn",
-      "arc"
-     ],
-     "edges": [
-      "cdn>hot"
+      "pl>cdn"
      ]
     }
    ]
   },
   {
-   "name": "v3: multi-region replication",
+   "name": "v3: multi-region",
    "tone": "scale",
-   "summary": "Write to the nearest region and replicate asynchronously; the CDN fails over between origins.",
+   "summary": "Replicate builds to buckets in several regions, each behind its own origin shield, so misses stay close and one region can fail.",
    "nodes": [
     {
-     "id": "ue",
+     "id": "ci",
      "kind": "client",
-     "label": "Users (EU)",
+     "label": "Studio CI",
      "x": 0,
-     "y": 40
+     "y": 135
     },
     {
-     "id": "uu",
-     "kind": "client",
-     "label": "Users (US)",
-     "x": 0,
-     "y": 280
-    },
-    {
-     "id": "cdn",
-     "kind": "cdn",
-     "label": "CDN",
-     "sub": "origin failover",
-     "x": 280,
-     "y": 160
-    },
-    {
-     "id": "be",
-     "kind": "blob",
-     "label": "EU bucket",
-     "x": 560,
-     "y": 40
-    },
-    {
-     "id": "bu",
+     "id": "bus",
      "kind": "blob",
      "label": "US bucket",
+     "x": 280,
+     "y": 0
+    },
+    {
+     "id": "beu",
+     "kind": "blob",
+     "label": "EU bucket",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "sus",
+     "kind": "cdn",
+     "label": "US shield",
      "x": 560,
-     "y": 280
+     "y": 0
+    },
+    {
+     "id": "seu",
+     "kind": "cdn",
+     "label": "EU shield",
+     "x": 560,
+     "y": 270
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN edges",
+     "x": 840,
+     "y": 135
     }
    ],
    "edges": [
     {
-     "from": "ue",
-     "to": "be",
-     "label": "upload"
+     "from": "ci",
+     "to": "bus",
+     "label": "upload once"
     },
     {
-     "from": "uu",
-     "to": "bu",
-     "label": "upload"
-    },
-    {
-     "from": "ue",
-     "to": "cdn"
-    },
-    {
-     "from": "uu",
-     "to": "cdn"
+     "from": "bus",
+     "to": "beu",
+     "label": "replication"
     },
     {
      "from": "cdn",
-     "to": "be"
+     "to": "sus",
+     "label": "miss"
     },
     {
      "from": "cdn",
-     "to": "bu"
+     "to": "seu",
+     "label": "miss"
     },
     {
-     "from": "be",
-     "to": "bu",
-     "label": "async replication"
+     "from": "sus",
+     "to": "bus"
+    },
+    {
+     "from": "seu",
+     "to": "beu"
     }
    ],
    "steps": [
     {
-     "text": "Each user uploads to the nearest region: faster uploads, and data can stay where the law wants it.",
+     "text": "CI uploads to one region; bucket replication copies every object to the others.",
      "nodes": [
-      "ue",
-      "be",
-      "uu",
-      "bu"
+      "ci",
+      "bus",
+      "beu"
      ],
      "edges": [
-      "ue>be",
-      "uu>bu"
+      "ci>bus",
+      "bus>beu"
      ]
     },
     {
-     "text": "Buckets replicate to each other asynchronously, usually within minutes.",
-     "nodes": [
-      "be",
-      "bu"
-     ],
-     "edges": [
-      "be>bu"
-     ]
-    },
-    {
-     "text": "The CDN knows both origins and fails over when one returns errors, so a region outage no longer takes photos down.",
+     "text": "Edges miss to the shield in their own region, which reads its local bucket; if one region fails, its shield's traffic moves to another.",
      "nodes": [
       "cdn",
-      "be",
-      "bu"
+      "sus",
+      "seu",
+      "bus",
+      "beu"
      ],
      "edges": [
-      "ue>cdn",
-      "uu>cdn",
-      "cdn>be",
-      "cdn>bu"
+      "cdn>sus",
+      "cdn>seu",
+      "sus>bus",
+      "seu>beu"
      ]
     },
     {
-     "text": "Cost: 2× storage plus transfer between regions, a new photo can 404 in the other region until replicated, and deletes replicate too: replication is not a backup (use versioning and object lock).",
+     "text": "Cost: storage and replication traffic per region, and a release must wait until replication has finished everywhere.",
      "nodes": [
-      "be",
-      "bu"
+      "bus",
+      "beu"
      ],
      "edges": [
-      "be>bu"
+      "bus>beu"
      ]
     }
    ]
   },
   {
-   "name": "v4: content addressing",
+   "name": "v4: chunks + deltas",
    "tone": "scale",
-   "summary": "Key objects by the hash of their content: identical bytes are stored once, however many people post them.",
+   "summary": "Store builds as content-addressed chunks with a manifest per version: uploads and patches carry only what changed, and identical bytes are stored once.",
    "nodes": [
     {
-     "id": "c",
+     "id": "ci",
      "kind": "client",
-     "label": "Mobile & web",
-     "sub": "hashes the file",
+     "label": "Studio CI",
      "x": 0,
-     "y": 160
+     "y": 0
     },
     {
-     "id": "api",
+     "id": "pub",
      "kind": "service",
-     "label": "Upload API",
-     "sub": "have sha256?",
-     "x": 270,
-     "y": 160
+     "label": "Build publisher",
+     "x": 280,
+     "y": 0
     },
     {
-     "id": "idx",
-     "kind": "nosql",
-     "label": "Hash index",
-     "sub": "hash → refcount",
-     "x": 540,
-     "y": 40
-    },
-    {
-     "id": "store",
-     "kind": "blob",
-     "label": "Content store",
-     "sub": "key = sha256",
-     "x": 540,
-     "y": 280
-    },
-    {
-     "id": "man",
+     "id": "mdb",
      "kind": "sql",
-     "label": "Photo manifests",
-     "sub": "photo → hash",
-     "x": 820,
-     "y": 160
+     "label": "Manifest DB",
+     "x": 560,
+     "y": 0
     },
     {
-     "id": "gc",
-     "kind": "scheduler",
-     "label": "Garbage collector",
-     "sub": "refcount 0 → delete",
-     "x": 820,
-     "y": 280
+     "id": "pl",
+     "kind": "client",
+     "label": "Player launchers",
+     "x": 0,
+     "y": 270
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN + shields",
+     "x": 280,
+     "y": 270
+    },
+    {
+     "id": "b",
+     "kind": "blob",
+     "label": "Chunk buckets",
+     "sub": "key = hash",
+     "x": 560,
+     "y": 270
     }
    ],
    "edges": [
     {
-     "from": "c",
-     "to": "api",
-     "label": "hash first"
+     "from": "ci",
+     "to": "pub"
     },
     {
-     "from": "api",
-     "to": "idx"
+     "from": "pub",
+     "to": "mdb",
+     "label": "manifest"
     },
     {
-     "from": "api",
-     "to": "man"
+     "from": "ci",
+     "to": "b",
+     "label": "new chunks only"
     },
     {
-     "from": "c",
-     "to": "store",
-     "label": "only new bytes"
+     "from": "pl",
+     "to": "mdb",
+     "label": "manifest diff"
     },
     {
-     "from": "gc",
-     "to": "man"
+     "from": "pl",
+     "to": "cdn",
+     "label": "missing chunks"
     },
     {
-     "from": "gc",
-     "to": "store"
+     "from": "cdn",
+     "to": "b"
     }
    ],
    "steps": [
     {
-     "text": "The app hashes the file and asks whether the store already has it.",
+     "text": "CI uploads only chunks whose hash is new; a typical patch is a few GB of a 60 GB game.",
      "nodes": [
-      "c",
-      "api",
-      "idx"
+      "ci",
+      "pub",
+      "b"
      ],
      "edges": [
-      "c>api",
-      "api>idx"
+      "ci>pub",
+      "ci>b"
      ]
     },
     {
-     "text": "Known hash: skip the upload, add a manifest row and bump the refcount. A sticker forwarded a million times is stored once.",
+     "text": "Launchers diff manifests and download only missing chunks, so a patch takes minutes instead of hours.",
      "nodes": [
-      "api",
-      "man",
-      "idx"
+      "pl",
+      "mdb",
+      "cdn",
+      "b"
      ],
      "edges": [
-      "api>man",
-      "api>idx"
+      "pl>mdb",
+      "pl>cdn",
+      "cdn>b"
      ]
     },
     {
-     "text": "New hash: upload it under its hash; the key itself proves the content.",
+     "text": "Cost: a manifest service on the critical path of every update, millions of small objects (request charges), and garbage collection that must never delete a chunk a live manifest still uses.",
      "nodes": [
-      "c",
-      "store"
+      "pub",
+      "mdb",
+      "b"
      ],
      "edges": [
-      "c>store"
-     ]
-    },
-    {
-     "text": "Cost: deletes become refcount decrements plus a delayed garbage collector, the hash index is a new hot path, and cross-user dedup can reveal that a file exists, so scope it per account for private data.",
-     "nodes": [
-      "gc",
-      "store",
-      "man"
-     ],
-     "edges": [
-      "gc>man",
-      "gc>store"
+      "pub>mdb"
      ]
     }
    ]

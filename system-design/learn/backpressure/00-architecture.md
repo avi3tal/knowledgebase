@@ -1,9 +1,10 @@
 ## Architecture at a glance
 
-Before the strategies, see the system an architect would draw. This is a concert ticketing
-platform on sale day: demand outruns checkout by orders of magnitude, so every layer has a limit
-and a policy for when it's reached. Play the figure, then switch the tabs: the on-sale spike, a
-payment provider that slows down, and an operator who "fixes" the errors by raising the bound.
+Before the strategies, see the system an architect would draw. This is telemetry ingest for an
+electricity utility: 5 M smart meters, firmware that sends the daily billing read right after
+midnight, and cell towers that drop out and come back with hours of buffered data. Every layer has
+a limit and a policy for when it's reached. Play the figure, then switch the tabs: the midnight
+burst, a time-series database that slows down, and a firmware change that spreads the load.
 
 ```figure
 system-overview
@@ -11,28 +12,29 @@ system-overview
 
 ### Zoom in: the admission decision
 
-The cheapest place to say no is before any work is done. Follow the three questions the Checkout
-API asks about every order, then try the tabs: a full queue, workers that slow down, and a buyer
-who already holds seats.
+The cheapest place to say no is before any work is done. Follow the three questions the Ingest
+API asks about every batch, then try the tabs: a full log for a billing read, a full queue for
+diagnostics, and a tower that reconnects with six hours of backlog.
 
 ```figure
-admission-check
+meter-admission
 ```
 
-### Zoom in: workers pull with credit
+### Zoom in: consumers pull with credits
 
-Inside the core, the workers set the pace. Watch how the number of free slots decides how much a
-worker takes, then compare a slow payment provider, a broker that pushes instead, and a
-connection pool that runs dry.
+Inside the pipeline, the validators set the pace. Watch how the number of free slots decides how
+much a validator takes, then compare slower writes, a validator that crashes mid-batch, and
+scaling out on lag.
 
 ```figure
-worker-pull
+validator-credits
 ```
 
 ### How it scales
 
-The design changes as the pressure grows: one unbounded buffer, then a bound with fast
-rejections, then consumers that autoscale on queue depth, then a pipeline of bounded stages.
+The design changes as the pressure grows: one unbounded buffer, then a bound with shedding by
+class, then consumers that autoscale on lag, then a pipeline of bounded stages with per-tenant
+quotas.
 
 ```figure
 scaling
@@ -42,20 +44,20 @@ scaling
 
 | Decision | Options | Choice | Why |
 |---|---|---|---|
-| Where the crowd waits | in the API's queue · at the edge | **Waiting room at the edge** | A fan in line costs a cached page, not a thread or a queue slot |
-| Queue bound | unbounded · minutes · seconds of work | **About 20 s of work** | Anything older would outlive the client's timeout |
-| When the queue is full | block · drop silently · reject with a hint | **503 + Retry-After** | The caller learns at once and backs off; nothing hangs |
-| How workers get work | broker pushes · workers pull with a limit | **Pull with 5 in flight** | A slow worker takes less by itself; no hidden buffers |
-| What to shed first | everything equally · by priority | **Optional work first** (recommendations, emails) | Keep capacity for buyers who are finishing a sale |
-| Admit rate | fixed · driven by load signals | **From depth, age and p99** | Follows what the core can actually do right now |
+| Where data waits when full | ingest RAM · central log · edge gateways | **Edge gateways (store & forward)** | They already hold readings on disk; waiting there costs the core nothing |
+| Billing log bound | unbounded · bytes · time of work | **About 1 h of validator throughput** | Covers the midnight burst many times over; more than that is an outage, so push back |
+| When full: billing reads | block · drop · reject with a hint | **429 + Retry-After, gateway keeps it** | Must never be lost; the gateway retries with jitter later |
+| When full: diagnostics | reject · drop newest · drop oldest + sample | **Drop oldest, sample 1 in 10** | Fresh voltage data is worth more than stale; nobody bills on it |
+| How validators get work | log pushes · pull with credits | **Pull, credit = free slots** | A slow validator takes less by itself; no hidden buffers |
+| Fairness | one global line · per-gateway and per-tenant quotas | **Quotas per gateway and per tenant** | A reconnect flood or one utility's firmware can't starve everyone else |
 
 ### Risks and mitigations
 
 | Risk | Trigger | Impact | Mitigation |
 |---|---|---|---|
-| Hidden unbounded buffer | a thread pool, socket or client queue without a limit | Memory grows until a crash | Audit every hop for a bound and a full-policy |
-| Bound set too high | operator raises it to stop errors | Work done for callers who left | Bound in seconds of work, drop expired items, alert instead |
-| Retry storm | clients retry 503s immediately | Load multiplies while overloaded | Retry-After, client backoff with jitter, a retry budget |
-| Slow dependency | payment latency 10× | Slots stay busy, the queue fills | Timeouts, a circuit breaker, shed earlier via the admit rate |
-| Unfair line | bots open many sessions | Real fans wait longer | One token per verified session, bot detection at the edge |
-| Expired holds | a later stage stays slow | Seats locked by orders nobody pays | Hold TTLs, release on timeout, bound each stage separately |
+| Lost billing reads | ack sent before the durable write | Missing usage, estimated bills | Ack only after a replicated append; the gateway deletes only on ack |
+| Synchronised retries | every gateway honours the same Retry-After | A second burst right after the first | Jittered Retry-After, exponential backoff at the gateway |
+| Reconnect flood | a tower returns after hours offline | One gateway hogs admission | Per-gateway quota, replay at low priority, drop expired diagnostics |
+| Duplicate reads | replays after timeouts or a crash | Usage counted twice | Idempotent writes keyed by meter id + interval |
+| Edge buffer overflow | an outage longer than gateway storage | Oldest readings lost at the edge | Size edge disks for days, keep billing reads first, alert on edge depth |
+| Slow time-series DB | compaction or a hot partition | Lag grows, 429s at every gateway | Credits slow consumers, lag alerts, a separate bound per stage |

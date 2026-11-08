@@ -1,0 +1,525 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: each number that breaks one box buys the next one",
+ "caption": "Follow the Monday peak: the CDN, the origin shield, the object store's tiers and the feed cache each exist because a number crossed a single-node limit.",
+ "base_name": "Monday peak, 95% hits",
+ "nodes": [
+  {
+   "id": "dl",
+   "kind": "client",
+   "label": "Peak downloads",
+   "sub": "500/s",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN edges",
+   "sub": "95% hit · 228 Gbps",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "shield",
+   "kind": "cdn",
+   "label": "Origin shield",
+   "sub": "1 fetch/episode",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Audio store",
+   "sub": "~12 Gbps out",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "cold",
+   "kind": "blob",
+   "label": "Cold tier",
+   "sub": "older episodes",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "polls",
+   "kind": "client",
+   "label": "Peak feed polls",
+   "sub": "24k/s",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "fcache",
+   "kind": "cache",
+   "label": "Feed cache",
+   "sub": "3.5 GB · 99% hit",
+   "x": 230,
+   "y": 140
+  },
+  {
+   "id": "feed",
+   "kind": "service",
+   "label": "Feed builder",
+   "sub": "~240 builds/s",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Episode DB",
+   "sub": "~240 reads/s",
+   "x": 690,
+   "y": 140
+  }
+ ],
+ "edges": [
+  {
+   "from": "dl",
+   "to": "cdn",
+   "label": "240 Gbps"
+  },
+  {
+   "from": "cdn",
+   "to": "shield",
+   "label": "miss 5%"
+  },
+  {
+   "from": "shield",
+   "to": "blob",
+   "label": "first miss"
+  },
+  {
+   "from": "blob",
+   "to": "cold",
+   "label": "after 90 days"
+  },
+  {
+   "from": "polls",
+   "to": "fcache"
+  },
+  {
+   "from": "fcache",
+   "to": "feed",
+   "label": "miss 1%"
+  },
+  {
+   "from": "feed",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Start from the peak, not the average: 500 downloads/s and 24 000 feed polls/s.",
+   "nodes": [
+    "dl",
+    "polls"
+   ]
+  },
+  {
+   "text": "Bytes: 500 × 60 MB × 8 = 240 Gbps. One server NIC carries ~10–25 Gbps, and listeners are everywhere, so this needs a CDN. At 95% hits the edges send ~228 Gbps and ~12 Gbps leaves the origin.",
+   "nodes": [
+    "dl",
+    "cdn"
+   ],
+   "edges": [
+    "dl>cdn",
+    "cdn>shield"
+   ]
+  },
+  {
+   "text": "Misses: a new episode is requested at hundreds of edges in the same minute. An origin shield collapses them into one fetch per episode per region, so the store never sees the stampede.",
+   "nodes": [
+    "cdn",
+    "shield",
+    "blob"
+   ],
+   "edges": [
+    "cdn>shield",
+    "shield>blob"
+   ]
+  },
+  {
+   "text": "Size: 4.5 TB/day grows to ~1.6 PB a year, far past any database or file server: an object store. Most downloads are of recent episodes, so move older files to a cheaper cold tier.",
+   "nodes": [
+    "blob",
+    "cold"
+   ],
+   "edges": [
+    "blob>cold"
+   ]
+  },
+  {
+   "text": "Polls: 24 000/s is past one database, but a feed changes about once a week. A cache with ~99% hits leaves ~240 builds/s for the builder and ~240 reads/s for the DB: one primary is plenty.",
+   "nodes": [
+    "polls",
+    "fcache",
+    "feed",
+    "db"
+   ],
+   "edges": [
+    "polls>fcache",
+    "fcache>feed",
+    "feed>db"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Back-catalogue binge",
+   "tone": "edge",
+   "summary": "A show goes viral and new listeners download its old episodes: the hit rate falls to 80% and the origin's share grows 4×.",
+   "steps": [
+    {
+     "text": "The same 500 downloads/s, but spread over hundreds of old episodes that the edges evicted.",
+     "nodes": [
+      "dl",
+      "cdn"
+     ],
+     "edges": [
+      "dl>cdn"
+     ]
+    },
+    {
+     "text": "At 80% hits, 20% of 240 Gbps ≈ 48 Gbps goes to the origin instead of ~12 Gbps.",
+     "nodes": [
+      "cdn",
+      "shield"
+     ],
+     "edges": [
+      "cdn>shield"
+     ]
+    },
+    {
+     "text": "The shield turns repeats into hits after the first fetch, so the store serves roughly one copy per episode per region.",
+     "nodes": [
+      "shield",
+      "blob"
+     ],
+     "edges": [
+      "shield>blob"
+     ]
+    },
+    {
+     "text": "Some of those files sit in the cold tier, which has slower first-byte times. Promote an episode back to the hot tier when it is fetched again.",
+     "nodes": [
+      "blob",
+      "cold"
+     ],
+     "edges": [
+      "blob>cold"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: origin servers",
+   "tone": "alternative",
+   "summary": "Serve the bytes from your own servers instead of a CDN: the numbers say about 30 machines, one region, and every byte read from the store.",
+   "nodes": [
+    {
+     "id": "dl",
+     "kind": "client",
+     "label": "Peak downloads",
+     "sub": "500/s",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "sub": "240 Gbps",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "origin",
+     "kind": "service",
+     "label": "Origin servers",
+     "sub": "×30 at ~10 Gbps",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Audio store",
+     "sub": "240 Gbps out",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "cold",
+     "kind": "blob",
+     "label": "Cold tier",
+     "sub": "older episodes",
+     "x": 920,
+     "y": 0
+    },
+    {
+     "id": "polls",
+     "kind": "client",
+     "label": "Peak feed polls",
+     "sub": "24k/s",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "fcache",
+     "kind": "cache",
+     "label": "Feed cache",
+     "sub": "3.5 GB · 99% hit",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "feed",
+     "kind": "service",
+     "label": "Feed builder",
+     "sub": "~240 builds/s",
+     "x": 460,
+     "y": 140
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Episode DB",
+     "sub": "~240 reads/s",
+     "x": 690,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "dl",
+     "to": "lb",
+     "label": "240 Gbps"
+    },
+    {
+     "from": "lb",
+     "to": "origin"
+    },
+    {
+     "from": "origin",
+     "to": "blob",
+     "label": "every byte"
+    },
+    {
+     "from": "blob",
+     "to": "cold",
+     "label": "after 90 days"
+    },
+    {
+     "from": "polls",
+     "to": "fcache"
+    },
+    {
+     "from": "fcache",
+     "to": "feed",
+     "label": "miss 1%"
+    },
+    {
+     "from": "feed",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The same 500 downloads/s reach a load balancer in one region.",
+     "nodes": [
+      "dl",
+      "lb"
+     ],
+     "edges": [
+      "dl>lb"
+     ]
+    },
+    {
+     "text": "240 Gbps ÷ ~10 Gbps usable per server = 24 servers, plus headroom ≈ 30, just for bandwidth.",
+     "nodes": [
+      "lb",
+      "origin"
+     ],
+     "edges": [
+      "lb>origin"
+     ]
+    },
+    {
+     "text": "No cache in front: the store must read and send all 240 Gbps itself.",
+     "fail": [
+      "blob"
+     ],
+     "nodes": [
+      "origin",
+      "blob"
+     ],
+     "edges": [
+      "origin>blob"
+     ]
+    },
+    {
+     "text": "Listeners on other continents get slow starts, and you still pay egress on every byte. The estimate alone rules this out.",
+     "nodes": [
+      "dl",
+      "origin"
+     ],
+     "edges": [
+      "dl>lb",
+      "lb>origin"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: no feed cache",
+   "tone": "risk",
+   "summary": "Build every feed on every poll: 24k builds/s of identical XML, and a database that has to scale for work nobody needs.",
+   "nodes": [
+    {
+     "id": "dl",
+     "kind": "client",
+     "label": "Peak downloads",
+     "sub": "500/s",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN edges",
+     "sub": "95% hit · 228 Gbps",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "shield",
+     "kind": "cdn",
+     "label": "Origin shield",
+     "sub": "1 fetch/episode",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Audio store",
+     "sub": "~12 Gbps out",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "cold",
+     "kind": "blob",
+     "label": "Cold tier",
+     "sub": "older episodes",
+     "x": 920,
+     "y": 0
+    },
+    {
+     "id": "polls",
+     "kind": "client",
+     "label": "Peak feed polls",
+     "sub": "24k/s",
+     "x": 0,
+     "y": 140
+    },
+    {
+     "id": "feed",
+     "kind": "service",
+     "label": "Feed builders",
+     "sub": "24k builds/s",
+     "x": 230,
+     "y": 140
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Episode DB",
+     "sub": "24k reads/s",
+     "x": 460,
+     "y": 140
+    }
+   ],
+   "edges": [
+    {
+     "from": "dl",
+     "to": "cdn",
+     "label": "240 Gbps"
+    },
+    {
+     "from": "cdn",
+     "to": "shield",
+     "label": "miss 5%"
+    },
+    {
+     "from": "shield",
+     "to": "blob",
+     "label": "first miss"
+    },
+    {
+     "from": "blob",
+     "to": "cold",
+     "label": "after 90 days"
+    },
+    {
+     "from": "polls",
+     "to": "feed"
+    },
+    {
+     "from": "feed",
+     "to": "db",
+     "label": "every poll"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Every poll builds the feed from the database.",
+     "nodes": [
+      "polls",
+      "feed"
+     ],
+     "edges": [
+      "polls>feed"
+     ]
+    },
+    {
+     "text": "At ~500 builds/s per server that is ~50 builders for the feed path alone.",
+     "nodes": [
+      "feed"
+     ],
+     "edges": [
+      "polls>feed"
+     ]
+    },
+    {
+     "text": "24 000 reads/s is above one primary: you would add replicas for traffic that is 99% identical to an hour ago.",
+     "fail": [
+      "db"
+     ],
+     "nodes": [
+      "feed",
+      "db"
+     ],
+     "edges": [
+      "feed>db"
+     ]
+    },
+    {
+     "text": "The fix is the cache plus conditional requests (ETag, 304): most polls then cost a few hundred bytes, not 50 KB.",
+     "nodes": [
+      "polls",
+      "feed"
+     ],
+     "edges": [
+      "polls>feed"
+     ]
+    }
+   ]
+  }
+ ]
+}

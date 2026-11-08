@@ -1,0 +1,291 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: the ingest API's admission decision when space runs out",
+ "caption": "Every answer is local and takes microseconds: the gateway's quota, the data's class, and room in that class's buffer. Billing reads wait; diagnostics are dropped.",
+ "base_name": "Billing read admitted",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Batch from gateway",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "quota",
+   "type": "decision",
+   "label": "Gateway in quota?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "slow",
+   "type": "end",
+   "label": "429: slow this gw",
+   "col": 1,
+   "row": 1,
+   "tone": "bad"
+  },
+  {
+   "id": "cls",
+   "type": "decision",
+   "label": "Billing read?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "droom",
+   "type": "decision",
+   "label": "Diag queue room?",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "enq",
+   "type": "end",
+   "label": "Enqueue, 202",
+   "col": 2,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "room",
+   "type": "decision",
+   "label": "Log has room?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "wait",
+   "type": "end",
+   "label": "429: keep at edge",
+   "col": 1,
+   "row": 3,
+   "tone": "bad"
+  },
+  {
+   "id": "drop",
+   "type": "end",
+   "label": "Drop oldest, 202",
+   "col": 2,
+   "row": 3,
+   "tone": "bad"
+  },
+  {
+   "id": "ack",
+   "type": "end",
+   "label": "Append, then ack",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "quota"
+  },
+  {
+   "from": "quota",
+   "to": "slow",
+   "label": "no"
+  },
+  {
+   "from": "quota",
+   "to": "cls",
+   "label": "yes"
+  },
+  {
+   "from": "cls",
+   "to": "droom",
+   "label": "no"
+  },
+  {
+   "from": "droom",
+   "to": "enq",
+   "label": "yes"
+  },
+  {
+   "from": "droom",
+   "to": "drop",
+   "label": "no"
+  },
+  {
+   "from": "cls",
+   "to": "room",
+   "label": "yes"
+  },
+  {
+   "from": "room",
+   "to": "wait",
+   "label": "no"
+  },
+  {
+   "from": "room",
+   "to": "ack",
+   "label": "yes"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A batch arrives from an edge gateway, tagged with its class and the gateway's id.",
+   "nodes": [
+    "in"
+   ],
+   "edges": [
+    "in>quota"
+   ]
+  },
+  {
+   "text": "The gateway is within its share of the admit rate (a token bucket per gateway).",
+   "nodes": [
+    "quota"
+   ],
+   "edges": [
+    "quota>cls"
+   ]
+  },
+  {
+   "text": "It is a billing read: must-keep, so it may wait but never be dropped.",
+   "nodes": [
+    "cls"
+   ],
+   "edges": [
+    "cls>room"
+   ]
+  },
+  {
+   "text": "The log is under its bound (measured in minutes of validator work, not in bytes).",
+   "nodes": [
+    "room"
+   ],
+   "edges": [
+    "room>ack"
+   ]
+  },
+  {
+   "text": "Append to the replicated log, then acknowledge. Only the ack lets the gateway delete its copy.",
+   "nodes": [
+    "ack"
+   ],
+   "edges": [
+    "room>ack"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Log full: billing read",
+   "tone": "edge",
+   "summary": "A must-keep read is never dropped; it is refused politely and stays on the gateway's disk.",
+   "steps": [
+    {
+     "text": "Same checks: in quota, billing class.",
+     "nodes": [
+      "quota",
+      "cls"
+     ],
+     "edges": [
+      "in>quota",
+      "quota>cls",
+      "cls>room"
+     ]
+    },
+    {
+     "text": "Validators are behind and the log is at its bound.",
+     "nodes": [
+      "room"
+     ],
+     "edges": [
+      "room>wait"
+     ]
+    },
+    {
+     "text": "429 with Retry-After: 60 plus jitter. The gateway keeps the batch and retries; the API spent microseconds on it.",
+     "nodes": [
+      "wait"
+     ],
+     "edges": [
+      "room>wait"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Queue full: diagnostics",
+   "tone": "edge",
+   "summary": "Sheddable data is accepted and dropped on our side, so the gateway does not retry it.",
+   "steps": [
+    {
+     "text": "A voltage sample arrives from a gateway within its quota.",
+     "nodes": [
+      "quota",
+      "cls"
+     ],
+     "edges": [
+      "in>quota",
+      "quota>cls",
+      "cls>droom"
+     ]
+    },
+    {
+     "text": "The diagnostics queue is full.",
+     "nodes": [
+      "droom"
+     ],
+     "edges": [
+      "droom>drop"
+     ]
+    },
+    {
+     "text": "Drop the oldest sample in the queue to make room and answer 202. A fresh voltage reading is worth more than a stale one, and the drop is counted in metrics.",
+     "nodes": [
+      "drop"
+     ],
+     "edges": [
+      "droom>drop"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Tower reconnects",
+   "tone": "risk",
+   "summary": "A tower that was down for 6 hours replays its backlog at line speed. The per-gateway quota keeps one flood from starving every other gateway.",
+   "steps": [
+    {
+     "text": "20 000 meters behind one tower buffered 6 hours of quarter-hour data: ~500 000 messages arrive at once.",
+     "nodes": [
+      "in"
+     ],
+     "edges": [
+      "in>quota"
+     ]
+    },
+    {
+     "text": "The gateway's quota is 500 batches/s. The excess gets 429 and stays on its disk, so the replay takes ~16 minutes instead of seconds.",
+     "nodes": [
+      "quota",
+      "slow"
+     ],
+     "edges": [
+      "quota>slow"
+     ]
+    },
+    {
+     "text": "What is admitted follows the normal path: billing reads into the log, diagnostics older than an hour dropped as expired. Other gateways never notice.",
+     "nodes": [
+      "cls",
+      "room",
+      "ack"
+     ],
+     "edges": [
+      "quota>cls",
+      "cls>room",
+      "room>ack"
+     ]
+    }
+   ]
+  }
+ ]
+}

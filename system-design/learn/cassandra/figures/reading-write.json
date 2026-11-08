@@ -1,0 +1,227 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: one truck reading written at LOCAL_QUORUM",
+ "caption": "Two local acks make the reading durable; the other region is updated in parallel but nobody waits for it.",
+ "base_name": "LOCAL_QUORUM write",
+ "actors": [
+  {
+   "id": "api",
+   "label": "Ingest API",
+   "kind": "api-gateway"
+  },
+  {
+   "id": "co",
+   "label": "Node B (coord.)",
+   "kind": "coordinator"
+  },
+  {
+   "id": "ra",
+   "label": "Node A",
+   "kind": "nosql"
+  },
+  {
+   "id": "rc",
+   "label": "Node C",
+   "kind": "nosql"
+  },
+  {
+   "id": "dc2",
+   "label": "DC2 replica",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "api",
+   "to": "co",
+   "label": "INSERT reading (LOCAL_QUORUM)",
+   "note": "Primary key ((vehicle_id, day), ts). The token-aware driver hashes the partition key and picks a replica, so the coordinator is also a replica."
+  },
+  {
+   "from": "co",
+   "to": "co",
+   "label": "commit log + memtable",
+   "style": "self",
+   "note": "B is one of the three local replicas, so its own write counts as the first ack."
+  },
+  {
+   "from": "co",
+   "to": "ra",
+   "label": "mutation"
+  },
+  {
+   "from": "co",
+   "to": "rc",
+   "label": "mutation"
+  },
+  {
+   "from": "co",
+   "to": "dc2",
+   "label": "mutation",
+   "style": "async",
+   "note": "Sent at the same time to one node in DC2, which forwards it to its local replicas."
+  },
+  {
+   "from": "ra",
+   "to": "co",
+   "label": "ack",
+   "style": "reply",
+   "note": "2 of 3 local replicas: LOCAL_QUORUM is met."
+  },
+  {
+   "from": "co",
+   "to": "api",
+   "label": "ok (~3 ms)",
+   "style": "reply"
+  },
+  {
+   "from": "rc",
+   "to": "co",
+   "label": "ack",
+   "style": "reply",
+   "note": "The third ack arrives later; it doesn't change the answer."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Node C down: hints",
+   "tone": "failure",
+   "summary": "One local replica is down. The write still reaches quorum, and the coordinator keeps a hint so C can catch up.",
+   "messages": [
+    {
+     "from": "api",
+     "to": "co",
+     "label": "INSERT reading (LOCAL_QUORUM)"
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "mutation"
+    },
+    {
+     "from": "co",
+     "to": "rc",
+     "label": "mutation",
+     "style": "lost",
+     "note": "Gossip already marks C as down, so B doesn't wait for it."
+    },
+    {
+     "from": "ra",
+     "to": "co",
+     "label": "ack",
+     "style": "reply",
+     "note": "B + A = 2 of 3: quorum without C."
+    },
+    {
+     "from": "co",
+     "to": "api",
+     "label": "ok",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "co",
+     "label": "store hint for C",
+     "style": "self",
+     "note": "A hint is the mutation plus its target. When gossip sees C again, B replays it (hinted handoff)."
+    },
+    {
+     "from": "co",
+     "to": "rc",
+     "label": "replay hint",
+     "note": "If C was down longer than the hint window, hints stop being kept and only repair brings C up to date."
+    }
+   ]
+  },
+  {
+   "name": "Timeout, then retry",
+   "tone": "edge",
+   "summary": "A timeout doesn't mean the write failed. The truck's own timestamp is the clustering key, so a retry overwrites the same row.",
+   "messages": [
+    {
+     "from": "api",
+     "to": "co",
+     "label": "INSERT truck 4417 @ 08:15:30"
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "mutation"
+    },
+    {
+     "from": "co",
+     "to": "rc",
+     "label": "mutation"
+    },
+    {
+     "from": "co",
+     "to": "api",
+     "label": "write timeout",
+     "style": "error",
+     "note": "A is in a long GC pause and C is overloaded: only B's own write landed in time. A and C may still apply it later."
+    },
+    {
+     "from": "api",
+     "to": "co",
+     "label": "retry, same key",
+     "note": "Same partition (4417, day) and same timestamp: an upsert of the same row, never a duplicate reading."
+    },
+    {
+     "from": "co",
+     "to": "api",
+     "label": "ok",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Late batch from a dead zone",
+   "tone": "edge",
+   "summary": "A truck that crossed a dead zone uploads an hour of readings at once. They land in the right partitions without any read or reorder.",
+   "messages": [
+    {
+     "from": "api",
+     "to": "api",
+     "label": "split 360 readings by day",
+     "style": "self",
+     "note": "The batch spans midnight, so it belongs to two partitions: (4417, yesterday) and (4417, today)."
+    },
+    {
+     "from": "api",
+     "to": "co",
+     "label": "UNLOGGED BATCH (4417, yesterday)",
+     "note": "One batch per partition is a single mutation on one replica set. A batch across many partitions would only add coordinator work."
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "mutation"
+    },
+    {
+     "from": "ra",
+     "to": "co",
+     "label": "ack",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "api",
+     "label": "ok",
+     "style": "reply"
+    },
+    {
+     "from": "api",
+     "to": "co",
+     "label": "UNLOGGED BATCH (4417, today)",
+     "note": "latest_position is written USING TIMESTAMP set to the reading's own time. Last write wins then keeps the newest position, so a late upload never moves the truck backwards on the map, with no read and no lightweight transaction."
+    },
+    {
+     "from": "co",
+     "to": "api",
+     "label": "ok",
+     "style": "reply"
+    }
+   ]
+  }
+ ]
+}

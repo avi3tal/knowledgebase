@@ -1,0 +1,329 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: from one saved event to many inbox entries",
+ "caption": "The outbox makes publishing reliable, the planner turns one event into bounded jobs, and every write is keyed so it can be replayed.",
+ "base_name": "Small repo",
+ "nodes": [
+  {
+   "id": "repo",
+   "kind": "service",
+   "label": "Repo service",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "outbox",
+   "kind": "sql",
+   "label": "Outbox table",
+   "sub": "same DB as events",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "relay",
+   "kind": "worker",
+   "label": "Outbox relay",
+   "x": 230,
+   "y": 150
+  },
+  {
+   "id": "log",
+   "kind": "stream",
+   "label": "Event log",
+   "x": 460,
+   "y": 150
+  },
+  {
+   "id": "hot",
+   "kind": "cache",
+   "label": "Hot-repo recents",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "graph",
+   "kind": "nosql",
+   "label": "Watch graph",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "plan",
+   "kind": "worker",
+   "label": "Fan-out planner",
+   "sub": "count, then split",
+   "x": 690,
+   "y": 150
+  },
+  {
+   "id": "jobs",
+   "kind": "queue",
+   "label": "Batch jobs",
+   "sub": "≤ 500 watchers",
+   "x": 690,
+   "y": 300
+  },
+  {
+   "id": "inbox",
+   "kind": "nosql",
+   "label": "Inbox shards",
+   "sub": "by user id",
+   "x": 920,
+   "y": 150
+  },
+  {
+   "id": "work",
+   "kind": "worker",
+   "label": "Batch workers",
+   "x": 920,
+   "y": 300
+  },
+  {
+   "id": "dlq",
+   "kind": "queue",
+   "label": "Dead letters",
+   "x": 920,
+   "y": 450
+  }
+ ],
+ "edges": [
+  {
+   "from": "repo",
+   "to": "outbox",
+   "label": "one transaction"
+  },
+  {
+   "from": "outbox",
+   "to": "relay"
+  },
+  {
+   "from": "relay",
+   "to": "log",
+   "label": "publish, then mark sent"
+  },
+  {
+   "from": "log",
+   "to": "plan"
+  },
+  {
+   "from": "plan",
+   "to": "graph",
+   "label": "count + pages"
+  },
+  {
+   "from": "plan",
+   "to": "hot",
+   "label": "popular: write once"
+  },
+  {
+   "from": "plan",
+   "to": "jobs"
+  },
+  {
+   "from": "jobs",
+   "to": "work"
+  },
+  {
+   "from": "work",
+   "to": "inbox",
+   "label": "append (event id)"
+  },
+  {
+   "from": "work",
+   "to": "dlq",
+   "label": "after 3 tries"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The repo service writes the event and an outbox row in the same transaction: either both exist or neither does.",
+   "nodes": [
+    "repo",
+    "outbox"
+   ],
+   "edges": [
+    "repo>outbox"
+   ]
+  },
+  {
+   "text": "The relay reads unsent rows, publishes them to the log, and marks a row sent only after the log acknowledges it.",
+   "nodes": [
+    "outbox",
+    "relay",
+    "log"
+   ],
+   "edges": [
+    "outbox>relay",
+    "relay>log"
+   ]
+  },
+  {
+   "text": "The planner reads the event and asks the watch graph how many watchers the repo has: 40, far below the threshold.",
+   "nodes": [
+    "log",
+    "plan",
+    "graph"
+   ],
+   "edges": [
+    "log>plan",
+    "plan>graph"
+   ]
+  },
+  {
+   "text": "It splits the watcher list into jobs of at most 500 watchers. One job is enough here.",
+   "nodes": [
+    "plan",
+    "jobs"
+   ],
+   "edges": [
+    "plan>jobs"
+   ]
+  },
+  {
+   "text": "A batch worker appends the event id to each watcher's inbox. The entry key includes the event id, and each list is trimmed to its newest entries.",
+   "nodes": [
+    "jobs",
+    "work",
+    "inbox"
+   ],
+   "edges": [
+    "jobs>work",
+    "work>inbox"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Popular repo issue",
+   "tone": "edge",
+   "summary": "An issue opens on a repo with 250 000 watchers. Watchers get it through the recents, and only the issue's participants get a pushed copy.",
+   "steps": [
+    {
+     "text": "The planner counts 250 000 watchers, over the threshold.",
+     "nodes": [
+      "plan",
+      "graph"
+     ],
+     "edges": [
+      "log>plan",
+      "plan>graph"
+     ]
+    },
+    {
+     "text": "It writes the event once to the hot-repo recents for read-time merge.",
+     "nodes": [
+      "plan",
+      "hot"
+     ],
+     "edges": [
+      "plan>hot"
+     ]
+    },
+    {
+     "text": "People subscribed to this issue (its author, assignees, those mentioned) are few, so they are still pushed through one normal job.",
+     "nodes": [
+      "plan",
+      "jobs",
+      "work",
+      "inbox"
+     ],
+     "edges": [
+      "plan>jobs",
+      "jobs>work",
+      "work>inbox"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Relay crash",
+   "tone": "failure",
+   "summary": "The relay dies between publishing and marking the row sent. The event is published twice, and the keyed inbox write makes that harmless.",
+   "steps": [
+    {
+     "text": "The relay publishes a row, then crashes before marking it sent.",
+     "fail": [
+      "relay"
+     ],
+     "nodes": [
+      "outbox",
+      "log"
+     ],
+     "edges": [
+      "relay>log"
+     ]
+    },
+    {
+     "text": "On restart it finds the row still unsent and publishes it again: at-least-once, never lost.",
+     "nodes": [
+      "outbox",
+      "relay",
+      "log"
+     ],
+     "edges": [
+      "outbox>relay",
+      "relay>log"
+     ]
+    },
+    {
+     "text": "The planner makes jobs for both copies. The second write of the same event id to the same inbox replaces the first.",
+     "nodes": [
+      "plan",
+      "jobs",
+      "work",
+      "inbox"
+     ],
+     "edges": [
+      "log>plan",
+      "plan>jobs",
+      "jobs>work",
+      "work>inbox"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Stuck batch",
+   "tone": "failure",
+   "summary": "One job keeps failing because its inbox shard is overloaded. Retries are bounded and the job is parked, so the rest of the queue keeps moving.",
+   "steps": [
+    {
+     "text": "Writes from one job to an overloaded inbox shard keep timing out.",
+     "fail": [
+      "inbox",
+      "work>inbox"
+     ],
+     "nodes": [
+      "work"
+     ],
+     "edges": [
+      "jobs>work"
+     ]
+    },
+    {
+     "text": "After three tries with backoff the job goes to the dead-letter queue instead of blocking its worker.",
+     "nodes": [
+      "work",
+      "dlq"
+     ],
+     "edges": [
+      "work>dlq"
+     ]
+    },
+    {
+     "text": "Other jobs, on healthy shards, finish normally. When the shard recovers an operator replays the parked jobs, which is safe because every write is keyed.",
+     "nodes": [
+      "jobs",
+      "work",
+      "inbox",
+      "dlq"
+     ],
+     "edges": [
+      "jobs>work",
+      "work>inbox"
+     ]
+    }
+   ]
+  }
+ ]
+}

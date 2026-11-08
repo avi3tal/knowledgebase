@@ -1,20 +1,20 @@
 {
  "kind": "architecture",
- "title": "Scaling checkout under pressure: from one big buffer to bounded stages",
+ "title": "Scaling meter ingest under pressure: from one big buffer to bounded stages",
  "caption": "Each stage removes the previous bottleneck and adds a cost; switch the 📈 tabs to grow the system.",
  "base_name": "v1: unbounded queue",
  "nodes": [
   {
-   "id": "c",
+   "id": "m",
    "kind": "client",
-   "label": "Buyers",
+   "label": "Meters",
    "x": 0,
    "y": 130
   },
   {
    "id": "api",
    "kind": "service",
-   "label": "Checkout API",
+   "label": "Ingest API",
    "x": 260,
    "y": 130
   },
@@ -30,14 +30,14 @@
    "id": "w",
    "kind": "worker",
    "label": "Workers",
-   "sub": "fixed: 10",
+   "sub": "fixed: 8",
    "x": 780,
    "y": 130
   }
  ],
  "edges": [
   {
-   "from": "c",
+   "from": "m",
    "to": "api"
   },
   {
@@ -53,17 +53,17 @@
   {
    "text": "The API accepts everything and appends it to an in-memory queue.",
    "nodes": [
-    "c",
+    "m",
     "api",
     "q"
    ],
    "edges": [
-    "c>api",
+    "m>api",
     "api>q"
    ]
   },
   {
-   "text": "A burst is absorbed. Sustained overload isn't: at 400/s in and 250/s out the backlog grows by 150 every second.",
+   "text": "At midnight 40 000 batches/s arrive and the workers finish 8 000/s: the backlog grows by 32 000 every second, and after two minutes ~4 M readings sit in RAM.",
    "nodes": [
     "q",
     "w"
@@ -73,11 +73,11 @@
    ]
   },
   {
-   "text": "After minutes the wait exceeds every client timeout, and then memory runs out and the process dies with the queue inside it.",
-   "nodes": [
+   "text": "Memory runs out and the process dies with the queue inside it: billing reads are lost, and the meters were told they had been delivered.",
+   "fail": [
     "q"
    ],
-   "fail": [
+   "nodes": [
     "q"
    ]
   }
@@ -86,357 +86,354 @@
   {
    "name": "v2: bounded + shed",
    "tone": "scale",
-   "summary": "A bound and a fast rejection make overload safe; they don't add capacity.",
+   "summary": "Bound the buffer, make it durable, and split the classes: billing reads wait at the edge, diagnostics are dropped.",
    "nodes": [
     {
-     "id": "c",
-     "kind": "client",
-     "label": "Buyers",
+     "id": "gw",
+     "kind": "api-gateway",
+     "label": "Edge gateways",
+     "sub": "store & forward",
      "x": 0,
      "y": 130
     },
     {
      "id": "api",
      "kind": "service",
-     "label": "Checkout API",
-     "sub": "admission",
+     "label": "Ingest API",
+     "sub": "admit or 429",
      "x": 260,
      "y": 130
     },
     {
-     "id": "q",
-     "kind": "queue",
-     "label": "Durable queue",
-     "sub": "max 2 000",
+     "id": "log",
+     "kind": "stream",
+     "label": "Bounded log",
+     "sub": "1 h of work",
      "x": 520,
-     "y": 130
+     "y": 40
+    },
+    {
+     "id": "dq",
+     "kind": "queue",
+     "label": "Diag queue",
+     "sub": "drop oldest",
+     "x": 520,
+     "y": 240
     },
     {
      "id": "w",
      "kind": "worker",
      "label": "Workers",
-     "sub": "fixed: 10",
+     "sub": "fixed: 8",
      "x": 780,
      "y": 130
     }
    ],
    "edges": [
     {
-     "from": "c",
+     "from": "gw",
      "to": "api"
     },
     {
      "from": "api",
-     "to": "c",
-     "label": "503 when full"
+     "to": "gw",
+     "label": "429"
     },
     {
      "from": "api",
-     "to": "q"
+     "to": "log"
     },
     {
-     "from": "q",
-     "to": "w",
-     "label": "pull"
+     "from": "api",
+     "to": "dq"
+    },
+    {
+     "from": "log",
+     "to": "w"
+    },
+    {
+     "from": "dq",
+     "to": "w"
     }
    ],
    "steps": [
     {
-     "text": "Bound the queue to a few seconds of work and move it to a durable broker.",
+     "text": "The queue becomes a replicated log with a bound of about an hour of work; a crash loses nothing.",
      "nodes": [
       "api",
-      "q"
+      "log"
      ],
      "edges": [
-      "api>q"
+      "api>log"
      ]
     },
     {
-     "text": "When it's full, reject at once with 503 and Retry-After. Latency is capped and memory can't run out.",
+     "text": "When it is full, billing reads get 429 and wait on the gateways' disks; diagnostics go to their own queue that drops the oldest.",
      "nodes": [
+      "gw",
       "api",
-      "c"
+      "dq"
      ],
      "edges": [
-      "api>c"
+      "api>gw",
+      "api>dq"
      ]
     },
     {
-     "text": "Cost: capacity hasn't changed. At peak, more buyers see errors; the bound only makes overload safe.",
+     "text": "Cost: the fixed pool is sized for the average, so every midnight the lag climbs to ~10 minutes, and a long outage turns into hours of 429s.",
      "nodes": [
+      "log",
+      "dq",
       "w"
      ],
      "edges": [
-      "q>w"
+      "log>w",
+      "dq>w"
      ]
     }
    ]
   },
   {
-   "name": "v3: autoscaled workers",
+   "name": "v3: autoscaled consumers",
    "tone": "scale",
-   "summary": "Scale consumers on queue depth and age, up to what the database can take.",
+   "summary": "Partition the log and scale validators on lag, so capacity follows the midnight burst.",
    "nodes": [
-    {
-     "id": "c",
-     "kind": "client",
-     "label": "Buyers",
-     "x": 0,
-     "y": 150
-    },
     {
      "id": "api",
      "kind": "service",
-     "label": "Checkout API",
-     "sub": "admission",
-     "x": 250,
-     "y": 150
+     "label": "Ingest API",
+     "x": 0,
+     "y": 160
     },
     {
-     "id": "q",
-     "kind": "queue",
-     "label": "Order queue",
-     "sub": "max 2 000",
-     "x": 500,
-     "y": 150
-    },
-    {
-     "id": "w",
-     "kind": "worker",
-     "label": "Workers",
-     "sub": "10–80",
-     "x": 750,
-     "y": 150
+     "id": "log",
+     "kind": "stream",
+     "label": "Partitioned log",
+     "sub": "64 partitions",
+     "x": 270,
+     "y": 160
     },
     {
      "id": "as",
-     "kind": "scheduler",
+     "kind": "coordinator",
      "label": "Autoscaler",
-     "sub": "on depth + age",
-     "x": 500,
-     "y": 0
+     "sub": "target lag 2 min",
+     "x": 270,
+     "y": 20
     },
     {
-     "id": "db",
-     "kind": "sql",
-     "label": "Seat DB",
-     "sub": "max 400 conns",
-     "x": 1000,
-     "y": 150
+     "id": "v1",
+     "kind": "worker",
+     "label": "Validators ×N",
+     "sub": "pull with credits",
+     "x": 540,
+     "y": 160
+    },
+    {
+     "id": "ts",
+     "kind": "nosql",
+     "label": "Time-series DB",
+     "x": 820,
+     "y": 160
     }
    ],
    "edges": [
     {
-     "from": "c",
-     "to": "api"
-    },
-    {
      "from": "api",
-     "to": "q"
+     "to": "log"
     },
     {
-     "from": "q",
-     "to": "w",
-     "label": "pull"
-    },
-    {
-     "from": "q",
+     "from": "log",
      "to": "as",
-     "label": "depth"
+     "label": "lag"
     },
     {
      "from": "as",
-     "to": "w",
-     "label": "add workers"
+     "to": "v1",
+     "label": "add / remove"
     },
     {
-     "from": "w",
-     "to": "db"
+     "from": "log",
+     "to": "v1"
+    },
+    {
+     "from": "v1",
+     "to": "ts"
     }
    ],
    "steps": [
     {
-     "text": "The autoscaler watches the queue's depth and age and adds workers when it stays high.",
+     "text": "The log is split into 64 partitions; each validator owns some and pulls with credits.",
      "nodes": [
-      "q",
+      "log",
+      "v1"
+     ],
+     "edges": [
+      "log>v1"
+     ]
+    },
+    {
+     "text": "The autoscaler watches lag in seconds and adds validators when it passes 2 minutes.",
+     "nodes": [
       "as",
-      "w"
+      "v1"
      ],
      "edges": [
-      "q>as",
-      "as>w"
+      "log>as",
+      "as>v1"
      ]
     },
     {
-     "text": "Capacity now follows demand, so shedding only happens during the ramp-up.",
+     "text": "Cost: scaling takes minutes, parallelism stops at 64 validators, and the time-series DB becomes the next bottleneck.",
      "nodes": [
-      "api",
-      "q",
-      "w"
+      "v1",
+      "ts"
      ],
      "edges": [
-      "c>api",
-      "api>q",
-      "q>w"
-     ]
-    },
-    {
-     "text": "Cost: new workers take a minute or two to start, so the bound and the 503s stay. And the database becomes the limit: cap total connections, or 80 workers will overload it.",
-     "nodes": [
-      "w",
-      "db"
-     ],
-     "edges": [
-      "w>db"
+      "v1>ts"
      ]
     }
    ]
   },
   {
-   "name": "v4: bounded stages",
+   "name": "v4: bounded stages + quotas",
    "tone": "scale",
-   "summary": "A pipeline of bounded stages, so each slow part pushes back on the one before it, and optional work is shed instead.",
+   "summary": "Several utilities share the platform: per-tenant quotas at the door, and every stage gets its own bound so one slow stage cannot fill the others.",
    "nodes": [
     {
-     "id": "room",
-     "kind": "service",
-     "label": "Waiting room",
+     "id": "gw",
+     "kind": "api-gateway",
+     "label": "Edge gateways",
      "x": 0,
-     "y": 150
+     "y": 160
+    },
+    {
+     "id": "quota",
+     "kind": "coordinator",
+     "label": "Tenant quotas",
+     "sub": "admit rate each",
+     "x": 230,
+     "y": 20
     },
     {
      "id": "api",
      "kind": "service",
-     "label": "Checkout API",
+     "label": "Ingest API",
      "x": 230,
-     "y": 150
+     "y": 160
     },
     {
-     "id": "qr",
-     "kind": "queue",
-     "label": "Reserve queue",
-     "sub": "max 2 000",
+     "id": "raw",
+     "kind": "stream",
+     "label": "Raw reads log",
+     "sub": "bounded",
      "x": 460,
-     "y": 0
+     "y": 160
     },
     {
-     "id": "wr",
+     "id": "val",
      "kind": "worker",
-     "label": "Seat holders",
+     "label": "Validators",
      "x": 690,
-     "y": 0
+     "y": 160
     },
     {
-     "id": "qp",
-     "kind": "queue",
-     "label": "Payment queue",
-     "sub": "max 1 000",
-     "x": 460,
-     "y": 150
+     "id": "clean",
+     "kind": "stream",
+     "label": "Validated log",
+     "sub": "bounded",
+     "x": 920,
+     "y": 160
     },
     {
-     "id": "wp",
+     "id": "bill",
      "kind": "worker",
-     "label": "Payment workers",
-     "x": 690,
-     "y": 150
+     "label": "Billing workers",
+     "x": 920,
+     "y": 20
     },
     {
-     "id": "qn",
-     "kind": "queue",
-     "label": "Notify queue",
-     "sub": "drop oldest",
-     "x": 460,
-     "y": 300
-    },
-    {
-     "id": "wn",
-     "kind": "worker",
-     "label": "Notifiers",
-     "x": 690,
+     "id": "ts",
+     "kind": "nosql",
+     "label": "Time-series DB",
+     "x": 920,
      "y": 300
     }
    ],
    "edges": [
     {
-     "from": "room",
-     "to": "api",
-     "label": "admit rate"
+     "from": "gw",
+     "to": "api"
+    },
+    {
+     "from": "quota",
+     "to": "api"
     },
     {
      "from": "api",
-     "to": "qr"
+     "to": "raw"
     },
     {
-     "from": "qr",
-     "to": "wr"
+     "from": "raw",
+     "to": "val"
     },
     {
-     "from": "wr",
-     "to": "qp",
-     "label": "seats held"
+     "from": "val",
+     "to": "clean"
     },
     {
-     "from": "qp",
-     "to": "wp"
+     "from": "clean",
+     "to": "bill"
     },
     {
-     "from": "wp",
-     "to": "qn",
-     "label": "confirmed"
-    },
-    {
-     "from": "qn",
-     "to": "wn"
+     "from": "clean",
+     "to": "ts",
+     "label": "writers"
     }
    ],
    "steps": [
     {
-     "text": "Split the flow into stages, each with its own queue, bound and policy: reserve seats, take payment, notify.",
+     "text": "Each tenant (a utility sharing the platform) gets its own admit rate, so one utility's bad firmware cannot starve the others.",
      "nodes": [
-      "qr",
-      "qp",
-      "qn"
+      "quota",
+      "api",
+      "gw"
      ],
      "edges": [
-      "api>qr",
-      "wr>qp",
-      "wp>qn"
+      "quota>api",
+      "gw>api"
      ]
     },
     {
-     "text": "A slow payment provider fills only the payment queue; the seat holders block on it and slow down, so the pressure walks back stage by stage to the waiting room.",
+     "text": "Raw reads, validation and storage are separate stages, each with its own bound and lag alert.",
      "nodes": [
-      "qp",
-      "wr",
-      "qr",
-      "room"
+      "raw",
+      "val",
+      "clean"
      ],
      "edges": [
-      "wr>qp",
-      "qr>wr",
-      "room>api"
+      "api>raw",
+      "raw>val",
+      "val>clean"
      ]
     },
     {
-     "text": "Notifications are optional, so that queue drops its oldest messages instead of pushing back on payments.",
+     "text": "Billing and time-series writers consume the validated log independently: a slow time-series DB no longer delays bills.",
      "nodes": [
-      "qn",
-      "wn"
+      "clean",
+      "bill",
+      "ts"
      ],
      "edges": [
-      "qn>wn"
+      "clean>bill",
+      "clean>ts"
      ]
     },
     {
-     "text": "Cost: more moving parts, a bound to tune per stage, and held seats that must expire if a later stage stays slow.",
+     "text": "Cost: more hops, more latency, and more bounds to tune and watch.",
      "nodes": [
-      "wr",
-      "wp"
-     ],
-     "edges": [
-      "qr>wr",
-      "qp>wp"
+      "raw",
+      "clean"
      ]
     }
    ]

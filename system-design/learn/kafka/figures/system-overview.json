@@ -1,28 +1,37 @@
 {
  "kind": "architecture",
- "title": "The system: a food-delivery platform whose services talk through Kafka",
- "caption": "Services only write their own data or produce events; every consumer group reads the same retained log at its own pace.",
- "base_name": "Normal flow",
+ "title": "The system: an airline operations event platform on Kafka",
+ "caption": "Three sources write to one replicated log; a stream processor joins delays with bookings, and four consumer groups read the same records for different jobs, each at its own pace.",
+ "base_name": "A delay, end to end",
  "nodes": [
   {
-   "id": "osvc",
+   "id": "ops",
    "kind": "service",
-   "label": "Order service",
+   "label": "Flight-ops service",
+   "sub": "status changes",
    "x": 0,
    "y": 0
   },
   {
-   "id": "odb",
+   "id": "bdb",
    "kind": "sql",
-   "label": "Orders DB",
+   "label": "Bookings DB",
    "x": 0,
    "y": 150
+  },
+  {
+   "id": "crew",
+   "kind": "service",
+   "label": "Crew scheduling",
+   "sub": "duty rosters",
+   "x": 0,
+   "y": 300
   },
   {
    "id": "reg",
    "kind": "coordinator",
    "label": "Schema registry",
-   "sub": "compatibility checks",
+   "sub": "compatibility",
    "x": 230,
    "y": 0
   },
@@ -30,17 +39,9 @@
    "id": "cdc",
    "kind": "worker",
    "label": "CDC connector",
-   "sub": "DB log → topic",
+   "sub": "reads the DB log",
    "x": 230,
    "y": 150
-  },
-  {
-   "id": "csvc",
-   "kind": "service",
-   "label": "Courier service",
-   "sub": "GPS every 4 s",
-   "x": 230,
-   "y": 300
   },
   {
    "id": "kafka",
@@ -51,354 +52,345 @@
    "y": 150
   },
   {
-   "id": "proc",
+   "id": "sp",
    "kind": "worker",
    "label": "Stream processor",
-   "sub": "ETA + fraud score",
+   "sub": "delays ⋈ bookings",
    "x": 460,
    "y": 300
   },
   {
-   "id": "ana",
-   "kind": "worker",
-   "label": "Analytics sink",
-   "sub": "group: analytics",
+   "id": "notif",
+   "kind": "service",
+   "label": "Notifications",
+   "sub": "push / SMS",
    "x": 690,
    "y": 0
   },
   {
-   "id": "idx",
-   "kind": "worker",
-   "label": "Search indexer",
-   "sub": "group: search",
+   "id": "boards",
+   "kind": "service",
+   "label": "Display boards",
+   "sub": "airport screens",
    "x": 690,
-   "y": 150
+   "y": 130
   },
   {
-   "id": "ntf",
-   "kind": "worker",
-   "label": "Notifier",
-   "sub": "group: notify",
+   "id": "replan",
+   "kind": "service",
+   "label": "Crew re-planning",
+   "sub": "duty-time rules",
    "x": 690,
-   "y": 300
+   "y": 260
+  },
+  {
+   "id": "sink",
+   "kind": "worker",
+   "label": "Analytics sink",
+   "x": 690,
+   "y": 390
+  },
+  {
+   "id": "push",
+   "kind": "external",
+   "label": "Messaging vendors",
+   "sub": "push, SMS",
+   "x": 920,
+   "y": 0
   },
   {
    "id": "lake",
    "kind": "blob",
    "label": "Data lake",
    "x": 920,
-   "y": 0
-  },
-  {
-   "id": "search",
-   "kind": "search",
-   "label": "Order search",
-   "x": 920,
-   "y": 150
-  },
-  {
-   "id": "push",
-   "kind": "external",
-   "label": "Push / SMS",
-   "x": 920,
-   "y": 300
+   "y": 390
   }
  ],
  "edges": [
   {
-   "from": "osvc",
-   "to": "odb",
-   "label": "write order"
-  },
-  {
-   "from": "odb",
-   "to": "cdc",
-   "label": "change log"
-  },
-  {
-   "from": "cdc",
+   "from": "ops",
    "to": "reg",
    "label": "schema id"
   },
   {
+   "from": "ops",
+   "to": "kafka",
+   "label": "flight-status"
+  },
+  {
+   "from": "bdb",
+   "to": "cdc"
+  },
+  {
+   "from": "cdc",
+   "to": "reg"
+  },
+  {
    "from": "cdc",
    "to": "kafka",
-   "label": "orders"
+   "label": "bookings"
   },
   {
-   "from": "csvc",
+   "from": "crew",
    "to": "kafka",
-   "label": "courier-locations"
+   "label": "crew-duty"
   },
   {
    "from": "kafka",
-   "to": "proc",
-   "label": "orders + locations"
+   "to": "sp"
   },
   {
-   "from": "proc",
+   "from": "sp",
    "to": "kafka",
-   "label": "eta-updates"
+   "label": "misconnects"
   },
   {
    "from": "kafka",
-   "to": "ana"
+   "to": "notif"
   },
   {
    "from": "kafka",
-   "to": "idx"
+   "to": "boards"
   },
   {
    "from": "kafka",
-   "to": "ntf"
+   "to": "replan"
   },
   {
-   "from": "ana",
+   "from": "kafka",
+   "to": "sink"
+  },
+  {
+   "from": "notif",
+   "to": "push"
+  },
+  {
+   "from": "sink",
    "to": "lake",
    "label": "hourly files"
-  },
-  {
-   "from": "idx",
-   "to": "search",
-   "label": "upsert by id"
-  },
-  {
-   "from": "ntf",
-   "to": "push"
   }
  ],
  "steps": [
   {
-   "text": "The order service only writes its own database. It never publishes to Kafka itself, so there is no dual write that can half-fail.",
+   "text": "Flight-ops publishes every status change (a delay, a gate change, a cancellation) to flight-status, keyed by flight leg (flight number + date), so all events of one leg stay in order on one partition. The record carries a schema id the registry has approved.",
    "nodes": [
-    "osvc",
-    "odb"
-   ],
-   "edges": [
-    "osvc>odb"
-   ]
-  },
-  {
-   "text": "A CDC connector tails the database's change log and turns every committed row change into a record on the orders topic, keyed by order_id. Its schema is registered first; an incompatible change is rejected there.",
-   "nodes": [
-    "odb",
-    "cdc",
+    "ops",
     "reg",
     "kafka"
    ],
    "edges": [
-    "odb>cdc",
+    "ops>reg",
+    "ops>kafka"
+   ]
+  },
+  {
+   "text": "Bookings get no second write path: a CDC connector tails the bookings database's change log and publishes one record per booked segment (passenger × leg) to the bookings topic, re-keyed from the booking id to the same leg id by a key transform.",
+   "nodes": [
+    "bdb",
+    "cdc",
+    "kafka"
+   ],
+   "edges": [
+    "bdb>cdc",
     "cdc>reg",
     "cdc>kafka"
    ]
   },
   {
-   "text": "The courier service produces a GPS ping every 4 s per courier to courier-locations, keyed by courier_id, with acks=all.",
+   "text": "Crew scheduling publishes duty assignments to crew-duty. Every topic has 3 replicas. With acks=all a write is acknowledged once every in-sync replica has it, and refused if fewer than 2 are in sync (min.insync.replicas=2).",
    "nodes": [
-    "csvc",
+    "crew",
     "kafka"
    ],
    "edges": [
-    "csvc>kafka"
+    "crew>kafka"
    ]
   },
   {
-   "text": "The cluster splits each topic into partitions, keeps 3 replicas of each on different brokers, and retains records for 7 days whether or not anyone has read them.",
-   "nodes": [
-    "kafka"
-   ],
-   "edges": [
-    "cdc>kafka",
-    "csvc>kafka"
-   ]
-  },
-  {
-   "text": "A stream processor joins orders with courier positions, computes ETAs and fraud scores, and writes eta-updates back to Kafka.",
+   "text": "The stream processor joins delays with bookings. Both topics use the same key and partition count, so a leg's delay and its bookings land on the same task. When a delay leaves a connection shorter than the minimum connecting time, it writes the passenger to misconnects.",
    "nodes": [
     "kafka",
-    "proc"
+    "sp"
    ],
    "edges": [
-    "kafka>proc",
-    "proc>kafka"
+    "kafka>sp",
+    "sp>kafka"
    ]
   },
   {
-   "text": "Three consumer groups read the same records independently, each at its own offset: analytics to the lake, the indexer to search, the notifier to customers' phones.",
+   "text": "Four consumer groups read the same log, each with its own committed offsets: notifications (status + misconnects), display boards (status), crew re-planning (status + crew-duty) and the analytics sink (everything).",
    "nodes": [
-    "ana",
-    "idx",
-    "ntf",
-    "lake",
-    "search",
-    "push"
+    "kafka",
+    "notif",
+    "boards",
+    "replan",
+    "sink"
    ],
    "edges": [
-    "kafka>ana",
-    "kafka>idx",
-    "kafka>ntf",
-    "ana>lake",
-    "idx>search",
-    "ntf>push"
+    "kafka>notif",
+    "kafka>boards",
+    "kafka>replan",
+    "kafka>sink"
+   ]
+  },
+  {
+   "text": "Each group works at its own pace: notifications call the push and SMS vendors, the sink writes hourly files to the lake. A slow group only falls behind itself; nobody else waits for it.",
+   "nodes": [
+    "notif",
+    "push",
+    "sink",
+    "lake"
+   ],
+   "edges": [
+    "notif>push",
+    "sink>lake"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "Dinner rush",
+   "name": "Storm at a hub",
    "tone": "edge",
-   "summary": "Producers never slow down for consumers: each group falls behind on its own, and lag tells you which one to scale.",
+   "summary": "Thunderstorms close a hub for two hours: status events jump about 40×, and the log absorbs the burst while each group catches up at its own speed.",
    "steps": [
     {
-     "text": "At 19:00 orders and GPS pings triple. Producers write at full speed; brokers only append.",
+     "text": "Within ten minutes several hundred legs are delayed or re-gated, many of them more than once. Flight-ops publishes all of it.",
      "nodes": [
-      "cdc",
-      "csvc",
+      "ops",
       "kafka"
      ],
      "edges": [
-      "cdc>kafka",
-      "csvc>kafka"
+      "ops>kafka"
      ]
     },
     {
-     "text": "The notifier keeps up, but the search indexer's lag climbs to 90 s: its writes to the search cluster are the slow part.",
+     "text": "Because the key is the leg, not the airport, the burst spreads over all 24 partitions of flight-status instead of melting one.",
      "nodes": [
-      "idx",
-      "search"
-     ],
-     "edges": [
-      "kafka>idx",
-      "idx>search"
-     ]
-    },
-    {
-     "text": "Add indexer instances. They can only help up to the number of partitions; beyond that, extra members sit idle.",
-     "nodes": [
-      "idx"
-     ],
-     "edges": [
-      "kafka>idx"
-     ]
-    },
-    {
-     "text": "Analytics is hours behind and nobody cares: it batches into hourly files anyway. Alert on lag per group, with a different threshold for each.",
-     "nodes": [
-      "ana",
-      "lake",
-      "ntf"
-     ],
-     "edges": [
-      "kafka>ana",
-      "ana>lake",
-      "kafka>ntf"
-     ]
-    }
-   ]
-  },
-  {
-   "name": "Bad indexer deploy",
-   "tone": "failure",
-   "summary": "Because Kafka keeps the log, a corrupted downstream store is rebuilt by rewinding one group's offset; nobody else is affected.",
-   "steps": [
-    {
-     "text": "A bug in a new indexer version writes wrong prices into the search index for 2 days.",
-     "nodes": [
-      "idx"
-     ],
-     "edges": [
-      "kafka>idx"
-     ],
-     "fail": [
-      "search",
-      "idx>search"
-     ]
-    },
-    {
-     "text": "Ship the fix, stop the group, and reset its committed offsets to the time before the bug (still inside the 7-day retention).",
-     "nodes": [
-      "idx",
       "kafka"
      ],
      "edges": [
-      "kafka>idx"
+      "ops>kafka"
      ]
     },
     {
-     "text": "The indexer replays 2 days of orders. Upserts by order id make the replay safe: each document ends up in its latest correct state.",
-     "nodes": [
-      "idx",
-      "search"
-     ],
-     "edges": [
-      "kafka>idx",
-      "idx>search"
-     ]
-    },
-    {
-     "text": "Analytics and notifier never noticed: their offsets didn't move.",
-     "nodes": [
-      "ana",
-      "ntf"
-     ],
-     "edges": [
-      "kafka>ana",
-      "kafka>ntf"
-     ]
-    }
-   ]
-  },
-  {
-   "name": "Schema change",
-   "tone": "edge",
-   "summary": "The registry turns a breaking change into a failed deploy instead of a 3 a.m. consumer crash.",
-   "steps": [
-    {
-     "text": "The order team adds an optional tip field to the order schema.",
-     "nodes": [
-      "osvc",
-      "odb"
-     ],
-     "edges": [
-      "osvc>odb"
-     ]
-    },
-    {
-     "text": "The connector registers version 4. It has a default value, so it is backward compatible and accepted.",
-     "nodes": [
-      "cdc",
-      "reg"
-     ],
-     "edges": [
-      "odb>cdc",
-      "cdc>reg"
-     ]
-    },
-    {
-     "text": "Old consumers keep reading and ignore the new field; the indexer upgrades when it wants to.",
+     "text": "Each delay joins with that leg's bookings: tens of thousands of misconnected passengers are written back to Kafka in a few minutes.",
      "nodes": [
       "kafka",
-      "ana",
-      "idx",
-      "ntf"
+      "sp"
      ],
      "edges": [
-      "cdc>kafka",
-      "kafka>ana",
-      "kafka>idx",
-      "kafka>ntf"
+      "kafka>sp",
+      "sp>kafka"
      ]
     },
     {
-     "text": "Next month someone tries to rename order_id. The registry rejects the incompatible schema, and the change has to be made as a new field or a new topic.",
+     "text": "Notifications lag by minutes, so its group scales out towards one member per partition. Boards and crew re-planning do little work per event and stay current; per-group lag alerts show exactly who is behind.",
+     "nodes": [
+      "notif",
+      "boards",
+      "replan"
+     ],
+     "edges": [
+      "kafka>notif",
+      "notif>push",
+      "kafka>boards",
+      "kafka>replan"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SMS vendor outage",
+   "tone": "failure",
+   "summary": "One downstream dependency fails: only the group that needs it falls behind, and it resumes from its committed offsets without losing a message.",
+   "steps": [
+    {
+     "text": "The SMS vendor starts timing out. Notifications can't send, so it retries with backoff and stops committing offsets past the messages it hasn't sent.",
+     "nodes": [
+      "notif"
+     ],
+     "edges": [
+      "kafka>notif"
+     ],
+     "fail": [
+      "push",
+      "notif>push"
+     ]
+    },
+    {
+     "text": "Its lag grows for the 20 minutes of the outage. The records are safe in the log: retention is 7 days, far longer than any vendor outage.",
+     "nodes": [
+      "kafka",
+      "notif"
+     ],
+     "edges": [
+      "kafka>notif"
+     ],
+     "fail": [
+      "push"
+     ]
+    },
+    {
+     "text": "Display boards, crew re-planning and the sink read the same partitions at their own offsets and never notice.",
+     "nodes": [
+      "boards",
+      "replan",
+      "sink"
+     ],
+     "edges": [
+      "kafka>boards",
+      "kafka>replan",
+      "kafka>sink"
+     ]
+    },
+    {
+     "text": "The vendor recovers and notifications drain the backlog. A few messages were sent just before a timeout, so the sender dedupes on (passenger, event id) to avoid a second SMS.",
+     "nodes": [
+      "notif",
+      "push"
+     ],
+     "edges": [
+      "kafka>notif",
+      "notif>push"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "New schema field",
+   "tone": "edge",
+   "summary": "Flight-ops adds a delay reason: the registry checks the change before it ships, and old consumers keep working.",
+   "steps": [
+    {
+     "text": "Flight-ops adds an optional delay_reason field with a default and registers schema version 2. The registry checks it is backward compatible and accepts it.",
+     "nodes": [
+      "ops",
+      "reg"
+     ],
+     "edges": [
+      "ops>reg"
+     ]
+    },
+    {
+     "text": "A change that renamed the gate field would have been rejected right there, at deploy time, before any consumer read a single record.",
      "nodes": [
       "reg"
      ],
      "edges": [
-      "cdc>reg"
+      "ops>reg"
+     ]
+    },
+    {
+     "text": "New records carry the v2 schema id. Display boards still read them with v1 and ignore the field; notifications upgrade when they want to show the reason.",
+     "nodes": [
+      "kafka",
+      "boards",
+      "notif"
      ],
-     "fail": [
-      "cdc>reg"
+     "edges": [
+      "ops>kafka",
+      "kafka>boards",
+      "kafka>notif"
      ]
     }
    ]

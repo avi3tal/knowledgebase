@@ -1,0 +1,559 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: the patch-day read path, from release to cached chunks",
+ "caption": "Immutable chunk keys let every layer cache forever; the shield and pre-warming keep the first wave of misses away from the bucket.",
+ "base_name": "Release at 17:00",
+ "nodes": [
+  {
+   "id": "pl",
+   "kind": "client",
+   "label": "Player launchers",
+   "x": 0,
+   "y": 135
+  },
+  {
+   "id": "api",
+   "kind": "api-gateway",
+   "label": "Patch API",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "e1",
+   "kind": "cdn",
+   "label": "Edge PoP A",
+   "x": 230,
+   "y": 135
+  },
+  {
+   "id": "e2",
+   "kind": "cdn",
+   "label": "Edge PoP B",
+   "x": 230,
+   "y": 270
+  },
+  {
+   "id": "mc",
+   "kind": "cache",
+   "label": "Manifest cache",
+   "sub": "pointer TTL 60 s",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "sh",
+   "kind": "cdn",
+   "label": "Origin shield",
+   "sub": "request collapsing",
+   "x": 460,
+   "y": 135
+  },
+  {
+   "id": "pw",
+   "kind": "worker",
+   "label": "Pre-warm job",
+   "x": 460,
+   "y": 270
+  },
+  {
+   "id": "mdb",
+   "kind": "sql",
+   "label": "Manifest DB",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "b",
+   "kind": "blob",
+   "label": "Chunk bucket",
+   "sub": "private origin",
+   "x": 690,
+   "y": 135
+  },
+  {
+   "id": "rel",
+   "kind": "coordinator",
+   "label": "Release control",
+   "x": 920,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "pl",
+   "to": "api",
+   "label": "live manifest"
+  },
+  {
+   "from": "api",
+   "to": "mc"
+  },
+  {
+   "from": "mc",
+   "to": "mdb",
+   "label": "miss"
+  },
+  {
+   "from": "rel",
+   "to": "mdb",
+   "label": "live = 2.3.0"
+  },
+  {
+   "from": "pl",
+   "to": "e1",
+   "label": "GET /c/<hash>"
+  },
+  {
+   "from": "pl",
+   "to": "e2"
+  },
+  {
+   "from": "e1",
+   "to": "sh",
+   "label": "miss"
+  },
+  {
+   "from": "e2",
+   "to": "sh",
+   "label": "miss"
+  },
+  {
+   "from": "sh",
+   "to": "b",
+   "label": "one GET per chunk"
+  },
+  {
+   "from": "pw",
+   "to": "sh",
+   "label": "pre-fetch"
+  }
+ ],
+ "steps": [
+  {
+   "text": "An hour before release, release control sets live = 2.3.0 behind a flag, and the pre-warm job requests every new chunk through the shield so it holds them before the doors open.",
+   "nodes": [
+    "rel",
+    "mdb",
+    "pw",
+    "sh"
+   ],
+   "edges": [
+    "rel>mdb",
+    "pw>sh"
+   ]
+  },
+  {
+   "text": "At 17:00 the flag flips. Launchers ask for the live manifest; the pointer is cached for 60 s and each manifest forever, so the database sees a trickle.",
+   "nodes": [
+    "pl",
+    "api",
+    "mc",
+    "mdb"
+   ],
+   "edges": [
+    "pl>api",
+    "api>mc",
+    "mc>mdb"
+   ]
+  },
+  {
+   "text": "Each launcher diffs manifests and requests only the chunks it lacks, by hash, from its nearest edge, several in parallel and with byte ranges for resumes.",
+   "nodes": [
+    "pl",
+    "e1",
+    "e2"
+   ],
+   "edges": [
+    "pl>e1",
+    "pl>e2"
+   ]
+  },
+  {
+   "text": "Edge misses go to the shield, not the bucket. Concurrent misses for one chunk wait on a single fetch.",
+   "nodes": [
+    "e1",
+    "e2",
+    "sh"
+   ],
+   "edges": [
+    "e1>sh",
+    "e2>sh"
+   ]
+  },
+  {
+   "text": "The bucket serves each new chunk about once per shield, however many players there are; after that, every request ends at an edge.",
+   "nodes": [
+    "sh",
+    "b"
+   ],
+   "edges": [
+    "sh>b"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Alternative: no shield",
+   "tone": "alternative",
+   "summary": "Without a shield, every edge PoP fetches every chunk from the bucket on its own, all in the same minute.",
+   "nodes": [
+    {
+     "id": "pl",
+     "kind": "client",
+     "label": "Player launchers",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "e1",
+     "kind": "cdn",
+     "label": "Edge PoP A",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "e2",
+     "kind": "cdn",
+     "label": "Edge PoP B",
+     "x": 230,
+     "y": 135
+    },
+    {
+     "id": "e3",
+     "kind": "cdn",
+     "label": "Edge PoP C…",
+     "x": 230,
+     "y": 270
+    },
+    {
+     "id": "b",
+     "kind": "blob",
+     "label": "Chunk bucket",
+     "x": 460,
+     "y": 135
+    }
+   ],
+   "edges": [
+    {
+     "from": "pl",
+     "to": "e1"
+    },
+    {
+     "from": "pl",
+     "to": "e2"
+    },
+    {
+     "from": "pl",
+     "to": "e3"
+    },
+    {
+     "from": "e1",
+     "to": "b",
+     "label": "miss"
+    },
+    {
+     "from": "e2",
+     "to": "b",
+     "label": "miss"
+    },
+    {
+     "from": "e3",
+     "to": "b",
+     "label": "miss"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Players everywhere request the same new chunks the moment the patch goes live.",
+     "nodes": [
+      "pl",
+      "e1",
+      "e2",
+      "e3"
+     ],
+     "edges": [
+      "pl>e1",
+      "pl>e2",
+      "pl>e3"
+     ]
+    },
+    {
+     "text": "A large CDN has hundreds of PoPs, and each one misses on its own: hundreds of origin GETs per chunk instead of a few.",
+     "nodes": [
+      "e1",
+      "e2",
+      "e3",
+      "b"
+     ],
+     "edges": [
+      "e1>b",
+      "e2>b",
+      "e3>b"
+     ]
+    },
+    {
+     "text": "The bucket starts returning 503 SlowDown, edges retry, and the stampede grows. A shield costs one more hop on misses and removes this whole failure mode.",
+     "fail": [
+      "b"
+     ],
+     "nodes": [
+      "e1",
+      "e2",
+      "e3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Shield goes down",
+   "tone": "failure",
+   "summary": "The CDN fails over to a secondary shield in another region; misses get slower and origin load rises until it warms up.",
+   "nodes": [
+    {
+     "id": "pl",
+     "kind": "client",
+     "label": "Player launchers",
+     "x": 0,
+     "y": 135
+    },
+    {
+     "id": "api",
+     "kind": "api-gateway",
+     "label": "Patch API",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "e1",
+     "kind": "cdn",
+     "label": "Edge PoP A",
+     "x": 230,
+     "y": 135
+    },
+    {
+     "id": "e2",
+     "kind": "cdn",
+     "label": "Edge PoP B",
+     "x": 230,
+     "y": 270
+    },
+    {
+     "id": "mc",
+     "kind": "cache",
+     "label": "Manifest cache",
+     "sub": "pointer TTL 60 s",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "sh",
+     "kind": "cdn",
+     "label": "Origin shield",
+     "sub": "request collapsing",
+     "x": 460,
+     "y": 135
+    },
+    {
+     "id": "pw",
+     "kind": "worker",
+     "label": "Pre-warm job",
+     "x": 460,
+     "y": 270
+    },
+    {
+     "id": "mdb",
+     "kind": "sql",
+     "label": "Manifest DB",
+     "x": 690,
+     "y": 0
+    },
+    {
+     "id": "b",
+     "kind": "blob",
+     "label": "Chunk bucket",
+     "sub": "private origin",
+     "x": 690,
+     "y": 135
+    },
+    {
+     "id": "rel",
+     "kind": "coordinator",
+     "label": "Release control",
+     "x": 920,
+     "y": 0
+    },
+    {
+     "id": "sh2",
+     "kind": "cdn",
+     "label": "Backup shield",
+     "sub": "other region",
+     "x": 460,
+     "y": 405
+    }
+   ],
+   "edges": [
+    {
+     "from": "pl",
+     "to": "api",
+     "label": "live manifest"
+    },
+    {
+     "from": "api",
+     "to": "mc"
+    },
+    {
+     "from": "mc",
+     "to": "mdb",
+     "label": "miss"
+    },
+    {
+     "from": "rel",
+     "to": "mdb",
+     "label": "live = 2.3.0"
+    },
+    {
+     "from": "pl",
+     "to": "e1",
+     "label": "GET /c/<hash>"
+    },
+    {
+     "from": "pl",
+     "to": "e2"
+    },
+    {
+     "from": "e1",
+     "to": "sh",
+     "label": "miss"
+    },
+    {
+     "from": "e2",
+     "to": "sh",
+     "label": "miss"
+    },
+    {
+     "from": "sh",
+     "to": "b",
+     "label": "one GET per chunk"
+    },
+    {
+     "from": "pw",
+     "to": "sh",
+     "label": "pre-fetch"
+    },
+    {
+     "from": "e1",
+     "to": "sh2",
+     "label": "failover"
+    },
+    {
+     "from": "e2",
+     "to": "sh2",
+     "label": "failover"
+    },
+    {
+     "from": "sh2",
+     "to": "b"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The primary shield stops answering mid-release.",
+     "fail": [
+      "sh",
+      "e1>sh",
+      "e2>sh"
+     ],
+     "nodes": [
+      "e1",
+      "e2"
+     ]
+    },
+    {
+     "text": "Edges fail over to the backup shield. It is cold for this patch, so its first misses go to the bucket.",
+     "fail": [
+      "sh"
+     ],
+     "nodes": [
+      "e1",
+      "e2",
+      "sh2",
+      "b"
+     ],
+     "edges": [
+      "e1>sh2",
+      "e2>sh2",
+      "sh2>b"
+     ]
+    },
+    {
+     "text": "Players see slower downloads for a few minutes, not errors: launchers retry with backoff and jitter, and edges that already hold a chunk keep serving it.",
+     "fail": [
+      "sh"
+     ],
+     "nodes": [
+      "pl",
+      "e1",
+      "e2"
+     ],
+     "edges": [
+      "pl>e1",
+      "pl>e2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Hotfix at 19:00",
+   "tone": "edge",
+   "summary": "A fix ships two hours into patch day. Only its changed chunks are new; everything already cached stays valid.",
+   "steps": [
+    {
+     "text": "CI publishes 2.3.1: a few hundred MB of new chunks, uploaded and pre-warmed like any version.",
+     "nodes": [
+      "pw",
+      "sh"
+     ],
+     "edges": [
+      "pw>sh"
+     ]
+    },
+    {
+     "text": "Release control moves live to 2.3.1; within a minute the cached pointer expires.",
+     "nodes": [
+      "rel",
+      "mdb",
+      "mc"
+     ],
+     "edges": [
+      "rel>mdb",
+      "mc>mdb"
+     ]
+    },
+    {
+     "text": "Launchers still downloading 2.3.0 fetch the new manifest and simply skip the chunks that 2.3.1 no longer needs.",
+     "nodes": [
+      "pl",
+      "api",
+      "mc"
+     ],
+     "edges": [
+      "pl>api",
+      "api>mc"
+     ]
+    },
+    {
+     "text": "No cache invalidation: new content has new keys, and the old keys still mean exactly what they meant.",
+     "nodes": [
+      "e1",
+      "e2",
+      "sh"
+     ],
+     "edges": [
+      "pl>e1",
+      "e1>sh"
+     ]
+    }
+   ]
+  }
+ ]
+}

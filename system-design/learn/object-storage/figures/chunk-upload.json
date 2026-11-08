@@ -1,0 +1,260 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: uploading a build as content-addressed chunks",
+ "caption": "Like a multipart upload, chunks go up in parallel and are retried one by one, and a final commit makes the version exist. Unlike multipart, each chunk is its own object, so the next build can reuse it.",
+ "base_name": "Upload with dedup",
+ "actors": [
+  {
+   "id": "ci",
+   "label": "Studio CI",
+   "kind": "client"
+  },
+  {
+   "id": "pub",
+   "label": "Build publisher",
+   "kind": "service"
+  },
+  {
+   "id": "idx",
+   "label": "Chunk index",
+   "kind": "nosql"
+  },
+  {
+   "id": "b",
+   "label": "Chunk bucket",
+   "kind": "blob"
+  },
+  {
+   "id": "mdb",
+   "label": "Manifest DB",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "ci",
+   "to": "ci",
+   "label": "chunk + SHA-256 every file",
+   "style": "self",
+   "note": "Content-defined chunking: boundaries follow the bytes, so an edit early in a file shifts only the chunks around it, not every chunk after it."
+  },
+  {
+   "from": "ci",
+   "to": "pub",
+   "label": "begin 2.3.0: 7 500 hashes"
+  },
+  {
+   "from": "pub",
+   "to": "idx",
+   "label": "which of these exist?"
+  },
+  {
+   "from": "idx",
+   "to": "pub",
+   "label": "7 040 known, 460 new",
+   "style": "reply",
+   "note": "Only about 4 GB of the 60 GB build is new."
+  },
+  {
+   "from": "pub",
+   "to": "ci",
+   "label": "460 presigned PUT URLs",
+   "style": "reply",
+   "note": "Each URL is bound to one key (the hash) and to a checksum header, and expires in an hour."
+  },
+  {
+   "from": "ci",
+   "to": "b",
+   "label": "PUT /chunks/<hash> × 460",
+   "note": "32 at a time. A chunk that fails is retried on its own; the same key always holds the same bytes, so retries are harmless."
+  },
+  {
+   "from": "b",
+   "to": "ci",
+   "label": "200, checksum verified",
+   "style": "reply"
+  },
+  {
+   "from": "ci",
+   "to": "pub",
+   "label": "commit 2.3.0"
+  },
+  {
+   "from": "pub",
+   "to": "b",
+   "label": "HEAD the 460 new keys",
+   "note": "The publisher trusts the store, not the client: every chunk the manifest needs must exist before the version does."
+  },
+  {
+   "from": "pub",
+   "to": "idx",
+   "label": "add 460 hashes"
+  },
+  {
+   "from": "pub",
+   "to": "mdb",
+   "label": "INSERT manifest 2.3.0",
+   "note": "Written once and never changed. 'live' still points at the old version until release."
+  },
+  {
+   "from": "pub",
+   "to": "ci",
+   "label": "committed",
+   "style": "reply"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "One chunk PUT fails",
+   "tone": "failure",
+   "summary": "A dropped connection costs one 8 MB retry, and the commit check refuses a manifest with holes in it.",
+   "messages": [
+    {
+     "from": "ci",
+     "to": "b",
+     "label": "PUT /chunks/<hash> × 460"
+    },
+    {
+     "from": "b",
+     "to": "ci",
+     "label": "connection reset on one",
+     "style": "error",
+     "note": "The other chunks are complete objects already; nothing is lost but this one."
+    },
+    {
+     "from": "ci",
+     "to": "pub",
+     "label": "commit 2.3.0",
+     "note": "Suppose CI has a bug and commits without retrying."
+    },
+    {
+     "from": "pub",
+     "to": "b",
+     "label": "HEAD the 460 new keys"
+    },
+    {
+     "from": "b",
+     "to": "pub",
+     "label": "404 for 1 key",
+     "style": "error"
+    },
+    {
+     "from": "pub",
+     "to": "ci",
+     "label": "rejected: 1 chunk missing",
+     "style": "error",
+     "note": "The response names the hash, so CI uploads only that chunk."
+    },
+    {
+     "from": "ci",
+     "to": "b",
+     "label": "PUT /chunks/<hash>"
+    },
+    {
+     "from": "ci",
+     "to": "pub",
+     "label": "commit 2.3.0"
+    },
+    {
+     "from": "pub",
+     "to": "ci",
+     "label": "committed",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Two branches, same chunk",
+   "tone": "edge",
+   "summary": "Two CI pipelines upload the same new chunk at the same moment. With content addressing, that race is harmless.",
+   "messages": [
+    {
+     "from": "ci",
+     "to": "pub",
+     "label": "begin main 2.3.0"
+    },
+    {
+     "from": "ci",
+     "to": "pub",
+     "label": "begin hotfix 2.2.1",
+     "note": "Both builds contain the same new texture pack."
+    },
+    {
+     "from": "pub",
+     "to": "ci",
+     "label": "both: PUT /chunks/9f2c…",
+     "style": "reply"
+    },
+    {
+     "from": "ci",
+     "to": "b",
+     "label": "PUT /chunks/9f2c… (main)"
+    },
+    {
+     "from": "ci",
+     "to": "b",
+     "label": "PUT /chunks/9f2c… (hotfix)",
+     "note": "Last writer wins, but both wrote identical bytes, so the result is the same either way."
+    },
+    {
+     "from": "ci",
+     "to": "pub",
+     "label": "commit both"
+    },
+    {
+     "from": "pub",
+     "to": "mdb",
+     "label": "2 manifests, 1 shared chunk",
+     "note": "Stored once and referenced twice; garbage collection must count both references."
+    }
+   ]
+  },
+  {
+   "name": "Risk: reused chunk is cold",
+   "tone": "risk",
+   "summary": "The index says a chunk exists, but lifecycle moved it to an archive tier hours away from being readable. Patch day would fail on it.",
+   "messages": [
+    {
+     "from": "pub",
+     "to": "idx",
+     "label": "which of these exist?"
+    },
+    {
+     "from": "idx",
+     "to": "pub",
+     "label": "known: 7 040",
+     "style": "reply",
+     "note": "One of them was last used three years ago and now sits in archive storage."
+    },
+    {
+     "from": "ci",
+     "to": "pub",
+     "label": "commit 2.3.0"
+    },
+    {
+     "from": "pub",
+     "to": "b",
+     "label": "HEAD each reused key",
+     "note": "The check reads each chunk's storage class, not just whether it exists."
+    },
+    {
+     "from": "b",
+     "to": "pub",
+     "label": "1 key in archive class",
+     "style": "error"
+    },
+    {
+     "from": "pub",
+     "to": "b",
+     "label": "restore, then copy to hot",
+     "note": "An archive restore takes hours, so re-uploading it from CI as if it were new is often faster. Either way it must be hot before 'live' can point at this version."
+    },
+    {
+     "from": "pub",
+     "to": "mdb",
+     "label": "INSERT manifest 2.3.0"
+    }
+   ]
+  }
+ ]
+}

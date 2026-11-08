@@ -1,0 +1,228 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: a third notifier joins and only two partitions move",
+ "caption": "With the cooperative protocol members keep consuming while the group rebalances; only the partitions that change owner pause.",
+ "base_name": "Scale out (cooperative)",
+ "actors": [
+  {
+   "id": "n1",
+   "label": "Notifier 1",
+   "kind": "worker"
+  },
+  {
+   "id": "n2",
+   "label": "Notifier 2",
+   "kind": "worker"
+  },
+  {
+   "id": "n3",
+   "label": "Notifier 3 (new)",
+   "kind": "worker"
+  },
+  {
+   "id": "gc",
+   "label": "Group coordinator",
+   "kind": "coordinator"
+  }
+ ],
+ "messages": [
+  {
+   "from": "n3",
+   "to": "gc",
+   "label": "JoinGroup",
+   "note": "The misconnects topic has 6 partitions; a third notifier starts because lag is climbing."
+  },
+  {
+   "from": "gc",
+   "to": "n1",
+   "label": "heartbeat: rebalance",
+   "style": "reply",
+   "note": "n1 and n2 learn a rebalance has started and keep processing their partitions meanwhile."
+  },
+  {
+   "from": "n1",
+   "to": "gc",
+   "label": "JoinGroup (owns p0 p1 p2)",
+   "note": "Each member reports what it owns, not just that it exists."
+  },
+  {
+   "from": "n2",
+   "to": "gc",
+   "label": "JoinGroup (owns p3 p4 p5)",
+   "note": "n1 is the group leader and computes the new plan: 2 partitions each."
+  },
+  {
+   "from": "gc",
+   "to": "n1",
+   "label": "SyncGroup: give up p2",
+   "style": "reply",
+   "note": "Only the partitions that must move are revoked in this first round."
+  },
+  {
+   "from": "n1",
+   "to": "n1",
+   "label": "commit p2, stop p2",
+   "style": "self",
+   "note": "p0 and p1 keep flowing the whole time."
+  },
+  {
+   "from": "gc",
+   "to": "n2",
+   "label": "SyncGroup: give up p5",
+   "style": "reply",
+   "note": "n2 commits p5's offset and keeps p3 and p4."
+  },
+  {
+   "from": "n3",
+   "to": "gc",
+   "label": "JoinGroup (second round)",
+   "note": "Once p2 and p5 are free, a short second round hands them out."
+  },
+  {
+   "from": "gc",
+   "to": "n3",
+   "label": "assigned p2, p5",
+   "style": "reply",
+   "note": "n3 starts from the committed offsets. Two partitions paused for a moment; four never stopped."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Alternative: eager",
+   "tone": "alternative",
+   "summary": "The older eager protocol revokes everything from everyone first: a stop-the-world pause for the whole group on every change.",
+   "messages": [
+    {
+     "from": "n3",
+     "to": "gc",
+     "label": "JoinGroup",
+     "note": "Same trigger: a third notifier starts."
+    },
+    {
+     "from": "gc",
+     "to": "n1",
+     "label": "rebalance",
+     "style": "reply",
+     "note": "Every member must first give up all its partitions."
+    },
+    {
+     "from": "n1",
+     "to": "n1",
+     "label": "revoke p0 p1 p2",
+     "style": "self",
+     "note": "Commit and stop all three."
+    },
+    {
+     "from": "n2",
+     "to": "n2",
+     "label": "revoke p3 p4 p5",
+     "style": "self",
+     "note": "No passenger in the group gets a message now."
+    },
+    {
+     "from": "n1",
+     "to": "gc",
+     "label": "JoinGroup (owns nothing)",
+     "note": "Everyone rejoins empty-handed."
+    },
+    {
+     "from": "gc",
+     "to": "n3",
+     "label": "assigned p4, p5",
+     "style": "reply",
+     "note": "A fresh plan, which may move more partitions than needed."
+    },
+    {
+     "from": "gc",
+     "to": "n1",
+     "label": "assigned p0, p1",
+     "style": "reply",
+     "note": "All six partitions paused for the whole rebalance, during a storm, when the group was already behind."
+    }
+   ]
+  },
+  {
+   "name": "Notifier 2 crashes",
+   "tone": "failure",
+   "summary": "A crashed member is noticed when its session expires; its partitions move, and records since its last commit are processed again.",
+   "messages": [
+    {
+     "from": "n2",
+     "to": "n2",
+     "label": "process p3: offsets 810–860",
+     "style": "self",
+     "note": "It sends these messages, then the process is killed before it commits."
+    },
+    {
+     "from": "gc",
+     "to": "gc",
+     "label": "no heartbeat for session.timeout.ms",
+     "style": "self",
+     "note": "For the next 45 s p3 and p4 are not consumed by anyone."
+    },
+    {
+     "from": "gc",
+     "to": "n1",
+     "label": "rebalance: take p3",
+     "style": "reply",
+     "note": "The survivors split n2's partitions."
+    },
+    {
+     "from": "gc",
+     "to": "n3",
+     "label": "rebalance: take p4",
+     "style": "reply",
+     "note": "n3 keeps p2 and p5; the pause ends when the new owners start."
+    },
+    {
+     "from": "n1",
+     "to": "n1",
+     "label": "resume p3 at 810",
+     "style": "self",
+     "note": "The committed offset is 810, so those 50 messages are read again."
+    },
+    {
+     "from": "n1",
+     "to": "n1",
+     "label": "skip: already sent",
+     "style": "self",
+     "note": "At-least-once processing: the send log keyed by event id turns the replay into no duplicate SMS."
+    }
+   ]
+  },
+  {
+   "name": "Rolling deploy",
+   "tone": "edge",
+   "summary": "With static membership a member that restarts within the session timeout gets its partitions back, and the deploy causes no rebalance.",
+   "messages": [
+    {
+     "from": "n1",
+     "to": "n1",
+     "label": "shutdown: commit, close",
+     "style": "self",
+     "note": "n1 has a fixed group.instance.id, so it doesn't send LeaveGroup."
+    },
+    {
+     "from": "gc",
+     "to": "gc",
+     "label": "keep p0, p1 for notifier-1",
+     "style": "self",
+     "note": "The coordinator waits up to the session timeout before reassigning."
+    },
+    {
+     "from": "n1",
+     "to": "gc",
+     "label": "JoinGroup as notifier-1",
+     "note": "The new version is up in about 15 s."
+    },
+    {
+     "from": "gc",
+     "to": "n1",
+     "label": "same partitions: p0, p1",
+     "style": "reply",
+     "note": "n2 and n3 were never interrupted; only n1's partitions paused, for the length of its restart."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,490 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: one leader per partition, chosen by the controller quorum",
+ "caption": "Leaders are spread so writes are spread; when a broker fails, an in-sync follower takes over, and a returning broker has to catch up before it leads again.",
+ "base_name": "Leaders spread",
+ "nodes": [
+  {
+   "id": "prod",
+   "kind": "service",
+   "label": "Flight-ops service",
+   "sub": "acks=all",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "b3",
+   "kind": "stream",
+   "label": "Broker 3",
+   "sub": "leads p2",
+   "x": 230,
+   "y": 150
+  },
+  {
+   "id": "b1",
+   "kind": "stream",
+   "label": "Broker 1",
+   "sub": "leads p0",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "b2",
+   "kind": "stream",
+   "label": "Broker 2",
+   "sub": "leads p1",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "ctrl",
+   "kind": "coordinator",
+   "label": "KRaft controllers",
+   "sub": "leaders + ISR",
+   "x": 690,
+   "y": 150
+  }
+ ],
+ "edges": [
+  {
+   "from": "prod",
+   "to": "b1",
+   "label": "p0"
+  },
+  {
+   "from": "prod",
+   "to": "b2",
+   "label": "p1"
+  },
+  {
+   "from": "prod",
+   "to": "b3",
+   "label": "p2"
+  },
+  {
+   "from": "b1",
+   "to": "b3",
+   "label": "fetch p2"
+  },
+  {
+   "from": "b2",
+   "to": "b3",
+   "label": "fetch p2"
+  },
+  {
+   "from": "ctrl",
+   "to": "b1"
+  },
+  {
+   "from": "ctrl",
+   "to": "b2"
+  },
+  {
+   "from": "ctrl",
+   "to": "b3",
+   "label": "metadata"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Three of flight-status's partitions, each with 3 replicas. The KRaft controller quorum records who leads each one and spreads the leaders: every broker leads one partition and follows the other two.",
+   "nodes": [
+    "ctrl",
+    "b1",
+    "b2",
+    "b3"
+   ],
+   "edges": [
+    "ctrl>b1",
+    "ctrl>b2",
+    "ctrl>b3"
+   ]
+  },
+  {
+   "text": "The flight-ops producer caches the leader map from metadata and sends each partition's batch straight to its leader, so the writes are spread over all three brokers.",
+   "nodes": [
+    "prod",
+    "b1",
+    "b2",
+    "b3"
+   ],
+   "edges": [
+    "prod>b1",
+    "prod>b2",
+    "prod>b3"
+   ]
+  },
+  {
+   "text": "Followers pull from the leader. For p2, brokers 1 and 2 fetch from broker 3; while they keep up they belong to p2's in-sync replica set (ISR).",
+   "nodes": [
+    "b1",
+    "b2",
+    "b3"
+   ],
+   "edges": [
+    "b1>b3",
+    "b2>b3"
+   ]
+  },
+  {
+   "text": "With acks=all and min.insync.replicas=2, broker 3 acknowledges a batch only when every ISR member has it. Consumers read up to that point (the high watermark), never beyond.",
+   "nodes": [
+    "prod",
+    "b3"
+   ],
+   "edges": [
+    "prod>b3"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Broker 3 loses power",
+   "tone": "failure",
+   "summary": "An in-sync follower takes p2 over within seconds and no acknowledged record is lost, but one broker now carries two partitions' writes.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Flight-ops service",
+     "sub": "acks=all",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "b3",
+     "kind": "stream",
+     "label": "Broker 3",
+     "sub": "down",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "b1",
+     "kind": "stream",
+     "label": "Broker 1",
+     "sub": "leads p0 + p2",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "b2",
+     "kind": "stream",
+     "label": "Broker 2",
+     "sub": "leads p1",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "ctrl",
+     "kind": "coordinator",
+     "label": "KRaft controllers",
+     "sub": "leaders + ISR",
+     "x": 690,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "b1",
+     "label": "p0, p2"
+    },
+    {
+     "from": "prod",
+     "to": "b2",
+     "label": "p1"
+    },
+    {
+     "from": "prod",
+     "to": "b3",
+     "label": "p2"
+    },
+    {
+     "from": "b2",
+     "to": "b1",
+     "label": "fetch p2"
+    },
+    {
+     "from": "ctrl",
+     "to": "b1",
+     "label": "p2 → broker 1"
+    },
+    {
+     "from": "ctrl",
+     "to": "b2"
+    },
+    {
+     "from": "ctrl",
+     "to": "b3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Broker 3 goes dark. It led p2 and held follower copies of p0 and p1.",
+     "nodes": [
+      "prod"
+     ],
+     "fail": [
+      "b3",
+      "prod>b3"
+     ]
+    },
+    {
+     "text": "Its session with the controllers expires after a few seconds. The controller picks broker 1 from p2's ISR as the new leader and bumps p2's leader epoch.",
+     "nodes": [
+      "ctrl",
+      "b1"
+     ],
+     "edges": [
+      "ctrl>b1"
+     ],
+     "fail": [
+      "b3",
+      "ctrl>b3"
+     ]
+    },
+    {
+     "text": "The producer gets NOT_LEADER_OR_FOLLOWER, refreshes its metadata and retries p2 on broker 1. Every acknowledged record was already there, and the idempotent producer keeps the retry from writing a duplicate.",
+     "nodes": [
+      "prod",
+      "b1"
+     ],
+     "edges": [
+      "prod>b1"
+     ],
+     "fail": [
+      "b3"
+     ]
+    },
+    {
+     "text": "Broker 2 now fetches p2 from broker 1. The ISR is {1, 2}, still enough for min.insync.replicas=2, but broker 1 takes the writes of two partitions until broker 3 is back.",
+     "nodes": [
+      "b1",
+      "b2"
+     ],
+     "edges": [
+      "b2>b1",
+      "ctrl>b2"
+     ],
+     "fail": [
+      "b3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Broker 3 catches up",
+   "tone": "edge",
+   "summary": "A returning broker is only a follower until it has every record; then the preferred leader election gives it p2 back.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Flight-ops service",
+     "sub": "acks=all",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "b3",
+     "kind": "stream",
+     "label": "Broker 3",
+     "sub": "catching up",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "b1",
+     "kind": "stream",
+     "label": "Broker 1",
+     "sub": "leads p0 + p2",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "b2",
+     "kind": "stream",
+     "label": "Broker 2",
+     "sub": "leads p1",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "ctrl",
+     "kind": "coordinator",
+     "label": "KRaft controllers",
+     "sub": "leaders + ISR",
+     "x": 690,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "b1",
+     "label": "p0, p2"
+    },
+    {
+     "from": "prod",
+     "to": "b2",
+     "label": "p1"
+    },
+    {
+     "from": "prod",
+     "to": "b3",
+     "label": "p2 (later)"
+    },
+    {
+     "from": "b3",
+     "to": "b1",
+     "label": "fetch p2"
+    },
+    {
+     "from": "b2",
+     "to": "b1",
+     "label": "fetch p2"
+    },
+    {
+     "from": "ctrl",
+     "to": "b1"
+    },
+    {
+     "from": "ctrl",
+     "to": "b2"
+    },
+    {
+     "from": "ctrl",
+     "to": "b3",
+     "label": "back in ISR"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Broker 3 restarts. Using the leader epochs, it truncates any records it wrote that the new leader never had, then fetches everything it missed from broker 1.",
+     "nodes": [
+      "b3",
+      "b1"
+     ],
+     "edges": [
+      "b3>b1"
+     ]
+    },
+    {
+     "text": "When it reaches the end of broker 1's log, the leader adds it back: p2's ISR is {1, 2, 3} again.",
+     "nodes": [
+      "ctrl",
+      "b3"
+     ],
+     "edges": [
+      "ctrl>b3"
+     ]
+    },
+    {
+     "text": "Broker 3 is p2's preferred leader (first in its replica list), so the automatic leader rebalance moves p2 back. The producer retries once on NOT_LEADER and the writes are spread again.",
+     "nodes": [
+      "prod",
+      "b3",
+      "ctrl"
+     ],
+     "edges": [
+      "ctrl>b3",
+      "prod>b3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "ISR shrinks to one",
+   "tone": "risk",
+   "summary": "Followers that fall behind leave the ISR; with one replica left, acks=all refuses writes instead of accepting records that only one disk holds.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Flight-ops service",
+     "sub": "acks=all",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "b3",
+     "kind": "stream",
+     "label": "Broker 3",
+     "sub": "leads p2",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "b1",
+     "kind": "stream",
+     "label": "Broker 1",
+     "sub": "slow disk",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "b2",
+     "kind": "stream",
+     "label": "Broker 2",
+     "sub": "isolated",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "ctrl",
+     "kind": "coordinator",
+     "label": "KRaft controllers",
+     "sub": "leaders + ISR",
+     "x": 690,
+     "y": 150
+    }
+   ],
+   "steps": [
+    {
+     "text": "Broker 1's disk slows down. It stops keeping up with p2, and after replica.lag.time.max.ms the leader drops it: the ISR is {3, 2}. Writes continue, one failure away from trouble.",
+     "nodes": [
+      "b3",
+      "b2"
+     ],
+     "edges": [
+      "b2>b3"
+     ],
+     "fail": [
+      "b1>b3"
+     ]
+    },
+    {
+     "text": "Then broker 2 loses its network link. p2's ISR is just {3}.",
+     "nodes": [
+      "b3"
+     ],
+     "fail": [
+      "b1>b3",
+      "b2>b3"
+     ]
+    },
+    {
+     "text": "With min.insync.replicas=2, broker 3 answers NOT_ENOUGH_REPLICAS: flight-ops can't publish p2's status changes and keeps retrying. p0 and p1 have their own ISRs and may still work.",
+     "nodes": [
+      "prod",
+      "b3"
+     ],
+     "fail": [
+      "prod>b3"
+     ]
+    },
+    {
+     "text": "If broker 3 died now, unclean leader election (off) keeps p2 offline rather than promote a stale copy that would drop acknowledged gate changes. An under-replicated-partitions alert at the first step is the real fix.",
+     "nodes": [
+      "ctrl",
+      "b3"
+     ],
+     "edges": [
+      "ctrl>b3"
+     ]
+    }
+   ]
+  }
+ ]
+}

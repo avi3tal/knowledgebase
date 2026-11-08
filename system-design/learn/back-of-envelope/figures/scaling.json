@@ -1,14 +1,14 @@
 {
  "kind": "architecture",
- "title": "Each 10× of traffic forces exactly one new kind of box",
- "caption": "Re-run the same five-line estimate at 100k, 1M, 10M and 100M users; switch the 📈 tabs to see which number breaks each time.",
- "base_name": "v1: 100k users",
+ "title": "Each 10× of listeners forces exactly one new kind of box",
+ "caption": "Re-run the same estimate at 10k, 100k, 1M and 10M listeners; switch the 📈 tabs to see which number breaks each time.",
+ "base_name": "v1: 10k listeners",
  "nodes": [
   {
-   "id": "app",
+   "id": "apps",
    "kind": "client",
-   "label": "Mobile app",
-   "sub": "100k DAU",
+   "label": "Podcast apps",
+   "sub": "10k listeners",
    "x": 0,
    "y": 120
   },
@@ -16,126 +16,239 @@
    "id": "srv",
    "kind": "service",
    "label": "App server",
-   "sub": "~170 req/s peak",
+   "sub": "feeds, files, stats",
    "x": 280,
    "y": 120
-  },
-  {
-   "id": "db",
-   "kind": "sql",
-   "label": "Postgres",
-   "sub": "20 MB/day rows",
-   "x": 560,
-   "y": 40
   },
   {
    "id": "blob",
    "kind": "blob",
    "label": "Object store",
-   "sub": "10 GB/day",
+   "sub": "audio files",
+   "x": 560,
+   "y": 40
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Episode DB",
+   "sub": "+ download rows",
    "x": 560,
    "y": 200
   }
  ],
  "edges": [
   {
-   "from": "app",
+   "from": "apps",
    "to": "srv"
   },
   {
    "from": "srv",
-   "to": "db"
+   "to": "blob"
   },
   {
    "from": "srv",
-   "to": "blob"
+   "to": "db"
   }
  ],
  "steps": [
   {
-   "text": "100k users: 0.2 uploads/s, ~170 views/s at peak, ~700 Mbps of photos at peak. One server serves it all.",
+   "text": "One server does everything: serves feeds, streams audio from the object store and writes a row per download.",
    "nodes": [
-    "app",
-    "srv"
+    "apps",
+    "srv",
+    "blob",
+    "db"
    ],
    "edges": [
-    "app>srv"
+    "apps>srv",
+    "srv>blob",
+    "srv>db"
    ]
   },
   {
-   "text": "Rows go to Postgres, bytes to an object store from day one: it costs nothing and never needs a migration.",
+   "text": "Downloads: 10k/day ≈ 0.1/s, 0.5/s at peak × 60 MB × 8 ≈ 240 Mbps. Polls: 10k × 10 × 24 ÷ 1e5 ≈ 24/s. One machine with a 1 Gbps uplink is fine.",
    "nodes": [
-    "db",
+    "srv"
+   ],
+   "edges": [
+    "apps>srv"
+   ]
+  },
+  {
+   "text": "Storage grows with creators, not listeners, so the object store is already the right box. Only the listener-driven numbers change below.",
+   "nodes": [
     "blob"
    ],
    "edges": [
-    "srv>db",
     "srv>blob"
-   ]
-  },
-  {
-   "text": "The weak spot is not capacity but the single server: say so.",
-   "nodes": [
-    "srv"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "v2: 1M users",
+   "name": "v2: 100k listeners",
    "tone": "scale",
-   "summary": "~7 Gbps of photos at peak is the number that breaks: put a CDN in front and run 2+ servers behind a load balancer.",
+   "summary": "Egress breaks first: 2.4 Gbps at peak is past the server's uplink. Put a CDN in front of the audio.",
    "nodes": [
     {
-     "id": "app",
+     "id": "apps",
      "kind": "client",
-     "label": "Mobile app",
-     "sub": "1M DAU",
+     "label": "Podcast apps",
+     "sub": "100k listeners",
      "x": 0,
-     "y": 140
+     "y": 160
     },
     {
      "id": "cdn",
      "kind": "cdn",
      "label": "CDN",
-     "sub": "~7 Gbps peak",
-     "x": 230,
-     "y": 0
+     "sub": "2.4 Gbps peak",
+     "x": 270,
+     "y": 40
     },
     {
-     "id": "lb",
-     "kind": "load-balancer",
-     "label": "Load balancer",
-     "x": 230,
-     "y": 140
-    },
-    {
-     "id": "s1",
+     "id": "srv",
      "kind": "service",
-     "label": "App server ×2",
-     "sub": "~1 700 req/s",
-     "x": 460,
-     "y": 140
+     "label": "App server",
+     "sub": "feeds, stats",
+     "x": 270,
+     "y": 280
     },
     {
      "id": "blob",
      "kind": "blob",
      "label": "Object store",
-     "sub": "100 GB/day",
-     "x": 690,
-     "y": 0
+     "x": 540,
+     "y": 40
     },
     {
      "id": "db",
      "kind": "sql",
-     "label": "Postgres",
-     "x": 690,
-     "y": 140
+     "label": "Episode DB",
+     "sub": "+ download rows",
+     "x": 540,
+     "y": 280
     }
    ],
    "edges": [
     {
-     "from": "app",
+     "from": "apps",
+     "to": "cdn",
+     "label": "audio"
+    },
+    {
+     "from": "cdn",
+     "to": "blob",
+     "label": "miss"
+    },
+    {
+     "from": "apps",
+     "to": "srv",
+     "label": "RSS polls"
+    },
+    {
+     "from": "srv",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "10× listeners: 5 downloads/s at peak × 60 MB × 8 ≈ 2.4 Gbps, past a 1 Gbps uplink.",
+     "nodes": [
+      "apps",
+      "srv"
+     ],
+     "edges": [
+      "apps>srv"
+     ]
+    },
+    {
+     "text": "Audio moves to a CDN that pulls from the object store; the server only sees feeds and stats.",
+     "nodes": [
+      "apps",
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "apps>cdn",
+      "cdn>blob"
+     ]
+    },
+    {
+     "text": "Polls are 240/s, still fine for one server. Cost: a CDN bill, and download counts now come from CDN logs instead of the server.",
+     "nodes": [
+      "srv",
+      "db"
+     ],
+     "edges": [
+      "srv>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: 1M listeners",
+   "tone": "scale",
+   "summary": "Feed polls break next: 2 400/s of feed builds is past one server. Cache the feeds and run stateless feed servers.",
+   "nodes": [
+    {
+     "id": "apps",
+     "kind": "client",
+     "label": "Podcast apps",
+     "sub": "1M listeners",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN",
+     "sub": "24 Gbps peak",
+     "x": 270,
+     "y": 20
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Object store",
+     "x": 540,
+     "y": 20
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "sub": "2 400 polls/s",
+     "x": 270,
+     "y": 300
+    },
+    {
+     "id": "fs",
+     "kind": "service",
+     "label": "Feed servers ×3",
+     "x": 540,
+     "y": 300
+    },
+    {
+     "id": "fc",
+     "kind": "cache",
+     "label": "Feed cache",
+     "sub": "99% hits",
+     "x": 820,
+     "y": 160
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Episode DB",
+     "x": 820,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "apps",
      "to": "cdn"
     },
     {
@@ -144,318 +257,218 @@
      "label": "miss"
     },
     {
-     "from": "app",
+     "from": "apps",
      "to": "lb"
     },
     {
      "from": "lb",
-     "to": "s1"
+     "to": "fs"
     },
     {
-     "from": "s1",
-     "to": "db"
+     "from": "fs",
+     "to": "fc"
     },
     {
-     "from": "s1",
-     "to": "blob"
+     "from": "fs",
+     "to": "db",
+     "label": "miss"
     }
    ],
    "steps": [
     {
-     "text": "10× users: ~1 700 reads/s still fits one database, but ~7 Gbps of bytes is most of a server's NIC.",
+     "text": "2 400 polls/s, each rendering ~50 KB of XML from the DB: a few hundred per second per server, so one server is no longer enough.",
      "nodes": [
-      "app"
+      "apps",
+      "lb",
+      "fs"
      ],
      "edges": [
-      "app>cdn",
-      "app>lb"
+      "apps>lb",
+      "lb>fs"
      ]
     },
     {
-     "text": "A CDN serves the photos; the object store sees misses only.",
+     "text": "Feeds change weekly, so cache the rendered feed: ~99% hits, and the DB sees ~24 builds/s.",
+     "nodes": [
+      "fs",
+      "fc",
+      "db"
+     ],
+     "edges": [
+      "fs>fc",
+      "fs>db"
+     ]
+    },
+    {
+     "text": "Egress is 24 Gbps at peak, which the CDN absorbs. Cost: invalidate a feed on every publish, or apps see the episode an hour late.",
      "nodes": [
       "cdn",
       "blob"
      ],
      "edges": [
-      "app>cdn",
+      "apps>cdn",
       "cdn>blob"
-     ]
-    },
-    {
-     "text": "Two servers behind a load balancer remove the single point of failure.",
-     "nodes": [
-      "lb",
-      "s1",
-      "db"
-     ],
-     "edges": [
-      "lb>s1",
-      "s1>db"
-     ]
-    },
-    {
-     "text": "Cost: a CDN bill and cache-control rules; photos are immutable, so invalidation is easy.",
-     "nodes": [
-      "cdn"
      ]
     }
    ]
   },
   {
-   "name": "v3: 10M users",
+   "name": "v4: 10M listeners",
    "tone": "scale",
-   "summary": "17 400 reads/s breaks the database: a metadata cache and read replicas take the read path; resizing moves to a queue.",
+   "summary": "Data size breaks last: 10M download rows a day swamp the episode DB. Move analytics to a log and an aggregator, and shield the origin.",
    "nodes": [
     {
-     "id": "lb",
-     "kind": "load-balancer",
-     "label": "Load balancer",
+     "id": "apps",
+     "kind": "client",
+     "label": "Podcast apps",
+     "sub": "10M listeners",
      "x": 0,
-     "y": 140
+     "y": 160
     },
     {
-     "id": "api",
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN + shield",
+     "sub": "240 Gbps peak",
+     "x": 270,
+     "y": 20
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Object store",
+     "sub": "hot + cold tiers",
+     "x": 540,
+     "y": 20
+    },
+    {
+     "id": "log",
+     "kind": "stream",
+     "label": "Download log",
+     "sub": "500 events/s",
+     "x": 540,
+     "y": 160
+    },
+    {
+     "id": "agg",
+     "kind": "worker",
+     "label": "Aggregator",
+     "x": 820,
+     "y": 160
+    },
+    {
+     "id": "stats",
+     "kind": "nosql",
+     "label": "Download stats",
+     "x": 820,
+     "y": 20
+    },
+    {
+     "id": "fs",
      "kind": "service",
-     "label": "Photo API ×4",
-     "sub": "17k req/s peak",
-     "x": 230,
-     "y": 140
+     "label": "Feed tier",
+     "sub": "24k polls/s",
+     "x": 270,
+     "y": 300
     },
     {
-     "id": "q",
-     "kind": "queue",
-     "label": "Resize queue",
-     "x": 230,
-     "y": 280
-    },
-    {
-     "id": "cache",
+     "id": "fc",
      "kind": "cache",
-     "label": "Metadata cache",
-     "sub": "95% hits",
-     "x": 460,
-     "y": 0
+     "label": "Feed cache",
+     "x": 540,
+     "y": 300
     },
     {
      "id": "db",
      "kind": "sql",
-     "label": "Primary",
-     "sub": "23 writes/s",
-     "x": 460,
-     "y": 140
-    },
-    {
-     "id": "rep",
-     "kind": "sql",
-     "label": "Read replicas",
-     "sub": "~870 reads/s",
-     "x": 690,
-     "y": 140
-    },
-    {
-     "id": "rz",
-     "kind": "worker",
-     "label": "Resizers",
-     "x": 460,
-     "y": 280
+     "label": "Episode DB",
+     "x": 820,
+     "y": 300
     }
    ],
    "edges": [
     {
-     "from": "lb",
-     "to": "api"
+     "from": "apps",
+     "to": "cdn"
     },
     {
-     "from": "api",
-     "to": "cache"
+     "from": "cdn",
+     "to": "blob",
+     "label": "miss"
     },
     {
-     "from": "api",
-     "to": "db"
+     "from": "cdn",
+     "to": "log",
+     "label": "access logs"
     },
     {
-     "from": "db",
-     "to": "rep"
+     "from": "log",
+     "to": "agg"
     },
     {
-     "from": "api",
-     "to": "q"
+     "from": "agg",
+     "to": "stats"
     },
     {
-     "from": "q",
-     "to": "rz"
+     "from": "apps",
+     "to": "fs"
+    },
+    {
+     "from": "fs",
+     "to": "fc"
+    },
+    {
+     "from": "fc",
+     "to": "db",
+     "label": "miss"
     }
    ],
    "steps": [
     {
-     "text": "10× again: 17 400 metadata reads/s is past one database.",
+     "text": "10M download rows a day is ~3.6 B a year in the episode DB, and every creator's dashboard scans them.",
      "nodes": [
-      "lb",
-      "api"
+      "apps",
+      "cdn"
      ],
      "edges": [
-      "lb>api"
+      "apps>cdn"
      ]
     },
     {
-     "text": "A cache takes ~95% of reads; replicas serve the misses.",
+     "text": "Downloads become CDN log events in a stream; an aggregator dedupes and counts them into a stats store.",
      "nodes": [
-      "cache",
-      "db",
-      "rep"
+      "cdn",
+      "log",
+      "agg",
+      "stats"
      ],
      "edges": [
-      "api>cache",
-      "api>db",
-      "db>rep"
+      "cdn>log",
+      "log>agg",
+      "agg>stats"
      ]
     },
     {
-     "text": "Uploads (23/s) return fast; resizing runs in workers off a queue.",
+     "text": "Monday's release stampede gets an origin shield, and old episodes move to a cold tier.",
      "nodes": [
-      "q",
-      "rz"
+      "cdn",
+      "blob"
      ],
      "edges": [
-      "api>q",
-      "q>rz"
+      "cdn>blob"
      ]
     },
     {
-     "text": "Cost: stale cache entries after edits, replica lag, and two more systems to operate.",
+     "text": "The feed tier is just more of v3. Cost: stats are minutes behind, and there are more moving parts to run.",
      "nodes": [
-      "cache",
-      "rep"
-     ]
-    }
-   ]
-  },
-  {
-   "name": "v4: 100M users",
-   "tone": "scale",
-   "summary": "Now writes (230/s) are fine but metadata hits ~36 TB and reads 174k/s: shard the rows by user and run a cache cluster.",
-   "nodes": [
-    {
-     "id": "lb",
-     "kind": "load-balancer",
-     "label": "Load balancer",
-     "sub": "174k req/s",
-     "x": 0,
-     "y": 140
-    },
-    {
-     "id": "api",
-     "kind": "service",
-     "label": "Photo API ×40",
-     "x": 230,
-     "y": 140
-    },
-    {
-     "id": "cache",
-     "kind": "cache",
-     "label": "Cache cluster",
-     "sub": "~3 nodes",
-     "x": 460,
-     "y": 0
-    },
-    {
-     "id": "r",
-     "kind": "service",
-     "label": "Shard router",
-     "sub": "user_id → shard",
-     "x": 460,
-     "y": 140
-    },
-    {
-     "id": "s1",
-     "kind": "sql",
-     "label": "Shard 1",
-     "x": 690,
-     "y": 20
-    },
-    {
-     "id": "s2",
-     "kind": "sql",
-     "label": "Shard 2",
-     "x": 690,
-     "y": 140
-    },
-    {
-     "id": "s3",
-     "kind": "sql",
-     "label": "Shard N",
-     "x": 690,
-     "y": 260
-    }
-   ],
-   "edges": [
-    {
-     "from": "lb",
-     "to": "api"
-    },
-    {
-     "from": "api",
-     "to": "cache"
-    },
-    {
-     "from": "api",
-     "to": "r"
-    },
-    {
-     "from": "r",
-     "to": "s1"
-    },
-    {
-     "from": "r",
-     "to": "s2"
-    },
-    {
-     "from": "r",
-     "to": "s3"
-    }
-   ],
-   "steps": [
-    {
-     "text": "10× again: 174k reads/s, 230 writes/s, 20 GB of rows a day (~36 TB in 5 years) and ~700 Gbps at peak at the edge.",
-     "nodes": [
-      "lb",
-      "api"
+      "fs",
+      "fc",
+      "db"
      ],
      "edges": [
-      "lb>api"
-     ]
-    },
-    {
-     "text": "One cache node is no longer enough: a small cluster partitioned by key.",
-     "nodes": [
-      "cache"
-     ],
-     "edges": [
-      "api>cache"
-     ]
-    },
-    {
-     "text": "Size forces sharding before write rate does: shard by user id so a profile page reads one shard.",
-     "nodes": [
-      "r",
-      "s1",
-      "s2",
-      "s3"
-     ],
-     "edges": [
-      "api>r",
-      "r>s1",
-      "r>s2",
-      "r>s3"
-     ]
-    },
-    {
-     "text": "Cost: resharding, cross-shard queries (\"photos near me\"), and hot celebrity shards.",
-     "nodes": [
-      "s1",
-      "s2",
-      "s3"
+      "apps>fs",
+      "fs>fc",
+      "fc>db"
      ]
     }
    ]

@@ -1,0 +1,239 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: one truck's route for a time range, read at LOCAL_QUORUM",
+ "caption": "The day bucket turns a time range into one partition; two replicas answer, but only one sends the rows.",
+ "base_name": "Route for one shift",
+ "actors": [
+  {
+   "id": "ui",
+   "label": "Dispatcher",
+   "kind": "client"
+  },
+  {
+   "id": "svc",
+   "label": "History service",
+   "kind": "service"
+  },
+  {
+   "id": "co",
+   "label": "Node B (coord.)",
+   "kind": "coordinator"
+  },
+  {
+   "id": "ra",
+   "label": "Node A",
+   "kind": "nosql"
+  },
+  {
+   "id": "rc",
+   "label": "Node C",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "ui",
+   "to": "svc",
+   "label": "route of 4417, 06:00–14:00"
+  },
+  {
+   "from": "svc",
+   "to": "svc",
+   "label": "bucket = (4417, today)",
+   "style": "self",
+   "note": "The range is inside one day, so it is one partition: a single seek, then a contiguous slice in timestamp order."
+  },
+  {
+   "from": "svc",
+   "to": "co",
+   "label": "SELECT … ts in range (LOCAL_QUORUM)"
+  },
+  {
+   "from": "co",
+   "to": "ra",
+   "label": "read rows",
+   "note": "The closest replica, by the snitch's latency scores, sends the data."
+  },
+  {
+   "from": "co",
+   "to": "rc",
+   "label": "digest read",
+   "note": "The other replica sends only a hash of its answer."
+  },
+  {
+   "from": "ra",
+   "to": "co",
+   "label": "2 880 rows",
+   "style": "reply",
+   "note": "8 hours × 360 readings per hour."
+  },
+  {
+   "from": "rc",
+   "to": "co",
+   "label": "digest",
+   "style": "reply",
+   "note": "The hashes match: both replicas agree."
+  },
+  {
+   "from": "co",
+   "to": "svc",
+   "label": "rows",
+   "style": "reply"
+  },
+  {
+   "from": "svc",
+   "to": "ui",
+   "label": "route + stops",
+   "style": "reply"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Range spans midnight",
+   "tone": "edge",
+   "summary": "A night shift crosses two day buckets: two partition reads in parallel, merged by timestamp.",
+   "messages": [
+    {
+     "from": "ui",
+     "to": "svc",
+     "label": "route of 4417, 22:00–06:00"
+    },
+    {
+     "from": "svc",
+     "to": "svc",
+     "label": "buckets = yesterday, today",
+     "style": "self",
+     "note": "The service computes the buckets from the range; the database never scans to find them."
+    },
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "SELECT (4417, yesterday) …"
+    },
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "SELECT (4417, today) …",
+     "note": "Sent in parallel, not as one IN query, so each goes to its own replica set."
+    },
+    {
+     "from": "co",
+     "to": "svc",
+     "label": "rows from both",
+     "style": "reply"
+    },
+    {
+     "from": "svc",
+     "to": "ui",
+     "label": "merged route",
+     "style": "reply",
+     "note": "A month-long range would be 30 partitions: cap the range or send it to analytics."
+    }
+   ]
+  },
+  {
+   "name": "Replicas disagree",
+   "tone": "edge",
+   "summary": "A missed a few writes, so the digest doesn't match. The coordinator merges by write timestamp, answers, and repairs the stale replica.",
+   "messages": [
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "SELECT … (LOCAL_QUORUM)"
+    },
+    {
+     "from": "co",
+     "to": "rc",
+     "label": "read rows"
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "digest read"
+    },
+    {
+     "from": "ra",
+     "to": "co",
+     "label": "digest ≠",
+     "style": "reply",
+     "note": "A was restarting when the last readings were written and their hints haven't been replayed yet."
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "full read",
+     "note": "Now both replicas send their rows."
+    },
+    {
+     "from": "co",
+     "to": "co",
+     "label": "merge, newest write wins",
+     "style": "self",
+     "note": "Each cell carries a write timestamp; the merged result has every reading either replica holds."
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "read repair: missing rows",
+     "note": "Blocking read repair: the answer waits until A has the merged rows, so a second quorum read can't see less."
+    },
+    {
+     "from": "co",
+     "to": "svc",
+     "label": "complete rows",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Replica A stalls",
+   "tone": "failure",
+   "summary": "The data replica is slow; speculative retry reads another replica instead of waiting for a timeout.",
+   "messages": [
+    {
+     "from": "svc",
+     "to": "co",
+     "label": "SELECT … (LOCAL_QUORUM)"
+    },
+    {
+     "from": "co",
+     "to": "ra",
+     "label": "read rows",
+     "style": "lost",
+     "note": "A is in a long GC pause and doesn't answer."
+    },
+    {
+     "from": "co",
+     "to": "rc",
+     "label": "digest read"
+    },
+    {
+     "from": "rc",
+     "to": "co",
+     "label": "digest",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "co",
+     "label": "speculative: own copy",
+     "style": "self",
+     "note": "B is the third replica of this partition. After the usual 99th-percentile wait it reads its own copy instead of waiting for A's timeout."
+    },
+    {
+     "from": "co",
+     "to": "co",
+     "label": "own rows match C's digest",
+     "style": "self",
+     "note": "B and C make the quorum without A."
+    },
+    {
+     "from": "co",
+     "to": "svc",
+     "label": "rows (a few ms late)",
+     "style": "reply"
+    }
+   ]
+  }
+ ]
+}

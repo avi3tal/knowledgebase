@@ -1,0 +1,221 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: posting a payment, from BEGIN to a durable commit",
+ "caption": "One invoice row is locked for a few milliseconds; the commit waits for exactly one thing, the standby's WAL flush.",
+ "base_name": "Normal posting",
+ "actors": [
+  {
+   "id": "api",
+   "label": "Invoicing API",
+   "kind": "service"
+  },
+  {
+   "id": "pgb",
+   "label": "PgBouncer",
+   "kind": "service"
+  },
+  {
+   "id": "pri",
+   "label": "Primary",
+   "kind": "sql"
+  },
+  {
+   "id": "sb",
+   "label": "Sync standby",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "api",
+   "to": "pgb",
+   "label": "BEGIN",
+   "note": "Transaction mode: PgBouncer lends a server connection for this transaction only."
+  },
+  {
+   "from": "pgb",
+   "to": "pri",
+   "label": "SELECT invoice … FOR UPDATE",
+   "note": "Locks the one invoice row (INV-4471, 1 250.00 due). The tenant's other invoices stay free."
+  },
+  {
+   "from": "pgb",
+   "to": "pri",
+   "label": "UPDATE invoice: due − 400.00",
+   "note": "CHECK (amount_due >= 0) on the row refuses an overpayment."
+  },
+  {
+   "from": "pgb",
+   "to": "pri",
+   "label": "INSERT ledger: Dr cash, Cr AR",
+   "note": "Two rows in this month's ledger partition, sharing one journal id."
+  },
+  {
+   "from": "pgb",
+   "to": "pri",
+   "label": "COMMIT",
+   "note": "A deferred constraint trigger checks that the journal's debits equal its credits, then the commit record goes to the WAL."
+  },
+  {
+   "from": "pri",
+   "to": "sb",
+   "label": "WAL up to the commit record",
+   "note": "Streaming replication; the payment is not confirmed yet."
+  },
+  {
+   "from": "sb",
+   "to": "pri",
+   "label": "flushed",
+   "style": "reply",
+   "note": "About a millisecond in the same region: the price of losing no confirmed payment."
+  },
+  {
+   "from": "pri",
+   "to": "pgb",
+   "label": "COMMIT ok",
+   "style": "reply",
+   "note": "The row lock is released now."
+  },
+  {
+   "from": "pgb",
+   "to": "api",
+   "label": "payment posted",
+   "style": "reply",
+   "note": "The server connection goes back to the pool for the next transaction."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Two payments at once",
+   "tone": "edge",
+   "summary": "A bank-feed match and a manual entry hit the same invoice: the row lock serialises them, and the second sees the first's result.",
+   "messages": [
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "T1: SELECT invoice … FOR UPDATE",
+     "note": "The bank-feed matcher locks INV-4471."
+    },
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "T2: SELECT invoice … FOR UPDATE",
+     "note": "A clerk records the same payment by hand. T2 waits for T1's lock."
+    },
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "T1: UPDATE due → 0; ledger; COMMIT",
+     "note": "T1 commits; the lock is released."
+    },
+    {
+     "from": "pri",
+     "to": "pgb",
+     "label": "T2: row (due = 0)",
+     "style": "reply",
+     "note": "Read Committed re-reads the locked row after the wait, so T2 sees the new balance, not the old one."
+    },
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "T2: UPDATE due − 1 250.00",
+     "note": "Would make amount_due negative."
+    },
+    {
+     "from": "pri",
+     "to": "pgb",
+     "label": "CHECK violation",
+     "style": "error",
+     "note": "T2 rolls back as a whole: no ledger rows, no half-posted payment."
+    },
+    {
+     "from": "pgb",
+     "to": "api",
+     "label": "409: already paid",
+     "style": "error",
+     "note": "The API offers to record it as unapplied credit instead."
+    }
+   ]
+  },
+  {
+   "name": "Standby unreachable",
+   "tone": "failure",
+   "summary": "With one sync standby and nothing else, commits wait forever when it disappears; a quorum of two standbys (ANY 1) keeps payments posting.",
+   "messages": [
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "COMMIT",
+     "note": "Same payment as before; the commit record is written locally."
+    },
+    {
+     "from": "pri",
+     "to": "sb",
+     "label": "WAL up to the commit record",
+     "style": "lost",
+     "note": "The standby's host has just lost its network."
+    },
+    {
+     "from": "pri",
+     "to": "pri",
+     "label": "wait for a standby flush",
+     "style": "self",
+     "note": "The invoice row stays locked, and other payments on it queue behind."
+    },
+    {
+     "from": "pgb",
+     "to": "api",
+     "label": "timeout",
+     "style": "error",
+     "note": "The API can't tell whether the payment committed; it must check before retrying."
+    },
+    {
+     "from": "sb",
+     "to": "pri",
+     "label": "ANY 1 (sb1, sb2): sb2 flushed",
+     "style": "reply",
+     "note": "With synchronous_standby_names = 'ANY 1 (sb1, sb2)' one standby can be lost without stopping commits."
+    }
+   ]
+  },
+  {
+   "name": "Unbalanced entry",
+   "tone": "edge",
+   "summary": "A buggy close job writes a debit without its credit: the deferred check fails at COMMIT and nothing from the transaction survives.",
+   "messages": [
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "BEGIN",
+     "note": "A month-end accrual job opens a transaction."
+    },
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "INSERT ledger: Dr expense 90.00",
+     "note": "A code bug forgets the matching credit line."
+    },
+    {
+     "from": "pri",
+     "to": "pri",
+     "label": "row checks pass",
+     "style": "self",
+     "note": "Each row is valid on its own; balance is a property of the whole journal."
+    },
+    {
+     "from": "pgb",
+     "to": "pri",
+     "label": "COMMIT",
+     "note": "The deferred constraint trigger fires now, once per inserted ledger row; each firing checks that its row's journal sums to zero."
+    },
+    {
+     "from": "pri",
+     "to": "pgb",
+     "label": "debits ≠ credits",
+     "style": "error",
+     "note": "The whole transaction rolls back. The ledger never shows an unbalanced journal, whoever wrote it."
+    }
+   ]
+  }
+ ]
+}

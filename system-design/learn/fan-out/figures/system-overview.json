@@ -1,283 +1,309 @@
 {
  "kind": "architecture",
- "title": "The system: a social network's home timeline, built on write and merged on read",
- "caption": "One post is written once, then fanned out asynchronously to follower timelines and to notifications; the feed service merges in the few accounts too big to push.",
- "base_name": "Normal post",
+ "title": "The system: a code-hosting platform's watch inbox",
+ "caption": "One repository event is saved once, published to a log, and copied into the inbox of every watcher, except for the few very popular repos, which are merged in when the inbox is read.",
+ "base_name": "Normal event",
  "nodes": [
   {
-   "id": "author",
+   "id": "dev",
    "kind": "client",
-   "label": "Author app",
+   "label": "Developers",
+   "sub": "push, issue, release",
    "x": 0,
    "y": 0
   },
   {
-   "id": "postapi",
+   "id": "repo",
    "kind": "service",
-   "label": "Post API",
-   "sub": "write path",
+   "label": "Repo service",
    "x": 230,
    "y": 0
+  },
+  {
+   "id": "rdb",
+   "kind": "sql",
+   "label": "Repo DB",
+   "sub": "events + outbox",
+   "x": 230,
+   "y": 150
   },
   {
    "id": "log",
    "kind": "stream",
-   "label": "Post events",
-   "sub": "partitioned by author",
+   "label": "Event log",
+   "sub": "partitioned by repo",
    "x": 460,
    "y": 0
   },
   {
-   "id": "notif",
+   "id": "digest",
    "kind": "worker",
-   "label": "Notifier",
-   "sub": "2nd consumer",
-   "x": 690,
-   "y": 0
+   "label": "Digest worker",
+   "sub": "own consumer group",
+   "x": 460,
+   "y": 150
   },
   {
-   "id": "push",
+   "id": "mail",
    "kind": "external",
-   "label": "Push provider",
-   "sub": "APNs / FCM",
-   "x": 920,
-   "y": 0
+   "label": "Email service",
+   "x": 460,
+   "y": 300
   },
   {
-   "id": "posts",
-   "kind": "nosql",
-   "label": "Post store",
-   "sub": "by id + by author",
-   "x": 230,
-   "y": 140
-  },
-  {
-   "id": "workers",
+   "id": "fan",
    "kind": "worker",
    "label": "Fan-out workers",
-   "sub": "push to followers",
    "x": 690,
-   "y": 140
+   "y": 0
+  },
+  {
+   "id": "inbox",
+   "kind": "nosql",
+   "label": "Inbox store",
+   "sub": "per-user id lists",
+   "x": 690,
+   "y": 300
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Inbox API",
+   "sub": "merge + hydrate",
+   "x": 690,
+   "y": 450
   },
   {
    "id": "graph",
    "kind": "nosql",
-   "label": "Follow graph",
-   "sub": "followers by user",
+   "label": "Watch graph",
+   "sub": "repo → watchers",
    "x": 920,
-   "y": 140
+   "y": 0
+  },
+  {
+   "id": "cfg",
+   "kind": "coordinator",
+   "label": "Fan-out config",
+   "sub": "watcher threshold",
+   "x": 920,
+   "y": 150
+  },
+  {
+   "id": "hot",
+   "kind": "cache",
+   "label": "Hot-repo recents",
+   "sub": "replicated",
+   "x": 920,
+   "y": 300
   },
   {
    "id": "reader",
    "kind": "client",
-   "label": "Reader app",
-   "x": 0,
-   "y": 280
-  },
-  {
-   "id": "gw",
-   "kind": "api-gateway",
-   "label": "API gateway",
-   "x": 230,
-   "y": 280
-  },
-  {
-   "id": "feed",
-   "kind": "service",
-   "label": "Feed service",
-   "sub": "merge + hydrate",
+   "label": "Watchers",
+   "sub": "open the inbox",
    "x": 460,
-   "y": 280
-  },
-  {
-   "id": "tl",
-   "kind": "cache",
-   "label": "Timeline cache",
-   "sub": "post ids per user",
-   "x": 690,
-   "y": 280
+   "y": 450
   }
  ],
  "edges": [
   {
-   "from": "author",
-   "to": "postapi"
+   "from": "dev",
+   "to": "repo"
   },
   {
-   "from": "postapi",
-   "to": "posts",
-   "label": "write once"
+   "from": "repo",
+   "to": "rdb",
+   "label": "event + outbox row"
   },
   {
-   "from": "postapi",
+   "from": "rdb",
    "to": "log",
-   "label": "PostCreated"
+   "label": "relay"
   },
   {
    "from": "log",
-   "to": "notif"
+   "to": "fan"
   },
   {
-   "from": "notif",
-   "to": "push"
-  },
-  {
-   "from": "log",
-   "to": "workers"
-  },
-  {
-   "from": "workers",
+   "from": "fan",
    "to": "graph",
-   "label": "follower pages"
+   "label": "watcher pages"
   },
   {
-   "from": "workers",
-   "to": "tl",
-   "label": "add post id"
+   "from": "cfg",
+   "to": "fan",
+   "label": "threshold"
+  },
+  {
+   "from": "fan",
+   "to": "inbox",
+   "label": "append ids"
+  },
+  {
+   "from": "fan",
+   "to": "hot",
+   "label": "popular repos"
+  },
+  {
+   "from": "log",
+   "to": "digest"
+  },
+  {
+   "from": "digest",
+   "to": "mail",
+   "label": "batched"
   },
   {
    "from": "reader",
-   "to": "gw"
+   "to": "api"
   },
   {
-   "from": "gw",
-   "to": "feed"
+   "from": "api",
+   "to": "inbox"
   },
   {
-   "from": "feed",
-   "to": "tl",
-   "label": "read ids"
+   "from": "api",
+   "to": "hot",
+   "label": "merge"
   },
   {
-   "from": "feed",
-   "to": "posts",
-   "label": "celebs + bodies"
+   "from": "api",
+   "to": "rdb",
+   "label": "hydrate"
   }
  ],
  "steps": [
   {
-   "text": "The author posts. The post API writes it once to the post store, by id and onto the author's own recent-posts list.",
+   "text": "A developer pushes commits, opens an issue or cuts a release. The repo service saves the event and an outbox row in one transaction and answers right away: the developer never waits for watchers.",
    "nodes": [
-    "author",
-    "postapi",
-    "posts"
+    "dev",
+    "repo",
+    "rdb"
    ],
    "edges": [
-    "author>postapi",
-    "postapi>posts"
+    "dev>repo",
+    "repo>rdb"
    ]
   },
   {
-   "text": "It publishes a PostCreated event to a log partitioned by author and returns. The author waits about 20 ms, not for the fan-out.",
+   "text": "A relay publishes outbox rows to the event log, keyed by repository id, so one repo's events stay in order.",
    "nodes": [
-    "postapi",
+    "rdb",
     "log"
    ],
    "edges": [
-    "postapi>log"
+    "rdb>log"
    ]
   },
   {
-   "text": "Fan-out workers consume the event, page through the author's followers 1 000 at a time and add the post id to each follower's timeline (capped at the newest 800 ids).",
+   "text": "Fan-out workers read the event, page through the repo's watchers and append the event id to each watcher's inbox. Most repos have a handful of watchers, so this is a few small writes.",
    "nodes": [
     "log",
-    "workers",
+    "fan",
     "graph",
-    "tl"
+    "inbox"
    ],
    "edges": [
-    "log>workers",
-    "workers>graph",
-    "workers>tl"
+    "log>fan",
+    "fan>graph",
+    "fan>inbox"
    ]
   },
   {
-   "text": "Notifications are a second, independent consumer of the same event: only the followers who turned alerts on get a push.",
+   "text": "Above the watcher threshold (read from config) the worker skips the copies and writes the event once to the hot-repo recents.",
    "nodes": [
-    "log",
-    "notif",
-    "push"
+    "cfg",
+    "fan",
+    "hot"
    ],
    "edges": [
-    "log>notif",
-    "notif>push"
+    "cfg>fan",
+    "fan>hot"
    ]
   },
   {
-   "text": "A reader opens the app. The feed service reads their timeline ids and the short list of very big accounts they follow, one cache read.",
+   "text": "A watcher opens the inbox: the API reads their id list, merges in recent events of the few popular repos they watch, then hydrates the page from the repo DB and drops anything deleted or no longer visible.",
    "nodes": [
     "reader",
-    "gw",
-    "feed",
-    "tl"
+    "api",
+    "inbox",
+    "hot",
+    "rdb"
    ],
    "edges": [
-    "reader>gw",
-    "gw>feed",
-    "feed>tl"
+    "reader>api",
+    "api>inbox",
+    "api>hot",
+    "api>rdb"
    ]
   },
   {
-   "text": "It pulls the recent posts of those big accounts from the post store, merges everything by time and hydrates the bodies in one multi-get.",
+   "text": "The digest worker is a second consumer of the same log. It collects events for people who chose email and sends one summary per hour or per day, without touching the inbox path.",
    "nodes": [
-    "feed",
-    "posts"
+    "log",
+    "digest",
+    "mail"
    ],
    "edges": [
-    "feed>posts"
+    "log>digest",
+    "digest>mail"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "Celebrity posts",
+   "name": "Popular repo release",
    "tone": "edge",
-   "summary": "An account with 30 M followers posts. Pushing would be 30 M writes; the hybrid writes once and lets readers pull it.",
+   "summary": "A repo with 300 000 watchers ships a release: one write instead of 300 000, and readers pay a small merge instead.",
    "steps": [
     {
-     "text": "The post is written once, exactly like any other.",
+     "text": "The release is saved and published like any other event.",
      "nodes": [
-      "author",
-      "postapi",
-      "posts"
+      "repo",
+      "rdb",
+      "log"
      ],
      "edges": [
-      "author>postapi",
-      "postapi>posts"
+      "repo>rdb",
+      "rdb>log"
      ]
     },
     {
-     "text": "The event carries the author's follower count. The workers see it is above the threshold (say 500 k) and skip the timeline writes.",
+     "text": "The worker sees 300 000 watchers against a threshold of 10 000 and writes the event once to the hot-repo recents.",
      "nodes": [
-      "log",
-      "workers"
+      "fan",
+      "graph",
+      "cfg",
+      "hot"
      ],
      "edges": [
-      "postapi>log",
-      "log>workers"
+      "fan>graph",
+      "cfg>fan",
+      "fan>hot"
      ]
     },
     {
-     "text": "The notifier still runs, but only for opted-in followers, spread over a few minutes so the push provider is not flooded.",
+     "text": "Each watcher who opens the inbox gets it merged in at read time. The recents are tiny and replicated, so the merge is a few cached reads.",
      "nodes": [
-      "notif",
-      "push"
+      "reader",
+      "api",
+      "hot"
      ],
      "edges": [
-      "log>notif",
-      "notif>push"
+      "reader>api",
+      "api>hot"
      ]
     },
     {
-     "text": "Each reader who follows the account gets the post merged in at read time from the author's recent list.",
+     "text": "Email still goes out, but in batches the email service can absorb, spread over the digest window.",
      "nodes": [
-      "feed",
-      "posts",
-      "tl"
+      "digest",
+      "mail"
      ],
      "edges": [
-      "feed>tl",
-      "feed>posts"
+      "log>digest",
+      "digest>mail"
      ]
     }
    ]
@@ -285,105 +311,87 @@
   {
    "name": "Fan-out worker crash",
    "tone": "failure",
-   "summary": "A worker dies half-way through a big follower list. The event is not lost and the retry does no harm.",
+   "summary": "A worker dies half-way through an event's watchers. Nothing is lost and nothing is shown twice, because the offset and the inbox writes are both safe to replay.",
    "steps": [
     {
-     "text": "A worker crashes after writing to 400 k of 900 k followers. It never committed its log offset.",
+     "text": "A worker crashes after writing 3 000 of an event's 8 000 inbox entries.",
      "fail": [
-      "workers",
-      "workers>tl"
+      "fan",
+      "fan>inbox"
      ],
      "nodes": [
       "log"
-     ],
-     "edges": [
-      "log>workers"
      ]
     },
     {
-     "text": "The log redelivers the event to another worker, which resumes from the last follower page it checkpointed.",
+     "text": "Its log offset was never committed, so another worker takes over the partition and reads the same event again.",
      "nodes": [
       "log",
-      "workers",
-      "graph"
+      "fan"
      ],
      "edges": [
-      "log>workers",
-      "workers>graph"
+      "log>fan"
      ]
     },
     {
-     "text": "Timeline entries are keyed by post id, so any page written twice is a no-op. Followers late in the list just see the post a few seconds later.",
+     "text": "It writes all 8 000 entries again. Entries are keyed by event id, so the 3 000 repeats overwrite themselves instead of appearing twice.",
      "nodes": [
-      "workers",
-      "tl"
+      "fan",
+      "graph",
+      "inbox"
      ],
      "edges": [
-      "workers>tl"
+      "fan>graph",
+      "fan>inbox"
      ]
     },
     {
-     "text": "Readers were never blocked: the feed kept serving whatever each timeline held.",
+     "text": "Watchers see the event a little late. An alert on consumer lag tells the on-call engineer if it happens often.",
      "nodes": [
       "reader",
-      "feed",
-      "tl"
+      "api",
+      "inbox"
      ],
      "edges": [
-      "reader>gw",
-      "gw>feed",
-      "feed>tl"
+      "reader>api",
+      "api>inbox"
      ]
     }
    ]
   },
   {
-   "name": "Threshold change",
+   "name": "Threshold lowered",
    "tone": "edge",
-   "summary": "Operators lower the celebrity threshold from 1 M to 500 k followers to cut fan-out cost: a config change, not a migration.",
+   "summary": "Workers fall behind during a busy week: an operator lowers the threshold, and more repos move to read-time merge without a deploy.",
    "steps": [
     {
-     "text": "The new threshold is published as config; workers and the feed service pick it up within seconds.",
+     "text": "An operator lowers the watcher threshold from 10 000 to 5 000 in the config store.",
      "nodes": [
-      "workers",
-      "feed"
-     ],
-     "edges": [
-      "log>workers"
+      "cfg"
      ]
     },
     {
-     "text": "Accounts between 500 k and 1 M stop being pushed: their next posts are written once and skipped by the workers.",
+     "text": "Workers pick it up within seconds. Events from repos with 5 000 to 10 000 watchers now go to the recents instead of every inbox.",
      "nodes": [
-      "postapi",
-      "posts",
-      "workers"
+      "cfg",
+      "fan",
+      "hot"
      ],
      "edges": [
-      "postapi>posts",
-      "log>workers"
+      "cfg>fan",
+      "fan>hot"
      ]
     },
     {
-     "text": "Their followers' lists of big accounts are refreshed, so the feed starts pulling those authors.",
+     "text": "Entries already in inboxes stay. Readers now merge a few more repos, which is the cost of the cheaper writes.",
      "nodes": [
-      "feed",
-      "tl",
-      "posts"
+      "api",
+      "inbox",
+      "hot"
      ],
      "edges": [
-      "feed>tl",
-      "feed>posts"
-     ]
-    },
-    {
-     "text": "Older pushed posts from those authors are still in the timelines; the merge drops duplicates by post id until they age out.",
-     "nodes": [
-      "feed",
-      "tl"
-     ],
-     "edges": [
-      "feed>tl"
+      "api>inbox",
+      "api>hot"
      ]
     }
    ]

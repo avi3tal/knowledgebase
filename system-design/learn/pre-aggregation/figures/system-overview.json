@@ -1,103 +1,110 @@
 {
  "kind": "architecture",
- "title": "The system: ad-click analytics that counts once on ingest and reconciles nightly",
- "caption": "A streaming job folds clicks into minute rows as they arrive; the raw archive is the source of truth that a nightly batch uses to correct and finalise the numbers.",
+ "title": "The system: play counts and artist royalties for a music service",
+ "caption": "A streaming path keeps artist dashboards minutes-fresh; a nightly recompute from the raw archive makes the numbers final, and only final numbers are paid out.",
  "base_name": "Normal day",
  "nodes": [
   {
-   "id": "ads",
-   "kind": "service",
-   "label": "Ad servers",
-   "sub": "emit click events",
+   "id": "players",
+   "kind": "client",
+   "label": "Players",
+   "sub": "phone, web, car",
    "x": 0,
-   "y": 0
+   "y": 150
+  },
+  {
+   "id": "ingest",
+   "kind": "api-gateway",
+   "label": "Ingest API",
+   "sub": "batched uploads",
+   "x": 230,
+   "y": 150
   },
   {
    "id": "stream",
    "kind": "stream",
-   "label": "Click stream",
-   "sub": "partitioned by ad",
-   "x": 230,
+   "label": "Play stream",
+   "sub": "partitioned by track",
+   "x": 460,
+   "y": 150
+  },
+  {
+   "id": "arch",
+   "kind": "blob",
+   "label": "Raw archive",
+   "sub": "every play, kept",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "dash",
+   "kind": "client",
+   "label": "Artist dashboard",
+   "x": 690,
    "y": 0
   },
   {
    "id": "proc",
    "kind": "worker",
    "label": "Stream processor",
-   "sub": "1-min windows",
-   "x": 460,
+   "sub": "30 s rule, dedup",
+   "x": 690,
+   "y": 150
+  },
+  {
+   "id": "recon",
+   "kind": "scheduler",
+   "label": "Nightly recon",
+   "sub": "recompute from raw",
+   "x": 690,
+   "y": 300
+  },
+  {
+   "id": "query",
+   "kind": "service",
+   "label": "Query router",
+   "sub": "picks a tier",
+   "x": 920,
    "y": 0
   },
   {
    "id": "roll",
    "kind": "nosql",
    "label": "Rollup store",
-   "sub": "minute/hour/day",
-   "x": 690,
-   "y": 0
-  },
-  {
-   "id": "query",
-   "kind": "service",
-   "label": "Query API",
-   "sub": "picks a tier",
+   "sub": "minute · hour · day",
    "x": 920,
-   "y": 0
+   "y": 150
   },
   {
-   "id": "raw",
-   "kind": "blob",
-   "label": "Raw archive",
-   "sub": "hourly files",
-   "x": 230,
-   "y": 140
-  },
-  {
-   "id": "recon",
-   "kind": "scheduler",
-   "label": "Nightly recon",
-   "sub": "batch recompute",
-   "x": 460,
-   "y": 140
-  },
-  {
-   "id": "cat",
-   "kind": "sql",
-   "label": "Ad catalog",
-   "sub": "ads, owners",
-   "x": 690,
-   "y": 140
-  },
-  {
-   "id": "dash",
-   "kind": "client",
-   "label": "Dashboards",
-   "sub": "advertisers",
-   "x": 920,
-   "y": 140
-  },
-  {
-   "id": "olap",
-   "kind": "sql",
-   "label": "OLAP warehouse",
-   "sub": "ad-hoc analysis",
-   "x": 230,
-   "y": 280
-  },
-  {
-   "id": "bill",
+   "id": "royal",
    "kind": "service",
-   "label": "Billing",
-   "sub": "final daily spend",
-   "x": 460,
-   "y": 280
+   "label": "Royalty service",
+   "sub": "monthly statement",
+   "x": 920,
+   "y": 300
+  },
+  {
+   "id": "ledger",
+   "kind": "sql",
+   "label": "Royalty ledger",
+   "x": 920,
+   "y": 450
   }
  ],
  "edges": [
   {
-   "from": "ads",
-   "to": "stream",
-   "label": "click events"
+   "from": "players",
+   "to": "ingest",
+   "label": "play events"
+  },
+  {
+   "from": "ingest",
+   "to": "stream"
+  },
+  {
+   "from": "stream",
+   "to": "arch",
+   "label": "sink"
   },
   {
    "from": "stream",
@@ -109,27 +116,13 @@
    "label": "upsert rows"
   },
   {
-   "from": "stream",
-   "to": "raw",
-   "label": "archive sink"
-  },
-  {
-   "from": "raw",
+   "from": "arch",
    "to": "recon"
   },
   {
    "from": "recon",
    "to": "roll",
-   "label": "overwrite hour/day"
-  },
-  {
-   "from": "recon",
-   "to": "bill"
-  },
-  {
-   "from": "raw",
-   "to": "olap",
-   "label": "load"
+   "label": "final days"
   },
   {
    "from": "dash",
@@ -137,106 +130,110 @@
   },
   {
    "from": "query",
-   "to": "roll",
-   "label": "read one tier"
+   "to": "roll"
   },
   {
-   "from": "query",
-   "to": "cat",
-   "label": "owner check"
+   "from": "royal",
+   "to": "roll",
+   "label": "final rows only"
+  },
+  {
+   "from": "royal",
+   "to": "ledger"
   }
  ],
  "steps": [
   {
-   "text": "Ad servers emit one event per click (event id, ad id, timestamp, price) to a stream partitioned by ad id: about 40 000 events/s at peak.",
+   "text": "Players buffer play events (play id, track, start time, seconds listened, country) and upload them in batches. A phone that was offline uploads when it is back.",
    "nodes": [
-    "ads",
-    "stream"
+    "players",
+    "ingest"
    ],
    "edges": [
-    "ads>stream"
+    "players>ingest"
    ]
   },
   {
-   "text": "The stream processor keeps an open one-minute window per active ad in memory and, when the window closes, upserts an (ad, minute) row with count and spend.",
+   "text": "The ingest API checks each batch and appends it to the play stream, partitioned by track id. A sink copies every event to the raw archive.",
+   "nodes": [
+    "ingest",
+    "stream",
+    "arch"
+   ],
+   "edges": [
+    "ingest>stream",
+    "stream>arch"
+   ]
+  },
+  {
+   "text": "The stream processor counts a play only once it reached 30 seconds, drops repeats by play id, and adds it to the event-time minute window for its track and country.",
    "nodes": [
     "stream",
+    "proc"
+   ],
+   "edges": [
+    "stream>proc"
+   ]
+  },
+  {
+   "text": "When a window closes it upserts the minute row, and the hour, day and per-artist rows are rolled up from those.",
+   "nodes": [
     "proc",
     "roll"
    ],
    "edges": [
-    "stream>proc",
     "proc>roll"
    ]
   },
   {
-   "text": "Hour and day rows are built from the minute rows, and each tier is kept for longer: 30 days, 1 year, forever.",
-   "nodes": [
-    "roll"
-   ],
-   "edges": [
-    "proc>roll"
-   ]
-  },
-  {
-   "text": "The same events are archived untouched in hourly files: the raw archive is the source of truth, and analysts query it through the warehouse.",
-   "nodes": [
-    "stream",
-    "raw",
-    "olap"
-   ],
-   "edges": [
-    "stream>raw",
-    "raw>olap"
-   ]
-  },
-  {
-   "text": "Every night a batch job recomputes yesterday from raw (dedup by event id, invalid-click filtering), overwrites the hour and day rows, and sends final spend to billing.",
-   "nodes": [
-    "raw",
-    "recon",
-    "roll",
-    "bill"
-   ],
-   "edges": [
-    "raw>recon",
-    "recon>roll",
-    "recon>bill"
-   ]
-  },
-  {
-   "text": "A dashboard asks for 'clicks per hour, last 7 days, my campaign'. The query API checks ownership, picks the hour tier and reads 168 rows per ad.",
+   "text": "An artist opens the dashboard: the query router reads the coarsest tier that answers the range, a few hundred rows at most.",
    "nodes": [
     "dash",
     "query",
-    "cat",
     "roll"
    ],
    "edges": [
     "dash>query",
-    "query>cat",
     "query>roll"
+   ]
+  },
+  {
+   "text": "Each night recon recomputes yesterday from the raw archive, late plays included, overwrites the day rows and marks them final. The monthly statement is built only from final rows and written to the ledger.",
+   "nodes": [
+    "arch",
+    "recon",
+    "roll",
+    "royal",
+    "ledger"
+   ],
+   "edges": [
+    "arch>recon",
+    "recon>roll",
+    "royal>roll",
+    "royal>ledger"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "Traffic spike",
+   "name": "Album release night",
    "tone": "edge",
-   "summary": "A live sports final brings 8× the usual clicks. The stream buffers, the processor lags a little, and dashboards stay fast.",
+   "summary": "A big artist releases an album at midnight. A few tracks take a large share of all plays and their partitions run hot.",
    "steps": [
     {
-     "text": "Clicks jump to 320 000/s for 20 minutes.",
+     "text": "Plays of a dozen new tracks jump to a large share of all traffic within minutes.",
      "nodes": [
-      "ads",
+      "players",
+      "ingest",
       "stream"
      ],
      "edges": [
-      "ads>stream"
+      "players>ingest",
+      "ingest>stream"
      ]
     },
     {
-     "text": "The stream absorbs the burst; processors scale out up to one per partition and lag by about a minute.",
+     "text": "Partitioning by track puts each hot track on one processor task, and those tasks start to lag.",
      "nodes": [
       "stream",
       "proc"
@@ -246,7 +243,7 @@
      ]
     },
     {
-     "text": "Rollup write volume grows with active ads, not with clicks: one row per ad per minute either way.",
+     "text": "Split the hot keys: spread each hot track over several sub-keys, count partial sums in parallel, and add them in a second small stage.",
      "nodes": [
       "proc",
       "roll"
@@ -256,15 +253,16 @@
      ]
     },
     {
-     "text": "Dashboard queries are unchanged in cost; they show 'data as of 12:41' so the lag is visible, not hidden.",
+     "text": "The dashboard shows \"data as of\" while it catches up. Royalties are not affected: they come from the raw archive.",
      "nodes": [
       "dash",
       "query",
-      "roll"
+      "arch"
      ],
      "edges": [
       "dash>query",
-      "query>roll"
+      "query>roll",
+      "stream>arch"
      ]
     }
    ]
@@ -272,10 +270,10 @@
   {
    "name": "Processor crash",
    "tone": "failure",
-   "summary": "A processor dies with open windows in memory. It restarts from a checkpoint and replays; rows are written as absolute values, so nothing is double counted.",
+   "summary": "A processor task dies. It resumes from its last checkpoint, replays the stream, and absolute upserts keep the counts exact.",
    "steps": [
     {
-     "text": "One processor instance dies; its open windows for 2 000 ads vanish from memory.",
+     "text": "A processor task crashes with several open windows in memory.",
      "fail": [
       "proc",
       "proc>roll"
@@ -285,7 +283,7 @@
      ]
     },
     {
-     "text": "A replacement loads the last checkpoint (window state plus stream offsets, taken every 30 s) and replays the stream from there.",
+     "text": "A new task loads the last checkpoint (window state, dedup set and stream offsets) and reads the stream again from those offsets.",
      "nodes": [
       "stream",
       "proc"
@@ -295,7 +293,7 @@
      ]
     },
     {
-     "text": "It rewrites the same (ad, minute) rows with the full value (set, not increment), so replayed events don't add twice.",
+     "text": "Rows it writes again are full values, not increments, so writing a minute row twice leaves the same number.",
      "nodes": [
       "proc",
       "roll"
@@ -305,65 +303,62 @@
      ]
     },
     {
-     "text": "Nightly recon from raw would correct any drift anyway.",
+     "text": "Dashboards were a few minutes stale. The raw archive kept every event, so the nightly numbers are unchanged.",
      "nodes": [
-      "raw",
-      "recon",
-      "roll"
+      "dash",
+      "arch"
      ],
      "edges": [
-      "raw>recon",
-      "recon>roll"
+      "dash>query",
+      "stream>arch"
      ]
     }
    ]
   },
   {
-   "name": "Fraud rule change",
+   "name": "Dedup bug backfill",
    "tone": "edge",
-   "summary": "The fraud team tightens the invalid-click rule. Streaming numbers keep the old rule for today; recon restates the past from raw.",
+   "summary": "A release broke dedup and some plays were counted twice for three days. Fix the code, then recompute those days from raw.",
    "steps": [
     {
-     "text": "A new rule ships to the batch job first; the streaming job gets it on its next deploy.",
-     "nodes": [
-      "recon"
+     "text": "A diff alert fires: streaming and recon numbers disagree for three days. The cause is a bug in the play-id dedup.",
+     "fail": [
+      "proc"
      ],
-     "edges": [
-      "raw>recon"
+     "nodes": [
+      "proc",
+      "recon"
      ]
     },
     {
-     "text": "Tonight's recon recomputes yesterday with the new rule and overwrites the hour and day rows.",
+     "text": "Deploy the fix, then run recon over those three days of raw events.",
      "nodes": [
-      "raw",
+      "arch",
+      "recon"
+     ],
+     "edges": [
+      "arch>recon"
+     ]
+    },
+    {
+     "text": "Recon overwrites the day rows with corrected full values; dashboards change for those days.",
+     "nodes": [
       "recon",
       "roll"
      ],
      "edges": [
-      "raw>recon",
       "recon>roll"
      ]
     },
     {
-     "text": "A backfill reruns recon for the last 30 days, oldest day first; billing gets corrected totals and a credit note.",
+     "text": "The month is still open, so the statement uses the fixed numbers. Had it been issued, the difference would go on next month's statement as an adjustment line.",
      "nodes": [
-      "recon",
-      "bill"
+      "royal",
+      "ledger"
      ],
      "edges": [
-      "recon>bill"
-     ]
-    },
-    {
-     "text": "Dashboards label days as 'final' or 'provisional', so a changed number is explained, not a surprise.",
-     "nodes": [
-      "dash",
-      "query",
-      "roll"
-     ],
-     "edges": [
-      "dash>query",
-      "query>roll"
+      "royal>roll",
+      "royal>ledger"
      ]
     }
    ]

@@ -1,379 +1,380 @@
 {
  "kind": "architecture",
- "title": "The system: a photo and video app built around an object store",
- "caption": "The API only grants permission and keeps metadata; bytes go straight from the phone to the store, store events drive the processing, and viewers read through the CDN.",
- "base_name": "One upload, many views",
+ "title": "The system: game build and patch distribution built around an object store",
+ "caption": "CI uploads only the chunks the store doesn't have yet, a manifest says which chunks make a version, and players fetch what they miss from a CDN that almost never reaches the bucket.",
+ "base_name": "Ship a new version",
  "nodes": [
   {
-   "id": "app",
+   "id": "ci",
    "kind": "client",
-   "label": "Mobile & web",
+   "label": "Studio CI",
+   "sub": "build farm",
    "x": 0,
-   "y": 160
+   "y": 0
+  },
+  {
+   "id": "pub",
+   "kind": "service",
+   "label": "Build publisher",
+   "sub": "dedup + presign",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "meta",
+   "kind": "sql",
+   "label": "Manifest DB",
+   "sub": "version → chunks",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "rel",
+   "kind": "coordinator",
+   "label": "Release control",
+   "sub": "live pointer",
+   "x": 690,
+   "y": 0
   },
   {
    "id": "api",
-   "kind": "service",
-   "label": "Upload API",
-   "sub": "auth, signs URLs",
+   "kind": "api-gateway",
+   "label": "Patch API",
+   "sub": "live manifest",
    "x": 230,
-   "y": 20
+   "y": 135
   },
   {
-   "id": "cdn",
-   "kind": "cdn",
-   "label": "CDN",
-   "sub": "edge cache",
-   "x": 230,
-   "y": 300
-  },
-  {
-   "id": "store",
+   "id": "bucket",
    "kind": "blob",
-   "label": "Object store",
-   "sub": "originals + renditions",
+   "label": "Chunk bucket",
+   "sub": "key = SHA-256",
    "x": 460,
-   "y": 160
+   "y": 135
   },
   {
    "id": "cold",
    "kind": "blob",
    "label": "Cold tier",
-   "sub": "untouched > 90 d",
+   "sub": "old builds",
+   "x": 690,
+   "y": 135
+  },
+  {
+   "id": "players",
+   "kind": "client",
+   "label": "Player launchers",
+   "x": 0,
+   "y": 270
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN edges",
+   "x": 230,
+   "y": 270
+  },
+  {
+   "id": "shield",
+   "kind": "cdn",
+   "label": "Origin shield",
+   "sub": "collapses misses",
    "x": 460,
-   "y": 300
+   "y": 270
   },
   {
-   "id": "meta",
-   "kind": "sql",
-   "label": "Metadata DB",
-   "sub": "photo rows, status",
-   "x": 690,
-   "y": 20
-  },
-  {
-   "id": "events",
-   "kind": "queue",
-   "label": "Upload events",
-   "sub": "ObjectCreated",
-   "x": 690,
-   "y": 160
-  },
-  {
-   "id": "dlq",
-   "kind": "queue",
-   "label": "Dead letters",
-   "x": 690,
-   "y": 300
-  },
-  {
-   "id": "thumbs",
-   "kind": "worker",
-   "label": "Thumbnailer",
-   "sub": "sizes, strip EXIF",
-   "x": 920,
-   "y": 20
-  },
-  {
-   "id": "video",
-   "kind": "worker",
-   "label": "Transcoder",
-   "sub": "HLS renditions",
-   "x": 920,
-   "y": 300
+   "id": "mon",
+   "kind": "external",
+   "label": "Metrics & alerts",
+   "x": 460,
+   "y": 405
   }
  ],
  "edges": [
   {
-   "from": "app",
+   "from": "ci",
+   "to": "pub",
+   "label": "new build"
+  },
+  {
+   "from": "pub",
+   "to": "meta",
+   "label": "manifest"
+  },
+  {
+   "from": "ci",
+   "to": "bucket",
+   "label": "PUT new chunks"
+  },
+  {
+   "from": "rel",
+   "to": "meta",
+   "label": "go live"
+  },
+  {
+   "from": "players",
    "to": "api",
-   "label": "ask to upload"
+   "label": "manifest?"
   },
   {
    "from": "api",
-   "to": "app",
-   "label": "presigned URL"
+   "to": "meta"
   },
   {
-   "from": "api",
-   "to": "meta",
-   "label": "row: pending"
-  },
-  {
-   "from": "app",
-   "to": "store",
-   "label": "PUT bytes"
-  },
-  {
-   "from": "store",
-   "to": "events",
-   "label": "ObjectCreated"
-  },
-  {
-   "from": "events",
-   "to": "thumbs"
-  },
-  {
-   "from": "events",
-   "to": "video"
-  },
-  {
-   "from": "events",
-   "to": "dlq",
-   "label": "after 5 tries"
-  },
-  {
-   "from": "thumbs",
-   "to": "store",
-   "label": "renditions"
-  },
-  {
-   "from": "video",
-   "to": "store",
-   "label": "renditions"
-  },
-  {
-   "from": "thumbs",
-   "to": "meta",
-   "label": "status: ready"
-  },
-  {
-   "from": "app",
+   "from": "players",
    "to": "cdn",
-   "label": "GET photo"
+   "label": "GET missing chunks"
   },
   {
    "from": "cdn",
-   "to": "store",
-   "label": "miss → origin"
+   "to": "shield",
+   "label": "miss"
   },
   {
-   "from": "store",
+   "from": "shield",
+   "to": "bucket",
+   "label": "miss"
+  },
+  {
+   "from": "bucket",
    "to": "cold",
-   "label": "lifecycle rule"
+   "label": "lifecycle"
+  },
+  {
+   "from": "shield",
+   "to": "mon",
+   "label": "origin load"
   }
  ],
  "steps": [
   {
-   "text": "The app asks to upload a photo. The API checks auth and quota, writes a pending row, and signs a URL that allows one PUT to one key for 15 minutes.",
+   "text": "CI finishes a 60 GB build. CI splits every file into content-defined chunks of about 8 MB, names each one by the SHA-256 of its bytes, and sends the publisher only the list of hashes.",
    "nodes": [
-    "app",
+    "ci",
+    "pub"
+   ],
+   "edges": [
+    "ci>pub"
+   ]
+  },
+  {
+   "text": "Most chunks are identical to the previous version's. The publisher hands out presigned PUT URLs only for the new hashes, and CI uploads those straight to the bucket: a few GB, not 60.",
+   "nodes": [
+    "pub",
+    "ci",
+    "bucket"
+   ],
+   "edges": [
+    "ci>bucket"
+   ]
+  },
+  {
+   "text": "The publisher writes the manifest (every file, and the ordered chunk hashes it is made of) to the manifest DB. At release time, release control points 'live' at the new version.",
+   "nodes": [
+    "pub",
+    "meta",
+    "rel"
+   ],
+   "edges": [
+    "pub>meta",
+    "rel>meta"
+   ]
+  },
+  {
+   "text": "Each launcher asks the patch API for the live manifest, compares it with the one it installed, and lists the chunks it lacks.",
+   "nodes": [
+    "players",
     "api",
     "meta"
    ],
    "edges": [
-    "app>api",
-    "api>meta",
-    "api>app"
+    "players>api",
+    "api>meta"
    ]
   },
   {
-   "text": "The app sends the bytes straight to the object store (multipart for videos). No API server ever holds them.",
+   "text": "It downloads those chunks from the nearest CDN edge by hash. Misses go to the origin shield, which turns many concurrent misses for one chunk into one GET to the bucket. Chunk keys never change, so they are cached for a year.",
    "nodes": [
-    "app",
-    "store"
-   ],
-   "edges": [
-    "app>store"
-   ]
-  },
-  {
-   "text": "The store emits ObjectCreated to a queue. The event carries the bucket and key, not the bytes.",
-   "nodes": [
-    "store",
-    "events"
-   ],
-   "edges": [
-    "store>events"
-   ]
-  },
-  {
-   "text": "Workers read the original, write renditions under derived keys (p_77/1080.webp, p_77/hls/…) and mark the row ready.",
-   "nodes": [
-    "events",
-    "thumbs",
-    "video",
-    "store",
-    "meta"
-   ],
-   "edges": [
-    "events>thumbs",
-    "events>video",
-    "thumbs>store",
-    "video>store",
-    "thumbs>meta"
-   ]
-  },
-  {
-   "text": "Viewers fetch through the CDN. Keys never change, so edges cache them for a year; a miss costs one origin GET.",
-   "nodes": [
-    "app",
+    "players",
     "cdn",
-    "store"
+    "shield",
+    "bucket"
    ],
    "edges": [
-    "app>cdn",
-    "cdn>store"
+    "players>cdn",
+    "cdn>shield",
+    "shield>bucket"
    ]
   },
   {
-   "text": "A lifecycle rule moves originals nobody has opened for 90 days to a cheaper tier; renditions stay hot.",
+   "text": "Lifecycle rules move chunks used only by old builds to a cold tier, and the shield reports origin load and hit ratio to monitoring.",
    "nodes": [
-    "store",
-    "cold"
+    "bucket",
+    "cold",
+    "shield",
+    "mon"
    ],
    "edges": [
-    "store>cold"
+    "bucket>cold",
+    "shield>mon"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "New Year upload spike",
+   "name": "Patch day",
    "tone": "edge",
-   "summary": "Uploads jump 10× at midnight: the store absorbs the bytes, and the queue turns the spike into a backlog instead of an outage.",
+   "summary": "Millions of launchers want the same few thousand new chunks within an hour. The CDN carries the load; the bucket sees each chunk only a handful of times.",
    "steps": [
     {
-     "text": "Millions of phones upload at 00:00. The API only signs URLs, about 1 ms of work each.",
+     "text": "At release, millions of launchers fetch the manifest within minutes. It is small and the same for everyone, so the patch API serves it from cache.",
      "nodes": [
-      "app",
+      "players",
       "api"
      ],
      "edges": [
-      "app>api",
-      "api>app"
+      "players>api"
      ]
     },
     {
-     "text": "The object store takes the parallel PUTs; random photo ids spread the keys, so no single prefix is hot.",
+     "text": "Every player needs the same new chunks. Edges that were pre-warmed answer at once; cold edges send their first misses to the shield.",
      "nodes": [
-      "app",
-      "store"
+      "players",
+      "cdn"
      ],
      "edges": [
-      "app>store"
+      "players>cdn",
+      "cdn>shield"
      ]
     },
     {
-     "text": "Events queue up faster than workers drain them: a backlog of 40 minutes builds.",
+     "text": "The shield collapses concurrent misses: thousands of edge requests for one chunk become one origin GET.",
      "nodes": [
-      "events"
+      "shield",
+      "bucket"
      ],
      "edges": [
-      "store>events"
+      "shield>bucket"
      ]
     },
     {
-     "text": "Workers autoscale on queue depth. Until a photo is ready, the app shows its own local copy.",
+     "text": "Origin load stays flat while CDN egress climbs to many Tbps. The dashboard to watch is shield hit ratio, not bucket throughput.",
      "nodes": [
-      "thumbs",
-      "video",
-      "meta"
+      "shield",
+      "mon"
      ],
      "edges": [
-      "events>thumbs",
-      "events>video",
-      "thumbs>meta"
+      "shield>mon"
      ]
     }
    ]
   },
   {
-   "name": "Thumbnailer bug",
+   "name": "Manifest DB down",
    "tone": "failure",
-   "summary": "A deploy crashes on one image format: those events retry, land in dead letters, and are replayed after the fix.",
+   "summary": "The database is on the control path, not the download path: players keep patching, only publishing stops.",
    "steps": [
     {
-     "text": "A new thumbnailer version crashes on every HEIC photo.",
+     "text": "The manifest DB's primary fails during a failover window.",
      "fail": [
-      "thumbs"
-     ],
-     "nodes": [
-      "events"
-     ],
-     "edges": [
-      "events>thumbs"
-     ]
-    },
-    {
-     "text": "Each HEIC event is retried 5 times with backoff, then moved to dead letters; other photos keep flowing.",
-     "fail": [
-      "thumbs"
-     ],
-     "nodes": [
-      "events",
-      "dlq"
-     ],
-     "edges": [
-      "events>dlq"
-     ]
-    },
-    {
-     "text": "Those rows stay pending; the app shows a placeholder. The original is safe in the store.",
-     "nodes": [
       "meta",
-      "store"
+      "api>meta",
+      "pub>meta"
+     ],
+     "nodes": [
+      "api"
      ]
     },
     {
-     "text": "Roll back, replay the dead letters, and the renditions appear. Workers are idempotent by key, so replays are harmless.",
-     "nodes": [
-      "dlq",
-      "thumbs",
-      "store",
+     "text": "A version's manifest never changes once committed, so the patch API keeps serving the cached live manifest.",
+     "fail": [
       "meta"
      ],
+     "nodes": [
+      "players",
+      "api"
+     ],
      "edges": [
-      "events>thumbs",
-      "thumbs>store",
-      "thumbs>meta"
+      "players>api"
+     ]
+    },
+    {
+     "text": "Chunk downloads never touched the database and carry on through the CDN.",
+     "fail": [
+      "meta"
+     ],
+     "nodes": [
+      "players",
+      "cdn",
+      "shield"
+     ],
+     "edges": [
+      "players>cdn",
+      "cdn>shield"
+     ]
+    },
+    {
+     "text": "What stops is publishing: new builds can't commit a manifest until the replica is promoted. CI uploads can still run, since the chunks are just objects.",
+     "fail": [
+      "meta"
+     ],
+     "nodes": [
+      "ci",
+      "pub",
+      "bucket"
+     ],
+     "edges": [
+      "ci>pub",
+      "ci>bucket"
      ]
     }
    ]
   },
   {
-   "name": "New rendition size",
+   "name": "Roll back a bad patch",
    "tone": "edge",
-   "summary": "Product wants a 2048 px WebP for new tablets: backfill billions of photos without hurting live uploads, or render on demand.",
+   "summary": "A patch crashes on launch. Rolling back is a pointer change, not a cache purge: the old version's chunks are still in the store and still cached.",
    "steps": [
     {
-     "text": "Add 2048 px to the thumbnailer for every new upload.",
+     "text": "Crash reports spike an hour after release. An operator points 'live' back at the previous version.",
      "nodes": [
-      "thumbs"
+      "rel",
+      "meta"
      ],
      "edges": [
-      "events>thumbs",
-      "thumbs>store"
+      "rel>meta"
      ]
     },
     {
-     "text": "Backfill: list keys by prefix in batches and enqueue synthetic events at a fixed rate, at low priority.",
+     "text": "The patch API's cached pointer expires within a minute; launchers see the old manifest again.",
      "nodes": [
-      "store",
-      "events"
+      "players",
+      "api",
+      "meta"
      ],
      "edges": [
-      "store>events"
+      "players>api",
+      "api>meta"
      ]
     },
     {
-     "text": "Or render lazily: on a CDN miss for a missing size, generate it once and store it; old photos that nobody views never cost anything.",
+     "text": "Launchers that already updated download only the chunks that differ, most of them still on the edges. Nothing needs purging because no key was overwritten.",
      "nodes": [
-      "cdn",
-      "store"
+      "players",
+      "cdn"
      ],
      "edges": [
-      "app>cdn",
-      "cdn>store"
+      "players>cdn"
      ]
     },
     {
-     "text": "Cold-tier originals cost a retrieval fee to read, so skip them or render them only on demand.",
+     "text": "This works only if the previous version's chunks are still hot: lifecycle rules keep the last few live versions out of the cold tier.",
      "nodes": [
+      "bucket",
       "cold"
      ],
      "edges": [
-      "store>cold"
+      "bucket>cold"
      ]
     }
    ]

@@ -1,57 +1,54 @@
 {
  "kind": "architecture",
- "title": "Scaling the database: from one instance to many primaries",
- "caption": "Each stage removes the bottleneck of the previous one and gives up a little of 'everything in one box'; switch the 📈 tabs to grow the system.",
+ "title": "Scaling the database: from one instance to tenant shards",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
  "base_name": "v1: one instance",
  "nodes": [
   {
-   "id": "app",
+   "id": "api",
    "kind": "service",
-   "label": "App servers",
+   "label": "Invoicing API",
    "x": 0,
-   "y": 120
+   "y": 150
   },
   {
    "id": "pg",
    "kind": "sql",
    "label": "PostgreSQL",
    "sub": "one instance",
-   "x": 280,
-   "y": 120
+   "x": 230,
+   "y": 150
   },
   {
    "id": "bk",
    "kind": "blob",
-   "label": "Nightly backups",
-   "x": 560,
-   "y": 120
+   "label": "Nightly dump",
+   "x": 460,
+   "y": 150
   }
  ],
  "edges": [
   {
-   "from": "app",
-   "to": "pg",
-   "label": "all reads + writes"
+   "from": "api",
+   "to": "pg"
   },
   {
    "from": "pg",
-   "to": "bk",
-   "label": "pg_dump"
+   "to": "bk"
   }
  ],
  "steps": [
   {
-   "text": "One instance holds every table: any transaction, join or constraint across the whole data model just works.",
+   "text": "One instance holds every tenant's invoices and ledger: full ACID, every report is one SQL query away, and plenty for the first hundreds of tenants.",
    "nodes": [
-    "app",
     "pg"
    ],
    "edges": [
-    "app>pg"
+    "api>pg"
    ]
   },
   {
-   "text": "Limits: one machine's writes (~5k–20k/s), reads competing with writes, a few hundred direct connections, and a restore that loses up to a day.",
+   "text": "But one machine is a single point of failure, a nightly dump can lose a day of payments, and reports compete with postings for the same CPU.",
    "nodes": [
     "pg",
     "bk"
@@ -65,194 +62,192 @@
   {
    "name": "v2: replicas + pooler",
    "tone": "scale",
-   "summary": "A pooler caps connections and replicas take the reads; still one writer.",
+   "summary": "A pooler caps connections, a sync standby removes the single point of failure, and read replicas take the reports.",
    "nodes": [
     {
-     "id": "app",
+     "id": "api",
      "kind": "service",
-     "label": "App servers",
-     "sub": "autoscaled",
+     "label": "Invoicing API",
      "x": 0,
-     "y": 160
+     "y": 150
     },
     {
-     "id": "pool",
+     "id": "pgb",
      "kind": "service",
-     "label": "Pooler",
-     "sub": "PgBouncer pool",
-     "x": 270,
-     "y": 160
+     "label": "PgBouncer",
+     "x": 230,
+     "y": 150
     },
     {
      "id": "pri",
      "kind": "sql",
      "label": "Primary",
-     "x": 540,
-     "y": 160
+     "x": 460,
+     "y": 150
     },
     {
-     "id": "r1",
+     "id": "sb",
      "kind": "sql",
-     "label": "Replica 1",
-     "x": 820,
-     "y": 40
+     "label": "Sync standby",
+     "x": 690,
+     "y": 0
     },
     {
-     "id": "r2",
+     "id": "rep",
      "kind": "sql",
-     "label": "Replica 2",
-     "x": 820,
-     "y": 280
+     "label": "Read replicas",
+     "x": 690,
+     "y": 300
     },
     {
-     "id": "wal",
+     "id": "ar",
      "kind": "blob",
      "label": "WAL archive",
-     "sub": "PITR",
-     "x": 540,
-     "y": 320
+     "x": 920,
+     "y": 150
     }
    ],
    "edges": [
     {
-     "from": "app",
-     "to": "pool"
+     "from": "api",
+     "to": "pgb"
     },
     {
-     "from": "pool",
-     "to": "pri",
-     "label": "writes"
+     "from": "pgb",
+     "to": "pri"
     },
     {
-     "from": "pri",
-     "to": "r1",
-     "label": "WAL"
-    },
-    {
-     "from": "pri",
-     "to": "r2",
-     "label": "WAL"
-    },
-    {
-     "from": "pool",
-     "to": "r1",
-     "label": "reads"
-    },
-    {
-     "from": "pool",
-     "to": "r2",
-     "label": "reads"
+     "from": "pgb",
+     "to": "rep",
+     "label": "reports"
     },
     {
      "from": "pri",
-     "to": "wal"
+     "to": "sb",
+     "label": "sync"
+    },
+    {
+     "from": "pri",
+     "to": "rep",
+     "label": "async"
+    },
+    {
+     "from": "pri",
+     "to": "ar"
     }
    ],
    "steps": [
     {
-     "text": "The pooler turns thousands of app connections into ~150 database connections.",
+     "text": "PgBouncer multiplexes thousands of API connections onto a few hundred backends.",
      "nodes": [
-      "app",
-      "pool"
+      "api",
+      "pgb",
+      "pri"
      ],
      "edges": [
-      "app>pool"
+      "api>pgb",
+      "pgb>pri"
      ]
     },
     {
-     "text": "Replicas serve the read-only traffic: read capacity grows with each replica.",
-     "nodes": [
-      "r1",
-      "r2",
-      "pool"
-     ],
-     "edges": [
-      "pool>r1",
-      "pool>r2",
-      "pri>r1",
-      "pri>r2"
-     ]
-    },
-    {
-     "text": "Continuous WAL archiving replaces nightly dumps: restore to any second.",
+     "text": "A sync standby plus automatic failover: losing the primary costs seconds of errors, not payments.",
      "nodes": [
       "pri",
-      "wal"
+      "sb"
      ],
      "edges": [
-      "pri>wal"
+      "pri>sb"
      ]
     },
     {
-     "text": "Cost: replica lag (stale reads, read-your-writes routing) and the next wall is the single primary's write rate and table size.",
+     "text": "Reports and dashboards move to async replicas; the WAL archive gives point-in-time recovery to any second.",
+     "nodes": [
+      "rep",
+      "ar"
+     ],
+     "edges": [
+      "pgb>rep",
+      "pri>rep",
+      "pri>ar"
+     ]
+    },
+    {
+     "text": "Cost: replicas lag, so read-your-own-write goes to the primary. Writes still have one home, and the ledger table keeps growing.",
      "nodes": [
       "pri"
      ],
      "edges": [
-      "pool>pri"
+      "pgb>pri"
      ]
     }
    ]
   },
   {
-   "name": "v3: partitioned tables",
+   "name": "v3: partitioned ledger",
    "tone": "scale",
-   "summary": "Split the giant bookings table by month inside the same primary: small indexes, cheap retention, but no more write capacity.",
+   "summary": "Split the ledger into monthly partitions so the hot month stays in memory and old months can be detached.",
    "nodes": [
     {
-     "id": "app",
+     "id": "api",
      "kind": "service",
-     "label": "App servers",
+     "label": "Invoicing API",
      "x": 0,
-     "y": 160
+     "y": 150
     },
     {
-     "id": "pool",
+     "id": "pgb",
      "kind": "service",
-     "label": "Pooler",
-     "x": 270,
-     "y": 160
+     "label": "PgBouncer",
+     "x": 230,
+     "y": 150
     },
     {
      "id": "pri",
      "kind": "sql",
      "label": "Primary",
-     "sub": "bookings (parent)",
-     "x": 540,
-     "y": 160
+     "sub": "ledger by month",
+     "x": 460,
+     "y": 150
     },
     {
      "id": "p1",
      "kind": "sql",
-     "label": "bookings_2026_10",
-     "sub": "older, rarely written",
-     "x": 820,
-     "y": 20
+     "label": "ledger_2026_09",
+     "sub": "closed",
+     "x": 690,
+     "y": 0
     },
     {
      "id": "p2",
      "kind": "sql",
-     "label": "bookings_2026_11",
-     "sub": "hot partition",
-     "x": 820,
-     "y": 160
+     "label": "ledger_2026_10",
+     "sub": "closed",
+     "x": 690,
+     "y": 150
     },
     {
      "id": "p3",
      "kind": "sql",
-     "label": "bookings_2026_12",
-     "sub": "future stays",
-     "x": 820,
+     "label": "ledger_2026_11",
+     "sub": "current month",
+     "x": 690,
      "y": 300
+    },
+    {
+     "id": "cold",
+     "kind": "blob",
+     "label": "Cold storage",
+     "x": 920,
+     "y": 0
     }
    ],
    "edges": [
     {
-     "from": "app",
-     "to": "pool"
+     "from": "api",
+     "to": "pgb"
     },
     {
-     "from": "pool",
+     "from": "pgb",
      "to": "pri"
     },
     {
@@ -261,161 +256,184 @@
     },
     {
      "from": "pri",
-     "to": "p2",
-     "label": "pruned to"
+     "to": "p2"
     },
     {
      "from": "pri",
-     "to": "p3"
+     "to": "p3",
+     "label": "new entries"
+    },
+    {
+     "from": "p1",
+     "to": "cold",
+     "label": "detach + dump"
     }
    ],
    "steps": [
     {
-     "text": "Range-partition bookings by stay month. A query with the month in its WHERE clause touches one partition.",
+     "text": "Postings go to the current month's partition. Its indexes are small enough to stay in memory, and queries filtered by date skip the other months (partition pruning).",
      "nodes": [
       "pri",
+      "p3"
+     ],
+     "edges": [
+      "pgb>pri",
+      "pri>p3"
+     ]
+    },
+    {
+     "text": "Vacuum and index maintenance work one partition at a time, and closed months hardly change.",
+     "nodes": [
+      "p1",
       "p2"
      ],
      "edges": [
-      "pool>pri",
+      "pri>p1",
       "pri>p2"
      ]
     },
     {
-     "text": "Vacuum and index builds run per partition (gigabytes, not terabytes); old months are detached and archived instead of DELETEd.",
+     "text": "Cost: a unique key must include the partition column, queries without a date scan every month, and next month's partition must exist before the 1st.",
      "nodes": [
-      "p1"
-     ],
-     "edges": [
-      "pri>p1"
-     ]
-    },
-    {
-     "text": "Cost: the partition key must be part of every primary key and unique constraint, and queries without it scan every partition. Writes still all go to one machine.",
-     "nodes": [
-      "pri",
       "p1",
-      "p2",
-      "p3"
+      "cold"
      ],
      "edges": [
-      "pri>p1",
-      "pri>p2",
-      "pri>p3"
+      "p1>cold"
      ]
     }
    ]
   },
   {
-   "name": "v4: shards or domains",
+   "name": "v4: shard by tenant",
    "tone": "scale",
-   "summary": "Several primaries: split by domain first (bookings, payments, users), then shard the biggest one by hotel_id.",
+   "summary": "When one primary's writes are not enough, give each tenant a home shard: a payment is still one local transaction.",
    "nodes": [
     {
-     "id": "app",
+     "id": "api",
      "kind": "service",
-     "label": "App servers",
+     "label": "Invoicing API",
      "x": 0,
-     "y": 160
+     "y": 150
     },
     {
-     "id": "coord",
+     "id": "dir",
      "kind": "coordinator",
+     "label": "Tenant directory",
+     "sub": "tenant → shard",
+     "x": 230,
+     "y": 0
+    },
+    {
+     "id": "rt",
+     "kind": "service",
      "label": "Shard router",
-     "sub": "routes by hotel_id",
-     "x": 270,
-     "y": 160
+     "x": 230,
+     "y": 150
     },
     {
      "id": "s1",
      "kind": "sql",
-     "label": "Shard A",
-     "sub": "hotels 0–33%",
-     "x": 560,
-     "y": 20
+     "label": "Shard 1",
+     "sub": "small tenants",
+     "x": 460,
+     "y": 0
     },
     {
      "id": "s2",
      "kind": "sql",
-     "label": "Shard B",
-     "sub": "hotels 33–66%",
-     "x": 560,
-     "y": 160
+     "label": "Shard 2",
+     "sub": "small tenants",
+     "x": 460,
+     "y": 150
     },
     {
      "id": "s3",
      "kind": "sql",
-     "label": "Shard C",
-     "sub": "hotels 66–100%",
-     "x": 560,
+     "label": "Shard 3",
+     "sub": "one big tenant",
+     "x": 460,
      "y": 300
     },
     {
-     "id": "pay",
+     "id": "wh",
      "kind": "sql",
-     "label": "Payments DB",
-     "sub": "own primary",
-     "x": 270,
-     "y": 320
+     "label": "Warehouse",
+     "sub": "cross-tenant",
+     "x": 690,
+     "y": 150
     }
    ],
    "edges": [
     {
-     "from": "app",
-     "to": "coord",
-     "label": "bookings"
+     "from": "api",
+     "to": "rt"
     },
     {
-     "from": "coord",
+     "from": "rt",
+     "to": "dir",
+     "label": "lookup"
+    },
+    {
+     "from": "rt",
      "to": "s1"
     },
     {
-     "from": "coord",
+     "from": "rt",
      "to": "s2"
     },
     {
-     "from": "coord",
+     "from": "rt",
      "to": "s3"
     },
     {
-     "from": "app",
-     "to": "pay",
-     "label": "payments"
+     "from": "s1",
+     "to": "wh"
+    },
+    {
+     "from": "s2",
+     "to": "wh"
+    },
+    {
+     "from": "s3",
+     "to": "wh",
+     "label": "CDC"
     }
    ],
    "steps": [
     {
-     "text": "Split by domain: payments get their own primary. No shared transactions across domains; they talk through events.",
+     "text": "The router looks up each tenant's shard. All of a tenant's invoices and ledger live on that shard, so posting a payment never crosses machines.",
      "nodes": [
-      "app",
-      "pay"
-     ],
-     "edges": [
-      "app>pay"
-     ]
-    },
-    {
-     "text": "Shard bookings by hotel_id (Citus-style): one hotel's rooms, bookings and availability live on one shard, so a booking is still a local ACID transaction.",
-     "nodes": [
-      "coord",
+      "rt",
+      "dir",
+      "s1",
       "s2"
      ],
      "edges": [
-      "app>coord",
-      "coord>s2"
+      "api>rt",
+      "rt>dir",
+      "rt>s1",
+      "rt>s2"
      ]
     },
     {
-     "text": "Writes now scale with shards. Cost: cross-shard queries fan out, cross-shard transactions need two-phase commit, and moving a hot hotel to a new shard is an operation you plan.",
+     "text": "A very large tenant gets a shard of its own, so its month-end can't slow anyone else down.",
      "nodes": [
-      "s1",
-      "s2",
       "s3"
      ],
      "edges": [
-      "coord>s1",
-      "coord>s2",
-      "coord>s3"
+      "rt>s3"
+     ]
+    },
+    {
+     "text": "Cost: reports across tenants move to the warehouse, moving a tenant is a migration, and every schema change runs on every shard. Splitting by domain instead (invoicing vs ledger) would break the single-transaction posting.",
+     "nodes": [
+      "wh"
+     ],
+     "edges": [
+      "s1>wh",
+      "s2>wh",
+      "s3>wh"
      ]
     }
    ]

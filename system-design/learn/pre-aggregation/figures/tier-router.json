@@ -1,0 +1,308 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: which tier answers a dashboard query",
+ "caption": "Read the coarsest tier the range allows, fill the part that tier doesn't cover yet from a finer one, and label what is still provisional.",
+ "base_name": "90-day chart",
+ "nodes": [
+  {
+   "id": "q",
+   "type": "start",
+   "label": "Dashboard query",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "short",
+   "type": "decision",
+   "label": "Range ≤ 6 h?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "min",
+   "type": "step",
+   "label": "Minute rows",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "mid",
+   "type": "decision",
+   "label": "Range ≤ 30 days?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "hour",
+   "type": "step",
+   "label": "Hour rows",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "day",
+   "type": "step",
+   "label": "Day rows",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "cover",
+   "type": "decision",
+   "label": "Tier covers all?",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "fill",
+   "type": "step",
+   "label": "Fill from finer",
+   "col": 1,
+   "row": 4
+  },
+  {
+   "id": "label",
+   "type": "step",
+   "label": "Mark provisional",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "out",
+   "type": "end",
+   "label": "Chart series",
+   "col": 0,
+   "row": 6,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "q",
+   "to": "short"
+  },
+  {
+   "from": "short",
+   "to": "min",
+   "label": "yes"
+  },
+  {
+   "from": "short",
+   "to": "mid",
+   "label": "no"
+  },
+  {
+   "from": "mid",
+   "to": "hour",
+   "label": "yes"
+  },
+  {
+   "from": "mid",
+   "to": "day",
+   "label": "no"
+  },
+  {
+   "from": "min",
+   "to": "label"
+  },
+  {
+   "from": "hour",
+   "to": "cover"
+  },
+  {
+   "from": "day",
+   "to": "cover"
+  },
+  {
+   "from": "cover",
+   "to": "fill",
+   "label": "no"
+  },
+  {
+   "from": "cover",
+   "to": "label",
+   "label": "yes"
+  },
+  {
+   "from": "fill",
+   "to": "label"
+  },
+  {
+   "from": "label",
+   "to": "out"
+  }
+ ],
+ "steps": [
+  {
+   "text": "An artist asks for daily plays over the last 90 days.",
+   "nodes": [
+    "q",
+    "short",
+    "mid"
+   ],
+   "edges": [
+    "q>short",
+    "short>mid"
+   ]
+  },
+  {
+   "text": "Too long for minutes or hours: read day rows, one per day per track.",
+   "nodes": [
+    "day"
+   ],
+   "edges": [
+    "mid>day"
+   ]
+  },
+  {
+   "text": "Today has no day row yet, so the tier doesn't cover the whole range.",
+   "nodes": [
+    "cover"
+   ],
+   "edges": [
+    "day>cover"
+   ]
+  },
+  {
+   "text": "Fill today from its hour rows, and the current hour from minute rows.",
+   "nodes": [
+    "fill"
+   ],
+   "edges": [
+    "cover>fill"
+   ]
+  },
+  {
+   "text": "Mark days that recon has not finalised as provisional, then return the series.",
+   "nodes": [
+    "label",
+    "out"
+   ],
+   "edges": [
+    "fill>label",
+    "label>out"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Last-hour panel",
+   "tone": "edge",
+   "summary": "A live panel of the last hour reads minute rows directly: about 60 per track, nothing to fill.",
+   "steps": [
+    {
+     "text": "The range is one hour.",
+     "nodes": [
+      "q",
+      "short"
+     ],
+     "edges": [
+      "q>short"
+     ]
+    },
+    {
+     "text": "Read minute rows. They are written as windows close, so they are already as fresh as the stream.",
+     "nodes": [
+      "min"
+     ],
+     "edges": [
+      "short>min"
+     ]
+    },
+    {
+     "text": "Everything is provisional for now; the label says so.",
+     "nodes": [
+      "label",
+      "out"
+     ],
+     "edges": [
+      "min>label",
+      "label>out"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Hour rollup behind",
+   "tone": "failure",
+   "summary": "The job that rolls minutes into hours is three hours behind. The router fills the gap from minute rows instead of showing a dip.",
+   "steps": [
+    {
+     "text": "A 7-day chart reads hour rows, but the last three hours are missing.",
+     "fail": [
+      "hour"
+     ],
+     "nodes": [
+      "mid",
+      "cover"
+     ],
+     "edges": [
+      "q>short",
+      "short>mid",
+      "mid>hour",
+      "hour>cover"
+     ]
+    },
+    {
+     "text": "Fill those hours by summing minute rows: a few hundred extra rows, still fast.",
+     "nodes": [
+      "fill"
+     ],
+     "edges": [
+      "cover>fill"
+     ]
+    },
+    {
+     "text": "The chart is correct, with a \"data as of\" note; an alert on rollup lag is already firing.",
+     "nodes": [
+      "label",
+      "out"
+     ],
+     "edges": [
+      "fill>label",
+      "label>out"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Monthly statement",
+   "tone": "edge",
+   "summary": "The royalty statement for a closed month reads day rows too, but it accepts only final ones.",
+   "steps": [
+    {
+     "text": "A one-month range goes to day rows.",
+     "nodes": [
+      "mid",
+      "day"
+     ],
+     "edges": [
+      "q>short",
+      "short>mid",
+      "mid>day"
+     ]
+    },
+    {
+     "text": "The month is closed, so every day has a row: nothing to fill.",
+     "nodes": [
+      "cover"
+     ],
+     "edges": [
+      "day>cover"
+     ]
+    },
+    {
+     "text": "Unlike a dashboard, the statement refuses provisional days: if recon has not finished a day, the statement waits for it.",
+     "nodes": [
+      "label",
+      "out"
+     ],
+     "edges": [
+      "cover>label",
+      "label>out"
+     ]
+    }
+   ]
+  }
+ ]
+}

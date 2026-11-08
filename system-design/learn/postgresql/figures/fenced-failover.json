@@ -1,0 +1,507 @@
+{
+ "kind": "architecture",
+ "title": "Zoom in: automatic failover, with fencing so only one node takes writes",
+ "caption": "Holding the leader key is the only right to accept writes; a node that can't renew it must stop before anyone else may start.",
+ "base_name": "Healthy pair",
+ "nodes": [
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Invoicing API",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "pgb",
+   "kind": "service",
+   "label": "PgBouncer",
+   "x": 230,
+   "y": 150
+  },
+  {
+   "id": "na",
+   "kind": "sql",
+   "label": "Node A",
+   "sub": "primary",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "nb",
+   "kind": "sql",
+   "label": "Node B",
+   "sub": "sync standby",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "dcs",
+   "kind": "coordinator",
+   "label": "Consensus store",
+   "sub": "leader key, TTL",
+   "x": 690,
+   "y": 150
+  }
+ ],
+ "edges": [
+  {
+   "from": "api",
+   "to": "pgb"
+  },
+  {
+   "from": "pgb",
+   "to": "na",
+   "label": "writes"
+  },
+  {
+   "from": "na",
+   "to": "nb",
+   "label": "sync WAL"
+  },
+  {
+   "from": "na",
+   "to": "dcs",
+   "label": "renew key"
+  },
+  {
+   "from": "nb",
+   "to": "dcs",
+   "label": "watch"
+  },
+  {
+   "from": "dcs",
+   "to": "pgb",
+   "label": "primary = A"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Each database node runs an HA agent. Node A's agent holds the leader key in the consensus store and renews it every 10 s; without renewal the key expires after 30 s.",
+   "nodes": [
+    "na",
+    "dcs"
+   ],
+   "edges": [
+    "na>dcs"
+   ]
+  },
+  {
+   "text": "Only the key holder accepts writes. PgBouncer is pointed at whoever holds it, so the API never needs to know which node is primary.",
+   "nodes": [
+    "api",
+    "pgb",
+    "na",
+    "dcs"
+   ],
+   "edges": [
+    "dcs>pgb",
+    "api>pgb",
+    "pgb>na"
+   ]
+  },
+  {
+   "text": "Node B is the sync standby: every commit waited for it, so it holds every confirmed payment.",
+   "nodes": [
+    "na",
+    "nb"
+   ],
+   "edges": [
+    "na>nb"
+   ]
+  },
+  {
+   "text": "Node B's agent watches the key. It may take over only if the key expires and its WAL position is up to date.",
+   "nodes": [
+    "nb",
+    "dcs"
+   ],
+   "edges": [
+    "nb>dcs"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Primary host dies",
+   "tone": "failure",
+   "summary": "About 40 seconds of failed writes, then the standby is primary with every confirmed payment, and the old primary rejoins as a standby.",
+   "nodes": [
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Invoicing API",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "pgb",
+     "kind": "service",
+     "label": "PgBouncer",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "na",
+     "kind": "sql",
+     "label": "Node A",
+     "sub": "down",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "nb",
+     "kind": "sql",
+     "label": "Node B",
+     "sub": "new primary",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "dcs",
+     "kind": "coordinator",
+     "label": "Consensus store",
+     "sub": "leader key, TTL",
+     "x": 690,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "api",
+     "to": "pgb"
+    },
+    {
+     "from": "pgb",
+     "to": "na"
+    },
+    {
+     "from": "pgb",
+     "to": "nb",
+     "label": "writes"
+    },
+    {
+     "from": "na",
+     "to": "dcs"
+    },
+    {
+     "from": "nb",
+     "to": "dcs",
+     "label": "takes key"
+    },
+    {
+     "from": "dcs",
+     "to": "pgb",
+     "label": "primary = B"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Node A's host fails. Writes through PgBouncer error out; the API returns 503 and the apps retry later.",
+     "nodes": [
+      "api",
+      "pgb"
+     ],
+     "edges": [
+      "api>pgb"
+     ],
+     "fail": [
+      "na",
+      "pgb>na",
+      "na>dcs"
+     ]
+    },
+    {
+     "text": "Nobody renews the key, and after the 30 s TTL it expires.",
+     "nodes": [
+      "dcs"
+     ],
+     "fail": [
+      "na",
+      "na>dcs"
+     ]
+    },
+    {
+     "text": "Node B's agent checks it is caught up, takes the key with an atomic compare-and-set, and promotes its PostgreSQL to primary on a new timeline.",
+     "nodes": [
+      "nb",
+      "dcs"
+     ],
+     "edges": [
+      "nb>dcs"
+     ],
+     "fail": [
+      "na"
+     ]
+    },
+    {
+     "text": "PgBouncer is re-pointed to Node B and writes resume. No confirmed payment is lost, because B had flushed each one before it was confirmed.",
+     "nodes": [
+      "pgb",
+      "nb"
+     ],
+     "edges": [
+      "dcs>pgb",
+      "pgb>nb"
+     ],
+     "fail": [
+      "na"
+     ]
+    },
+    {
+     "text": "When Node A boots, its agent sees B holds the key, rewinds A's diverged WAL (pg_rewind) and starts it as B's standby.",
+     "nodes": [
+      "na",
+      "nb",
+      "dcs"
+     ],
+     "edges": [
+      "na>dcs",
+      "nb>dcs"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Network partition",
+   "tone": "risk",
+   "summary": "Node A is cut off from the store but still reachable by some clients. Fencing makes it stop before Node B starts, so there are never two primaries.",
+   "nodes": [
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Invoicing API",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "pgb",
+     "kind": "service",
+     "label": "PgBouncer",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "na",
+     "kind": "sql",
+     "label": "Node A",
+     "sub": "isolated",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "nb",
+     "kind": "sql",
+     "label": "Node B",
+     "sub": "promotes",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "dcs",
+     "kind": "coordinator",
+     "label": "Consensus store",
+     "sub": "leader key, TTL",
+     "x": 690,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "api",
+     "to": "pgb"
+    },
+    {
+     "from": "pgb",
+     "to": "na"
+    },
+    {
+     "from": "pgb",
+     "to": "nb",
+     "label": "writes"
+    },
+    {
+     "from": "na",
+     "to": "nb",
+     "label": "sync WAL"
+    },
+    {
+     "from": "na",
+     "to": "dcs"
+    },
+    {
+     "from": "nb",
+     "to": "dcs",
+     "label": "takes key"
+    },
+    {
+     "from": "dcs",
+     "to": "pgb",
+     "label": "primary = B"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A network fault cuts Node A off from the consensus store. A itself is healthy and some clients can still reach it.",
+     "nodes": [
+      "na",
+      "pgb"
+     ],
+     "edges": [
+      "pgb>na"
+     ],
+     "fail": [
+      "na>dcs"
+     ]
+    },
+    {
+     "text": "A's agent can't renew the key, so it demotes A to read-only before the TTL runs out. A watchdog reboots the host if the agent itself hangs.",
+     "nodes": [
+      "na"
+     ],
+     "fail": [
+      "na>dcs",
+      "pgb>na"
+     ]
+    },
+    {
+     "text": "Only after the key expires does Node B take it and promote. The two never accept writes at the same time.",
+     "nodes": [
+      "nb",
+      "dcs"
+     ],
+     "edges": [
+      "nb>dcs",
+      "dcs>pgb",
+      "pgb>nb"
+     ]
+    },
+    {
+     "text": "A second fence: even if A kept going, its commits would wait for a sync standby that no longer acks (B is primary now), so no payment could be confirmed on both sides.",
+     "nodes": [
+      "na",
+      "nb"
+     ],
+     "fail": [
+      "na>nb"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Planned switchover",
+   "tone": "edge",
+   "summary": "For maintenance (a minor version upgrade, a new host), the agents hand over the key in a controlled order: a few seconds of paused writes, no data at risk.",
+   "nodes": [
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Invoicing API",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "pgb",
+     "kind": "service",
+     "label": "PgBouncer",
+     "x": 230,
+     "y": 150
+    },
+    {
+     "id": "na",
+     "kind": "sql",
+     "label": "Node A",
+     "sub": "demotes first",
+     "x": 460,
+     "y": 0
+    },
+    {
+     "id": "nb",
+     "kind": "sql",
+     "label": "Node B",
+     "sub": "takes over",
+     "x": 460,
+     "y": 300
+    },
+    {
+     "id": "dcs",
+     "kind": "coordinator",
+     "label": "Consensus store",
+     "sub": "leader key, TTL",
+     "x": 690,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "api",
+     "to": "pgb"
+    },
+    {
+     "from": "pgb",
+     "to": "na"
+    },
+    {
+     "from": "pgb",
+     "to": "nb",
+     "label": "writes"
+    },
+    {
+     "from": "na",
+     "to": "nb",
+     "label": "sync WAL"
+    },
+    {
+     "from": "na",
+     "to": "dcs",
+     "label": "release key"
+    },
+    {
+     "from": "nb",
+     "to": "dcs",
+     "label": "takes key"
+    },
+    {
+     "from": "dcs",
+     "to": "pgb",
+     "label": "primary = B"
+    }
+   ],
+   "steps": [
+    {
+     "text": "An operator asks for a switchover to Node B, outside month-end. The agent first checks that B is in sync.",
+     "nodes": [
+      "na",
+      "nb"
+     ],
+     "edges": [
+      "na>nb"
+     ]
+    },
+    {
+     "text": "Node A stops accepting writes and ships its last WAL to B; then A's agent releases the key.",
+     "nodes": [
+      "na",
+      "dcs"
+     ],
+     "edges": [
+      "na>dcs",
+      "na>nb"
+     ]
+    },
+    {
+     "text": "B takes the key and promotes, PgBouncer pauses and is re-pointed, and the pause shows up as a few seconds of slower requests rather than errors.",
+     "nodes": [
+      "nb",
+      "pgb",
+      "dcs"
+     ],
+     "edges": [
+      "nb>dcs",
+      "dcs>pgb",
+      "pgb>nb"
+     ]
+    }
+   ]
+  }
+ ]
+}

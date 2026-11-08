@@ -1,13 +1,13 @@
 {
  "kind": "architecture",
- "title": "Scaling the message store: from 3 nodes to a multi-DC ring with an analytics DC",
+ "title": "Scaling the readings store: from 3 nodes to a multi-DC ring with an analytics DC",
  "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
  "base_name": "v1: three nodes",
  "nodes": [
   {
-   "id": "svc",
-   "kind": "service",
-   "label": "Message service",
+   "id": "api",
+   "kind": "api-gateway",
+   "label": "Ingest API",
    "x": 0,
    "y": 135
   },
@@ -38,35 +38,35 @@
  ],
  "edges": [
   {
-   "from": "svc",
+   "from": "api",
    "to": "n1"
   },
   {
-   "from": "svc",
+   "from": "api",
    "to": "n2"
   },
   {
-   "from": "svc",
+   "from": "api",
    "to": "n3"
   }
  ],
  "steps": [
   {
-   "text": "Three nodes, RF 3: every node holds every message. QUORUM survives one node down.",
+   "text": "A pilot fleet on three nodes with RF 3: every node holds every reading, and QUORUM survives one node down.",
    "nodes": [
-    "svc",
+    "api",
     "n1",
     "n2",
     "n3"
    ],
    "edges": [
-    "svc>n1",
-    "svc>n2",
-    "svc>n3"
+    "api>n1",
+    "api>n2",
+    "api>n3"
    ]
   },
   {
-   "text": "Each node absorbs every write, so the whole cluster's capacity is one node's disk and write rate.",
+   "text": "Every node absorbs every write, so the cluster can only take as many readings as one node's disk and write rate.",
    "nodes": [
     "n1",
     "n2",
@@ -81,9 +81,9 @@
    "summary": "Add nodes and each one owns a smaller slice; capacity grows roughly linearly, at the cost of streaming and repair work.",
    "nodes": [
     {
-     "id": "svc",
-     "kind": "service",
-     "label": "Message service",
+     "id": "api",
+     "kind": "api-gateway",
+     "label": "Ingest API",
      "sub": "token-aware driver",
      "x": 0,
      "y": 135
@@ -112,34 +112,34 @@
    ],
    "edges": [
     {
-     "from": "svc",
+     "from": "api",
      "to": "r1"
     },
     {
-     "from": "svc",
+     "from": "api",
      "to": "r2"
     },
     {
-     "from": "svc",
+     "from": "api",
      "to": "r3"
     }
    ],
    "steps": [
     {
-     "text": "12 nodes, RF 3: each node holds about a quarter of the data (RF / N) and takes a quarter of the writes.",
+     "text": "12 nodes with RF 3: each holds about a quarter of the data (RF / N) and takes a quarter of the writes.",
      "nodes": [
       "r1",
       "r2",
       "r3"
      ],
      "edges": [
-      "svc>r1",
-      "svc>r2",
-      "svc>r3"
+      "api>r1",
+      "api>r2",
+      "api>r3"
      ]
     },
     {
-     "text": "Rack-aware placement puts each partition's 3 replicas in 3 different racks, so losing a rack loses one copy.",
+     "text": "Rack-aware placement puts each partition's three replicas in three racks, so losing a rack loses one copy.",
      "nodes": [
       "r1",
       "r2",
@@ -147,12 +147,13 @@
      ]
     },
     {
-     "text": "Cost: every join streams data, repairs take longer, and a bad partition key now creates a visible hot node.",
+     "text": "Cost: every join streams data, repairs take longer, and a skewed key (one noisy device) now shows up as one hot node.",
      "nodes": [
-      "svc"
+      "api",
+      "r2"
      ],
      "edges": [
-      "svc>r2"
+      "api>r2"
      ]
     }
    ]
@@ -160,48 +161,48 @@
   {
    "name": "v3: two regions",
    "tone": "scale",
-   "summary": "A second DC serves its own users at LOCAL_QUORUM and survives the loss of a whole region, for twice the storage.",
+   "summary": "Trucks write to their nearest region at LOCAL_QUORUM, and the fleet survives the loss of a whole region, for twice the storage.",
    "nodes": [
     {
-     "id": "ueu",
+     "id": "te",
      "kind": "client",
-     "label": "EU users",
+     "label": "East fleet",
      "x": 0,
      "y": 0
     },
     {
-     "id": "uus",
+     "id": "tw",
      "kind": "client",
-     "label": "US users",
+     "label": "West fleet",
      "x": 0,
      "y": 270
     },
     {
-     "id": "seu",
-     "kind": "service",
-     "label": "EU service",
+     "id": "ie",
+     "kind": "api-gateway",
+     "label": "East ingest",
      "x": 280,
      "y": 0
     },
     {
-     "id": "sus",
-     "kind": "service",
-     "label": "US service",
+     "id": "iw",
+     "kind": "api-gateway",
+     "label": "West ingest",
      "x": 280,
      "y": 270
     },
     {
-     "id": "deu",
+     "id": "de",
      "kind": "nosql",
-     "label": "DC EU (12 nodes)",
+     "label": "DC East (12)",
      "sub": "RF 3",
      "x": 560,
      "y": 0
     },
     {
-     "id": "dus",
+     "id": "dw",
      "kind": "nosql",
-     "label": "DC US (12 nodes)",
+     "label": "DC West (12)",
      "sub": "RF 3",
      "x": 560,
      "y": 270
@@ -209,64 +210,64 @@
    ],
    "edges": [
     {
-     "from": "ueu",
-     "to": "seu"
+     "from": "te",
+     "to": "ie"
     },
     {
-     "from": "uus",
-     "to": "sus"
+     "from": "tw",
+     "to": "iw"
     },
     {
-     "from": "seu",
-     "to": "deu",
+     "from": "ie",
+     "to": "de",
      "label": "LOCAL_QUORUM"
     },
     {
-     "from": "sus",
-     "to": "dus"
+     "from": "iw",
+     "to": "dw"
     },
     {
-     "from": "deu",
-     "to": "dus",
+     "from": "de",
+     "to": "dw",
      "label": "async replication"
     }
    ],
    "steps": [
     {
-     "text": "Users write and read in their nearest region at LOCAL_QUORUM: local latency.",
+     "text": "Each truck reports to the ingest API in its nearest region, which writes at LOCAL_QUORUM: local latency.",
      "nodes": [
-      "ueu",
-      "uus",
-      "seu",
-      "sus",
-      "deu",
-      "dus"
+      "te",
+      "tw",
+      "ie",
+      "iw",
+      "de",
+      "dw"
      ],
      "edges": [
-      "ueu>seu",
-      "uus>sus",
-      "seu>deu",
-      "sus>dus"
+      "te>ie",
+      "tw>iw",
+      "ie>de",
+      "iw>dw"
      ]
     },
     {
-     "text": "Each DC holds a full copy, replicated asynchronously; if one region goes dark the other takes all users.",
+     "text": "Each DC holds a full copy, replicated asynchronously; if one region goes dark, DNS sends all trucks to the other.",
      "nodes": [
-      "deu",
-      "dus"
+      "de",
+      "dw"
      ],
      "edges": [
-      "deu>dus"
+      "de>dw"
      ]
     },
     {
-     "text": "Cost: 2× storage, cross-region bandwidth, and concurrent edits resolved by last write wins.",
+     "text": "Cost: 2× storage, cross-region bandwidth for every reading, and a dispatcher in the far region sees positions slightly late.",
      "nodes": [
-      "deu",
-      "dus"
+      "de",
+      "dw"
      ],
      "edges": [
-      "deu>dus"
+      "de>dw"
      ]
     }
    ]
@@ -274,34 +275,34 @@
   {
    "name": "v4: analytics DC",
    "tone": "scale",
-   "summary": "A third, read-only DC takes the full scans, so analytics never competes with chat traffic.",
+   "summary": "A third, read-only DC takes the monthly report scans, so analytics never competes with ingest and the live map.",
    "nodes": [
     {
-     "id": "seu",
-     "kind": "service",
-     "label": "EU service",
+     "id": "ie",
+     "kind": "api-gateway",
+     "label": "East ingest",
      "x": 0,
      "y": 0
     },
     {
-     "id": "sus",
-     "kind": "service",
-     "label": "US service",
+     "id": "iw",
+     "kind": "api-gateway",
+     "label": "West ingest",
      "x": 0,
      "y": 270
     },
     {
-     "id": "deu",
+     "id": "de",
      "kind": "nosql",
-     "label": "DC EU",
+     "label": "DC East",
      "sub": "serving",
      "x": 280,
      "y": 0
     },
     {
-     "id": "dus",
+     "id": "dw",
      "kind": "nosql",
-     "label": "DC US",
+     "label": "DC West",
      "sub": "serving",
      "x": 280,
      "y": 270
@@ -318,30 +319,31 @@
      "id": "spark",
      "kind": "worker",
      "label": "Spark jobs",
+     "sub": "fuel + route reports",
      "x": 840,
      "y": 135
     }
    ],
    "edges": [
     {
-     "from": "seu",
-     "to": "deu"
+     "from": "ie",
+     "to": "de"
     },
     {
-     "from": "sus",
-     "to": "dus"
+     "from": "iw",
+     "to": "dw"
     },
     {
-     "from": "deu",
-     "to": "dus"
+     "from": "de",
+     "to": "dw"
     },
     {
-     "from": "deu",
+     "from": "de",
      "to": "dan",
      "label": "async"
     },
     {
-     "from": "dus",
+     "from": "dw",
      "to": "dan"
     },
     {
@@ -352,17 +354,17 @@
    ],
    "steps": [
     {
-     "text": "The serving DCs keep handling chat at LOCAL_QUORUM, as before.",
+     "text": "The serving DCs keep handling ingest and the live map at LOCAL_QUORUM, as before.",
      "nodes": [
-      "seu",
-      "sus",
-      "deu",
-      "dus"
+      "ie",
+      "iw",
+      "de",
+      "dw"
      ],
      "edges": [
-      "seu>deu",
-      "sus>dus",
-      "deu>dus"
+      "ie>de",
+      "iw>dw",
+      "de>dw"
      ]
     },
     {
@@ -371,12 +373,12 @@
       "dan"
      ],
      "edges": [
-      "deu>dan",
-      "dus>dan"
+      "de>dan",
+      "dw>dan"
      ]
     },
     {
-     "text": "Spark scans whole tables there (spam detection, nightly batch jobs over known tables) without touching serving latency.",
+     "text": "Spark scans a month of partitions there for fuel per route, idle time and driver reports, without touching serving latency.",
      "nodes": [
       "dan",
       "spark"
@@ -386,12 +388,12 @@
      ]
     },
     {
-     "text": "Cost: another copy of the data to store, and results that lag the serving DCs slightly.",
+     "text": "Cost: one more copy of the data, and reports that lag the serving DCs slightly.",
      "nodes": [
       "dan"
      ],
      "edges": [
-      "deu>dan"
+      "de>dan"
      ]
     }
    ]

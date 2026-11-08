@@ -1,0 +1,231 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: buying a label when the reply is lost",
+ "caption": "A timeout tells you nothing about whether the carrier bought the label. Ask by your own reference before buying again.",
+ "base_name": "Reply lost, query first",
+ "actors": [
+  {
+   "id": "fulfil",
+   "label": "Fulfilment",
+   "kind": "worker"
+  },
+  {
+   "id": "fdb",
+   "label": "Fulfilment DB",
+   "kind": "sql"
+  },
+  {
+   "id": "carrier",
+   "label": "Shipping carrier",
+   "kind": "external"
+  }
+ ],
+ "messages": [
+  {
+   "from": "fulfil",
+   "to": "fdb",
+   "label": "label: pending, ref=shp_ab12",
+   "note": "Record the intent first, with a reference derived from the shipment, so a crash or timeout leaves a row to resume from."
+  },
+  {
+   "from": "fulfil",
+   "to": "carrier",
+   "label": "POST /labels ref=shp_ab12",
+   "note": "The reference travels with the purchase; the carrier stores it on the label."
+  },
+  {
+   "from": "carrier",
+   "to": "fulfil",
+   "label": "201 label + tracking no.",
+   "style": "lost",
+   "note": "The carrier bought the label, but the reply is dropped on the way back. Fulfilment only sees a timeout."
+  },
+  {
+   "from": "fulfil",
+   "to": "carrier",
+   "label": "GET /labels?ref=shp_ab12",
+   "note": "Outcome unknown, so don't buy again blind: look the reference up."
+  },
+  {
+   "from": "carrier",
+   "to": "fulfil",
+   "label": "found: label + tracking no.",
+   "style": "reply",
+   "note": "The first purchase went through."
+  },
+  {
+   "from": "fulfil",
+   "to": "fdb",
+   "label": "label: done + outbox row",
+   "note": "Store the label and a label-created outbox row in one transaction. One label, one event."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Blind retry",
+   "tone": "risk",
+   "summary": "Retrying the purchase without a lookup buys a second label for the same parcel. Nobody notices until the reconciler reads the invoice.",
+   "actors": [
+    {
+     "id": "fulfil",
+     "label": "Fulfilment",
+     "kind": "worker"
+    },
+    {
+     "id": "fdb",
+     "label": "Fulfilment DB",
+     "kind": "sql"
+    },
+    {
+     "id": "carrier",
+     "label": "Shipping carrier",
+     "kind": "external"
+    },
+    {
+     "id": "recon",
+     "label": "Reconciler",
+     "kind": "scheduler"
+    }
+   ],
+   "messages": [
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "POST /labels",
+     "note": "No reference, no lookup."
+    },
+    {
+     "from": "carrier",
+     "to": "fulfil",
+     "label": "201 label A",
+     "style": "lost",
+     "note": "Label A is bought; the reply is lost."
+    },
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "POST /labels (retry)",
+     "style": "error",
+     "note": "To the carrier this is a new purchase."
+    },
+    {
+     "from": "carrier",
+     "to": "fulfil",
+     "label": "201 label B",
+     "style": "reply",
+     "note": "Label B is bought and printed; A is billed and never used."
+    },
+    {
+     "from": "fulfil",
+     "to": "fdb",
+     "label": "label B: done"
+    },
+    {
+     "from": "carrier",
+     "to": "recon",
+     "label": "invoice: A and B",
+     "style": "async",
+     "note": "Weeks later the invoice lists two labels for one shipment."
+    },
+    {
+     "from": "recon",
+     "to": "fdb",
+     "label": "A has no row → void A",
+     "note": "The reconciler finds A unmatched and files a void or refund. Catching it is good; not causing it is better."
+    }
+   ]
+  },
+  {
+   "name": "Request never arrived",
+   "tone": "edge",
+   "summary": "The lookup says the carrier never saw the purchase, so buying now is safe, with the same reference.",
+   "messages": [
+    {
+     "from": "fulfil",
+     "to": "fdb",
+     "label": "label: pending, ref=shp_ab12"
+    },
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "POST /labels ref=shp_ab12",
+     "style": "lost",
+     "note": "This time the request itself is dropped before the carrier sees it."
+    },
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "GET /labels?ref=shp_ab12",
+     "note": "Same timeout, same rule: look it up."
+    },
+    {
+     "from": "carrier",
+     "to": "fulfil",
+     "label": "404 no such ref",
+     "style": "reply",
+     "note": "Nothing was bought."
+    },
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "POST /labels ref=shp_ab12",
+     "note": "Buy now, with the same reference, so a second lost reply is still recoverable."
+    },
+    {
+     "from": "carrier",
+     "to": "fulfil",
+     "label": "201 label + tracking no.",
+     "style": "reply"
+    },
+    {
+     "from": "fulfil",
+     "to": "fdb",
+     "label": "label: done + outbox row"
+    }
+   ]
+  },
+  {
+   "name": "Carrier honours keys",
+   "tone": "alternative",
+   "summary": "If the carrier accepts an Idempotency-Key, a plain retry is safe: the carrier replays the first label instead of buying another.",
+   "messages": [
+    {
+     "from": "fulfil",
+     "to": "fdb",
+     "label": "label: pending, key=shp_ab12"
+    },
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "POST /labels Idempotency-Key",
+     "note": "The shipment reference doubles as the key."
+    },
+    {
+     "from": "carrier",
+     "to": "fulfil",
+     "label": "201 label + tracking no.",
+     "style": "lost",
+     "note": "Reply lost as before."
+    },
+    {
+     "from": "fulfil",
+     "to": "carrier",
+     "label": "POST /labels same key",
+     "note": "Retry the same call with backoff; no lookup endpoint needed."
+    },
+    {
+     "from": "carrier",
+     "to": "fulfil",
+     "label": "201 replayed label",
+     "style": "reply",
+     "note": "The carrier recognises the key and returns the original label. Check how long it keeps keys."
+    },
+    {
+     "from": "fulfil",
+     "to": "fdb",
+     "label": "label: done + outbox row"
+    }
+   ]
+  }
+ ]
+}

@@ -1,358 +1,402 @@
 {
  "kind": "architecture",
- "title": "The system: a photo-sharing app, every box labelled with its number",
- "caption": "Read the sub-labels: 23 writes/s, 17k reads/s, 5.5 PB and 23 Gbps each pick a different component.",
+ "title": "The system: a podcast hosting platform, every box labelled with its number",
+ "caption": "Read the sub-labels: 0.1 uploads/s, 4.5 TB/day, 24k polls/s and 50 Gbps each pick a different component.",
  "base_name": "Average day",
  "nodes": [
   {
-   "id": "app",
+   "id": "creators",
    "kind": "client",
-   "label": "Mobile app",
-   "sub": "10M DAU",
+   "label": "Creators",
+   "sub": "10k episodes/day",
    "x": 0,
+   "y": 0
+  },
+  {
+   "id": "upload",
+   "kind": "service",
+   "label": "Upload API",
+   "sub": "60 MB · 0.1/s",
+   "x": 230,
+   "y": 0
+  },
+  {
+   "id": "tq",
+   "kind": "queue",
+   "label": "Transcode queue",
+   "sub": "10k jobs/day",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "tx",
+   "kind": "worker",
+   "label": "Transcoders",
+   "sub": "3 bitrates each",
+   "x": 690,
+   "y": 0
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Audio store",
+   "sub": "4.5 TB/day (×3)",
+   "x": 920,
+   "y": 0
+  },
+  {
+   "id": "fcache",
+   "kind": "cache",
+   "label": "Feed cache",
+   "sub": "3.5 GB hot set",
+   "x": 230,
    "y": 140
+  },
+  {
+   "id": "feed",
+   "kind": "service",
+   "label": "Feed builder",
+   "sub": "~240 builds/s",
+   "x": 460,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Episode DB",
+   "sub": "10k rows/day",
+   "x": 690,
+   "y": 140
+  },
+  {
+   "id": "apps",
+   "kind": "client",
+   "label": "Podcast apps",
+   "sub": "10M listeners",
+   "x": 0,
+   "y": 280
   },
   {
    "id": "cdn",
    "kind": "cdn",
    "label": "CDN",
-   "sub": "23 Gbps avg out",
-   "x": 230,
-   "y": 0
-  },
-  {
-   "id": "lb",
-   "kind": "load-balancer",
-   "label": "Load balancer",
-   "sub": "17k req/s peak",
-   "x": 230,
-   "y": 140
-  },
-  {
-   "id": "up",
-   "kind": "service",
-   "label": "Upload API",
-   "sub": "23 uploads/s",
-   "x": 460,
-   "y": 140
-  },
-  {
-   "id": "photo",
-   "kind": "service",
-   "label": "Photo API",
-   "sub": "17k reads/s peak",
-   "x": 460,
-   "y": 280
-  },
-  {
-   "id": "blob",
-   "kind": "blob",
-   "label": "Photo store",
-   "sub": "1 TB/day ×3",
-   "x": 690,
-   "y": 0
-  },
-  {
-   "id": "q",
-   "kind": "queue",
-   "label": "Resize queue",
-   "sub": "23 msgs/s",
-   "x": 690,
-   "y": 140
-  },
-  {
-   "id": "rz",
-   "kind": "worker",
-   "label": "Resizer",
-   "sub": "3 sizes/photo",
+   "sub": "50 Gbps avg out",
    "x": 920,
-   "y": 140
-  },
-  {
-   "id": "cache",
-   "kind": "cache",
-   "label": "Metadata cache",
-   "sub": "~20 GB hot set",
-   "x": 690,
    "y": 280
   },
   {
-   "id": "db",
-   "kind": "sql",
-   "label": "Metadata DB",
-   "sub": "2 GB/day",
+   "id": "logs",
+   "kind": "stream",
+   "label": "Download log",
+   "sub": "100 events/s",
+   "x": 920,
+   "y": 420
+  },
+  {
+   "id": "agg",
+   "kind": "worker",
+   "label": "Stats aggregator",
+   "sub": "dedupe IP + app",
    "x": 690,
    "y": 420
   },
   {
-   "id": "rep",
-   "kind": "sql",
-   "label": "Read replicas",
-   "sub": "serve misses",
-   "x": 920,
+   "id": "stats",
+   "kind": "nosql",
+   "label": "Download stats",
+   "sub": "2 GB/day",
+   "x": 460,
    "y": 420
   }
  ],
  "edges": [
   {
-   "from": "app",
-   "to": "cdn",
-   "label": "photo bytes"
+   "from": "creators",
+   "to": "upload"
   },
   {
-   "from": "app",
-   "to": "lb"
+   "from": "upload",
+   "to": "tq"
+  },
+  {
+   "from": "tq",
+   "to": "tx"
+  },
+  {
+   "from": "tx",
+   "to": "blob",
+   "label": "4 files"
+  },
+  {
+   "from": "tx",
+   "to": "db",
+   "label": "episode row"
+  },
+  {
+   "from": "apps",
+   "to": "fcache",
+   "label": "24k polls/s"
+  },
+  {
+   "from": "fcache",
+   "to": "feed",
+   "label": "miss ~1%"
+  },
+  {
+   "from": "feed",
+   "to": "db"
+  },
+  {
+   "from": "apps",
+   "to": "cdn",
+   "label": "audio bytes"
   },
   {
    "from": "cdn",
    "to": "blob",
-   "label": "miss ~5%"
-  },
-  {
-   "from": "lb",
-   "to": "up"
-  },
-  {
-   "from": "lb",
-   "to": "photo"
-  },
-  {
-   "from": "up",
-   "to": "blob",
-   "label": "original"
-  },
-  {
-   "from": "up",
-   "to": "q"
-  },
-  {
-   "from": "q",
-   "to": "rz"
-  },
-  {
-   "from": "rz",
-   "to": "blob",
-   "label": "sizes"
-  },
-  {
-   "from": "rz",
-   "to": "db",
-   "label": "photo row"
-  },
-  {
-   "from": "photo",
-   "to": "cache"
-  },
-  {
-   "from": "photo",
-   "to": "db",
    "label": "miss"
   },
   {
-   "from": "db",
-   "to": "rep"
+   "from": "cdn",
+   "to": "logs",
+   "label": "access logs"
+  },
+  {
+   "from": "logs",
+   "to": "agg"
+  },
+  {
+   "from": "agg",
+   "to": "stats"
   }
  ],
  "steps": [
   {
-   "text": "Five assumptions drive everything: 10 M daily users, 1 in 5 posts a photo a day, each views 50, 500 KB per photo, peak = 3× average.",
+   "text": "Six assumptions drive everything: 70 000 active shows, one episode a week each, 60 MB per episode, 10 M listeners, one download per listener a day, 10 subscribed feeds polled hourly. Peak = 5× average (Monday morning).",
    "nodes": [
-    "app"
+    "creators",
+    "apps"
    ]
   },
   {
-   "text": "Writes: 2 M uploads/day ÷ 1e5 s ≈ 23/s. That is tiny: one Upload API pool and one database primary, no sharding.",
+   "text": "Writes: 70 000 ÷ 7 = 10 000 episodes/day ÷ 1e5 s ≈ 0.1 uploads/s. Tiny: one small Upload API. Transcoding takes minutes, so it goes through a queue and the upload returns at once.",
    "nodes": [
-    "app",
-    "lb",
-    "up"
+    "creators",
+    "upload",
+    "tq"
    ],
    "edges": [
-    "app>lb",
-    "lb>up"
+    "creators>upload",
+    "upload>tq"
    ]
   },
   {
-   "text": "Bytes: 2 M × 500 KB = 1 TB/day, ×3 replicas, ×5 years ≈ 5.5 PB. That number alone says object storage, never database rows. Resizing goes through a queue so uploads return fast.",
+   "text": "Bytes: the original plus 3 lower bitrates ≈ 150 MB per episode, so 1.5 TB/day, ×3 replicas = 4.5 TB/day, about 1.6 PB a year. That says object storage. The episode row (a few KB) is 10k rows/day: one relational primary.",
    "nodes": [
-    "up",
+    "tq",
+    "tx",
     "blob",
-    "q",
-    "rz"
-   ],
-   "edges": [
-    "up>blob",
-    "up>q",
-    "q>rz",
-    "rz>blob"
-   ]
-  },
-  {
-   "text": "Metadata is a different number: 1 KB per photo ≈ 2 GB/day, about 3.6 TB in 5 years. One relational primary holds it.",
-   "nodes": [
-    "rz",
     "db"
    ],
    "edges": [
-    "rz>db"
+    "tq>tx",
+    "tx>blob",
+    "tx>db"
    ]
   },
   {
-   "text": "Reads: 500 M views/day ≈ 5 800/s, 17 400/s at peak, past one database. A cache with ~95% hits leaves under 1 000 reads/s for the DB and its replicas.",
+   "text": "RSS: 10 M × 10 feeds × 24 polls = 2.4 B/day ≈ 24 000 polls/s. Feeds change about once a week, so ~99% are cache hits, and all 70 000 feeds × 50 KB ≈ 3.5 GB fit in one cache node. The builder and the DB see ~240/s.",
    "nodes": [
-    "lb",
-    "photo",
-    "cache",
-    "db",
-    "rep"
+    "apps",
+    "fcache",
+    "feed",
+    "db"
    ],
    "edges": [
-    "lb>photo",
-    "photo>cache",
-    "photo>db",
-    "db>rep"
+    "apps>fcache",
+    "fcache>feed",
+    "feed>db"
    ]
   },
   {
-   "text": "Egress: 5 800 × 500 KB × 8 ≈ 23 Gbps on average, ~70 Gbps at peak. Only a CDN serves that; the photo store sees misses only.",
+   "text": "Downloads: 10 M/day ÷ 1e5 s = 100/s. Egress: 100 × 60 MB × 8 ≈ 50 Gbps on average and 240 Gbps at the 5× peak. Only a CDN serves that; the audio store sees misses only.",
    "nodes": [
-    "app",
+    "apps",
     "cdn",
     "blob"
    ],
    "edges": [
-    "app>cdn",
+    "apps>cdn",
     "cdn>blob"
+   ]
+  },
+  {
+   "text": "Analytics: one access-log event per download, 100/s (500/s at peak) × 200 B ≈ 2 GB/day. A log plus an aggregator that dedupes repeat fetches gives creators their counts minutes later.",
+   "nodes": [
+    "cdn",
+    "logs",
+    "agg",
+    "stats"
+   ],
+   "edges": [
+    "cdn>logs",
+    "logs>agg",
+    "agg>stats"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "8 pm peak",
+   "name": "Monday 7 am peak",
    "tone": "edge",
-   "summary": "Design for the peak, not the average: 3× the reads and egress arrive at once, and only the read path and the edge feel it.",
+   "summary": "New episodes land Sunday night and auto-download for the commute: downloads go 5×, and every new file starts cold at every CDN edge.",
    "steps": [
     {
-     "text": "Evening peak: 17 400 views/s and ~70 Gbps of photo bytes.",
+     "text": "Shows publish overnight. Within an hour every app's poll sees the new item and queues an auto-download.",
      "nodes": [
-      "app"
+      "apps",
+      "fcache"
      ],
      "edges": [
-      "app>cdn",
-      "app>lb"
+      "apps>fcache"
      ]
     },
     {
-     "text": "The CDN serves ~66 Gbps from the edge; the origin sends ~3.5 Gbps.",
+     "text": "Downloads jump from 100/s to 500/s: 500 × 60 MB × 8 ≈ 240 Gbps, spread over the CDN's edges.",
+     "nodes": [
+      "apps",
+      "cdn"
+     ],
+     "edges": [
+      "apps>cdn"
+     ]
+    },
+    {
+     "text": "Each new episode is a cold object, so its first request at each edge misses. Misses are collapsed per region, and the audio store sees one fetch per episode per region, not one per listener.",
      "nodes": [
       "cdn",
       "blob"
      ],
      "edges": [
-      "app>cdn",
       "cdn>blob"
      ]
     },
     {
-     "text": "The Photo API pool scales out to ~4 servers; the cache takes ~16 500 reads/s.",
+     "text": "The log takes 500 events/s easily; the aggregator falls a few minutes behind and catches up by mid-morning. Stats being late is fine; downloads failing is not.",
      "nodes": [
-      "lb",
-      "photo",
-      "cache"
+      "logs",
+      "agg",
+      "stats"
      ],
      "edges": [
-      "lb>photo",
-      "photo>cache"
-     ]
-    },
-    {
-     "text": "Uploads peak at ~70/s: still nothing for the write path.",
-     "nodes": [
-      "up",
-      "db"
-     ],
-     "edges": [
-      "lb>up",
-      "rz>db"
+      "cdn>logs",
+      "logs>agg",
+      "agg>stats"
      ]
     }
    ]
   },
   {
-   "name": "Cache down",
+   "name": "Feed cache down",
    "tone": "failure",
-   "summary": "Lose the cache and 17 400 reads/s land on a tier sized for 900: the estimate tells you the replicas or a warm standby cache must exist.",
+   "summary": "24k polls/s fall through to the builder and the DB, which were sized for 240/s. Shed and answer cheaply until a new node warms.",
    "steps": [
     {
-     "text": "The metadata cache cluster restarts empty during peak.",
+     "text": "The feed cache node dies.",
      "fail": [
-      "cache",
-      "photo>cache"
+      "fcache"
      ],
      "nodes": [
-      "photo"
-     ]
-    },
-    {
-     "text": "All 17 400 reads/s go to a database tier sized for ~900 misses/s: about 20× its normal load.",
-     "fail": [
-      "cache"
-     ],
-     "nodes": [
-      "photo",
-      "db",
-      "rep"
+      "apps"
      ],
      "edges": [
-      "photo>db",
-      "db>rep"
+      "apps>fcache"
      ]
     },
     {
-     "text": "Mitigate: shed non-critical reads, warm the cache from recent photos, and keep a replica cache in another zone.",
+     "text": "Polls fall through: 24 000 builds/s, each reading the DB. That is 100× what the builder was sized for and above one primary's ~10k reads/s.",
+     "fail": [
+      "fcache",
+      "db"
+     ],
      "nodes": [
-      "cache",
+      "feed",
       "db"
      ],
      "edges": [
-      "photo>cache"
+      "feed>db"
+     ]
+    },
+    {
+     "text": "Degrade: answer 304 Not Modified from the feed's last-updated time (one cheap indexed read) and shed the rest with 503 + Retry-After. An app that misses one hourly poll just tries next hour.",
+     "fail": [
+      "fcache"
+     ],
+     "nodes": [
+      "feed",
+      "db"
+     ],
+     "edges": [
+      "feed>db"
+     ]
+    },
+    {
+     "text": "A replacement node warms by rebuilding all 70 000 feeds: at ~1 000 builds/s that is about 70 s. Then the builder is back to ~240/s.",
+     "nodes": [
+      "fcache",
+      "feed",
+      "db"
+     ],
+     "edges": [
+      "fcache>feed",
+      "feed>db"
      ]
     }
    ]
   },
   {
-   "name": "Viral photo",
+   "name": "New bitrate rollout",
    "tone": "edge",
-   "summary": "One photo, 1 M views in an hour (~280/s): per-key load is small, and the CDN and cache serve it. The total, not one key, drives the design here.",
+   "summary": "Adding a 48 kbps file for low-bandwidth listeners means re-transcoding the whole back catalogue: estimate CPU and storage before saying yes.",
    "steps": [
     {
-     "text": "A photo goes viral: 1 M views in an hour ≈ 280/s, ~1 Gbps for that one object.",
+     "text": "Product wants a 48 kbps rendition. The back catalogue is about 3 M episodes, so 3 M backfill jobs are queued.",
      "nodes": [
-      "app"
-     ],
-     "edges": [
-      "app>cdn"
+      "tq"
      ]
     },
     {
-     "text": "The first request per edge misses and fetches from the store; then the edge serves it.",
+     "text": "At ~1 CPU-minute per episode that is 3 M CPU-minutes ≈ 50 000 CPU-hours: 300 cores for about a week.",
      "nodes": [
-      "cdn",
+      "tq",
+      "tx"
+     ],
+     "edges": [
+      "tq>tx"
+     ]
+    },
+    {
+     "text": "Storage: 1 h at 48 kbps ≈ 20 MB, so 3 M × 20 MB × 3 replicas ≈ 180 TB, about six weeks of normal growth.",
+     "nodes": [
+      "tx",
       "blob"
      ],
      "edges": [
-      "cdn>blob"
+      "tx>blob"
      ]
     },
     {
-     "text": "Its metadata is one hot cache key at 280 reads/s: fine for one cache node.",
+     "text": "Run the backfill at low priority in its own queue so Monday's new uploads still transcode in minutes; each episode row gains the new file when it is done.",
      "nodes": [
-      "photo",
-      "cache"
+      "upload",
+      "tq",
+      "tx",
+      "db"
      ],
      "edges": [
-      "lb>photo",
-      "photo>cache"
+      "creators>upload",
+      "upload>tq",
+      "tx>db"
      ]
     }
    ]

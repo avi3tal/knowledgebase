@@ -1,0 +1,214 @@
+{
+ "kind": "sequence",
+ "title": "Zoom in: validators pull only what they have credit for",
+ "caption": "Free slots are the credit. A validator that is slow for any reason asks for less, and the log's lag carries that signal back to admission.",
+ "base_name": "Pull with credits",
+ "actors": [
+  {
+   "id": "log",
+   "label": "Billing log",
+   "kind": "stream"
+  },
+  {
+   "id": "val",
+   "label": "Validator",
+   "kind": "worker"
+  },
+  {
+   "id": "tsdb",
+   "label": "Time-series DB",
+   "kind": "nosql"
+  },
+  {
+   "id": "pol",
+   "label": "Admission policy",
+   "kind": "coordinator"
+  }
+ ],
+ "messages": [
+  {
+   "from": "val",
+   "to": "log",
+   "label": "fetch, credit 50",
+   "note": "The validator has 50 free slots, so it asks for exactly 50 batches. It never holds more than it can work on."
+  },
+  {
+   "from": "log",
+   "to": "val",
+   "label": "50 batches",
+   "style": "reply"
+  },
+  {
+   "from": "val",
+   "to": "val",
+   "label": "check gaps, dupes",
+   "style": "self",
+   "note": "Missing quarter-hours are flagged for estimation; a batch seen before is skipped."
+  },
+  {
+   "from": "val",
+   "to": "tsdb",
+   "label": "write 50 (idempotent)",
+   "note": "Key = meter id + interval, so writing the same read twice changes nothing."
+  },
+  {
+   "from": "tsdb",
+   "to": "val",
+   "label": "ok",
+   "style": "reply"
+  },
+  {
+   "from": "val",
+   "to": "log",
+   "label": "commit offset, credit 50",
+   "note": "Commit after the write: a crash means redelivery, never loss. Throughput = 50 slots ÷ 0.1 s ≈ 500 batches/s per validator."
+  },
+  {
+   "from": "log",
+   "to": "pol",
+   "label": "lag: 40 s",
+   "style": "async",
+   "note": "Lag in seconds of work, not in messages, is what admission reacts to."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Writes slow down",
+   "tone": "failure",
+   "summary": "Slower writes mean slots stay busy; the validator simply stops asking, and the lag tells admission to push back.",
+   "messages": [
+    {
+     "from": "val",
+     "to": "log",
+     "label": "fetch, credit 50"
+    },
+    {
+     "from": "log",
+     "to": "val",
+     "label": "50 batches",
+     "style": "reply"
+    },
+    {
+     "from": "val",
+     "to": "tsdb",
+     "label": "write 50"
+    },
+    {
+     "from": "tsdb",
+     "to": "val",
+     "label": "ok after 0.5 s",
+     "style": "reply",
+     "note": "Each slot is busy 5× longer: ~100 batches/s per validator instead of ~500."
+    },
+    {
+     "from": "val",
+     "to": "val",
+     "label": "no free slots: no fetch",
+     "style": "self",
+     "note": "Nothing piles up inside the validator; the backlog stays in the durable log."
+    },
+    {
+     "from": "log",
+     "to": "pol",
+     "label": "lag: 30 min",
+     "style": "async",
+     "note": "Admission starts answering 429 to gateways for billing reads and drops diagnostics."
+    }
+   ]
+  },
+  {
+   "name": "Validator crashes",
+   "tone": "edge",
+   "summary": "A crash between the write and the commit replays the batch; idempotent writes make the replay harmless.",
+   "messages": [
+    {
+     "from": "val",
+     "to": "log",
+     "label": "fetch, credit 50"
+    },
+    {
+     "from": "log",
+     "to": "val",
+     "label": "50 batches",
+     "style": "reply"
+    },
+    {
+     "from": "val",
+     "to": "tsdb",
+     "label": "write 30 of 50"
+    },
+    {
+     "from": "val",
+     "to": "log",
+     "label": "crash before commit",
+     "style": "lost",
+     "note": "The offset was never committed, so the log still owns all 50 batches."
+    },
+    {
+     "from": "log",
+     "to": "val",
+     "label": "redeliver 50 to a new validator",
+     "style": "reply",
+     "note": "After the session timeout the partition moves to another validator."
+    },
+    {
+     "from": "val",
+     "to": "tsdb",
+     "label": "write 50 (idempotent)",
+     "note": "The 30 already written overwrite themselves with the same values: no double usage."
+    },
+    {
+     "from": "val",
+     "to": "log",
+     "label": "commit offset",
+     "style": "call"
+    }
+   ]
+  },
+  {
+   "name": "Scale out on lag",
+   "tone": "alternative",
+   "summary": "Instead of pushing back, add validators: each new one brings 50 more credits, up to the number of log partitions.",
+   "messages": [
+    {
+     "from": "log",
+     "to": "pol",
+     "label": "lag: 10 min",
+     "style": "async",
+     "note": "Above the 5-minute target the autoscaler adds validators."
+    },
+    {
+     "from": "pol",
+     "to": "val",
+     "label": "start 10 more",
+     "style": "async",
+     "note": "Startup takes a couple of minutes; the bound covers the gap."
+    },
+    {
+     "from": "val",
+     "to": "log",
+     "label": "fetch, credit 50 ×30",
+     "note": "30 validators × ~500/s ≈ 15 000 batches/s."
+    },
+    {
+     "from": "log",
+     "to": "val",
+     "label": "batches",
+     "style": "reply"
+    },
+    {
+     "from": "val",
+     "to": "tsdb",
+     "label": "write (idempotent)",
+     "note": "The time-series DB is the next limit: more validators only help until it saturates."
+    },
+    {
+     "from": "log",
+     "to": "pol",
+     "label": "lag: 1 min",
+     "style": "async"
+    }
+   ]
+  }
+ ]
+}

@@ -1,72 +1,59 @@
 {
  "kind": "architecture",
- "title": "Scaling the home timeline: pull, push, hybrid, then shards and regions",
+ "title": "Scaling the inbox: from pull on read to regional fan-out",
  "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
  "base_name": "v1: pull on read",
  "nodes": [
   {
-   "id": "apps",
+   "id": "u",
    "kind": "client",
-   "label": "Apps",
+   "label": "Watchers",
    "x": 0,
    "y": 120
   },
   {
    "id": "api",
    "kind": "service",
-   "label": "Feed API",
-   "sub": "query + merge",
-   "x": 230,
+   "label": "Inbox API",
+   "sub": "query on every open",
+   "x": 280,
    "y": 120
   },
   {
    "id": "db",
    "kind": "sql",
-   "label": "Posts DB",
-   "sub": "index by author",
-   "x": 460,
-   "y": 60
-  },
-  {
-   "id": "fg",
-   "kind": "sql",
-   "label": "Follows table",
-   "x": 460,
-   "y": 200
+   "label": "Repo DB",
+   "sub": "events by repo",
+   "x": 560,
+   "y": 120
   }
  ],
  "edges": [
   {
-   "from": "apps",
+   "from": "u",
    "to": "api"
   },
   {
    "from": "api",
-   "to": "fg"
-  },
-  {
-   "from": "api",
-   "to": "db"
+   "to": "db",
+   "label": "N watched repos"
   }
  ],
  "steps": [
   {
-   "text": "Each open loads who the reader follows, then queries the recent posts of all of them and sorts.",
+   "text": "On each open, the API loads the user's watched repos, fetches recent events from each and merges them. Writes cost nothing.",
    "nodes": [
-    "apps",
-    "api",
-    "fg",
-    "db"
+    "u",
+    "api"
    ],
    "edges": [
-    "apps>api",
-    "api>fg",
-    "api>db"
+    "u>api"
    ]
   },
   {
-   "text": "Posting is one insert and always fresh. Fine for thousands of users, but each open costs one query per followee: at 300 followees and 10k opens/s the database melts.",
+   "text": "Fine while people watch a few repos. Someone watching 400 repos makes 400 queries per open, and the DB becomes the bottleneck as opens grow.",
    "nodes": [
+    "api",
     "db"
    ],
    "edges": [
@@ -78,116 +65,109 @@
   {
    "name": "v2: push on write",
    "tone": "scale",
-   "summary": "Precompute every timeline when a post is made: an open becomes one cache read.",
+   "summary": "Build every watcher's inbox when the event happens, so an open becomes one lookup.",
    "nodes": [
     {
-     "id": "apps",
-     "kind": "client",
-     "label": "Apps",
+     "id": "repo",
+     "kind": "service",
+     "label": "Repo service",
      "x": 0,
-     "y": 140
+     "y": 40
+    },
+    {
+     "id": "log",
+     "kind": "stream",
+     "label": "Event log",
+     "x": 270,
+     "y": 40
+    },
+    {
+     "id": "fan",
+     "kind": "worker",
+     "label": "Fan-out workers",
+     "x": 540,
+     "y": 40
+    },
+    {
+     "id": "inbox",
+     "kind": "nosql",
+     "label": "Inbox store",
+     "x": 540,
+     "y": 200
     },
     {
      "id": "api",
      "kind": "service",
-     "label": "Post / feed API",
-     "x": 230,
-     "y": 140
+     "label": "Inbox API",
+     "x": 270,
+     "y": 200
     },
     {
-     "id": "db",
-     "kind": "nosql",
-     "label": "Post store",
-     "x": 460,
-     "y": 0
-    },
-    {
-     "id": "q",
-     "kind": "stream",
-     "label": "Post events",
-     "x": 460,
-     "y": 140
-    },
-    {
-     "id": "wk",
-     "kind": "worker",
-     "label": "Fan-out workers",
-     "x": 690,
-     "y": 140
-    },
-    {
-     "id": "tl",
-     "kind": "cache",
-     "label": "Timeline cache",
-     "sub": "ids per user",
-     "x": 460,
-     "y": 280
+     "id": "u",
+     "kind": "client",
+     "label": "Watchers",
+     "x": 0,
+     "y": 200
     }
    ],
    "edges": [
     {
-     "from": "apps",
+     "from": "repo",
+     "to": "log"
+    },
+    {
+     "from": "log",
+     "to": "fan"
+    },
+    {
+     "from": "fan",
+     "to": "inbox",
+     "label": "one write per watcher"
+    },
+    {
+     "from": "u",
      "to": "api"
     },
     {
      "from": "api",
-     "to": "db"
-    },
-    {
-     "from": "api",
-     "to": "q"
-    },
-    {
-     "from": "q",
-     "to": "wk"
-    },
-    {
-     "from": "wk",
-     "to": "tl"
-    },
-    {
-     "from": "api",
-     "to": "tl",
-     "label": "read"
+     "to": "inbox"
     }
    ],
    "steps": [
     {
-     "text": "A post goes into the store and onto an event log; workers copy its id into every follower's timeline.",
+     "text": "Events go to a log, and workers copy each event id into every watcher's inbox off the request path.",
      "nodes": [
-      "api",
-      "db",
-      "q",
-      "wk",
-      "tl"
+      "repo",
+      "log",
+      "fan",
+      "inbox"
      ],
      "edges": [
-      "api>db",
-      "api>q",
-      "q>wk",
-      "wk>tl"
+      "repo>log",
+      "log>fan",
+      "fan>inbox"
      ]
     },
     {
-     "text": "An open is one read of the reader's timeline: a few ms whatever they follow. The read bottleneck is gone.",
+     "text": "An open is one read of a ready list, whatever the number of watched repos.",
      "nodes": [
-      "apps",
+      "u",
       "api",
-      "tl"
+      "inbox"
      ],
      "edges": [
-      "apps>api",
-      "api>tl"
+      "u>api",
+      "api>inbox"
      ]
     },
     {
-     "text": "Cost: one write per follower. Accounts with tens of millions of followers make the workers lag for everyone.",
+     "text": "Cost: writes grow with watchers. One event on a repo with 300 000 watchers is 300 000 writes, and the workers lag for everyone behind it.",
      "nodes": [
-      "wk",
-      "tl"
+      "fan",
+      "inbox"
      ],
      "edges": [
-      "wk>tl"
+      "fan>inbox"
      ]
     }
    ]
@@ -195,127 +175,115 @@
   {
    "name": "v3: hybrid",
    "tone": "scale",
-   "summary": "Push for normal accounts, pull for accounts above a follower threshold, merge at read time.",
+   "summary": "Push for ordinary repos, and keep popular repos out of the fan-out: their events are merged in at read time.",
    "nodes": [
     {
-     "id": "apps",
-     "kind": "client",
-     "label": "Apps",
+     "id": "log",
+     "kind": "stream",
+     "label": "Event log",
      "x": 0,
-     "y": 140
+     "y": 120
+    },
+    {
+     "id": "cfg",
+     "kind": "coordinator",
+     "label": "Fan-out config",
+     "sub": "watcher threshold",
+     "x": 270,
+     "y": 0
+    },
+    {
+     "id": "fan",
+     "kind": "worker",
+     "label": "Fan-out workers",
+     "x": 270,
+     "y": 120
+    },
+    {
+     "id": "inbox",
+     "kind": "nosql",
+     "label": "Inbox store",
+     "x": 540,
+     "y": 40
+    },
+    {
+     "id": "hot",
+     "kind": "cache",
+     "label": "Hot-repo recents",
+     "x": 540,
+     "y": 200
     },
     {
      "id": "api",
      "kind": "service",
-     "label": "Feed service",
+     "label": "Inbox API",
      "sub": "merge",
-     "x": 230,
-     "y": 140
-    },
-    {
-     "id": "db",
-     "kind": "nosql",
-     "label": "Post store",
-     "x": 460,
-     "y": 0
-    },
-    {
-     "id": "q",
-     "kind": "stream",
-     "label": "Post events",
-     "x": 460,
-     "y": 140
-    },
-    {
-     "id": "wk",
-     "kind": "worker",
-     "label": "Fan-out workers",
-     "sub": "skip big authors",
-     "x": 690,
-     "y": 140
-    },
-    {
-     "id": "tl",
-     "kind": "cache",
-     "label": "Timeline cache",
-     "x": 460,
-     "y": 280
-    },
-    {
-     "id": "cel",
-     "kind": "cache",
-     "label": "Big-author recents",
-     "sub": "hot, replicated",
-     "x": 690,
-     "y": 0
+     "x": 820,
+     "y": 120
     }
    ],
    "edges": [
     {
-     "from": "apps",
-     "to": "api"
+     "from": "log",
+     "to": "fan"
+    },
+    {
+     "from": "cfg",
+     "to": "fan"
+    },
+    {
+     "from": "fan",
+     "to": "inbox",
+     "label": "below threshold"
+    },
+    {
+     "from": "fan",
+     "to": "hot",
+     "label": "above threshold"
     },
     {
      "from": "api",
-     "to": "db"
+     "to": "inbox"
     },
     {
      "from": "api",
-     "to": "q"
-    },
-    {
-     "from": "q",
-     "to": "wk"
-    },
-    {
-     "from": "wk",
-     "to": "tl"
-    },
-    {
-     "from": "api",
-     "to": "tl",
-     "label": "read"
-    },
-    {
-     "from": "db",
-     "to": "cel"
+     "to": "hot"
     }
    ],
    "steps": [
     {
-     "text": "Workers skip authors above the threshold, so the worst-case fan-out is bounded (for example 500 k writes).",
+     "text": "A watcher threshold in config splits repos into pushed and merged.",
      "nodes": [
-      "q",
-      "wk",
-      "tl"
+      "cfg",
+      "fan"
      ],
      "edges": [
-      "api>q",
-      "q>wk",
-      "wk>tl"
+      "log>fan",
+      "cfg>fan"
      ]
     },
     {
-     "text": "Big authors' recent posts live in a small, heavily replicated cache that readers pull from.",
+     "text": "Write cost per event is now capped by the threshold; popular repos cost one write.",
      "nodes": [
-      "db",
-      "cel"
+      "fan",
+      "inbox",
+      "hot"
      ],
      "edges": [
-      "api>db",
-      "db>cel"
+      "fan>inbox",
+      "fan>hot"
      ]
     },
     {
-     "text": "Cost: two read paths to keep correct, a threshold to tune, and every follower of a star now reads the same hot keys.",
+     "text": "Cost: every open does a small merge, and the threshold needs tuning. The hot recents become a read hotspot, so they are replicated.",
      "nodes": [
-      "apps",
       "api",
-      "tl"
+      "inbox",
+      "hot"
      ],
      "edges": [
-      "apps>api",
-      "api>tl"
+      "api>inbox",
+      "api>hot"
      ]
     }
    ]
@@ -323,156 +291,122 @@
   {
    "name": "v4: shards and regions",
    "tone": "scale",
-   "summary": "Shard timelines by reader and run the fan-out in each region from a replicated event log.",
+   "summary": "Shard inboxes by user id and run fan-out in each region next to its users; the log is mirrored between regions.",
    "nodes": [
     {
-     "id": "ua",
-     "kind": "client",
-     "label": "Users (EU)",
+     "id": "la",
+     "kind": "stream",
+     "label": "Event log (EU)",
      "x": 0,
-     "y": 0
+     "y": 40
+    },
+    {
+     "id": "lb",
+     "kind": "stream",
+     "label": "Event log (US)",
+     "x": 0,
+     "y": 280
     },
     {
      "id": "fa",
-     "kind": "service",
-     "label": "Feed (EU)",
-     "x": 230,
-     "y": 0
-    },
-    {
-     "id": "ta",
-     "kind": "cache",
-     "label": "Timelines EU",
-     "sub": "64 shards",
-     "x": 460,
-     "y": 0
-    },
-    {
-     "id": "wa",
      "kind": "worker",
      "label": "Fan-out (EU)",
-     "x": 690,
-     "y": 0
-    },
-    {
-     "id": "log",
-     "kind": "stream",
-     "label": "Global post log",
-     "sub": "replicated",
-     "x": 920,
-     "y": 140
-    },
-    {
-     "id": "ub",
-     "kind": "client",
-     "label": "Users (US)",
-     "x": 0,
-     "y": 280
+     "x": 280,
+     "y": 40
     },
     {
      "id": "fb",
-     "kind": "service",
-     "label": "Feed (US)",
-     "x": 230,
-     "y": 280
-    },
-    {
-     "id": "tb",
-     "kind": "cache",
-     "label": "Timelines US",
-     "sub": "64 shards",
-     "x": 460,
-     "y": 280
-    },
-    {
-     "id": "wb",
      "kind": "worker",
      "label": "Fan-out (US)",
-     "x": 690,
+     "x": 280,
+     "y": 280
+    },
+    {
+     "id": "s1",
+     "kind": "nosql",
+     "label": "Inbox shard A",
+     "sub": "EU users",
+     "x": 560,
+     "y": 0
+    },
+    {
+     "id": "s2",
+     "kind": "nosql",
+     "label": "Inbox shard B",
+     "sub": "EU users",
+     "x": 560,
+     "y": 120
+    },
+    {
+     "id": "s3",
+     "kind": "nosql",
+     "label": "Inbox shard C",
+     "sub": "US users",
+     "x": 560,
      "y": 280
     }
    ],
    "edges": [
     {
-     "from": "ua",
+     "from": "la",
+     "to": "lb",
+     "label": "mirror"
+    },
+    {
+     "from": "la",
      "to": "fa"
     },
     {
-     "from": "fa",
-     "to": "ta"
-    },
-    {
-     "from": "log",
-     "to": "wa"
-    },
-    {
-     "from": "wa",
-     "to": "ta"
-    },
-    {
-     "from": "ub",
+     "from": "lb",
      "to": "fb"
     },
     {
+     "from": "fa",
+     "to": "s1"
+    },
+    {
+     "from": "fa",
+     "to": "s2"
+    },
+    {
      "from": "fb",
-     "to": "tb"
-    },
-    {
-     "from": "log",
-     "to": "wb"
-    },
-    {
-     "from": "wb",
-     "to": "tb"
+     "to": "s3"
     }
    ],
    "steps": [
     {
-     "text": "Timelines are sharded by reader id, so memory and write throughput grow by adding shards.",
+     "text": "Inboxes are sharded by user id, so capacity grows by adding shards.",
      "nodes": [
-      "ta",
-      "tb"
-     ],
-     "edges": [
-      "wa>ta",
-      "wb>tb"
+      "s1",
+      "s2",
+      "s3"
      ]
     },
     {
-     "text": "Posts land in one replicated log; each region's workers fan out only to followers who live in that region.",
+     "text": "Each region's workers write only the inboxes of users who live there, so no write crosses an ocean.",
      "nodes": [
-      "log",
-      "wa",
-      "wb"
-     ],
-     "edges": [
-      "log>wa",
-      "log>wb"
-     ]
-    },
-    {
-     "text": "Readers hit their own region: no cross-ocean call on open.",
-     "nodes": [
-      "ua",
       "fa",
-      "ub",
-      "fb"
+      "fb",
+      "s1",
+      "s2",
+      "s3"
      ],
      "edges": [
-      "ua>fa",
-      "fa>ta",
-      "ub>fb",
-      "fb>tb"
+      "la>fa",
+      "lb>fb",
+      "fa>s1",
+      "fa>s2",
+      "fb>s3"
      ]
     },
     {
-     "text": "Cost: a post reaches the other region a second or so later, and replication plus duplicate worker fleets per region.",
+     "text": "Cost: the log is mirrored between regions, so a watcher far from the repo sees its events a second or two later. Say that this is fine for an inbox.",
      "nodes": [
-      "log"
+      "la",
+      "lb"
      ],
      "edges": [
-      "log>wa",
-      "log>wb"
+      "la>lb"
      ]
     }
    ]

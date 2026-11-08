@@ -1,383 +1,404 @@
 {
  "kind": "architecture",
- "title": "The system: a food-delivery checkout that charges exactly once",
- "caption": "The key is born on the phone, claimed in the payments DB, passed on to the card processor, and every event downstream carries an id that consumers dedup on.",
- "base_name": "One checkout",
+ "title": "The system: warehouse inventory and shipping that reserves and ships exactly once",
+ "caption": "Every call that changes stock or buys a label carries a key the server remembers; every event carries an id the consumer remembers. Retries and redeliveries then cost nothing.",
+ "base_name": "One order, end to end",
  "nodes": [
   {
-   "id": "app",
+   "id": "shop",
    "kind": "client",
-   "label": "Mobile app",
-   "sub": "key per Pay tap",
+   "label": "Online shop",
+   "sub": "places orders",
    "x": 0,
-   "y": 140
+   "y": 150
   },
   {
-   "id": "gw",
-   "kind": "api-gateway",
-   "label": "API gateway",
-   "sub": "auth, routing",
-   "x": 230,
-   "y": 140
-  },
-  {
-   "id": "recon",
-   "kind": "scheduler",
-   "label": "Reconciler",
-   "sub": "daily vs PSP report",
-   "x": 230,
-   "y": 280
-  },
-  {
-   "id": "pay",
+   "id": "orders",
    "kind": "service",
-   "label": "Payment service",
-   "x": 460,
-   "y": 140
+   "label": "Order service",
+   "sub": "retries timeouts",
+   "x": 230,
+   "y": 150
   },
   {
-   "id": "db",
+   "id": "fulfil",
+   "kind": "worker",
+   "label": "Fulfilment",
+   "sub": "buys labels",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "inv",
+   "kind": "service",
+   "label": "Inventory API",
+   "sub": "Idempotency-Key",
+   "x": 460,
+   "y": 150
+  },
+  {
+   "id": "invdb",
    "kind": "sql",
-   "label": "Payments DB",
-   "sub": "idem keys + ledger",
+   "label": "Inventory DB",
+   "sub": "reservations, keys",
    "x": 460,
-   "y": 280
+   "y": 300
   },
   {
-   "id": "psp",
+   "id": "carrier",
    "kind": "external",
-   "label": "Card processor",
-   "sub": "dedups on key too",
+   "label": "Shipping carrier",
+   "sub": "label API",
    "x": 690,
-   "y": 140
+   "y": 0
+  },
+  {
+   "id": "fdb",
+   "kind": "sql",
+   "label": "Fulfilment DB",
+   "sub": "labels + outbox",
+   "x": 690,
+   "y": 150
   },
   {
    "id": "relay",
    "kind": "worker",
    "label": "Outbox relay",
+   "sub": "polls both DBs",
    "x": 690,
-   "y": 280
+   "y": 300
   },
   {
-   "id": "pdb",
-   "kind": "sql",
-   "label": "Points DB",
-   "sub": "points + seen ids",
-   "x": 690,
-   "y": 420
-  },
-  {
-   "id": "rcpt",
-   "kind": "worker",
-   "label": "Receipts",
-   "sub": "email per payment",
+   "id": "recon",
+   "kind": "scheduler",
+   "label": "Reconciler",
+   "sub": "invoice vs labels",
    "x": 920,
-   "y": 140
+   "y": 0
   },
   {
-   "id": "bus",
+   "id": "pick",
+   "kind": "client",
+   "label": "Picking app",
+   "sub": "warehouse floor",
+   "x": 920,
+   "y": 150
+  },
+  {
+   "id": "stream",
    "kind": "stream",
    "label": "Event stream",
    "sub": "at-least-once",
    "x": 920,
-   "y": 280
+   "y": 300
   },
   {
-   "id": "pts",
+   "id": "notify",
    "kind": "worker",
-   "label": "Loyalty points",
-   "sub": "dedup by event_id",
+   "label": "Notifications",
+   "sub": "emails, SMS",
    "x": 920,
-   "y": 420
+   "y": 450
   }
  ],
  "edges": [
   {
-   "from": "app",
-   "to": "gw",
-   "label": "POST /pay + key"
+   "from": "shop",
+   "to": "orders",
+   "label": "checkout"
   },
   {
-   "from": "gw",
-   "to": "pay"
+   "from": "orders",
+   "to": "inv",
+   "label": "reserve + key"
   },
   {
-   "from": "pay",
-   "to": "db",
-   "label": "claim key"
+   "from": "inv",
+   "to": "invdb",
+   "label": "one transaction"
   },
   {
-   "from": "pay",
-   "to": "psp",
-   "label": "charge, same key"
+   "from": "inv",
+   "to": "orders",
+   "label": "stored reply"
   },
   {
-   "from": "psp",
-   "to": "pay",
-   "label": "webhook"
+   "from": "orders",
+   "to": "fulfil",
+   "label": "ship order"
   },
   {
-   "from": "gw",
-   "to": "app",
-   "label": "201 or replay"
+   "from": "fulfil",
+   "to": "carrier",
+   "label": "buy label + ref"
   },
   {
-   "from": "db",
+   "from": "fulfil",
+   "to": "fdb",
+   "label": "label + outbox"
+  },
+  {
+   "from": "invdb",
+   "to": "relay",
+   "label": "outbox rows"
+  },
+  {
+   "from": "fdb",
    "to": "relay",
    "label": "outbox rows"
   },
   {
    "from": "relay",
-   "to": "bus",
-   "label": "PaymentSucceeded"
+   "to": "stream",
+   "label": "publish"
   },
   {
-   "from": "bus",
-   "to": "rcpt"
+   "from": "stream",
+   "to": "pick",
+   "label": "stock-reserved"
   },
   {
-   "from": "bus",
-   "to": "pts"
+   "from": "stream",
+   "to": "notify",
+   "label": "label-created"
   },
   {
-   "from": "pts",
-   "to": "pdb",
-   "label": "effect + seen id"
+   "from": "carrier",
+   "to": "recon",
+   "label": "invoices"
   },
   {
    "from": "recon",
-   "to": "db",
-   "label": "match ledger"
+   "to": "fdb",
+   "label": "match by ref"
   }
  ],
  "steps": [
   {
-   "text": "The guest taps Pay. The app creates one UUID for this checkout and stores it, so every retry, even after the app restarts, sends the same Idempotency-Key.",
+   "text": "A shopper checks out. The order service creates one Idempotency-Key per reservation (derived from the order and line, not from the HTTP attempt) and sends it with the reserve call.",
    "nodes": [
-    "app",
-    "gw"
+    "shop",
+    "orders",
+    "inv"
    ],
    "edges": [
-    "app>gw"
+    "shop>orders",
+    "orders>inv"
    ]
   },
   {
-   "text": "The payment service inserts the key with status in_progress and a hash of the request. The unique index lets exactly one attempt win the claim.",
+   "text": "The Inventory API claims the key, decrements available stock, and saves the reply and an outbox row, all in one transaction in the inventory DB.",
    "nodes": [
-    "pay",
-    "db"
+    "inv",
+    "invdb"
    ],
    "edges": [
-    "gw>pay",
-    "pay>db"
+    "inv>invdb"
    ]
   },
   {
-   "text": "The winner charges the card and passes a key derived from the same one, so the processor also refuses a second charge.",
+   "text": "The call times out on the order service's side, so it retries with the same key. The API finds the finished key and returns the stored reply: one reservation, however many attempts.",
    "nodes": [
-    "pay",
-    "psp"
+    "orders",
+    "inv"
    ],
    "edges": [
-    "pay>psp"
+    "orders>inv",
+    "inv>orders"
    ]
   },
   {
-   "text": "One local transaction writes the payment, marks the key done with the stored response, and adds an outbox row. The 201 goes back to the app.",
+   "text": "Once the parcel is packed, fulfilment buys a shipping label from the carrier, passing the shipment id as the carrier's reference, and records the label plus an outbox row.",
    "nodes": [
-    "pay",
-    "db",
-    "gw",
-    "app"
+    "orders",
+    "fulfil",
+    "carrier",
+    "fdb"
    ],
    "edges": [
-    "pay>db",
-    "gw>app"
+    "orders>fulfil",
+    "fulfil>carrier",
+    "fulfil>fdb"
    ]
   },
   {
-   "text": "The outbox relay publishes PaymentSucceeded. The stream promises at-least-once delivery, so duplicates are normal.",
+   "text": "The relay reads both outboxes and publishes stock-reserved and label-created, each with a stable event id. It may publish an event twice; consumers expect that and skip ids they have already handled.",
    "nodes": [
-    "db",
+    "invdb",
+    "fdb",
     "relay",
-    "bus"
+    "stream",
+    "pick",
+    "notify"
    ],
    "edges": [
-    "db>relay",
-    "relay>bus"
+    "invdb>relay",
+    "fdb>relay",
+    "relay>stream",
+    "stream>pick",
+    "stream>notify"
    ]
   },
   {
-   "text": "Each consumer dedups on event_id: points are added and the id recorded in one transaction; the receipt email is keyed by payment id.",
+   "text": "Every night the reconciler matches the carrier's invoice lines to label rows by reference. A label we were billed for but never recorded, or one billed twice, becomes a ticket to void it.",
    "nodes": [
-    "bus",
-    "rcpt",
-    "pts",
-    "pdb"
+    "carrier",
+    "recon",
+    "fdb"
    ],
    "edges": [
-    "bus>rcpt",
-    "bus>pts",
-    "pts>pdb"
+    "carrier>recon",
+    "recon>fdb"
    ]
   }
  ],
  "scenarios": [
   {
-   "name": "Dinner rush",
+   "name": "Flash sale",
    "tone": "edge",
-   "summary": "Mobile networks drop 2% of replies at peak: retries become steady traffic, and the key turns them into cheap reads.",
+   "summary": "A limited drop slows the inventory DB, timeouts multiply and so do retries. Keys turn every retry into a lookup, so no unit is reserved twice and the stock count stays honest.",
    "steps": [
     {
-     "text": "20 000 checkouts a minute; 400 of them never see their reply and retry with backoff and jitter.",
+     "text": "A sneaker drop opens and reserve calls jump twentyfold. Row locks on the hot SKU push latency past the order service's timeout.",
      "nodes": [
-      "app",
-      "gw"
+      "shop",
+      "orders",
+      "inv",
+      "invdb"
      ],
      "edges": [
-      "app>gw"
+      "shop>orders",
+      "orders>inv",
+      "inv>invdb"
      ]
     },
     {
-     "text": "A retry that finds the key done gets the stored response straight from the DB: no charge, ~2 ms.",
+     "text": "Each timed-out call is retried with its original key, with backoff and jitter so the retries don't arrive as one wave.",
      "nodes": [
-      "pay",
-      "db"
+      "orders",
+      "inv"
      ],
      "edges": [
-      "gw>pay",
-      "pay>db",
-      "gw>app"
+      "orders>inv"
      ]
     },
     {
-     "text": "A retry that arrives while the first attempt is still charging finds in_progress and gets 409 with Retry-After.",
+     "text": "A retry that arrives while the first attempt still holds the lease gets 409 with Retry-After; it never queues on the hot row.",
      "nodes": [
-      "pay",
-      "db",
-      "app"
+      "inv",
+      "orders"
      ],
      "edges": [
-      "pay>db",
-      "gw>app"
+      "inv>orders"
      ]
     },
     {
-     "text": "The processor sees one charge per checkout; the reconciler finds nothing to fix.",
+     "text": "A retry after the commit gets the stored reply. Stock left equals units sold, and the picking app sees each reservation once.",
      "nodes": [
-      "psp",
-      "recon"
+      "inv",
+      "invdb",
+      "stream",
+      "pick"
      ],
      "edges": [
-      "pay>psp",
-      "recon>db"
+      "inv>orders",
+      "stream>pick"
      ]
     }
    ]
   },
   {
-   "name": "Relay publishes twice",
+   "name": "Inventory DB failover",
    "tone": "failure",
-   "summary": "The relay crashes after publishing but before marking the outbox row sent: the event goes out again, and the consumers absorb it.",
+   "summary": "The primary dies and an async replica takes over, losing its last commits. Because key, reservation and outbox row were one transaction, they disappear together and the retry simply redoes the work.",
    "steps": [
     {
-     "text": "The relay publishes PaymentSucceeded for pay_42.",
+     "text": "The inventory primary crashes; the promoted replica is missing the last second of commits.",
      "nodes": [
-      "relay",
-      "bus"
+      "inv"
      ],
-     "edges": [
-      "db>relay",
-      "relay>bus"
-     ]
-    },
-    {
-     "text": "It dies before recording that the row was sent.",
      "fail": [
+      "invdb",
+      "inv>invdb"
+     ]
+    },
+    {
+     "text": "One lost commit held a reservation, its finished key and its stock-reserved outbox row. All three are gone, never half of them.",
+     "nodes": [
+      "invdb",
       "relay"
      ],
-     "nodes": [
-      "relay"
+     "edges": [
+      "invdb>relay"
      ]
     },
     {
-     "text": "A new relay instance reads the same unsent row and publishes pay_42 again.",
+     "text": "The order service never got a reply, so it retries with the same key. The new primary has no record of it, so it is claimed fresh and stock is reserved exactly once.",
      "nodes": [
-      "relay",
-      "bus"
+      "orders",
+      "inv",
+      "invdb"
      ],
      "edges": [
-      "db>relay",
-      "relay>bus"
+      "orders>inv",
+      "inv>invdb",
+      "inv>orders"
      ]
     },
     {
-     "text": "Loyalty points tries to insert event_id into its seen table; the conflict means skip. Points are added once.",
+     "text": "Had the key lived in a separate store, it could survive while the reservation vanished, and the retry would replay a reply for stock nobody holds.",
      "nodes": [
-      "pts",
-      "pdb"
+      "inv",
+      "invdb"
      ],
      "edges": [
-      "bus>pts",
-      "pts>pdb"
-     ]
-    },
-    {
-     "text": "The receipt sender checks 'already sent for pay_42' and stays quiet.",
-     "nodes": [
-      "rcpt"
-     ],
-     "edges": [
-      "bus>rcpt"
+      "inv>invdb"
      ]
     }
    ]
   },
   {
-   "name": "Retention cut",
+   "name": "Key made per attempt",
    "tone": "risk",
-   "summary": "To save storage, someone shortens key retention from 7 days to 1 hour. An app that retries later is no longer recognised.",
+   "summary": "A refactor moves key creation inside the retry loop. Every retry now looks new; a unique constraint on the reservation is what stops double holds while the deploy is rolled back.",
    "steps": [
     {
-     "text": "A cleanup change deletes key rows older than 1 hour.",
+     "text": "A cleanup of the HTTP client generates a fresh key on each attempt instead of once per reservation. Tests pass: they never time out.",
+     "nodes": [
+      "orders"
+     ]
+    },
+    {
+     "text": "In production the first timeout sends a second key for the same order line. To the Inventory API it is a brand-new request.",
+     "nodes": [
+      "orders",
+      "inv"
+     ],
+     "edges": [
+      "orders>inv"
+     ],
      "fail": [
-      "db"
-     ],
-     "nodes": [
-      "db"
+      "orders>inv"
      ]
     },
     {
-     "text": "A phone that lost signal on a train comes back 3 hours later and retries the stored request with its key.",
+     "text": "The second insert hits UNIQUE(order_id, line) on reservations and is refused, so no extra stock is held. The backstop does the key's job.",
      "nodes": [
-      "app",
-      "gw",
-      "pay"
+      "inv",
+      "invdb"
      ],
      "edges": [
-      "app>gw",
-      "gw>pay"
+      "inv>invdb"
      ]
     },
     {
-     "text": "The key looks new, the claim succeeds, and only the processor's own dedup window (or nothing) stands between the guest and a second charge.",
+     "text": "A spike in unique-constraint errors pages the team, and the deploy is rolled back. Add a test that retries with a timeout.",
      "nodes": [
-      "pay",
-      "psp"
+      "inv",
+      "orders"
      ],
      "edges": [
-      "pay>db",
-      "pay>psp"
-     ]
-    },
-    {
-     "text": "Mitigation: retention longer than the longest client retry horizon, plus a UNIQUE(order_id) on payments as a second referee.",
-     "nodes": [
-      "db",
-      "recon"
-     ],
-     "edges": [
-      "recon>db"
+      "inv>orders"
      ]
     }
    ]

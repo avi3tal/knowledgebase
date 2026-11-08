@@ -1,0 +1,326 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: what the Inventory API does with a key",
+ "caption": "The claim is one atomic insert-or-take-over. Everything after it is either the single owner doing the work or a cheap answer from the key row.",
+ "base_name": "First request",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Reserve + key",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "claim",
+   "type": "step",
+   "label": "Claim key + lease",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "got",
+   "type": "decision",
+   "label": "Claimed?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "reserve",
+   "type": "step",
+   "label": "Reserve stock",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "save",
+   "type": "step",
+   "label": "Save reply + outbox",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "201 reserved",
+   "col": 0,
+   "row": 5,
+   "tone": "good"
+  },
+  {
+   "id": "same",
+   "type": "decision",
+   "label": "Same body hash?",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "diff",
+   "type": "end",
+   "label": "422 key reused",
+   "col": 2,
+   "row": 2,
+   "tone": "bad"
+  },
+  {
+   "id": "done",
+   "type": "decision",
+   "label": "Reply stored?",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "replay",
+   "type": "end",
+   "label": "Replay reply",
+   "col": 1,
+   "row": 4,
+   "tone": "good"
+  },
+  {
+   "id": "busy",
+   "type": "end",
+   "label": "409 Retry-After",
+   "col": 2,
+   "row": 3,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "claim"
+  },
+  {
+   "from": "claim",
+   "to": "got"
+  },
+  {
+   "from": "got",
+   "to": "reserve",
+   "label": "yes"
+  },
+  {
+   "from": "got",
+   "to": "same",
+   "label": "no"
+  },
+  {
+   "from": "same",
+   "to": "diff",
+   "label": "no"
+  },
+  {
+   "from": "same",
+   "to": "done",
+   "label": "yes"
+  },
+  {
+   "from": "done",
+   "to": "replay",
+   "label": "yes"
+  },
+  {
+   "from": "done",
+   "to": "busy",
+   "label": "no"
+  },
+  {
+   "from": "reserve",
+   "to": "save"
+  },
+  {
+   "from": "save",
+   "to": "ok"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A reserve call arrives with key, SKU and quantity. The API hashes the body so a later request with the same key can be compared.",
+   "nodes": [
+    "in"
+   ]
+  },
+  {
+   "text": "Claim: insert the key row as in_progress with a short lease. If the row exists but its lease has run out, the claim takes it over instead.",
+   "nodes": [
+    "claim",
+    "got"
+   ],
+   "edges": [
+    "in>claim",
+    "claim>got"
+   ]
+  },
+  {
+   "text": "The claim succeeded, so this request is the only one allowed to touch stock for this key.",
+   "nodes": [
+    "got",
+    "reserve"
+   ],
+   "edges": [
+    "got>reserve"
+   ]
+  },
+  {
+   "text": "In the same transaction: write the reservation, decrement available stock, store the reply on the key row and add a stock-reserved outbox row.",
+   "nodes": [
+    "reserve",
+    "save"
+   ],
+   "edges": [
+    "reserve>save"
+   ]
+  },
+  {
+   "text": "Commit and answer 201. From now on the key row alone can answer for this reservation.",
+   "nodes": [
+    "ok"
+   ],
+   "edges": [
+    "save>ok"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Retry while in progress",
+   "tone": "edge",
+   "summary": "A retry lands while the first attempt is still working: it gets 409 instead of a second reservation. The next retry, after the commit, gets the stored reply.",
+   "steps": [
+    {
+     "text": "The first attempt is waiting on a row lock. The order service gives up waiting and retries with the same key and body.",
+     "nodes": [
+      "in",
+      "claim",
+      "got"
+     ],
+     "edges": [
+      "in>claim",
+      "claim>got"
+     ]
+    },
+    {
+     "text": "The claim fails: a live lease already owns the key. The body hash matches.",
+     "nodes": [
+      "got",
+      "same"
+     ],
+     "edges": [
+      "got>same"
+     ]
+    },
+    {
+     "text": "No reply is stored yet, so answer 409 with Retry-After. Nothing waits on the hot row.",
+     "nodes": [
+      "done",
+      "busy"
+     ],
+     "edges": [
+      "same>done",
+      "done>busy"
+     ]
+    },
+    {
+     "text": "The next retry comes after the commit and gets the stored 201, byte for byte.",
+     "nodes": [
+      "done",
+      "replay"
+     ],
+     "edges": [
+      "same>done",
+      "done>replay"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Same key, different body",
+   "tone": "risk",
+   "summary": "A client bug sends a new quantity under an old key. Replaying the old reply would be wrong and so would reserving again; the request is refused.",
+   "steps": [
+    {
+     "text": "A cart edit reuses the key of an earlier reservation but asks for a different quantity.",
+     "nodes": [
+      "in",
+      "claim",
+      "got"
+     ],
+     "edges": [
+      "in>claim",
+      "claim>got"
+     ]
+    },
+    {
+     "text": "The key exists, so the claim fails, and the stored body hash doesn't match the new one.",
+     "nodes": [
+      "got",
+      "same"
+     ],
+     "edges": [
+      "got>same"
+     ]
+    },
+    {
+     "text": "Answer 422: the caller must use a new key for a new intent. The bug shows up in logs instead of in the stock count.",
+     "nodes": [
+      "diff"
+     ],
+     "edges": [
+      "same>diff"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Owner dies mid-reserve",
+   "tone": "failure",
+   "summary": "The instance that claimed the key crashes before committing. Its transaction rolls back, the lease runs out, and a later retry becomes the new owner.",
+   "steps": [
+    {
+     "text": "The key is claimed and the reservation is being written when the instance is killed.",
+     "nodes": [
+      "claim",
+      "got"
+     ],
+     "edges": [
+      "claim>got",
+      "got>reserve"
+     ],
+     "fail": [
+      "reserve"
+     ]
+    },
+    {
+     "text": "Nothing was committed, so no stock is held. Retries during the lease still see in_progress and get 409.",
+     "nodes": [
+      "same",
+      "done",
+      "busy"
+     ],
+     "edges": [
+      "got>same",
+      "same>done",
+      "done>busy"
+     ]
+    },
+    {
+     "text": "After the lease runs out, the next retry's claim takes the key over and does the work once.",
+     "nodes": [
+      "claim",
+      "got",
+      "reserve",
+      "save",
+      "ok"
+     ],
+     "edges": [
+      "claim>got",
+      "got>reserve",
+      "reserve>save",
+      "save>ok"
+     ]
+    }
+   ]
+  }
+ ]
+}
