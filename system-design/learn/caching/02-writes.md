@@ -12,6 +12,8 @@ to handle a write:
 
 ### Write-through
 
+Its tabs compare it with delete-on-write, and show a failed database write and the cost of caching every write.
+
 ```figure
 write-through
 ```
@@ -47,6 +49,8 @@ write-behind
 The default pairs cache-aside reads with **delete-on-write**: commit to the database, then
 `DEL` the key so the next read loads fresh data. Why not `SET` the new value instead? Because
 two writers can finish in the opposite order:
+
+The tabs show that delete-on-write has its own rarer race, what happens when the DEL is lost, and invalidation driven by CDC.
 
 ```figure
 update-race

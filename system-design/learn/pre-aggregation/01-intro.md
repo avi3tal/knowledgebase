@@ -5,7 +5,8 @@
 Dashboards ask the same shape of question over and over: "clicks per minute for ad X over the
 last hour", "p50 latency per hour this week". Answering from raw events means scanning millions
 of rows on every refresh. **Pre-aggregation** does the counting **once, as events arrive**, and
-stores small summary rows that the query reads instead.
+stores small summary rows that the query reads instead. The tabs play out a crash and replay,
+the batch alternative, and a cardinality explosion.
 
 ```figure
 ingest-pipeline

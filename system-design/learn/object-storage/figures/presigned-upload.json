@@ -68,5 +68,157 @@
    "style": "async",
    "note": "The store emits the event, so nobody polls for finished uploads."
   }
+ ],
+ "base_name": "Direct upload",
+ "scenarios": [
+  {
+   "name": "Alternative: proxy via API",
+   "tone": "alternative",
+   "summary": "Streaming the bytes through your API lets you inspect them on the way in, but every 2 GB upload ties up an API server's bandwidth and a connection for minutes.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /uploads + 2 GB body",
+     "note": "The API server holds this connection for the whole transfer."
+    },
+    {
+     "from": "api",
+     "to": "api",
+     "label": "check type, size on the fly",
+     "style": "self",
+     "note": "The one real advantage: you see every byte before it's stored."
+    },
+    {
+     "from": "api",
+     "to": "s",
+     "label": "PUT bytes (2 GB)",
+     "note": "Every byte crosses your servers twice, in and out. 100 concurrent uploads means 200 GB of traffic through the API fleet."
+    },
+    {
+     "from": "api",
+     "to": "db",
+     "label": "insert video row (ready)"
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "201 {video: v_77}",
+     "style": "reply",
+     "note": "Your servers now scale with upload bandwidth, not with requests."
+    }
+   ]
+  },
+  {
+   "name": "URL expired",
+   "tone": "edge",
+   "summary": "The URL is valid for 15 minutes; a client that starts too late gets 403 and asks for a fresh one. That same expiry limits how long a leaked URL is useful.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /uploads {clip.mp4, 2 GB}"
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "presigned PUT URL (15 min)",
+     "style": "reply"
+    },
+    {
+     "from": "c",
+     "to": "c",
+     "label": "offline for 20 min",
+     "style": "self",
+     "note": "The phone loses signal before the upload starts."
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "label": "PUT bytes",
+     "note": "The signature is still correct, but its expiry time has passed."
+    },
+    {
+     "from": "s",
+     "to": "c",
+     "label": "403 Request has expired",
+     "style": "error"
+    },
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /uploads/v_77/url",
+     "note": "Ask for a new URL for the same key; the pending row doesn't change."
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "new URL (15 min)",
+     "style": "reply",
+     "note": "For multipart, sign each part URL when it's needed, so long uploads never run on a stale one."
+    }
+   ]
+  },
+  {
+   "name": "Risk: leaked URL",
+   "tone": "risk",
+   "summary": "Anyone holding the URL can PUT to that key until it expires. Keep it short, scoped to one key and verb, capped in size, and validate the object after it lands.",
+   "actors": [
+    {
+     "id": "c",
+     "label": "Client",
+     "kind": "client"
+    },
+    {
+     "id": "api",
+     "label": "Upload API",
+     "kind": "service"
+    },
+    {
+     "id": "x",
+     "label": "Someone else",
+     "kind": "client"
+    },
+    {
+     "id": "s",
+     "label": "Object store",
+     "kind": "blob"
+    },
+    {
+     "id": "q",
+     "label": "Event queue",
+     "kind": "queue"
+    }
+   ],
+   "messages": [
+    {
+     "from": "api",
+     "to": "c",
+     "label": "presigned PUT URL (15 min)",
+     "style": "reply"
+    },
+    {
+     "from": "c",
+     "to": "x",
+     "label": "URL ends up in a shared log",
+     "style": "async",
+     "note": "A crash report or analytics event captures the full URL with its signature."
+    },
+    {
+     "from": "x",
+     "to": "s",
+     "label": "PUT malware.exe to v_77/raw.mp4",
+     "style": "error",
+     "note": "The signature is valid, so the store accepts it: it checks the URL, not who sends it."
+    },
+    {
+     "from": "s",
+     "to": "q",
+     "label": "ObjectCreated v_77/raw.mp4",
+     "style": "async",
+     "note": "Because bytes skip your servers, validation runs on this event: check type, size and scan the file, and delete it if it fails."
+    }
+   ]
+  }
  ]
 }

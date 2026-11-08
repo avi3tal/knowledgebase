@@ -63,5 +63,171 @@
    "style": "async",
    "note": "Clean up the old copy later. Repeat slot by slot until the load is even."
   }
+ ],
+ "base_name": "Move slot 37",
+ "scenarios": [
+  {
+   "name": "Rebalancer crashes",
+   "tone": "failure",
+   "summary": "The map flip is the only commit point: if the move dies before it, A still owns the slot, so nothing is lost and the copy restarts.",
+   "messages": [
+    {
+     "from": "op",
+     "to": "a",
+     "label": "snapshot slot 37 → B",
+     "note": "Same start: copy slot 37 while A keeps serving."
+    },
+    {
+     "from": "a",
+     "to": "b",
+     "label": "bulk copy (60%)",
+     "style": "async"
+    },
+    {
+     "from": "a",
+     "to": "b",
+     "label": "stream changes",
+     "style": "lost",
+     "note": "The rebalancer crashes mid-copy and the stream stops."
+    },
+    {
+     "from": "op",
+     "to": "map",
+     "label": "slot 37 → B",
+     "style": "lost",
+     "note": "The flip never happens: the map still says slot 37 lives on A, so every read and write is still correct."
+    },
+    {
+     "from": "op",
+     "to": "b",
+     "label": "drop partial slot 37",
+     "style": "async",
+     "note": "On restart, throw away B's half-copy and begin again. Never flip before B has caught up."
+    }
+   ]
+  },
+  {
+   "name": "Edge: stale router",
+   "tone": "edge",
+   "summary": "A router with an old cached map sends slot 37 to A after the flip; A answers 'moved', and the router refreshes and retries on B.",
+   "actors": [
+    {
+     "id": "op",
+     "label": "Router (stale)",
+     "kind": "coordinator"
+    },
+    {
+     "id": "map",
+     "label": "Shard map",
+     "kind": "cache"
+    },
+    {
+     "id": "a",
+     "label": "Shard A (old)",
+     "kind": "sql"
+    },
+    {
+     "id": "b",
+     "label": "Shard B (new)",
+     "kind": "sql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "op",
+     "to": "a",
+     "label": "write key in slot 37",
+     "note": "This router cached the map before the flip."
+    },
+    {
+     "from": "a",
+     "to": "op",
+     "label": "MOVED: slot 37 → B",
+     "style": "error",
+     "note": "A no longer owns the slot and must refuse, never write it locally."
+    },
+    {
+     "from": "op",
+     "to": "map",
+     "label": "refresh map",
+     "note": "Re-read the map (or apply the redirect directly)."
+    },
+    {
+     "from": "op",
+     "to": "b",
+     "label": "write key in slot 37",
+     "note": "Retry on the new owner. One extra round trip, once per router."
+    },
+    {
+     "from": "b",
+     "to": "op",
+     "label": "ok",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Alternative: hash % N",
+   "tone": "alternative",
+   "summary": "With shard = hash(key) % N there are no slots to move: going from 3 to 4 shards remaps about 75% of all keys at once.",
+   "actors": [
+    {
+     "id": "op",
+     "label": "Rebalancer",
+     "kind": "worker"
+    },
+    {
+     "id": "a",
+     "label": "Shard A",
+     "kind": "sql"
+    },
+    {
+     "id": "b",
+     "label": "Shard B",
+     "kind": "sql"
+    },
+    {
+     "id": "c",
+     "label": "Shard C (new)",
+     "kind": "sql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "op",
+     "to": "op",
+     "label": "N: 3 → 4",
+     "style": "self",
+     "note": "Every key's shard is recomputed with the new modulus."
+    },
+    {
+     "from": "a",
+     "to": "b",
+     "label": "move ~3/4 of A",
+     "style": "async",
+     "note": "Most keys change owner, between old shards too, not only onto the new one."
+    },
+    {
+     "from": "b",
+     "to": "c",
+     "label": "move ~3/4 of B",
+     "style": "async"
+    },
+    {
+     "from": "a",
+     "to": "c",
+     "label": "move more",
+     "style": "async",
+     "note": "Hours of copying, cold caches and doubled load during the move."
+    },
+    {
+     "from": "op",
+     "to": "op",
+     "label": "switch all at once",
+     "style": "self",
+     "note": "There is no small unit to flip, so cutover is all or nothing. Fixed slots or consistent hashing avoid this."
+    }
+   ]
+  }
  ]
 }

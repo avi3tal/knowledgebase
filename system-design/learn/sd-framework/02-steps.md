@@ -12,6 +12,8 @@ Get something working end to end before making anything clever.
 - **Evolve it:** v1 is the simplest thing that meets the functional requirements. Every later
   version fixes a named flaw.
 
+Switch tabs to walk the loop on the leaderboard, and to see what adding boxes without reasons looks like.
+
 ```figure
 evolve-loop
 ```

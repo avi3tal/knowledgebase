@@ -150,5 +150,102 @@
     "use>drop"
    ]
   }
+ ],
+ "base_name": "The recipe",
+ "scenarios": [
+  {
+   "name": "Spiky traffic",
+   "tone": "edge",
+   "summary": "Ticket sales, live events and pushes don't peak at 3× but at 10–100×: ask about the peak shape before picking a factor.",
+   "steps": [
+    {
+     "text": "Assume a ticket site: 1 M users who all arrive when sales open at 10:00.",
+     "nodes": [
+      "assume"
+     ]
+    },
+    {
+     "text": "Daily average ≈ 100 req/s, which looks tiny.",
+     "nodes": [
+      "daily",
+      "qps"
+     ],
+     "edges": [
+      "assume>daily",
+      "daily>qps"
+     ]
+    },
+    {
+     "text": "But the real peak is ~100× for 10 minutes: 10 000+ req/s. A ×3 factor would underbuild by 30×.",
+     "nodes": [
+      "peak"
+     ],
+     "edges": [
+      "qps>peak"
+     ],
+     "fail": [
+      "peak"
+     ]
+    },
+    {
+     "text": "Design decision: a queue or waiting room in front, so the spike is admitted at a rate the backend can take.",
+     "nodes": [
+      "use",
+      "say"
+     ],
+     "edges": [
+      "size>use",
+      "use>say"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: unit slip",
+   "tone": "risk",
+   "summary": "Bits vs bytes or KB vs MB silently puts you 8× or 1 000× off. Write the unit on every number and sanity-check the result.",
+   "steps": [
+    {
+     "text": "Egress = 5 800 reads/s × 500 KB = 2.9 GB/s.",
+     "nodes": [
+      "size"
+     ],
+     "edges": [
+      "peak>size"
+     ]
+    },
+    {
+     "text": "Forget the ×8 and write \"2.9 Gbps\": one 10 Gbps NIC looks fine, but the real number is 23 Gbps.",
+     "nodes": [
+      "size"
+     ],
+     "fail": [
+      "size"
+     ]
+    },
+    {
+     "text": "The wrong number leads to the wrong decision: no CDN.",
+     "nodes": [
+      "use"
+     ],
+     "edges": [
+      "size>use"
+     ],
+     "fail": [
+      "drop"
+     ]
+    },
+    {
+     "text": "Say the unit every time (\"gigabytes per second, times 8 is gigabits\") and the CDN is obvious.",
+     "nodes": [
+      "use",
+      "say"
+     ],
+     "edges": [
+      "use>say"
+     ]
+    }
+   ]
+  }
  ]
 }

@@ -68,5 +68,114 @@
    "style": "reply",
    "note": "Now the broker deletes it. One message, two deliveries, one effect."
   }
+ ],
+ "base_name": "Crash before ack",
+ "scenarios": [
+  {
+   "name": "Plain INSERT: charged twice",
+   "tone": "failure",
+   "summary": "Same crash, but the consumer isn't idempotent: the redelivered message charges order 42 a second time.",
+   "messages": [
+    {
+     "from": "b",
+     "to": "c1",
+     "label": "deliver m7 (charge order 42)"
+    },
+    {
+     "from": "c1",
+     "to": "db",
+     "label": "INSERT payment for order 42"
+    },
+    {
+     "from": "c1",
+     "to": "c1",
+     "label": "crash before ack",
+     "style": "error",
+     "note": "The broker never hears that m7 is done."
+    },
+    {
+     "from": "b",
+     "to": "c2",
+     "label": "redeliver m7",
+     "note": "After the visibility timeout, m7 goes to another consumer."
+    },
+    {
+     "from": "c2",
+     "to": "db",
+     "label": "INSERT payment for order 42",
+     "style": "error",
+     "note": "No unique key on msg_id, so a second row is written: the customer pays twice."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: ack first",
+   "tone": "alternative",
+   "summary": "At-most-once: ack before doing the work. No duplicates ever, but a crash in between loses the message for good.",
+   "messages": [
+    {
+     "from": "b",
+     "to": "c1",
+     "label": "deliver m7 (charge order 42)"
+    },
+    {
+     "from": "c1",
+     "to": "b",
+     "label": "ack m7",
+     "style": "reply",
+     "note": "The consumer acks as soon as it receives. The broker deletes m7."
+    },
+    {
+     "from": "c1",
+     "to": "c1",
+     "label": "crash before the work",
+     "style": "error"
+    },
+    {
+     "from": "c1",
+     "to": "db",
+     "label": "INSERT payment for order 42",
+     "style": "lost",
+     "note": "This write never happens, and the broker has nothing left to redeliver. Fine for metrics, not for payments."
+    }
+   ]
+  },
+  {
+   "name": "Handler outlives timeout",
+   "tone": "edge",
+   "summary": "No crash at all: a handler slower than the visibility timeout gets its message redelivered while it's still working. Size the timeout above p99, or extend it while working.",
+   "messages": [
+    {
+     "from": "b",
+     "to": "c1",
+     "label": "deliver m7 (timeout 30 s)"
+    },
+    {
+     "from": "c1",
+     "to": "db",
+     "label": "slow INSERT (45 s)",
+     "note": "The database is under load. Consumer 1 is alive, just slow."
+    },
+    {
+     "from": "b",
+     "to": "c2",
+     "label": "redeliver m7 at 30 s",
+     "note": "The broker can't tell slow from dead, so m7 is visible again and goes to consumer 2."
+    },
+    {
+     "from": "c2",
+     "to": "db",
+     "label": "INSERT, ON CONFLICT DO NOTHING",
+     "note": "Two consumers work on the same message at once. Only the idempotent write keeps this safe."
+    },
+    {
+     "from": "c1",
+     "to": "b",
+     "label": "ack m7 (late)",
+     "style": "reply",
+     "note": "Fix: extend the timeout while working (a heartbeat / ChangeMessageVisibility), or size it above the slowest handler."
+    }
+   ]
+  }
  ]
 }

@@ -12,6 +12,8 @@ different shards: the load becomes 3/3/3/3 instead of 9/1/1/1.
 
 ### Sharded counters, the write side
 
+The tabs show a sub-key's shard dying and the batch-in-memory alternative.
+
 ```figure
 split-counter
 ```
@@ -35,6 +37,8 @@ from 200 servers become 200 `INCRBY` calls per second (that's
 > - Every reader must know N and merge, and changing N needs care.
 
 ### Local cache, the read side
+
+The tabs compare it with key splitting, and show stale values and a shard outage.
 
 ```figure
 local-cache

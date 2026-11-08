@@ -108,5 +108,181 @@
     "qs>dd"
    ]
   }
+ ],
+ "base_name": "Tiers and routing",
+ "scenarios": [
+  {
+   "name": "Backfill after a bug",
+   "tone": "failure",
+   "summary": "A bug overcounted for 3 days: replay the raw log through the fixed job, then re-merge hours and days. Anything older than raw retention can no longer be fixed.",
+   "steps": [
+    {
+     "text": "A deploy double-counts mobile clicks; three days of minute rows are wrong.",
+     "nodes": [
+      "m"
+     ],
+     "fail": [
+      "raw>m"
+     ]
+    },
+    {
+     "text": "Hour and day rows were merged from those minutes, so they're wrong too.",
+     "fail": [
+      "h",
+      "dd"
+     ]
+    },
+    {
+     "text": "Re-run the fixed job over the raw log for those days and overwrite the minute rows.",
+     "nodes": [
+      "raw",
+      "m"
+     ],
+     "edges": [
+      "raw>m"
+     ]
+    },
+    {
+     "text": "Re-merge the affected hour and day rows from the corrected minutes.",
+     "nodes": [
+      "m",
+      "h",
+      "dd"
+     ],
+     "edges": [
+      "m>h",
+      "h>dd"
+     ]
+    },
+    {
+     "text": "Had the bug lasted 10 days, the first 3 would stay wrong: the raw retention is your repair window.",
+     "nodes": [
+      "raw"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "New dimension",
+   "tone": "edge",
+   "summary": "'Clicks by country' needs new rollups in every tier, and they can be backfilled only as far back as raw events are kept, so the new panel starts with a week of history.",
+   "steps": [
+    {
+     "text": "The existing tiers are keyed by (ad, bucket); country isn't in them and can't be recovered from them.",
+     "nodes": [
+      "m",
+      "h",
+      "dd"
+     ]
+    },
+    {
+     "text": "Add country to the stream job's key and backfill from the raw log: only 7 days exist.",
+     "nodes": [
+      "raw",
+      "m"
+     ],
+     "edges": [
+      "raw>m"
+     ]
+    },
+    {
+     "text": "Hour and day rows by country build up from there, going forward.",
+     "nodes": [
+      "m",
+      "h",
+      "dd"
+     ],
+     "edges": [
+      "m>h",
+      "h>dd"
+     ]
+    },
+    {
+     "text": "The query layer must say 'by-country data starts on <date>' for longer ranges.",
+     "nodes": [
+      "qs",
+      "dd"
+     ],
+     "edges": [
+      "qs>dd"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: one tier",
+   "tone": "alternative",
+   "summary": "Keep only minute rows, forever: simpler to build, but a 2-year panel reads ~1M rows per series and the table grows by ~43k rows per series every month.",
+   "nodes": [
+    {
+     "id": "raw",
+     "kind": "blob",
+     "label": "Raw events (7 d)",
+     "x": 0,
+     "y": 100
+    },
+    {
+     "id": "m",
+     "kind": "nosql",
+     "label": "1-minute",
+     "sub": "kept forever",
+     "x": 280,
+     "y": 100
+    },
+    {
+     "id": "qs",
+     "kind": "service",
+     "label": "Query layer",
+     "x": 280,
+     "y": 330
+    }
+   ],
+   "edges": [
+    {
+     "from": "raw",
+     "to": "m",
+     "label": "stream job"
+    },
+    {
+     "from": "qs",
+     "to": "m",
+     "label": "every range"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The stream job writes minute rows, and nothing ever merges or deletes them.",
+     "nodes": [
+      "raw",
+      "m"
+     ],
+     "edges": [
+      "raw>m"
+     ]
+    },
+    {
+     "text": "'Last 24 h' is fine: 1,440 rows.",
+     "nodes": [
+      "qs",
+      "m"
+     ],
+     "edges": [
+      "qs>m"
+     ]
+    },
+    {
+     "text": "'Last 2 years' reads about 1M rows per series for a chart that can show ~1,000 points: the panel times out.",
+     "nodes": [
+      "qs"
+     ],
+     "edges": [
+      "qs>m"
+     ],
+     "fail": [
+      "m"
+     ]
+    }
+   ]
+  }
  ]
 }

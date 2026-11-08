@@ -19,7 +19,9 @@ double-charge
 ## The idempotency key
 The client generates a unique key (a UUID) **once per logical operation**, for example when
 the user presses *Pay*, and sends it on every attempt in an `Idempotency-Key` header. The
-server remembers each key with the response it produced:
+server remembers each key with the response it produced. The tabs replay it for a retry that
+arrives while the first attempt is still running, a key reused with another body, and a TTL that
+is too short:
 
 ```figure
 key-replay

@@ -47,6 +47,8 @@ def get(key):
     return value
 ```
 
+The tabs replay it when the cache node dies, for keys that don't exist, and with read-through instead.
+
 ```figure
 cache-aside-read
 ```

@@ -9,6 +9,8 @@
 
 Disk is only half the story. Replication to replicas is **asynchronous**:
 
+The tabs add `WAIT`, a stale read from a replica, and split brain during a partition.
+
 ```figure
 async-replication
 ```
@@ -19,6 +21,8 @@ async-replication
 > Commands like `WAIT` reduce the gap but don't make Redis a consensus system.
 
 ## Redis Cluster: sharding built in
+
+The tabs play a primary failure, a cross-slot command, and the single-primary alternative.
 
 ```figure
 cluster-slots

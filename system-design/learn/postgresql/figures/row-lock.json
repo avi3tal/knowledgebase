@@ -58,5 +58,139 @@
    "style": "error",
    "note": "No double booking. Cost: hot rows queue, so 1 row at ~2 ms per transaction caps near 500 writes/s."
   }
+ ],
+ "base_name": "Pessimistic lock",
+ "scenarios": [
+  {
+   "name": "Deadlock",
+   "tone": "failure",
+   "summary": "Two transactions lock the same rows in opposite order and wait on each other; Postgres detects the cycle and aborts one.",
+   "messages": [
+    {
+     "from": "a",
+     "to": "db",
+     "label": "lock seat 12A",
+     "note": "A books a pair of seats: 12A first."
+    },
+    {
+     "from": "b",
+     "to": "db",
+     "label": "lock seat 12B",
+     "note": "B books the same pair, but starts with 12B."
+    },
+    {
+     "from": "a",
+     "to": "db",
+     "label": "lock seat 12B",
+     "note": "A waits for B."
+    },
+    {
+     "from": "b",
+     "to": "db",
+     "label": "lock seat 12A",
+     "note": "B waits for A: a cycle. Neither can ever proceed."
+    },
+    {
+     "from": "db",
+     "to": "b",
+     "label": "ERROR: deadlock detected",
+     "style": "error",
+     "note": "After deadlock_timeout (1 s) Postgres aborts one of them; A gets 12B and commits."
+    },
+    {
+     "from": "b",
+     "to": "db",
+     "label": "retry",
+     "note": "Prevention: always lock rows in the same order (ORDER BY seat_id … FOR UPDATE), and retry on this error."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: version",
+   "tone": "alternative",
+   "summary": "Optimistic concurrency: no lock is held; the UPDATE checks a version number and the loser sees 0 rows changed and retries.",
+   "messages": [
+    {
+     "from": "a",
+     "to": "db",
+     "label": "SELECT seat 12A",
+     "note": "Plain read, no lock."
+    },
+    {
+     "from": "db",
+     "to": "a",
+     "label": "free · v = 7",
+     "style": "reply"
+    },
+    {
+     "from": "b",
+     "to": "db",
+     "label": "SELECT seat 12A"
+    },
+    {
+     "from": "db",
+     "to": "b",
+     "label": "free · v = 7",
+     "style": "reply",
+     "note": "Both see version 7. Nobody waits."
+    },
+    {
+     "from": "a",
+     "to": "db",
+     "label": "UPDATE … WHERE v = 7",
+     "note": "SET status = booked, v = 8. One row changed: A wins."
+    },
+    {
+     "from": "b",
+     "to": "db",
+     "label": "UPDATE … WHERE v = 7",
+     "style": "error",
+     "note": "0 rows changed: the version moved on. B re-reads, sees booked and reports sold out. Best when conflicts are rare."
+    }
+   ]
+  },
+  {
+   "name": "Risk: slow call in lock",
+   "tone": "risk",
+   "summary": "Holding a row lock across a slow external call makes every other buyer of that row queue behind it; keep the locked section short.",
+   "messages": [
+    {
+     "from": "a",
+     "to": "db",
+     "label": "SELECT seat 12A FOR UPDATE"
+    },
+    {
+     "from": "db",
+     "to": "a",
+     "label": "status = free",
+     "style": "reply"
+    },
+    {
+     "from": "a",
+     "to": "a",
+     "label": "call payment API (3 s)",
+     "style": "self",
+     "note": "The lock is held the whole time."
+    },
+    {
+     "from": "b",
+     "to": "db",
+     "label": "SELECT seat 12A FOR UPDATE",
+     "note": "B and everyone after it waits 3 s, holding connections from the pool too."
+    },
+    {
+     "from": "a",
+     "to": "db",
+     "label": "UPDATE; COMMIT"
+    },
+    {
+     "from": "db",
+     "to": "b",
+     "label": "status = booked",
+     "style": "reply",
+     "note": "Mitigation: reserve the seat with a short transaction (status = held, expires_at), pay outside any lock, then confirm. Set lock_timeout."
+    }
+   ]
+  }
  ]
 }

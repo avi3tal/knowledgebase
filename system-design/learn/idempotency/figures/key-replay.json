@@ -53,7 +53,7 @@
    "from": "api",
    "to": "c",
    "label": "201 {pay_42} (lost)",
-   "style": "error",
+   "style": "lost",
    "note": "Same failure as before: the reply never arrives."
   },
   {
@@ -74,6 +74,143 @@
    "label": "201 {pay_42} (replayed)",
    "style": "reply",
    "note": "Byte-for-byte the original response. One charge, and the client can't tell it was a retry."
+  }
+ ],
+ "base_name": "Lost reply, retried",
+ "scenarios": [
+  {
+   "name": "Retry while in progress",
+   "tone": "edge",
+   "summary": "The retry lands while the first attempt is still charging: the claim hits an in_progress row, so the API answers 409 instead of charging twice.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /pay $30 · Key: 7f3a",
+     "note": "First attempt."
+    },
+    {
+     "from": "api",
+     "to": "keys",
+     "label": "INSERT 7f3a (in_progress)",
+     "note": "The claim wins."
+    },
+    {
+     "from": "api",
+     "to": "card",
+     "label": "charge $30 · key 7f3a",
+     "note": "The card network is slow today: 8 seconds."
+    },
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /pay $30 · Key: 7f3a (retry)",
+     "note": "The client's 5 s timeout fires and it retries while attempt 1 is still running."
+    },
+    {
+     "from": "api",
+     "to": "keys",
+     "label": "INSERT 7f3a → conflict, in_progress",
+     "style": "error",
+     "note": "Same key and body hash, but no response is stored yet: there is nothing to replay."
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "409 Conflict · retry later",
+     "style": "error",
+     "note": "Don't charge and don't hold the connection open: tell the client to back off. Its next retry, after attempt 1 stores 201 {pay_42}, gets the replay."
+    }
+   ]
+  },
+  {
+   "name": "Same key, new body",
+   "tone": "edge",
+   "summary": "Key 7f3a is reused for a $45 payment: the stored body hash doesn't match, so the API refuses with 422 instead of replaying the $30 answer.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /pay $30 · Key: 7f3a"
+    },
+    {
+     "from": "api",
+     "to": "keys",
+     "label": "INSERT 7f3a + hash($30) → done",
+     "note": "Claimed, charged and stored with the request fingerprint."
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "201 {pay_42}",
+     "style": "reply"
+    },
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /pay $45 · Key: 7f3a",
+     "note": "A client bug: the key was cached across two checkouts."
+    },
+    {
+     "from": "api",
+     "to": "keys",
+     "label": "INSERT 7f3a → conflict, hash differs",
+     "style": "error",
+     "note": "Same key, different fingerprint."
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "422 key reused",
+     "style": "error",
+     "note": "Replaying pay_42 would tell the client its $45 payment succeeded. Refuse loudly so the bug gets fixed."
+    }
+   ]
+  },
+  {
+   "name": "Risk: TTL too short",
+   "tone": "risk",
+   "summary": "Keys expire after 1 hour but the app retries the next morning: the key is gone, so the retry charges again. The TTL must outlive the longest retry horizon.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /pay $30 · Key: 7f3a"
+    },
+    {
+     "from": "api",
+     "to": "card",
+     "label": "charge $30 · key 7f3a",
+     "note": "Claimed and charged; the key row is stored with a 1-hour TTL."
+    },
+    {
+     "from": "api",
+     "to": "c",
+     "label": "201 {pay_42} (lost)",
+     "style": "lost",
+     "note": "The reply is lost and the phone goes offline with the retry queued."
+    },
+    {
+     "from": "keys",
+     "to": "keys",
+     "label": "TTL expired: delete 7f3a",
+     "style": "self",
+     "note": "An hour later the clean-up job removes the key."
+    },
+    {
+     "from": "c",
+     "to": "api",
+     "label": "POST /pay $30 · Key: 7f3a (next day)",
+     "note": "Same key, same body, but the server no longer remembers it."
+    },
+    {
+     "from": "api",
+     "to": "card",
+     "label": "charge $30 again",
+     "style": "error",
+     "note": "The claim succeeds on an empty slot: a second charge. Keep keys for longer than any client may retry (a day or more), and have clients give up on retries older than that."
+    }
+   ]
   }
  ]
 }

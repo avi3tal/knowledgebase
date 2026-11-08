@@ -118,5 +118,228 @@
     "a3>shard"
    ]
   }
+ ],
+ "base_name": "Local copies",
+ "scenarios": [
+  {
+   "name": "Alternative: key splitting",
+   "tone": "alternative",
+   "summary": "Store N copies of the hot key on N shards and read a random one: no per-server staleness, but every write must update all N, and each read still costs a network hop.",
+   "caption": "Splitting spreads one key's reads over N shards; local caching removes most of them.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 330
+    },
+    {
+     "id": "c0",
+     "kind": "cache",
+     "label": "product:77#0",
+     "x": 300,
+     "y": 0
+    },
+    {
+     "id": "c1",
+     "kind": "cache",
+     "label": "product:77#1",
+     "x": 300,
+     "y": 220
+    },
+    {
+     "id": "c2",
+     "kind": "cache",
+     "label": "product:77#2",
+     "x": 300,
+     "y": 440
+    },
+    {
+     "id": "c3",
+     "kind": "cache",
+     "label": "product:77#3",
+     "x": 300,
+     "y": 660
+    },
+    {
+     "id": "w",
+     "kind": "service",
+     "label": "Price writer",
+     "x": 600,
+     "y": 330
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "c0",
+     "label": "GET #r"
+    },
+    {
+     "from": "app",
+     "to": "c1",
+     "label": "GET #r"
+    },
+    {
+     "from": "app",
+     "to": "c2",
+     "label": "GET #r"
+    },
+    {
+     "from": "app",
+     "to": "c3",
+     "label": "GET #r"
+    },
+    {
+     "from": "w",
+     "to": "c0",
+     "label": "SET"
+    },
+    {
+     "from": "w",
+     "to": "c1",
+     "label": "SET"
+    },
+    {
+     "from": "w",
+     "to": "c2",
+     "label": "SET"
+    },
+    {
+     "from": "w",
+     "to": "c3",
+     "label": "SET"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each read picks r = random(0..3) and GETs product:77#r. The suffix lands each copy on a different shard.",
+     "nodes": [
+      "app",
+      "c0",
+      "c1",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "app>c0",
+      "app>c1",
+      "app>c2",
+      "app>c3"
+     ]
+    },
+    {
+     "text": "Each shard serves a quarter of the reads. 800 000/s needs N ≈ 10 copies for ~100k per shard.",
+     "nodes": [
+      "c0",
+      "c1",
+      "c2",
+      "c3"
+     ]
+    },
+    {
+     "text": "A price change must SET every copy. Until the last one lands, readers can see two different prices.",
+     "nodes": [
+      "w",
+      "c0",
+      "c1",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "w>c0",
+      "w>c1",
+      "w>c2",
+      "w>c3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: stale price",
+   "tone": "risk",
+   "summary": "Local copies serve the old value until their TTL runs out, independently on each server. Keep TTLs short and never trust a local copy for money.",
+   "steps": [
+    {
+     "text": "The price drops from 50 to 40 and the shard is updated.",
+     "nodes": [
+      "shard"
+     ]
+    },
+    {
+     "text": "Each app server still holds its own copy for up to 2 s, so shoppers on different servers see different prices.",
+     "nodes": [
+      "a1",
+      "a2",
+      "a3"
+     ],
+     "edges": [
+      "lb>a1",
+      "lb>a2",
+      "lb>a3"
+     ]
+    },
+    {
+     "text": "Mitigation: a short TTL, a pub/sub message that evicts the local copies early, and checkout that reads the authoritative value.",
+     "nodes": [
+      "a1",
+      "a2",
+      "a3",
+      "shard"
+     ],
+     "edges": [
+      "a1>shard",
+      "a2>shard",
+      "a3>shard"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Shard goes down",
+   "tone": "failure",
+   "summary": "With serve-stale-on-error, local copies keep the page up while the shard is gone: readers get a slightly old value instead of an error.",
+   "steps": [
+    {
+     "text": "The shard holding product:77 fails.",
+     "nodes": [
+      "shard"
+     ],
+     "fail": [
+      "shard"
+     ]
+    },
+    {
+     "text": "Refreshes fail, but each server keeps its last copy instead of deleting it on expiry.",
+     "nodes": [
+      "a1",
+      "a2",
+      "a3"
+     ],
+     "fail": [
+      "a1>shard",
+      "a2>shard",
+      "a3>shard"
+     ]
+    },
+    {
+     "text": "Shoppers keep getting pages, older than 2 s but correct enough, while the replica is promoted.",
+     "nodes": [
+      "users",
+      "lb",
+      "a1",
+      "a2",
+      "a3"
+     ],
+     "edges": [
+      "users>lb",
+      "lb>a1",
+      "lb>a2",
+      "lb>a3"
+     ]
+    }
+   ]
+  }
  ]
 }

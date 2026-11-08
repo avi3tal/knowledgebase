@@ -42,6 +42,8 @@ The LB pins a client to one server with a cookie, so in-memory session state kee
 The LB tier itself needs redundancy: an active-passive pair with a floating IP, or many LB
 nodes behind DNS or anycast. Across regions, DNS or anycast does the first split:
 
+Use the tabs to watch a whole region fail, stale DNS caches slow the failover, and anycast as the alternative.
+
 ```figure
 global-lb
 ```

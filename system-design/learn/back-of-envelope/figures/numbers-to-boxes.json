@@ -176,5 +176,155 @@
     "egress>simple"
    ]
   }
+ ],
+ "base_name": "The four questions",
+ "scenarios": [
+  {
+   "name": "Photo app",
+   "tone": "happy",
+   "summary": "Run the photo-app numbers through the questions: three of four say yes, and each yes is one box in the design.",
+   "steps": [
+    {
+     "text": "17k peak reads/s > 10k: yes, so cache and replicas.",
+     "nodes": [
+      "start",
+      "reads",
+      "cache"
+     ],
+     "edges": [
+      "start>reads",
+      "reads>cache"
+     ]
+    },
+    {
+     "text": "23 writes/s: no sharding. One primary is plenty.",
+     "nodes": [
+      "writes"
+     ],
+     "edges": [
+      "reads>writes",
+      "writes>data"
+     ]
+    },
+    {
+     "text": "5.5 PB of photos: yes, object storage for the bytes, metadata in the DB.",
+     "nodes": [
+      "data",
+      "blob"
+     ],
+     "edges": [
+      "data>blob"
+     ]
+    },
+    {
+     "text": "23 Gbps egress: yes, a CDN in front of the photo store.",
+     "nodes": [
+      "egress",
+      "cdn"
+     ],
+     "edges": [
+      "data>egress",
+      "egress>cdn"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Internal tool",
+   "tone": "edge",
+   "summary": "5 000 employees, 50 req/s, 20 GB: every answer is no, and \"one DB and two app servers\" is the strong answer.",
+   "steps": [
+    {
+     "text": "Peak 50 reads/s: far below 10k.",
+     "nodes": [
+      "start",
+      "reads"
+     ],
+     "edges": [
+      "start>reads"
+     ]
+    },
+    {
+     "text": "A few writes/s and 20 GB of data: nothing to shard, nothing for blob storage.",
+     "nodes": [
+      "writes",
+      "data"
+     ],
+     "edges": [
+      "reads>writes",
+      "writes>data"
+     ]
+    },
+    {
+     "text": "Egress of a few Mbps.",
+     "nodes": [
+      "egress"
+     ],
+     "edges": [
+      "data>egress"
+     ]
+    },
+    {
+     "text": "Say it: keep it simple. Adding Kafka or a cache here would cost you points.",
+     "nodes": [
+      "simple"
+     ],
+     "edges": [
+      "egress>simple"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: averages only",
+   "tone": "risk",
+   "summary": "Checking the average instead of the peak (5 800 vs 17 400 reads/s) answers no when it should be yes, and the design falls over at 8 pm.",
+   "steps": [
+    {
+     "text": "Use the average: 5 800 reads/s looks like one database can manage.",
+     "nodes": [
+      "start",
+      "reads"
+     ],
+     "edges": [
+      "start>reads"
+     ]
+    },
+    {
+     "text": "So the flowchart says keep it simple...",
+     "nodes": [
+      "writes",
+      "data",
+      "egress",
+      "simple"
+     ],
+     "edges": [
+      "reads>writes",
+      "writes>data",
+      "data>egress",
+      "egress>simple"
+     ]
+    },
+    {
+     "text": "...but evening peak is 3× the average. 17 400 reads/s saturates the database exactly when most users are online.",
+     "nodes": [
+      "reads"
+     ],
+     "fail": [
+      "simple"
+     ]
+    },
+    {
+     "text": "Always multiply by the peak factor before asking the questions; then the cache is clearly needed.",
+     "nodes": [
+      "reads",
+      "cache"
+     ],
+     "edges": [
+      "reads>cache"
+     ]
+    }
+   ]
+  }
  ]
 }

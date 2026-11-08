@@ -81,5 +81,141 @@
     "deep>wrap"
    ]
   }
+ ],
+ "base_name": "On time",
+ "scenarios": [
+  {
+   "name": "Risk: skip scoping",
+   "tone": "risk",
+   "summary": "Drawing before scoping feels fast, but a missed requirement found at minute 25 forces a redraw and eats the deep dives.",
+   "steps": [
+    {
+     "text": "Minute 0: start drawing boxes straight away. No features, no targets, no numbers.",
+     "nodes": [
+      "hld"
+     ],
+     "fail": [
+      "scope"
+     ]
+    },
+    {
+     "text": "Minute 25: \"It also needs to work offline\" or \"100 M users\". Half the diagram is wrong.",
+     "nodes": [
+      "hld"
+     ],
+     "fail": [
+      "scope",
+      "scope>hld"
+     ]
+    },
+    {
+     "text": "The redraw eats the deep-dive time: only shallow answers left, which is weak signal.",
+     "nodes": [
+      "deep"
+     ],
+     "edges": [
+      "hld>deep"
+     ],
+     "fail": [
+      "deep"
+     ]
+    },
+    {
+     "text": "Mitigation: always spend the 5 minutes and end scoping with a one-line summary the interviewer agrees with.",
+     "nodes": [
+      "scope",
+      "hld"
+     ],
+     "edges": [
+      "scope>hld"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Out of time",
+   "tone": "failure",
+   "summary": "Going deep on one part for 30 minutes leaves no wrap-up: no bottlenecks, failure modes or next steps. Watch the clock and timebox each dive.",
+   "steps": [
+    {
+     "text": "Scoping and the high-level design go fine by minute 20.",
+     "nodes": [
+      "scope",
+      "hld"
+     ],
+     "edges": [
+      "scope>hld"
+     ]
+    },
+    {
+     "text": "The first deep dive (say, database schema) runs on for 25 minutes.",
+     "nodes": [
+      "deep"
+     ],
+     "edges": [
+      "hld>deep"
+     ],
+     "fail": [
+      "deep"
+     ]
+    },
+    {
+     "text": "The interviewer calls time. No second dive, no failure modes, no \"what at 10×\".",
+     "nodes": [
+      "deep"
+     ],
+     "fail": [
+      "wrap",
+      "deep>wrap"
+     ]
+    },
+    {
+     "text": "Mitigation: say your plan up front (\"two dives, ~8 minutes each\") and check the clock between them.",
+     "nodes": [
+      "deep",
+      "wrap"
+     ],
+     "edges": [
+      "deep>wrap"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Interviewer steers",
+   "tone": "edge",
+   "summary": "If the interviewer pulls you into one part early, follow them: the steps are a default order, not a script.",
+   "steps": [
+    {
+     "text": "During the high-level design the interviewer asks: \"How exactly would ranking work?\"",
+     "nodes": [
+      "hld"
+     ],
+     "edges": [
+      "scope>hld"
+     ]
+    },
+    {
+     "text": "That is a deep-dive request. Park the rest of the diagram and go deep now.",
+     "nodes": [
+      "hld",
+      "deep"
+     ],
+     "edges": [
+      "hld>deep"
+     ]
+    },
+    {
+     "text": "Afterwards, say so: \"Let me finish the write path quickly\", and keep a few minutes for the wrap-up.",
+     "nodes": [
+      "deep",
+      "wrap"
+     ],
+     "edges": [
+      "deep>wrap"
+     ]
+    }
+   ]
+  }
  ]
 }

@@ -1,5 +1,7 @@
 ## The recipe
 
+Six steps from assumptions to a design decision. The tabs show two common ways it goes wrong: spiky traffic and a slipped unit.
+
 ```figure
 estimate-recipe
 ```

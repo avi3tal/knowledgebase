@@ -11,6 +11,8 @@ only grows at the tail. Every record gets an **offset**, its position in that pa
 offset never changes. Brokers keep records for a **retention period** (7 days by default) whether
 anyone has read them or not.
 
+Its tabs show a consumer dying, a hot partition from a skewed key, and scaling with more consumers versus more partitions.
+
 ```figure
 partitions-groups
 ```

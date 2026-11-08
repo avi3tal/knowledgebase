@@ -1,6 +1,7 @@
 ## Where to push back
 
-Backpressure works hop by hop, and every hop needs a **bound**:
+Backpressure works hop by hop, and every hop needs a **bound**. The figure's tabs follow a slow
+database back up the chain, and show what a single unbounded hop does.
 
 ```figure
 hop-bounds
@@ -12,6 +13,8 @@ hop-bounds
   wait briefly or get a fast 503. Adaptive limiters lower the cap when latency rises.
 - **Credits / windows.** The receiver grants N items and the sender may not exceed them. TCP flow
   control, HTTP/2 stream windows and reactive streams' `request(n)` all work this way.
+
+The tabs compare plain push, a lost credit grant and a slow receiver.
 
 ```figure
 credits

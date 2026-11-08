@@ -123,5 +123,329 @@
     "p2>c2"
    ]
   }
+ ],
+ "base_name": "Keyed writes",
+ "scenarios": [
+  {
+   "name": "Consumer c2 dies",
+   "tone": "failure",
+   "summary": "The group rebalances and c1 takes over p2 from its last committed offset. Order per key survives; work since the last commit is redone.",
+   "edges": [
+    {
+     "from": "prod",
+     "to": "p0",
+     "label": "key 17, 42, 99"
+    },
+    {
+     "from": "prod",
+     "to": "p1",
+     "label": "key 08, 23"
+    },
+    {
+     "from": "prod",
+     "to": "p2",
+     "label": "key 55, 61"
+    },
+    {
+     "from": "p0",
+     "to": "c1",
+     "label": "from offset 3"
+    },
+    {
+     "from": "p1",
+     "to": "c1",
+     "label": "from offset 1"
+    },
+    {
+     "from": "p2",
+     "to": "c2",
+     "label": "from offset 0"
+    },
+    {
+     "from": "p2",
+     "to": "c1",
+     "label": "resume at commit"
+    }
+   ],
+   "steps": [
+    {
+     "text": "c2 crashes. Its heartbeats stop, and p2 has no reader.",
+     "nodes": [
+      "p2"
+     ],
+     "fail": [
+      "c2",
+      "p2>c2"
+     ]
+    },
+    {
+     "text": "After the session timeout the coordinator rebalances: the group now has one member, so c1 owns all three partitions. Reading p2 pauses meanwhile.",
+     "nodes": [
+      "c1",
+      "p0",
+      "p1",
+      "p2"
+     ],
+     "edges": [
+      "p0>c1",
+      "p1>c1"
+     ],
+     "fail": [
+      "c2"
+     ]
+    },
+    {
+     "text": "c1 starts reading p2 from the offset the group last committed for it. Anything c2 processed after that commit is processed again.",
+     "nodes": [
+      "p2",
+      "c1"
+     ],
+     "edges": [
+      "p2>c1"
+     ],
+     "fail": [
+      "c2"
+     ]
+    },
+    {
+     "text": "Producers never noticed: they keep writing by key, and each partition still has exactly one reader.",
+     "nodes": [
+      "prod",
+      "p0",
+      "p1",
+      "p2"
+     ],
+     "edges": [
+      "prod>p0",
+      "prod>p1",
+      "prod>p2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: hot partition",
+   "tone": "risk",
+   "summary": "A skewed key (one huge tenant, one viral item) sends most traffic to one partition, and its single consumer can't keep up. Salt the key or split that traffic out.",
+   "edges": [
+    {
+     "from": "prod",
+     "to": "p0",
+     "label": "key 17 × 90%"
+    },
+    {
+     "from": "prod",
+     "to": "p1",
+     "label": "key 08, 23"
+    },
+    {
+     "from": "prod",
+     "to": "p2",
+     "label": "key 55, 61"
+    },
+    {
+     "from": "p0",
+     "to": "c1",
+     "label": "lag growing"
+    },
+    {
+     "from": "p1",
+     "to": "c1",
+     "label": "from offset 1"
+    },
+    {
+     "from": "p2",
+     "to": "c2",
+     "label": "from offset 0"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Order 17 belongs to a giant tenant: 90% of all records carry its key, and hash(key) % 3 sends every one of them to p0.",
+     "nodes": [
+      "prod",
+      "p0"
+     ],
+     "edges": [
+      "prod>p0"
+     ]
+    },
+    {
+     "text": "p0 grows much faster than the others, and only one consumer in the group may read it.",
+     "nodes": [
+      "p0",
+      "c1"
+     ],
+     "edges": [
+      "p0>c1"
+     ],
+     "fail": [
+      "c1"
+     ]
+    },
+    {
+     "text": "Meanwhile c2 and the other partitions are almost idle. Adding consumers doesn't help: p0 still has one reader.",
+     "nodes": [
+      "p1",
+      "p2",
+      "c2"
+     ],
+     "edges": [
+      "p2>c2"
+     ]
+    },
+    {
+     "text": "Mitigation: salt the hot key (17#0 … 17#7) so it spreads over partitions, giving up strict order for that key, or move that tenant to its own topic.",
+     "nodes": [
+      "prod",
+      "p0",
+      "p1",
+      "p2"
+     ],
+     "edges": [
+      "prod>p0",
+      "prod>p1",
+      "prod>p2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "More consumers or partitions",
+   "tone": "alternative",
+   "summary": "Parallelism per group is capped by the partition count: a 4th consumer on 3 partitions sits idle. To scale further you need more partitions, chosen up front.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Order service",
+     "x": 0,
+     "y": 240
+    },
+    {
+     "id": "p0",
+     "kind": "stream",
+     "label": "orders · p0",
+     "x": 300,
+     "y": 80
+    },
+    {
+     "id": "p1",
+     "kind": "stream",
+     "label": "orders · p1",
+     "x": 300,
+     "y": 240
+    },
+    {
+     "id": "p2",
+     "kind": "stream",
+     "label": "orders · p2",
+     "x": 300,
+     "y": 400
+    },
+    {
+     "id": "c1",
+     "kind": "worker",
+     "label": "billing · c1",
+     "x": 600,
+     "y": 0
+    },
+    {
+     "id": "c2",
+     "kind": "worker",
+     "label": "billing · c2",
+     "x": 600,
+     "y": 160
+    },
+    {
+     "id": "c3",
+     "kind": "worker",
+     "label": "billing · c3",
+     "x": 600,
+     "y": 320
+    },
+    {
+     "id": "c4",
+     "kind": "worker",
+     "label": "billing · c4",
+     "sub": "idle",
+     "x": 600,
+     "y": 480
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "p0"
+    },
+    {
+     "from": "prod",
+     "to": "p1"
+    },
+    {
+     "from": "prod",
+     "to": "p2"
+    },
+    {
+     "from": "p0",
+     "to": "c1"
+    },
+    {
+     "from": "p1",
+     "to": "c2"
+    },
+    {
+     "from": "p2",
+     "to": "c3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Traffic grows, so the team scales billing from 2 to 4 consumers.",
+     "nodes": [
+      "c1",
+      "c2",
+      "c3",
+      "c4"
+     ]
+    },
+    {
+     "text": "The rebalance gives each of 3 partitions to one consumer: c1, c2 and c3 now each read one.",
+     "nodes": [
+      "p0",
+      "p1",
+      "p2",
+      "c1",
+      "c2",
+      "c3"
+     ],
+     "edges": [
+      "p0>c1",
+      "p1>c2",
+      "p2>c3"
+     ]
+    },
+    {
+     "text": "c4 gets nothing. Two readers of one partition would break per-key order, so Kafka never does that.",
+     "nodes": [
+      "c4"
+     ]
+    },
+    {
+     "text": "The real lever is partitions. But adding them later remaps hash(key) % N and breaks per-key order across the change, so provision 2–3× the partitions you need today.",
+     "nodes": [
+      "prod",
+      "p0",
+      "p1",
+      "p2"
+     ],
+     "edges": [
+      "prod>p0",
+      "prod>p1",
+      "prod>p2"
+     ]
+    }
+   ]
+  }
  ]
 }

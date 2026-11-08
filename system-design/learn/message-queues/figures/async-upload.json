@@ -145,5 +145,287 @@
     "notify>events"
    ]
   }
+ ],
+ "base_name": "Upload accepted",
+ "scenarios": [
+  {
+   "name": "Worker crashes mid-job",
+   "tone": "failure",
+   "summary": "The job wasn't acked, so it reappears and another worker redoes it. Outputs keyed by image id make the rerun harmless.",
+   "steps": [
+    {
+     "text": "A worker pulls a resize job. The broker hides it from other workers for a visibility timeout.",
+     "nodes": [
+      "workers",
+      "jobs"
+     ],
+     "edges": [
+      "workers>jobs"
+     ]
+    },
+    {
+     "text": "The worker dies halfway through writing thumbnails, before it acks.",
+     "nodes": [
+      "blob"
+     ],
+     "fail": [
+      "workers",
+      "workers>blob"
+     ]
+    },
+    {
+     "text": "The timeout expires and the job becomes visible again. The user's upload is unaffected: it was answered long ago.",
+     "nodes": [
+      "jobs",
+      "client"
+     ]
+    },
+    {
+     "text": "A healthy worker picks it up and rewrites the thumbnails under the same keys (image id + size), overwriting the partial output, then publishes and acks.",
+     "nodes": [
+      "workers",
+      "jobs",
+      "blob",
+      "events"
+     ],
+     "edges": [
+      "workers>jobs",
+      "workers>blob",
+      "workers>events"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Notifier is down",
+   "tone": "failure",
+   "summary": "A dead consumer only delays its own work. Uploads and resizes keep flowing, and events wait in the queue until it returns.",
+   "steps": [
+    {
+     "text": "The notifier crashes, or is mid-deploy, for ten minutes.",
+     "fail": [
+      "notify",
+      "notify>events"
+     ]
+    },
+    {
+     "text": "Uploads still get 202 in milliseconds, and workers still resize: nothing upstream depends on the notifier.",
+     "nodes": [
+      "client",
+      "api",
+      "jobs",
+      "workers",
+      "blob"
+     ],
+     "edges": [
+      "client>api",
+      "api>jobs",
+      "api>client",
+      "workers>jobs",
+      "workers>blob"
+     ],
+     "fail": [
+      "notify"
+     ]
+    },
+    {
+     "text": "'Image ready' events pile up in their queue. They're durable, so nothing is lost.",
+     "nodes": [
+      "workers",
+      "events"
+     ],
+     "edges": [
+      "workers>events"
+     ],
+     "fail": [
+      "notify"
+     ]
+    },
+    {
+     "text": "The notifier comes back and drains the backlog from where it left off. Users get their notifications late, not never.",
+     "nodes": [
+      "notify",
+      "events"
+     ],
+     "edges": [
+      "notify>events"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: backlog grows",
+   "tone": "risk",
+   "summary": "When arrivals outpace workers for long, the queue hides the problem: depth and the age of the oldest job grow silently. Alert and autoscale on them.",
+   "steps": [
+    {
+     "text": "A traffic spike: uploads arrive far faster than the workers can resize. Every request still gets a quick 202.",
+     "nodes": [
+      "client",
+      "api",
+      "jobs"
+     ],
+     "edges": [
+      "client>api",
+      "api>jobs",
+      "api>client"
+     ]
+    },
+    {
+     "text": "Workers keep their fixed pace, so the backlog grows by the difference every second, and the newest job waits behind all of it.",
+     "nodes": [
+      "workers",
+      "jobs"
+     ],
+     "edges": [
+      "workers>jobs"
+     ],
+     "fail": [
+      "jobs"
+     ]
+    },
+    {
+     "text": "Users see '202 Accepted' but no thumbnail for minutes. No error is raised anywhere, which is why this goes unnoticed.",
+     "nodes": [
+      "client",
+      "blob"
+     ],
+     "fail": [
+      "jobs"
+     ]
+    },
+    {
+     "text": "Mitigation: monitor queue depth and oldest-message age, autoscale workers on them, and bound the queue so the API can push back with 503 when it's full.",
+     "nodes": [
+      "jobs",
+      "workers"
+     ],
+     "edges": [
+      "workers>jobs"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: sync calls",
+   "tone": "alternative",
+   "summary": "No broker: the API calls each step and waits. Simpler, and the result is in the response, but latency is the sum of the steps and any one of them failing fails the upload.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "User",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Upload API",
+     "x": 280,
+     "y": 150
+    },
+    {
+     "id": "resize",
+     "kind": "service",
+     "label": "Resize service",
+     "sub": "2 s",
+     "x": 560,
+     "y": 0
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Image store",
+     "x": 840,
+     "y": 0
+    },
+    {
+     "id": "notify",
+     "kind": "service",
+     "label": "Notifier",
+     "sub": "1 s",
+     "x": 560,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "api",
+     "label": "upload"
+    },
+    {
+     "from": "api",
+     "to": "resize",
+     "label": "resize (wait)"
+    },
+    {
+     "from": "resize",
+     "to": "blob",
+     "label": "thumbnails"
+    },
+    {
+     "from": "api",
+     "to": "notify",
+     "label": "notify (wait)"
+    },
+    {
+     "from": "api",
+     "to": "client",
+     "label": "200 + result"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The user uploads, and the API calls the resize service and waits about 2 s.",
+     "nodes": [
+      "client",
+      "api",
+      "resize",
+      "blob"
+     ],
+     "edges": [
+      "client>api",
+      "api>resize",
+      "resize>blob"
+     ]
+    },
+    {
+     "text": "Then it calls the notifier and waits another second.",
+     "nodes": [
+      "api",
+      "notify"
+     ],
+     "edges": [
+      "api>notify"
+     ]
+    },
+    {
+     "text": "Only now does the user get an answer: about 3 s, the sum of every step.",
+     "nodes": [
+      "api",
+      "client"
+     ],
+     "edges": [
+      "api>client"
+     ]
+    },
+    {
+     "text": "If the notifier is down, the whole upload fails, although the image was stored fine. Availability is the product of every dependency's.",
+     "nodes": [
+      "api",
+      "client"
+     ],
+     "edges": [
+      "api>client"
+     ],
+     "fail": [
+      "notify",
+      "api>notify"
+     ]
+    }
+   ]
+  }
  ]
 }

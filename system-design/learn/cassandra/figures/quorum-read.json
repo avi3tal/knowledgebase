@@ -75,5 +75,154 @@
    "style": "async",
    "note": "The coordinator fixes the stale replica in the background, so the next read finds them in agreement."
   }
+ ],
+ "base_name": "QUORUM read",
+ "scenarios": [
+  {
+   "name": "Risk: R + W ≤ N",
+   "tone": "risk",
+   "summary": "With W = 1 and R = 1 the read set can miss the write set entirely: the read returns an old value and reports success.",
+   "actors": [
+    {
+     "id": "c",
+     "label": "Client",
+     "kind": "client"
+    },
+    {
+     "id": "co",
+     "label": "Coordinator",
+     "kind": "coordinator"
+    },
+    {
+     "id": "r1",
+     "label": "Replica 1",
+     "kind": "nosql"
+    },
+    {
+     "id": "r3",
+     "label": "Replica 3",
+     "kind": "nosql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "c",
+     "to": "co",
+     "label": "write c1 (ONE) ts=105"
+    },
+    {
+     "from": "co",
+     "to": "r1",
+     "label": "write ts=105",
+     "note": "Replica 1 acks first, so the write succeeds. Replica 3 hasn't applied it yet."
+    },
+    {
+     "from": "c",
+     "to": "co",
+     "label": "read c1 (ONE)",
+     "note": "R = 1: one answer is enough, and the coordinator picks replica 3."
+    },
+    {
+     "from": "co",
+     "to": "r3",
+     "label": "read"
+    },
+    {
+     "from": "r3",
+     "to": "co",
+     "label": "value · ts = 98",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "c",
+     "label": "value (ts = 98)",
+     "style": "error",
+     "note": "Stale, with no error: nothing in the read set saw the write. Use R + W > N when a read must see the last write."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: W=ALL, R=ONE",
+   "tone": "alternative",
+   "summary": "R + W > N also holds with W = 3, R = 1: very cheap consistent reads, but a single replica down makes every write fail.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "co",
+     "label": "read c1 (ONE)",
+     "note": "Writes were done at ALL, so every replica has ts = 105."
+    },
+    {
+     "from": "co",
+     "to": "r2",
+     "label": "read",
+     "note": "One replica is enough: any of them has the latest write."
+    },
+    {
+     "from": "r2",
+     "to": "co",
+     "label": "value · ts = 105",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "c",
+     "label": "value (ts = 105)",
+     "style": "reply",
+     "note": "Half the read work of QUORUM. The cost moved to writes: with W = ALL, one node down and nothing can be written."
+    }
+   ]
+  },
+  {
+   "name": "Edge: tombstones",
+   "tone": "edge",
+   "summary": "Reading past many deletes is slow: a replica scans every tombstone in the slice, and past ~100k cells the query is aborted.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "co",
+     "label": "read latest 50 of c1",
+     "note": "c1 is used like a queue: rows are inserted and soon deleted."
+    },
+    {
+     "from": "co",
+     "to": "r2",
+     "label": "read"
+    },
+    {
+     "from": "co",
+     "to": "r3",
+     "label": "read"
+    },
+    {
+     "from": "r2",
+     "to": "r2",
+     "label": "scan 120k tombstones",
+     "style": "self",
+     "note": "Each delete left a tombstone, kept until gc_grace (10 days) so it can reach every replica."
+    },
+    {
+     "from": "r3",
+     "to": "r3",
+     "label": "scan 120k tombstones",
+     "style": "self"
+    },
+    {
+     "from": "r2",
+     "to": "co",
+     "label": "abort: tombstone limit",
+     "style": "error",
+     "note": "Past tombstone_failure_threshold the replica gives up."
+    },
+    {
+     "from": "co",
+     "to": "c",
+     "label": "ReadFailure",
+     "style": "error",
+     "note": "Fix the model, not the timeout: partition by time bucket so old buckets are skipped, or use TTLs on whole partitions."
+    }
+   ]
+  }
  ]
 }

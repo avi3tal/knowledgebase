@@ -100,5 +100,218 @@
    ],
    "edges": []
   }
+ ],
+ "base_name": "Request on the ring",
+ "scenarios": [
+  {
+   "name": "A replica is down",
+   "tone": "failure",
+   "summary": "No leader means no failover: with RF = 3 a QUORUM request still succeeds on the two live replicas, and the coordinator keeps a hint for the third.",
+   "steps": [
+    {
+     "text": "The client sends a request for c1 to any node; it coordinates.",
+     "nodes": [
+      "client",
+      "coord"
+     ],
+     "edges": [
+      "client>coord"
+     ]
+    },
+    {
+     "text": "Replica 3 has crashed. Its share of c1 can't be written or read right now.",
+     "nodes": [
+      "coord"
+     ],
+     "fail": [
+      "r3",
+      "coord>r3"
+     ]
+    },
+    {
+     "text": "Replicas 1 and 2 answer: 2 of 3 is a quorum, so the request succeeds without any election or promotion.",
+     "nodes": [
+      "coord",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "coord>r1",
+      "coord>r2"
+     ],
+     "fail": [
+      "r3"
+     ]
+    },
+    {
+     "text": "If the coordinator itself dies, the driver just retries on another node: every node can coordinate.",
+     "nodes": [
+      "client",
+      "coord"
+     ],
+     "edges": [
+      "client>coord"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: huge partition",
+   "tone": "risk",
+   "summary": "A partition lives on exactly RF nodes, so one unbounded partition (a huge chat, a busy sensor) overloads 3 nodes however big the cluster is.",
+   "steps": [
+    {
+     "text": "A single conversation gets millions of messages, all under the same partition key c1.",
+     "nodes": [
+      "client",
+      "coord"
+     ],
+     "edges": [
+      "client>coord"
+     ]
+    },
+    {
+     "text": "Every write and read for it lands on the same 3 replicas; they grow to many GB for one partition and slow down on compaction and repair.",
+     "nodes": [
+      "coord"
+     ],
+     "edges": [
+      "coord>r1",
+      "coord>r2",
+      "coord>r3"
+     ],
+     "fail": [
+      "r1",
+      "r2",
+      "r3"
+     ]
+    },
+    {
+     "text": "Adding nodes doesn't help: the token of c1 still maps to 3 owners.",
+     "nodes": [
+      "r1",
+      "r2",
+      "r3"
+     ]
+    },
+    {
+     "text": "Mitigation: bucket the key, e.g. (conversation_id, day), so each partition stays bounded (aim for well under 100 MB) and buckets spread over the ring.",
+     "nodes": [
+      "coord",
+      "r1",
+      "r2",
+      "r3"
+     ],
+     "edges": [
+      "coord>r1",
+      "coord>r2",
+      "coord>r3"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: leader",
+   "tone": "alternative",
+   "summary": "A leader per shard (MongoDB, Postgres): simple, strongly consistent writes, but writes stop for that shard until a new leader is elected.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Client",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "coord",
+     "kind": "coordinator",
+     "label": "Router",
+     "x": 290,
+     "y": 170
+    },
+    {
+     "id": "r1",
+     "kind": "nosql",
+     "label": "Follower 1",
+     "x": 590,
+     "y": 20
+    },
+    {
+     "id": "r2",
+     "kind": "nosql",
+     "label": "Leader",
+     "sub": "only writer",
+     "x": 590,
+     "y": 170
+    },
+    {
+     "id": "r3",
+     "kind": "nosql",
+     "label": "Follower 2",
+     "x": 590,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "coord",
+     "label": "write c1"
+    },
+    {
+     "from": "coord",
+     "to": "r2",
+     "label": "to leader"
+    },
+    {
+     "from": "r2",
+     "to": "r1",
+     "label": "replicate"
+    },
+    {
+     "from": "r2",
+     "to": "r3",
+     "label": "replicate"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Writes for this shard must go to its one leader.",
+     "nodes": [
+      "client",
+      "coord",
+      "r2"
+     ],
+     "edges": [
+      "client>coord",
+      "coord>r2"
+     ]
+    },
+    {
+     "text": "The leader orders every write and replicates it: no conflicts, no last-write-wins.",
+     "nodes": [
+      "r2",
+      "r1",
+      "r3"
+     ],
+     "edges": [
+      "r2>r1",
+      "r2>r3"
+     ]
+    },
+    {
+     "text": "The leader dies: writes for this shard fail until the followers elect a new one (seconds).",
+     "nodes": [
+      "coord",
+      "r1",
+      "r3"
+     ],
+     "fail": [
+      "r2",
+      "coord>r2"
+     ]
+    }
+   ]
+  }
  ]
 }

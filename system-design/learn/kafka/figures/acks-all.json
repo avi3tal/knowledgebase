@@ -63,5 +63,124 @@
    "style": "error",
    "note": "A follower from the in-sync set becomes leader. It has the batch, so nothing acknowledged is lost."
   }
+ ],
+ "base_name": "acks=all",
+ "scenarios": [
+  {
+   "name": "acks=1: leader dies",
+   "tone": "failure",
+   "summary": "With acks=1 the producer is told 'done' before any follower has the batch. If the leader dies right then, an acknowledged write disappears.",
+   "messages": [
+    {
+     "from": "prod",
+     "to": "lead",
+     "label": "produce batch (acks=1)"
+    },
+    {
+     "from": "lead",
+     "to": "prod",
+     "label": "ack",
+     "style": "reply",
+     "note": "The leader answers as soon as the batch is on its own disk."
+    },
+    {
+     "from": "lead",
+     "to": "lead",
+     "label": "broker 1 dies",
+     "style": "error",
+     "note": "Followers haven't fetched the batch yet."
+    },
+    {
+     "from": "f2",
+     "to": "lead",
+     "label": "fetch → copy batch",
+     "style": "lost",
+     "note": "The copy never happens."
+    },
+    {
+     "from": "f2",
+     "to": "f2",
+     "label": "elected leader, no batch",
+     "style": "self",
+     "note": "Broker 2 takes over without the record. The producer was told it was written: silent data loss."
+    }
+   ]
+  },
+  {
+   "name": "ISR shrinks",
+   "tone": "edge",
+   "summary": "A follower that falls behind is dropped from the ISR, and acks=all waits only for the rest. Below min.insync.replicas the leader refuses writes rather than risk losing them.",
+   "messages": [
+    {
+     "from": "f3",
+     "to": "f3",
+     "label": "slow disk, falls behind",
+     "style": "self",
+     "note": "After replica.lag.time.max (30 s) without catching up, broker 3 leaves the ISR: now {1, 2}."
+    },
+    {
+     "from": "prod",
+     "to": "lead",
+     "label": "produce batch (acks=all)"
+    },
+    {
+     "from": "f2",
+     "to": "lead",
+     "label": "fetch → copy batch",
+     "note": "All in-sync replicas (1 and 2) have it: 2 ≥ min.insync.replicas."
+    },
+    {
+     "from": "lead",
+     "to": "prod",
+     "label": "ack",
+     "style": "reply",
+     "note": "Still durable against one more broker loss."
+    },
+    {
+     "from": "lead",
+     "to": "prod",
+     "label": "NotEnoughReplicas",
+     "style": "error",
+     "note": "If broker 2 drops out too, the ISR is {1}: fewer than 2, so writes are refused. Durability over availability."
+    }
+   ]
+  },
+  {
+   "name": "Leader dies before ack",
+   "tone": "failure",
+   "summary": "The batch was replicated but the ack never arrived, so the producer retries on the new leader. An idempotent producer turns that retry into a no-op instead of a duplicate.",
+   "messages": [
+    {
+     "from": "prod",
+     "to": "lead",
+     "label": "produce batch, seq 41"
+    },
+    {
+     "from": "f2",
+     "to": "lead",
+     "label": "fetch → copy batch",
+     "note": "Broker 2 already has the batch."
+    },
+    {
+     "from": "lead",
+     "to": "lead",
+     "label": "broker 1 dies before ack",
+     "style": "error"
+    },
+    {
+     "from": "prod",
+     "to": "f2",
+     "label": "retry batch, seq 41",
+     "note": "Timeout, metadata refresh: broker 2 is the new leader, so the producer resends the batch to it."
+    },
+    {
+     "from": "f2",
+     "to": "prod",
+     "label": "ack (duplicate dropped)",
+     "style": "reply",
+     "note": "Same producer id and sequence number: broker 2 recognises the retry and doesn't append the batch twice."
+    }
+   ]
+  }
  ]
 }

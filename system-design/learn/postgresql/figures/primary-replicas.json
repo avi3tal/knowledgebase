@@ -104,5 +104,335 @@
     "app>primary"
    ]
   }
+ ],
+ "base_name": "Reads on replicas",
+ "scenarios": [
+  {
+   "name": "Primary dies",
+   "tone": "failure",
+   "summary": "A replica is promoted in seconds, but with asynchronous replication the commits it hadn't received yet are gone.",
+   "steps": [
+    {
+     "text": "Writes are committing on the primary; replicas are a few hundred ms behind.",
+     "nodes": [
+      "app",
+      "primary"
+     ],
+     "edges": [
+      "app>primary",
+      "primary>r1",
+      "primary>r2"
+     ]
+    },
+    {
+     "text": "The primary crashes. Writes fail; reads on the replicas keep working.",
+     "nodes": [
+      "app",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "app>r1",
+      "app>r2"
+     ],
+     "fail": [
+      "primary",
+      "app>primary"
+     ]
+    },
+    {
+     "text": "Failover (Patroni, RDS): promote the most up-to-date replica, here replica 1, and repoint writers at it.",
+     "nodes": [
+      "app",
+      "r1"
+     ],
+     "edges": [
+      "app>r1"
+     ],
+     "fail": [
+      "primary"
+     ]
+    },
+    {
+     "text": "Commits the primary acked but never streamed are lost. Use synchronous replication to one standby when that is unacceptable, at the cost of commit latency.",
+     "nodes": [
+      "r1",
+      "r2"
+     ],
+     "fail": [
+      "primary>r1",
+      "primary>r2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Edge: read your write",
+   "tone": "edge",
+   "summary": "A user saves a change and the next page reads a replica that hasn't replayed it yet: their change seems to vanish.",
+   "steps": [
+    {
+     "text": "The user renames their profile: UPDATE on the primary, committed.",
+     "nodes": [
+      "app",
+      "primary"
+     ],
+     "edges": [
+      "app>primary"
+     ]
+    },
+    {
+     "text": "The WAL record is on its way to replica 1, which is 2 s behind under load.",
+     "nodes": [
+      "primary",
+      "r1"
+     ],
+     "edges": [
+      "primary>r1"
+     ]
+    },
+    {
+     "text": "The redirect loads the profile from replica 1 and shows the old name.",
+     "nodes": [
+      "app",
+      "r1"
+     ],
+     "edges": [
+      "app>r1"
+     ],
+     "fail": [
+      "r1"
+     ]
+    },
+    {
+     "text": "Fix: send that user's reads to the primary for a short while after a write, or wait until the replica's replay position passes the write's LSN.",
+     "nodes": [
+      "app",
+      "primary"
+     ],
+     "edges": [
+      "app>primary"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: connections",
+   "tone": "risk",
+   "summary": "Each connection is a backend process; autoscaled app servers exhaust max_connections. A pooler multiplexes them onto a few real ones.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "sub": "60 pods × 20",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "pool",
+     "kind": "service",
+     "label": "Pooler",
+     "sub": "PgBouncer",
+     "x": 300,
+     "y": 170
+    },
+    {
+     "id": "primary",
+     "kind": "sql",
+     "label": "Primary",
+     "sub": "max 200 conns",
+     "x": 600,
+     "y": 170
+    },
+    {
+     "id": "r1",
+     "kind": "sql",
+     "label": "Read replica 1",
+     "x": 900,
+     "y": 20
+    },
+    {
+     "id": "r2",
+     "kind": "sql",
+     "label": "Read replica 2",
+     "x": 900,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "pool",
+     "label": "1200 clients"
+    },
+    {
+     "from": "pool",
+     "to": "primary",
+     "label": "~50 server conns"
+    },
+    {
+     "from": "primary",
+     "to": "r1",
+     "label": "WAL stream"
+    },
+    {
+     "from": "primary",
+     "to": "r2",
+     "label": "WAL stream"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Traffic spikes and the app autoscales to 60 pods, each with a pool of 20: 1,200 connections.",
+     "nodes": [
+      "app"
+     ]
+    },
+    {
+     "text": "Connected directly, the primary refuses past max_connections ('too many clients') while its CPU sits idle. Each process also costs ~10 MB.",
+     "nodes": [
+      "app",
+      "primary"
+     ],
+     "fail": [
+      "primary"
+     ]
+    },
+    {
+     "text": "A pooler in transaction mode lends a server connection only for the length of one transaction.",
+     "nodes": [
+      "app",
+      "pool"
+     ],
+     "edges": [
+      "app>pool"
+     ]
+    },
+    {
+     "text": "1,200 clients share ~50 real connections. Keep transactions short: one idle in a transaction holds its connection.",
+     "nodes": [
+      "pool",
+      "primary"
+     ],
+     "edges": [
+      "pool>primary"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: sharded",
+   "tone": "alternative",
+   "summary": "Split rows by key over several primaries (Citus, Vitess-style): writes scale with shards, but cross-shard joins and transactions get hard.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "router",
+     "kind": "coordinator",
+     "label": "Shard router",
+     "sub": "by customer_id",
+     "x": 300,
+     "y": 170
+    },
+    {
+     "id": "p0",
+     "kind": "sql",
+     "label": "Shard 0 primary",
+     "x": 600,
+     "y": 20
+    },
+    {
+     "id": "p1",
+     "kind": "sql",
+     "label": "Shard 1 primary",
+     "x": 600,
+     "y": 320
+    },
+    {
+     "id": "r1",
+     "kind": "sql",
+     "label": "Shard 0 replica",
+     "x": 900,
+     "y": 20
+    },
+    {
+     "id": "r2",
+     "kind": "sql",
+     "label": "Shard 1 replica",
+     "x": 900,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "router",
+     "label": "reads + writes"
+    },
+    {
+     "from": "router",
+     "to": "p0"
+    },
+    {
+     "from": "router",
+     "to": "p1"
+    },
+    {
+     "from": "p0",
+     "to": "r1",
+     "label": "WAL"
+    },
+    {
+     "from": "p1",
+     "to": "r2",
+     "label": "WAL"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Every query carries the shard key; the router sends it to the one primary that owns that key.",
+     "nodes": [
+      "app",
+      "router"
+     ],
+     "edges": [
+      "app>router"
+     ]
+    },
+    {
+     "text": "Two primaries take writes in parallel: write capacity doubles, and each shard keeps its own replica for failover.",
+     "nodes": [
+      "p0",
+      "p1",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "router>p0",
+      "router>p1",
+      "p0>r1",
+      "p1>r2"
+     ]
+    },
+    {
+     "text": "Cost: a join or transaction spanning both shards needs two-phase commit or app logic. Stay on one primary until writes or size really exceed it.",
+     "nodes": [
+      "p0",
+      "p1"
+     ],
+     "edges": [
+      "router>p0",
+      "router>p1"
+     ]
+    }
+   ]
+  }
  ]
 }

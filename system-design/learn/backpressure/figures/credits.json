@@ -54,5 +54,119 @@
    "style": "async",
    "note": "The sender's rate now matches the receiver's speed exactly, without either side knowing a number up front."
   }
+ ],
+ "base_name": "Credits",
+ "scenarios": [
+  {
+   "name": "Alternative: push",
+   "tone": "alternative",
+   "summary": "No credits: the sender pushes as fast as it can. Lowest latency while the receiver keeps up; once it can't, items are dropped or the receiver's buffer grows without limit.",
+   "messages": [
+    {
+     "from": "snd",
+     "to": "rcv",
+     "label": "item 1, item 2, item 3",
+     "style": "async",
+     "note": "No permission needed: the sender writes whenever it has work."
+    },
+    {
+     "from": "snd",
+     "to": "rcv",
+     "label": "item 4, item 5, item 6",
+     "style": "async",
+     "note": "The receiver's buffer is full: it has room for 3."
+    },
+    {
+     "from": "snd",
+     "to": "rcv",
+     "label": "item 7, item 8",
+     "style": "lost",
+     "note": "Dropped on arrival. The sender doesn't know, and keeps going."
+    },
+    {
+     "from": "rcv",
+     "to": "rcv",
+     "label": "or buffer all → OOM",
+     "style": "error",
+     "note": "The other choice is to keep everything in memory, which only postpones the failure."
+    }
+   ]
+  },
+  {
+   "name": "Lost credit grant",
+   "tone": "failure",
+   "summary": "If a credit update is lost, both sides wait for each other for ever. Real protocols re-send window updates and probe a zero window on a timer.",
+   "messages": [
+    {
+     "from": "rcv",
+     "to": "snd",
+     "label": "request(3)"
+    },
+    {
+     "from": "snd",
+     "to": "rcv",
+     "label": "item 1, item 2, item 3",
+     "style": "async"
+    },
+    {
+     "from": "rcv",
+     "to": "snd",
+     "label": "request(2)",
+     "style": "lost",
+     "note": "The receiver has room again, but the grant never arrives."
+    },
+    {
+     "from": "snd",
+     "to": "snd",
+     "label": "credits = 0: wait…",
+     "style": "self",
+     "note": "The sender waits for credits; the receiver waits for items. Nothing moves: a deadlock."
+    },
+    {
+     "from": "snd",
+     "to": "rcv",
+     "label": "window probe (timer)",
+     "note": "Fix: like TCP's zero-window probe, the sender asks again after a timeout, and the receiver re-sends its current window."
+    }
+   ]
+  },
+  {
+   "name": "Slow receiver",
+   "tone": "edge",
+   "summary": "Credits come back slowly, so the sender slows down, and its own bounded buffer fills. It then pushes back on its caller: backpressure travels hop by hop to the source.",
+   "messages": [
+    {
+     "from": "rcv",
+     "to": "snd",
+     "label": "request(3)"
+    },
+    {
+     "from": "snd",
+     "to": "rcv",
+     "label": "item 1, item 2, item 3",
+     "style": "async"
+    },
+    {
+     "from": "rcv",
+     "to": "rcv",
+     "label": "finish item 1 (slow)",
+     "style": "self",
+     "note": "Each item now takes 10× longer: a slow disk."
+    },
+    {
+     "from": "rcv",
+     "to": "snd",
+     "label": "request(1)",
+     "note": "Credits trickle back one at a time, at the receiver's real speed."
+    },
+    {
+     "from": "snd",
+     "to": "snd",
+     "label": "own buffer full: refuse caller",
+     "style": "self",
+     "note": "The sender doesn't buffer without limit either. It stops reading from its own source, which slows down in turn."
+    }
+   ]
+  }
  ]
 }

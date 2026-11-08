@@ -124,5 +124,113 @@
     "wk>db"
    ]
   }
+ ],
+ "base_name": "Bounds at every hop",
+ "scenarios": [
+  {
+   "name": "Database slows down",
+   "tone": "failure",
+   "summary": "A slow database is felt hop by hop backwards: the pool, then the queue, then the service, until the edge starts saying no, and every hop stays within its limit.",
+   "steps": [
+    {
+     "text": "The database slows down. All 20 pool connections are busy, and new work waits for one, until its deadline.",
+     "nodes": [
+      "wk"
+     ],
+     "edges": [
+      "wk>db"
+     ],
+     "fail": [
+      "db"
+     ]
+    },
+    {
+     "text": "Workers finish fewer jobs, so they pull less. The queue's lag grows until it reaches its maximum depth.",
+     "nodes": [
+      "wk",
+      "q"
+     ],
+     "edges": [
+      "wk>q"
+     ],
+     "fail": [
+      "db"
+     ]
+    },
+    {
+     "text": "The full queue makes the service reject or briefly wait. Its in-flight count climbs to the cap, and extra requests get a fast 503.",
+     "nodes": [
+      "svc",
+      "q"
+     ],
+     "edges": [
+      "svc>q",
+      "edge>svc"
+     ],
+     "fail": [
+      "db"
+     ]
+    },
+    {
+     "text": "The edge sees the 503s and sheds early with 429 + Retry-After. The system is slower, but nothing has run out of memory.",
+     "nodes": [
+      "client",
+      "edge"
+     ],
+     "edges": [
+      "client>edge"
+     ],
+     "fail": [
+      "db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: a hop with no bound",
+   "tone": "risk",
+   "summary": "One unbounded hop undoes the rest: an unlimited connection count turns a slow database into a dead one.",
+   "steps": [
+    {
+     "text": "Every other hop has its limit, but workers open a new database connection per job, with no pool.",
+     "nodes": [
+      "wk",
+      "db"
+     ],
+     "edges": [
+      "wk>db"
+     ]
+    },
+    {
+     "text": "When the database slows down, jobs take longer, so more run at once and more connections open: 20, 200, 2 000.",
+     "nodes": [
+      "wk"
+     ],
+     "edges": [
+      "wk>db"
+     ],
+     "fail": [
+      "db"
+     ]
+    },
+    {
+     "text": "The database spends its memory and CPU on connections instead of queries, slows further, and finally refuses everyone.",
+     "fail": [
+      "db",
+      "wk>db"
+     ]
+    },
+    {
+     "text": "Mitigation: a fixed pool with a wait deadline. Excess work waits upstream, in the bounded queue, where it's cheap.",
+     "nodes": [
+      "wk",
+      "q"
+     ],
+     "edges": [
+      "wk>q"
+     ]
+    }
+   ]
+  }
  ]
 }

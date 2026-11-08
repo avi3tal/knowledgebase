@@ -5,7 +5,7 @@
 Cassandra (and its relatives ScyllaDB, HBase and Bigtable) is a database built for **huge write
 volumes spread over many cheap nodes**. There is no leader: every node accepts writes, data is
 placed on a [consistent-hashing](#/learn/system-design/consistent-hashing) ring, and you add
-capacity by adding nodes.
+capacity by adding nodes. The tabs show a replica down, a partition that grows too big, and the leader-based alternative.
 
 ```figure
 ring-placement

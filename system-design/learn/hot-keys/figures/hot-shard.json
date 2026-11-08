@@ -109,5 +109,102 @@
     "s0"
    ]
   }
+ ],
+ "base_name": "Viral key",
+ "scenarios": [
+  {
+   "name": "Celebrity spike",
+   "tone": "edge",
+   "summary": "A key goes from ordinary to hot in seconds, faster than any autoscaler. Detect hot keys continuously so the mitigation is already switched on.",
+   "steps": [
+    {
+     "text": "Before: video:42 is one key among millions, and shard 0 runs at 20% like the others.",
+     "nodes": [
+      "users",
+      "router",
+      "s0"
+     ],
+     "edges": [
+      "users>router",
+      "router>s0"
+     ]
+    },
+    {
+     "text": "A celebrity shares it. Within ten seconds its rate goes from 100/s to 500 000/s.",
+     "nodes": [
+      "users",
+      "router"
+     ],
+     "edges": [
+      "users>router"
+     ]
+    },
+    {
+     "text": "Shard 0 saturates. New shards would take minutes to add and wouldn't help this one key anyway.",
+     "nodes": [
+      "s0"
+     ],
+     "edges": [
+      "router>s0"
+     ],
+     "fail": [
+      "s0"
+     ]
+    },
+    {
+     "text": "Defence: sample request keys (top-k counting) on the router or clients, flag a key once it passes a threshold, and route it to a local cache or split copies.",
+     "nodes": [
+      "router"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Shard 0 dies",
+   "tone": "failure",
+   "summary": "The overloaded shard fails, its replica is promoted, and the same hot key overloads the replica too: the failure moves, it doesn't end.",
+   "steps": [
+    {
+     "text": "Shard 0 runs out of CPU and stops answering health checks.",
+     "nodes": [
+      "s0"
+     ],
+     "fail": [
+      "s0"
+     ]
+    },
+    {
+     "text": "Every key on shard 0 is now failing, not just video:42: the innocent neighbours are hurt most.",
+     "nodes": [
+      "router",
+      "s0"
+     ],
+     "fail": [
+      "s0",
+      "router>s0"
+     ]
+    },
+    {
+     "text": "Its replica is promoted and receives the same 500k ops/s, so it falls over next. Client retries make it worse.",
+     "nodes": [
+      "router",
+      "s0"
+     ],
+     "edges": [
+      "router>s0"
+     ],
+     "fail": [
+      "s0"
+     ]
+    },
+    {
+     "text": "Fix the cause, not the node: absorb the key before it reaches the shard (local cache, coalescing) and cap retries with backoff.",
+     "nodes": [
+      "users",
+      "router"
+     ]
+    }
+   ]
+  }
  ]
 }

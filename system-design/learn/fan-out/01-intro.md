@@ -11,6 +11,8 @@ you pay for those N: at write time or at read time.
 Precompute every recipient's result. When someone posts, workers copy the post id into each
 follower's timeline. Reading is then one key lookup.
 
+Its tabs replay a celebrity post, a worker dying mid-way, inactive followers, and the hybrid alternative.
+
 ```figure
 push-flow
 ```

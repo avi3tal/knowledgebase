@@ -113,5 +113,239 @@
     "lbus"
    ]
   }
+ ],
+ "base_name": "Nearest region",
+ "scenarios": [
+  {
+   "name": "Region outage",
+   "tone": "failure",
+   "summary": "GeoDNS health checks notice the dead region and answer with the other one; users pay extra latency instead of an outage.",
+   "steps": [
+    {
+     "text": "The whole EU region goes dark: power, network or a bad deploy.",
+     "nodes": [
+      "client"
+     ],
+     "fail": [
+      "lbeu",
+      "appeu",
+      "client>lbeu"
+     ]
+    },
+    {
+     "text": "GeoDNS health checks fail for EU, so new lookups get the US address.",
+     "nodes": [
+      "client",
+      "dns"
+     ],
+     "edges": [
+      "client>dns"
+     ],
+     "fail": [
+      "lbeu"
+     ]
+    },
+    {
+     "text": "European users now cross the Atlantic: ~150 ms instead of ~20 ms, but they are served.",
+     "nodes": [
+      "client",
+      "lbus",
+      "appus"
+     ],
+     "edges": [
+      "client>lbus",
+      "lbus>appus"
+     ],
+     "fail": [
+      "lbeu",
+      "appeu"
+     ]
+    },
+    {
+     "text": "The US region must have the headroom (and the data) for EU's traffic, or the failover takes it down too.",
+     "nodes": [
+      "lbus",
+      "appus"
+     ],
+     "edges": [
+      "lbus>appus"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Stale DNS cache",
+   "tone": "edge",
+   "summary": "DNS failover is only as fast as the TTL, and some resolvers ignore it. Keep TTLs short and expect a tail of users on the old address.",
+   "steps": [
+    {
+     "text": "A user resolved the name a minute ago and cached the EU address for its 300 s TTL.",
+     "nodes": [
+      "client",
+      "dns"
+     ],
+     "edges": [
+      "client>dns"
+     ]
+    },
+    {
+     "text": "EU fails. GeoDNS already answers US, but this client never asks again until its cache expires.",
+     "nodes": [
+      "client"
+     ],
+     "fail": [
+      "client>lbeu",
+      "lbeu"
+     ]
+    },
+    {
+     "text": "Until then its requests keep failing. Some resolvers and apps cache even longer than the TTL.",
+     "nodes": [
+      "client"
+     ],
+     "fail": [
+      "lbeu",
+      "appeu"
+     ]
+    },
+    {
+     "text": "Mitigation: TTL of 30–60 s, client retry with re-resolve, or anycast so the IP itself never changes.",
+     "nodes": [
+      "client",
+      "lbus",
+      "appus"
+     ],
+     "edges": [
+      "client>lbus",
+      "lbus>appus"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: anycast",
+   "tone": "alternative",
+   "summary": "One IP announced from every region; BGP routes each user to the nearest edge. Failover takes seconds, with no DNS caching, but it needs your own network.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Users",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "edge",
+     "kind": "load-balancer",
+     "label": "Anycast edge",
+     "sub": "one IP, many PoPs",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "lbeu",
+     "kind": "load-balancer",
+     "label": "EU load balancer",
+     "x": 560,
+     "y": 40
+    },
+    {
+     "id": "lbus",
+     "kind": "load-balancer",
+     "label": "US load balancer",
+     "x": 560,
+     "y": 300
+    },
+    {
+     "id": "appeu",
+     "kind": "service",
+     "label": "EU app servers",
+     "x": 840,
+     "y": 40
+    },
+    {
+     "id": "appus",
+     "kind": "service",
+     "label": "US app servers",
+     "x": 840,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "edge",
+     "label": "same IP everywhere"
+    },
+    {
+     "from": "edge",
+     "to": "lbeu",
+     "label": "nearest"
+    },
+    {
+     "from": "edge",
+     "to": "lbus",
+     "label": "if EU withdrawn"
+    },
+    {
+     "from": "lbeu",
+     "to": "appeu"
+    },
+    {
+     "from": "lbus",
+     "to": "appus"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Every user connects to the same IP address. Internet routing (BGP) delivers the packets to the nearest point of presence.",
+     "nodes": [
+      "client",
+      "edge"
+     ],
+     "edges": [
+      "client>edge"
+     ]
+    },
+    {
+     "text": "European packets reach the EU edge and go to the EU region.",
+     "nodes": [
+      "edge",
+      "lbeu",
+      "appeu"
+     ],
+     "edges": [
+      "edge>lbeu",
+      "lbeu>appeu"
+     ]
+    },
+    {
+     "text": "EU fails and stops announcing the route. Within seconds BGP sends the same IP to the US: no DNS TTL to wait out.",
+     "nodes": [
+      "edge",
+      "lbus",
+      "appus"
+     ],
+     "edges": [
+      "edge>lbus",
+      "lbus>appus"
+     ],
+     "fail": [
+      "lbeu",
+      "appeu"
+     ]
+    },
+    {
+     "text": "Trade-off: needs your own IP space and BGP (or a provider like Cloudflare or a cloud global LB), and long TCP sessions can break when routes shift.",
+     "nodes": [
+      "client",
+      "edge"
+     ],
+     "edges": [
+      "client>edge"
+     ]
+    }
+   ]
+  }
  ]
 }

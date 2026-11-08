@@ -1,6 +1,7 @@
 ## Rollup tiers
 One tier is rarely enough. A query for "the last 2 years" over minute buckets would read about 1M
-rows per series. So you roll up again, each tier built from the one below it:
+rows per series. So you roll up again, each tier built from the one below it (the tabs cover a backfill after a
+bug, adding a dimension, and keeping a single tier):
 
 ```figure
 rollup-tiers
@@ -21,6 +22,7 @@ of the storage saving comes from.
 Events arrive out of order: phones reconnect, brokers retry. A bucket is only **final** once a
 watermark passes its end (say, 2 minutes after the window closes). Later events either update
 the bucket (an upsert, so the dashboard number changes slightly) or go to a correction path.
+Each path has its own tab below, plus a lateness setting that is too tight.
 
 ```figure
 late-events

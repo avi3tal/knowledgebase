@@ -66,5 +66,125 @@
    "style": "reply",
    "note": "Atomic: readers see the whole object or nothing. Abandoned uploads are cleaned up by a lifecycle rule."
   }
+ ],
+ "base_name": "Part 2 fails, retried",
+ "scenarios": [
+  {
+   "name": "Alternative: one big PUT",
+   "tone": "alternative",
+   "summary": "A single PUT is simpler, but a drop at 90% throws away 3.6 GB and the retry starts from byte 0. Fine for small files; use multipart above ~100 MB.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "s",
+     "label": "PUT clip.mp4 (4 GB)",
+     "note": "One request on one connection at ~100 MB/s: about 40 s on a fast link, many minutes on a phone."
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "label": "… 3.6 GB sent, connection drops",
+     "style": "lost",
+     "note": "A PUT is all or nothing: the store keeps none of it."
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "label": "PUT clip.mp4 again (4 GB)",
+     "note": "The retry re-sends every byte, and on a flaky link it can drop again."
+    },
+    {
+     "from": "s",
+     "to": "c",
+     "label": "200 · object visible",
+     "style": "reply",
+     "note": "It works eventually, after paying for the whole file twice or more."
+    }
+   ]
+  },
+  {
+   "name": "Abandoned upload",
+   "tone": "edge",
+   "summary": "The app is killed after 40 of 64 parts: the object never appears, but its parts are stored and billed until the upload is aborted, so add a lifecycle rule that does it.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "s",
+     "label": "initiate upload clip.mp4"
+    },
+    {
+     "from": "s",
+     "to": "c",
+     "label": "uploadId u-91",
+     "style": "reply"
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "label": "PUT parts 1–40 (2.5 GB)",
+     "style": "async",
+     "note": "Parts go up in parallel as usual."
+    },
+    {
+     "from": "c",
+     "to": "c",
+     "label": "app killed, no complete",
+     "style": "self",
+     "note": "The user swipes the app away. Nothing ever calls complete or abort."
+    },
+    {
+     "from": "s",
+     "to": "s",
+     "label": "40 parts kept, billed",
+     "style": "error",
+     "note": "Nothing is visible under the key and a normal LIST doesn't show them, but the bytes cost storage like any object. Millions of these add up."
+    },
+    {
+     "from": "s",
+     "to": "s",
+     "label": "lifecycle: abort after 7 d",
+     "style": "self",
+     "note": "Mitigation: a bucket rule that aborts incomplete multipart uploads after N days and frees their parts."
+    }
+   ]
+  },
+  {
+   "name": "Too many parts",
+   "tone": "edge",
+   "summary": "Stores cap an upload at about 10,000 parts. A 100 GB file in 5 MB parts would need 20,000, so pick the part size from the file size.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "s",
+     "label": "initiate upload backup.tar (100 GB)"
+    },
+    {
+     "from": "s",
+     "to": "c",
+     "label": "uploadId u-92",
+     "style": "reply"
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "label": "PUT parts 1–10,000 (5 MB each)",
+     "style": "async",
+     "note": "Small parts retry cheaply, but 10,000 × 5 MB only covers 50 GB."
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "label": "PUT part 10,001",
+     "style": "error"
+    },
+    {
+     "from": "s",
+     "to": "c",
+     "label": "400 · part number too large",
+     "style": "error",
+     "note": "Fix: part size = max(8 MB, file size ÷ 10,000). For 100 GB that's ~11 MB parts, so the upload fits in under 10,000."
+    }
+   ]
+  }
  ]
 }

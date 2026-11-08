@@ -27,6 +27,8 @@ What happens on a crash depends on **when the consumer acks**:
 | **at-least-once** | after processing | message is redelivered | **yes** | the usual default |
 | **exactly-once effect** | after processing, with dedupe | redelivered, applied once | delivered twice, applied once | payments, counters, anything with side effects |
 
+The tabs show the same crash with a non-idempotent consumer, the ack-first alternative, and a handler slower than the visibility timeout.
+
 ```figure
 redelivery
 ```
@@ -39,6 +41,8 @@ redelivery
 ## Retries and dead letters
 A message whose handler keeps failing (bad payload, a bug, a permanently missing record) is a
 **poison message**. If you retry it forever it blocks or burns the consumers.
+
+The tabs walk a transient error, classifying errors before retrying, and what happens with no attempt cap.
 
 ```figure
 retry-dlq

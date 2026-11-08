@@ -10,6 +10,8 @@
 
 Each row picks a component:
 
+Flip the tabs to see what changes at 10× traffic, the cache-less alternative and the egress risk.
+
 ```figure
 photo-app-design
 ```
@@ -19,6 +21,8 @@ Estimate them separately. A metadata row is about 1 KB, so 2 M uploads/day is on
 which fits a single database for years.
 
 The same reasoning works for any problem. Run your numbers through four questions:
+
+The tabs run real numbers through it: the photo app, a small internal tool, and the trap of using averages.
 
 ```figure
 numbers-to-boxes

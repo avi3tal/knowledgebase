@@ -51,5 +51,107 @@
    "label": "GET price:7 (later read)",
    "note": "A read right after the write is a hit with the new value: no stale window for keys you wrote."
   }
+ ],
+ "base_name": "Write-through",
+ "scenarios": [
+  {
+   "name": "Alternative: update DB, then DEL",
+   "tone": "alternative",
+   "summary": "Cache-aside writes skip the cache: commit to the database and delete the key. Writes are cheaper, but the next read pays a miss.",
+   "caption": "Write-through keeps written keys warm; delete-on-write keeps the cache simple and only caches what is read.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "db",
+     "label": "UPDATE price = 19.99",
+     "note": "The database is written first: it is the source of truth."
+    },
+    {
+     "from": "db",
+     "to": "app",
+     "label": "committed",
+     "style": "reply"
+    },
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "DEL price:7",
+     "note": "Drop the old copy instead of writing the new one."
+    },
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "GET price:7 (later read)",
+     "note": "The next read misses once and reloads 19.99 from the database."
+    }
+   ]
+  },
+  {
+   "name": "Database write fails",
+   "tone": "failure",
+   "summary": "If the cache is written first and the database then fails, the cache serves a value that was never committed.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "SET price:7 = 19.99",
+     "note": "The cache accepts the new price."
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "UPDATE price = 19.99",
+     "style": "error",
+     "note": "The database rejects the write (constraint, timeout, failover)."
+    },
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "GET price:7 (other user)",
+     "style": "call",
+     "note": "Readers now see 19.99, a price the database doesn't have."
+    },
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "fix: DB first, then cache",
+     "style": "call",
+     "note": "Write the database first, and on any error delete the key rather than leaving a guess in it."
+    }
+   ]
+  },
+  {
+   "name": "Risk: caching every write",
+   "tone": "risk",
+   "summary": "Write-through caches every key you write, even ones nobody reads, and those can evict the hot keys that earn the cache its keep.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "SET log:… (×10 000/s)",
+     "note": "A write-heavy table goes through the cache too."
+    },
+    {
+     "from": "cache",
+     "to": "cache",
+     "label": "evicts hot keys (LRU)",
+     "style": "error",
+     "note": "Memory fills with written-once keys; popular keys get evicted and the hit rate drops."
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "more misses reach the DB",
+     "note": "Write latency also went up, for no read benefit."
+    },
+    {
+     "from": "app",
+     "to": "app",
+     "label": "TTL on written keys",
+     "style": "self",
+     "note": "Mitigation: write-through only for read-heavy keys, a short TTL for the rest, or write-around (DB only)."
+    }
+   ]
+  }
  ]
 }

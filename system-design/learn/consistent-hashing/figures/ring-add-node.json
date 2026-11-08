@@ -129,5 +129,78 @@
     "g2>B"
    ]
   }
+ ],
+ "base_name": "Add server D",
+ "scenarios": [
+  {
+   "name": "New node starts cold",
+   "tone": "edge",
+   "summary": "D owns its keys the moment it joins but holds none of their data: every read on its arc misses until it warms up.",
+   "steps": [
+    {
+     "text": "D joins and the clients' rings update: keys at 58 and 63 now route to D.",
+     "nodes": [
+      "g3",
+      "D"
+     ],
+     "edges": [
+      "g3>D"
+     ]
+    },
+    {
+     "text": "D's cache is empty, so each of those reads misses and goes to the database.",
+     "nodes": [
+      "D"
+     ],
+     "fail": [
+      "g3>D"
+     ]
+    },
+    {
+     "text": "C still holds those keys but nobody asks it any more: wasted memory until they're evicted.",
+     "nodes": [
+      "C"
+     ]
+    },
+    {
+     "text": "Fix: copy the arc from C before D takes traffic, or on a miss let D read from the old owner first. Add nodes before the peak, not during it.",
+     "nodes": [
+      "C",
+      "D"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: adds little capacity",
+   "tone": "risk",
+   "summary": "One random point means D relieves only the one server whose arc it splits, and by a random amount. Virtual nodes let a new server take a small slice from everyone.",
+   "steps": [
+    {
+     "text": "D lands at a hashed position: here between B and C, so only C gives up keys.",
+     "nodes": [
+      "D",
+      "C"
+     ]
+    },
+    {
+     "text": "A and B, even if they are the hot ones, get no relief at all.",
+     "nodes": [
+      "A",
+      "B"
+     ],
+     "edges": [
+      "g1>A",
+      "g2>B"
+     ]
+    },
+    {
+     "text": "Had D landed at 52, it would take almost nothing. With 100+ vnodes it takes about 1/N of the ring, a little from every server.",
+     "nodes": [
+      "D"
+     ]
+    }
+   ]
+  }
  ]
 }

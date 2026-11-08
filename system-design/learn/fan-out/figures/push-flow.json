@@ -181,5 +181,413 @@
     "feed>posts"
    ]
   }
+ ],
+ "base_name": "Normal author posts",
+ "scenarios": [
+  {
+   "name": "Celebrity posts",
+   "tone": "edge",
+   "summary": "A 40 M-follower account turns one post into 40 M inserts: minutes of fan-out, and every normal post queued behind it waits too.",
+   "edges": [
+    {
+     "from": "author",
+     "to": "post",
+     "label": "new post"
+    },
+    {
+     "from": "post",
+     "to": "posts",
+     "label": "store body"
+    },
+    {
+     "from": "post",
+     "to": "q",
+     "label": "post event"
+    },
+    {
+     "from": "wk",
+     "to": "q",
+     "label": "pull"
+    },
+    {
+     "from": "wk",
+     "to": "graph",
+     "label": "followers?"
+    },
+    {
+     "from": "wk",
+     "to": "tl",
+     "label": "add id × 40 M"
+    },
+    {
+     "from": "reader",
+     "to": "feed",
+     "label": "open feed"
+    },
+    {
+     "from": "feed",
+     "to": "tl",
+     "label": "1 key read"
+    },
+    {
+     "from": "feed",
+     "to": "posts",
+     "label": "hydrate 20"
+    }
+   ],
+   "steps": [
+    {
+     "text": "An account with 40 M followers posts. Storing the body and publishing the event are as cheap as ever.",
+     "nodes": [
+      "author",
+      "post",
+      "posts",
+      "q"
+     ],
+     "edges": [
+      "author>post",
+      "post>posts",
+      "post>q"
+     ]
+    },
+    {
+     "text": "The workers page through 40 M followers and start inserting, at about 100 000 inserts/s.",
+     "nodes": [
+      "wk",
+      "graph",
+      "tl"
+     ],
+     "edges": [
+      "wk>graph",
+      "wk>tl"
+     ]
+    },
+    {
+     "text": "That's ~7 minutes before the last follower sees the post, while normal authors' events wait in the queue behind it.",
+     "nodes": [
+      "wk",
+      "tl"
+     ],
+     "edges": [
+      "wk>q"
+     ],
+     "fail": [
+      "q"
+     ]
+    },
+    {
+     "text": "Readers still get fast reads, but stale ones: their timelines are missing posts that are minutes old. This is the cue for the hybrid.",
+     "nodes": [
+      "reader",
+      "feed",
+      "tl"
+     ],
+     "edges": [
+      "reader>feed",
+      "feed>tl"
+     ],
+     "fail": [
+      "q"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Worker dies mid-way",
+   "tone": "failure",
+   "summary": "A worker crashes halfway through the follower list. The event is redelivered and the work restarts; timelines keyed by post id make the repeated inserts harmless.",
+   "steps": [
+    {
+     "text": "A worker pulls the event and starts inserting the post id, batch by batch.",
+     "nodes": [
+      "wk",
+      "q",
+      "graph",
+      "tl"
+     ],
+     "edges": [
+      "wk>q",
+      "wk>graph",
+      "wk>tl"
+     ]
+    },
+    {
+     "text": "It crashes after some of the batches, before marking the event done.",
+     "nodes": [
+      "tl"
+     ],
+     "fail": [
+      "wk",
+      "wk>tl"
+     ]
+    },
+    {
+     "text": "The event was never acked, so the queue hands it to another worker, which starts again from the beginning of the follower list.",
+     "nodes": [
+      "q",
+      "wk"
+     ],
+     "edges": [
+      "wk>q"
+     ]
+    },
+    {
+     "text": "Followers that already have the post get it 'again', but a timeline is a set keyed by post id, so nothing is duplicated.",
+     "nodes": [
+      "wk",
+      "tl"
+     ],
+     "edges": [
+      "wk>tl"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: inactive followers",
+   "tone": "risk",
+   "summary": "Push writes to every follower, including the many who never come back. Skip inactive users and rebuild their timeline with pull if they return.",
+   "steps": [
+    {
+     "text": "A normal author posts, and the workers fetch all their followers.",
+     "nodes": [
+      "post",
+      "q",
+      "wk",
+      "graph"
+     ],
+     "edges": [
+      "post>q",
+      "wk>q",
+      "wk>graph"
+     ]
+    },
+    {
+     "text": "Many of those followers haven't opened the app in months, yet each still gets an insert and a timeline kept in memory.",
+     "nodes": [
+      "wk",
+      "tl"
+     ],
+     "edges": [
+      "wk>tl"
+     ],
+     "fail": [
+      "tl"
+     ]
+    },
+    {
+     "text": "At scale that's a large share of all fan-out writes and timeline storage, spent on nobody.",
+     "nodes": [
+      "tl"
+     ],
+     "fail": [
+      "tl"
+     ]
+    },
+    {
+     "text": "Mitigation: fan out only to users active in the last ~30 days. When an inactive user returns, build their timeline once with pull, then go back to push.",
+     "nodes": [
+      "reader",
+      "feed",
+      "posts"
+     ],
+     "edges": [
+      "reader>feed",
+      "feed>posts"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: hybrid",
+   "tone": "alternative",
+   "summary": "Push for normal authors, no fan-out above a follower threshold: big accounts' posts sit in a replicated cache and are merged in at read time.",
+   "nodes": [
+    {
+     "id": "author",
+     "kind": "client",
+     "label": "Author",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "post",
+     "kind": "service",
+     "label": "Post service",
+     "x": 280,
+     "y": 150
+    },
+    {
+     "id": "posts",
+     "kind": "nosql",
+     "label": "Posts",
+     "x": 280,
+     "y": 330
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Fan-out queue",
+     "x": 560,
+     "y": 150
+    },
+    {
+     "id": "wk",
+     "kind": "worker",
+     "label": "Fan-out workers",
+     "x": 840,
+     "y": 150
+    },
+    {
+     "id": "graph",
+     "kind": "sql",
+     "label": "Follow graph",
+     "x": 840,
+     "y": 0
+    },
+    {
+     "id": "tl",
+     "kind": "cache",
+     "label": "Timelines",
+     "x": 840,
+     "y": 330
+    },
+    {
+     "id": "hot",
+     "kind": "cache",
+     "label": "Big-account cache",
+     "sub": "replicated",
+     "x": 560,
+     "y": 330
+    },
+    {
+     "id": "reader",
+     "kind": "client",
+     "label": "Reader",
+     "x": 0,
+     "y": 500
+    },
+    {
+     "id": "feed",
+     "kind": "service",
+     "label": "Feed service",
+     "x": 560,
+     "y": 500
+    }
+   ],
+   "edges": [
+    {
+     "from": "author",
+     "to": "post",
+     "label": "new post"
+    },
+    {
+     "from": "post",
+     "to": "posts",
+     "label": "store body"
+    },
+    {
+     "from": "post",
+     "to": "q",
+     "label": "small author"
+    },
+    {
+     "from": "post",
+     "to": "hot",
+     "label": "big author"
+    },
+    {
+     "from": "wk",
+     "to": "q",
+     "label": "pull"
+    },
+    {
+     "from": "wk",
+     "to": "graph",
+     "label": "followers?"
+    },
+    {
+     "from": "wk",
+     "to": "tl",
+     "label": "add id"
+    },
+    {
+     "from": "reader",
+     "to": "feed",
+     "label": "open feed"
+    },
+    {
+     "from": "feed",
+     "to": "tl",
+     "label": "1 key read"
+    },
+    {
+     "from": "feed",
+     "to": "hot",
+     "label": "few big accounts"
+    },
+    {
+     "from": "feed",
+     "to": "posts",
+     "label": "hydrate 20"
+    }
+   ],
+   "steps": [
+    {
+     "text": "An author with a normal following posts: event to the queue, and workers push the id into each follower's timeline, as before.",
+     "nodes": [
+      "author",
+      "post",
+      "q",
+      "wk",
+      "graph",
+      "tl"
+     ],
+     "edges": [
+      "author>post",
+      "post>q",
+      "wk>q",
+      "wk>graph",
+      "wk>tl"
+     ]
+    },
+    {
+     "text": "An author above the threshold posts: one write, and the id goes into a hot, replicated cache of recent big-account posts. No fan-out at all.",
+     "nodes": [
+      "post",
+      "posts",
+      "hot"
+     ],
+     "edges": [
+      "post>posts",
+      "post>hot"
+     ]
+    },
+    {
+     "text": "A reader opens the feed: one timeline read, plus the recent posts of the few big accounts they follow.",
+     "nodes": [
+      "reader",
+      "feed",
+      "tl",
+      "hot"
+     ],
+     "edges": [
+      "reader>feed",
+      "feed>tl",
+      "feed>hot"
+     ]
+    },
+    {
+     "text": "Merge by time, hydrate 20 bodies, return. The cost: two code paths and a threshold to choose.",
+     "nodes": [
+      "feed",
+      "posts"
+     ],
+     "edges": [
+      "feed>posts"
+     ]
+    }
+   ]
+  }
  ]
 }

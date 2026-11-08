@@ -108,5 +108,172 @@
     "g1>A"
    ]
   }
+ ],
+ "base_name": "Lookup",
+ "scenarios": [
+  {
+   "name": "Remove server B",
+   "tone": "failure",
+   "summary": "Only B's keys move, all to its clockwise neighbour C. Nothing else changes, but C now carries two arcs and may be the next to fall.",
+   "caption": "Without B, its arc (20, 50] merges into C's: the keys there walk on to 85.",
+   "edges": [
+    {
+     "from": "g1",
+     "to": "A",
+     "label": "clockwise"
+    },
+    {
+     "from": "g2",
+     "to": "C",
+     "label": "on to C"
+    },
+    {
+     "from": "g3",
+     "to": "C",
+     "label": "clockwise"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Server B crashes and is removed from the ring.",
+     "nodes": [
+      "B"
+     ],
+     "fail": [
+      "B"
+     ]
+    },
+    {
+     "text": "Keys at 25 and 36 walk clockwise past where B was and meet C at 85.",
+     "nodes": [
+      "g2",
+      "C"
+     ],
+     "edges": [
+      "g2>C"
+     ],
+     "fail": [
+      "B"
+     ]
+    },
+    {
+     "text": "Keys owned by A and C don't move: no mass reshuffle, unlike hash % N.",
+     "nodes": [
+      "g1",
+      "A",
+      "g3",
+      "C"
+     ],
+     "edges": [
+      "g1>A",
+      "g3>C"
+     ]
+    },
+    {
+     "text": "But C now owns everything from 20 to 85, most of the ring. With one point per server the whole load lands on one neighbour.",
+     "nodes": [
+      "C"
+     ],
+     "edges": [
+      "g2>C",
+      "g3>C"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: uneven arcs",
+   "tone": "risk",
+   "summary": "With one hashed point per server, arc lengths are random: one server can own several times the keys of another. Virtual nodes even it out.",
+   "caption": "Here B happened to hash to 32, just after A: its arc is tiny and C's is huge.",
+   "nodes": [
+    {
+     "id": "g1",
+     "kind": "blob",
+     "label": "3 keys",
+     "x": 340,
+     "y": 12,
+     "sub": "A's arc: 35%"
+    },
+    {
+     "id": "A",
+     "kind": "cache",
+     "label": "Server A @ 20",
+     "x": 573,
+     "y": 109,
+     "sub": "cache server"
+    },
+    {
+     "id": "g2",
+     "kind": "blob",
+     "label": "1 key",
+     "x": 670,
+     "y": 342,
+     "sub": "B's arc: 12%"
+    },
+    {
+     "id": "B",
+     "kind": "cache",
+     "label": "Server B @ 32",
+     "x": 573,
+     "y": 575,
+     "sub": "cache server"
+    },
+    {
+     "id": "g3",
+     "kind": "blob",
+     "label": "4 keys",
+     "x": 107,
+     "y": 575,
+     "sub": "C's arc: 53%"
+    },
+    {
+     "id": "C",
+     "kind": "cache",
+     "label": "Server C @ 85",
+     "x": 107,
+     "y": 109,
+     "sub": "cache server"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Positions come from a hash, so nobody chooses them. Say B lands at 32 instead of 50.",
+     "nodes": [
+      "A",
+      "B",
+      "C"
+     ]
+    },
+    {
+     "text": "B owns only (20, 32]: 12% of the ring and one key.",
+     "nodes": [
+      "g2",
+      "B"
+     ],
+     "edges": [
+      "g2>B"
+     ]
+    },
+    {
+     "text": "C owns (32, 85]: 53% of the ring, more than four times B's share. Its memory and CPU fill first.",
+     "nodes": [
+      "g3",
+      "C"
+     ],
+     "edges": [
+      "g3>C"
+     ]
+    },
+    {
+     "text": "Fix: give each server 100–200 virtual points so every share averages out close to 1/N.",
+     "nodes": [
+      "A",
+      "B",
+      "C"
+     ]
+    }
+   ]
+  }
  ]
 }

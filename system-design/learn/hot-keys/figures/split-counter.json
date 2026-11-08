@@ -126,5 +126,160 @@
     "reader>k3"
    ]
   }
+ ],
+ "base_name": "Spread writes",
+ "scenarios": [
+  {
+   "name": "Sub-key shard dies",
+   "tone": "failure",
+   "summary": "Losing one sub-counter's shard costs a quarter of the write capacity and makes the total read low, not an outage of the whole counter.",
+   "steps": [
+    {
+     "text": "The shard holding reacts:s5#2 fails.",
+     "nodes": [
+      "k2"
+     ],
+     "fail": [
+      "k2"
+     ]
+    },
+    {
+     "text": "Writers that picked #2 get an error and simply retry with another random suffix.",
+     "nodes": [
+      "writers",
+      "k0",
+      "k1",
+      "k3"
+     ],
+     "edges": [
+      "writers>k0",
+      "writers>k1",
+      "writers>k3"
+     ],
+     "fail": [
+      "writers>k2"
+     ]
+    },
+    {
+     "text": "The reader's MGET returns nothing for #2. Summing the rest under-counts until the replica takes over; show the last cached total instead.",
+     "nodes": [
+      "reader",
+      "k0",
+      "k1",
+      "k3"
+     ],
+     "edges": [
+      "reader>k0",
+      "reader>k1",
+      "reader>k3"
+     ],
+     "fail": [
+      "reader>k2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: batch in memory",
+   "tone": "alternative",
+   "summary": "Each handler counts locally and flushes one INCRBY per second: only one write per server per second reaches the key, but a crash loses up to a second of counts.",
+   "caption": "Batching trades a little durability and freshness for far fewer writes; it needs no sub-keys at all.",
+   "nodes": [
+    {
+     "id": "h1",
+     "kind": "service",
+     "label": "Handler 1",
+     "x": 0,
+     "y": 0,
+     "sub": "local count"
+    },
+    {
+     "id": "h2",
+     "kind": "service",
+     "label": "Handler 2",
+     "x": 0,
+     "y": 240,
+     "sub": "local count"
+    },
+    {
+     "id": "h3",
+     "kind": "service",
+     "label": "Handler 3",
+     "x": 0,
+     "y": 480,
+     "sub": "local count"
+    },
+    {
+     "id": "key",
+     "kind": "cache",
+     "label": "reacts:s5",
+     "x": 300,
+     "y": 240
+    },
+    {
+     "id": "reader",
+     "kind": "service",
+     "label": "Count reader",
+     "x": 600,
+     "y": 240
+    }
+   ],
+   "edges": [
+    {
+     "from": "h1",
+     "to": "key",
+     "label": "INCRBY n / 1 s"
+    },
+    {
+     "from": "h2",
+     "to": "key",
+     "label": "INCRBY n / 1 s"
+    },
+    {
+     "from": "h3",
+     "to": "key",
+     "label": "INCRBY n / 1 s"
+    },
+    {
+     "from": "reader",
+     "to": "key",
+     "label": "GET"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Each handler adds reactions to an in-memory counter: no network call per reaction.",
+     "nodes": [
+      "h1",
+      "h2",
+      "h3"
+     ]
+    },
+    {
+     "text": "Once a second each handler sends INCRBY with its total and resets. 50 handlers = 50 writes/s, whatever the reaction rate.",
+     "nodes": [
+      "h1",
+      "h2",
+      "h3",
+      "key"
+     ],
+     "edges": [
+      "h1>key",
+      "h2>key",
+      "h3>key"
+     ]
+    },
+    {
+     "text": "The reader does a single GET. Counts lag by up to a second, and a handler crash loses its unflushed count.",
+     "nodes": [
+      "reader",
+      "key"
+     ],
+     "edges": [
+      "reader>key"
+     ]
+    }
+   ]
+  }
  ]
 }

@@ -80,5 +80,259 @@
     "cons>db"
    ]
   }
+ ],
+ "base_name": "Dedup in one txn",
+ "scenarios": [
+  {
+   "name": "Effect outside the txn",
+   "tone": "failure",
+   "summary": "When the effect is an external call (a carrier API), it can't share the database transaction: a crash after the call and before the commit prints a second label on redelivery.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Order service",
+     "x": 0,
+     "y": 120
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Broker",
+     "x": 280,
+     "y": 120
+    },
+    {
+     "id": "cons",
+     "kind": "worker",
+     "label": "Shipping worker",
+     "x": 560,
+     "y": 120
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Seen ids",
+     "x": 840,
+     "y": 120
+    },
+    {
+     "id": "api",
+     "kind": "external",
+     "label": "Carrier API",
+     "sub": "prints labels",
+     "x": 560,
+     "y": 340
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "q",
+     "label": "OrderPlaced"
+    },
+    {
+     "from": "q",
+     "to": "cons",
+     "label": "deliver (≥ 1×)"
+    },
+    {
+     "from": "cons",
+     "to": "api",
+     "label": "create label"
+    },
+    {
+     "from": "cons",
+     "to": "db",
+     "label": "insert id"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The worker receives OrderPlaced #81.",
+     "nodes": [
+      "q",
+      "cons"
+     ],
+     "edges": [
+      "q>cons"
+     ]
+    },
+    {
+     "text": "It asks the carrier to create a label: the label exists now.",
+     "nodes": [
+      "cons",
+      "api"
+     ],
+     "edges": [
+      "cons>api"
+     ]
+    },
+    {
+     "text": "It crashes before inserting the id into its database.",
+     "fail": [
+      "cons",
+      "cons>db"
+     ]
+    },
+    {
+     "text": "The broker redelivers; the id isn't in the table, so the worker calls the carrier again: two labels.",
+     "nodes": [
+      "q",
+      "cons",
+      "api"
+     ],
+     "edges": [
+      "q>cons",
+      "cons>api"
+     ],
+     "fail": [
+      "api"
+     ]
+    },
+    {
+     "text": "Fix: pass the message id to the carrier as its idempotency key, so the chain dedupes end to end.",
+     "nodes": [
+      "cons",
+      "api",
+      "db"
+     ],
+     "edges": [
+      "cons>api",
+      "cons>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: upsert by id",
+   "tone": "alternative",
+   "summary": "No seen-ids table: write the label row keyed by order_id with an upsert. A redelivery rewrites the same row, but this only works for effects you can express as state.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Order service",
+     "x": 0,
+     "y": 120
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Broker",
+     "x": 280,
+     "y": 120
+    },
+    {
+     "id": "cons",
+     "kind": "worker",
+     "label": "Shipping worker",
+     "x": 560,
+     "y": 120
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Labels",
+     "sub": "key: order_id",
+     "x": 840,
+     "y": 120
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "q",
+     "label": "OrderPlaced"
+    },
+    {
+     "from": "q",
+     "to": "cons",
+     "label": "deliver (≥ 1×)"
+    },
+    {
+     "from": "cons",
+     "to": "db",
+     "label": "UPSERT order_id"
+    }
+   ],
+   "steps": [
+    {
+     "text": "OrderPlaced #81 arrives, possibly for the second time.",
+     "nodes": [
+      "q",
+      "cons"
+     ],
+     "edges": [
+      "q>cons"
+     ]
+    },
+    {
+     "text": "INSERT … ON CONFLICT (order_id) DO UPDATE writes the same label row both times: no extra state to keep or expire.",
+     "nodes": [
+      "cons",
+      "db"
+     ],
+     "edges": [
+      "cons>db"
+     ]
+    },
+    {
+     "text": "Limit: 'add $5 to the balance' or 'send an email' can't be an upsert, so those still need a dedup id.",
+     "nodes": [
+      "db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: window too short",
+   "tone": "risk",
+   "summary": "Seen ids are kept for an hour, but an operator replays two days of the topic: the old ids have expired, so every replayed message is processed again. Size the window to the longest replay horizon.",
+   "steps": [
+    {
+     "text": "After a bug fix, the topic is replayed from two days ago.",
+     "nodes": [
+      "prod",
+      "q"
+     ],
+     "edges": [
+      "prod>q"
+     ]
+    },
+    {
+     "text": "Messages that were handled yesterday come back.",
+     "nodes": [
+      "q",
+      "cons"
+     ],
+     "edges": [
+      "q>cons"
+     ]
+    },
+    {
+     "text": "Their ids aged out of processed_ids long ago, so the insert succeeds and a second label is written.",
+     "nodes": [
+      "cons"
+     ],
+     "edges": [
+      "cons>db"
+     ],
+     "fail": [
+      "db"
+     ]
+    },
+    {
+     "text": "Mitigation: a window longer than any replay, or dedupe on a business id (order_id) that never expires.",
+     "nodes": [
+      "cons",
+      "db"
+     ],
+     "edges": [
+      "cons>db"
+     ]
+    }
+   ]
+  }
  ]
 }

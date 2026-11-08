@@ -67,5 +67,130 @@
    "label": "followers of ann, page 2…",
    "note": "Continues until the follower list runs out, then commits the event."
   }
+ ],
+ "base_name": "Crash and retry",
+ "scenarios": [
+  {
+   "name": "Non-idempotent append",
+   "tone": "failure",
+   "summary": "Same crash, but timelines are plain lists: the retry appends p9 again, and 1 000 followers see the post twice. Key entries by post id.",
+   "messages": [
+    {
+     "from": "wk",
+     "to": "graph",
+     "label": "followers of ann, page 1 (1 000)"
+    },
+    {
+     "from": "wk",
+     "to": "tl",
+     "label": "LPUSH p9 to 1 000 timelines",
+     "note": "A list append, not a set insert."
+    },
+    {
+     "from": "wk",
+     "to": "wk",
+     "label": "crash before recording progress",
+     "style": "error"
+    },
+    {
+     "from": "wk",
+     "to": "tl",
+     "label": "LPUSH p9 to the same 1 000",
+     "style": "error",
+     "note": "The redelivered event repeats page 1. Every one of those timelines now holds p9 twice."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: checkpoint",
+   "tone": "alternative",
+   "summary": "Save a cursor after every page: a retry resumes where the last worker stopped instead of at page 1. Less repeated work, one more write per page.",
+   "actors": [
+    {
+     "id": "log",
+     "label": "Post events",
+     "kind": "stream"
+    },
+    {
+     "id": "wk",
+     "label": "Fan-out worker",
+     "kind": "worker"
+    },
+    {
+     "id": "cur",
+     "label": "Progress store",
+     "kind": "nosql"
+    },
+    {
+     "id": "tl",
+     "label": "Timelines",
+     "kind": "cache"
+    }
+   ],
+   "messages": [
+    {
+     "from": "wk",
+     "to": "tl",
+     "label": "add p9 to page 1 (1 000)"
+    },
+    {
+     "from": "wk",
+     "to": "cur",
+     "label": "save cursor: p9 → page 2",
+     "note": "Progress is stored after each page is written."
+    },
+    {
+     "from": "wk",
+     "to": "wk",
+     "label": "crash during page 2",
+     "style": "error"
+    },
+    {
+     "from": "wk",
+     "to": "cur",
+     "label": "load cursor for p9 → page 2",
+     "note": "The next worker reads the cursor and skips page 1."
+    },
+    {
+     "from": "wk",
+     "to": "tl",
+     "label": "add p9 to page 2 (1 000)",
+     "note": "At most one page is repeated, and set inserts keep even that harmless."
+    }
+   ]
+  },
+  {
+   "name": "Big author: split the job",
+   "tone": "edge",
+   "summary": "40 M followers is 40 000 pages. One worker would take ages, so a planner splits the list into ranges that many workers process in parallel.",
+   "messages": [
+    {
+     "from": "log",
+     "to": "wk",
+     "label": "post p9 by a big author",
+     "style": "async"
+    },
+    {
+     "from": "wk",
+     "to": "graph",
+     "label": "follower count → 40 M",
+     "note": "Too many for one worker to page through in order."
+    },
+    {
+     "from": "wk",
+     "to": "log",
+     "label": "publish 400 range jobs",
+     "style": "async",
+     "note": "Each job covers 100 000 followers (100 pages) and is retried on its own."
+    },
+    {
+     "from": "log",
+     "to": "wk",
+     "label": "range job 17 → any worker",
+     "style": "async",
+     "note": "Hundreds of workers run ranges in parallel. Above the hybrid threshold you'd skip this entirely."
+    }
+   ]
+  }
  ]
 }

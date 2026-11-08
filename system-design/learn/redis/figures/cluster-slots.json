@@ -128,5 +128,199 @@
     "pb"
    ]
   }
+ ],
+ "base_name": "Healthy cluster",
+ "scenarios": [
+  {
+   "name": "Primary B fails",
+   "tone": "failure",
+   "summary": "Replica B is promoted and takes over B's slots; for the few seconds of detection those slots are unavailable, and writes B hadn't shipped are lost.",
+   "steps": [
+    {
+     "text": "Primary B crashes. Requests for slots 5461–10922 fail; A's and C's slots carry on.",
+     "nodes": [
+      "pb",
+      "client"
+     ],
+     "fail": [
+      "pb",
+      "client>pb"
+     ]
+    },
+    {
+     "text": "The other primaries notice B missing heartbeats (node timeout, ~15 s by default) and vote to promote replica B.",
+     "nodes": [
+      "pa",
+      "pc",
+      "rb"
+     ],
+     "fail": [
+      "pb"
+     ]
+    },
+    {
+     "text": "Replica B now owns the slots. Clients get MOVED on their next try and update their map. Writes B acked but hadn't copied are gone.",
+     "nodes": [
+      "client",
+      "rb"
+     ],
+     "fail": [
+      "pb",
+      "pb>rb"
+     ]
+    },
+    {
+     "text": "Until a new replica is attached, those slots have no copy: one more failure there loses them.",
+     "nodes": [
+      "rb"
+     ],
+     "fail": [
+      "pb"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Cross-slot command",
+   "tone": "edge",
+   "summary": "Multi-key commands work only when all keys are in one slot. Keys that belong together need a shared hash tag.",
+   "steps": [
+    {
+     "text": "MGET user:1:cart user:2:cart: the two keys hash to slots on A and B.",
+     "nodes": [
+      "client",
+      "pa",
+      "pb"
+     ]
+    },
+    {
+     "text": "The cluster refuses with CROSSSLOT: no node can answer for both keys at once, and transactions can't span nodes.",
+     "nodes": [
+      "client"
+     ],
+     "fail": [
+      "client>pa",
+      "client>pb"
+     ]
+    },
+    {
+     "text": "Fix: name keys {user1}:cart and {user1}:profile so they share a slot, or split the command per key in the client.",
+     "nodes": [
+      "client",
+      "pa"
+     ],
+     "edges": [
+      "client>pa"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: one primary",
+   "tone": "alternative",
+   "summary": "One primary plus replicas and Sentinel: every key on one node, so multi-key commands just work, but writes and memory are capped by that one machine.",
+   "caption": "Sentinel watches the primary and promotes a replica on failure; replicas can take read traffic.",
+   "nodes": [
+    {
+     "id": "sent",
+     "kind": "service",
+     "label": "Sentinel ×3",
+     "x": 0,
+     "y": 0,
+     "sub": "failure detector"
+    },
+    {
+     "id": "client",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 240
+    },
+    {
+     "id": "p",
+     "kind": "cache",
+     "label": "Primary",
+     "x": 300,
+     "y": 240,
+     "sub": "all keys"
+    },
+    {
+     "id": "r1",
+     "kind": "cache",
+     "label": "Replica 1",
+     "x": 600,
+     "y": 80
+    },
+    {
+     "id": "r2",
+     "kind": "cache",
+     "label": "Replica 2",
+     "x": 600,
+     "y": 400
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "p",
+     "label": "reads + writes"
+    },
+    {
+     "from": "sent",
+     "to": "p",
+     "label": "health check"
+    },
+    {
+     "from": "p",
+     "to": "r1",
+     "label": "async copy"
+    },
+    {
+     "from": "p",
+     "to": "r2",
+     "label": "async copy"
+    }
+   ],
+   "steps": [
+    {
+     "text": "All keys live on one primary: no slots, no CROSSSLOT, MULTI and Lua across any keys.",
+     "nodes": [
+      "client",
+      "p"
+     ],
+     "edges": [
+      "client>p"
+     ]
+    },
+    {
+     "text": "Replicas copy everything and can serve reads that tolerate a little lag.",
+     "nodes": [
+      "p",
+      "r1",
+      "r2"
+     ],
+     "edges": [
+      "p>r1",
+      "p>r2"
+     ]
+    },
+    {
+     "text": "Sentinels agree when the primary is down and promote a replica.",
+     "nodes": [
+      "sent",
+      "p"
+     ],
+     "edges": [
+      "sent>p"
+     ]
+    },
+    {
+     "text": "Ceiling: one machine's RAM (tens of GB) and one thread's writes (~100k ops/s). Past that, shard: Redis Cluster.",
+     "nodes": [
+      "p"
+     ]
+    }
+   ]
+  }
  ]
 }

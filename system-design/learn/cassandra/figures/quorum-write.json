@@ -74,5 +74,158 @@
    "style": "reply",
    "note": "The coordinator stores a hint for replica 3 and replays it when the node comes back."
   }
+ ],
+ "base_name": "One replica down",
+ "scenarios": [
+  {
+   "name": "Hinted handoff",
+   "tone": "failure",
+   "summary": "The coordinator keeps the missed write as a hint and replays it when replica 3 returns; hints expire (3 h by default), so longer outages need repair.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "co",
+     "label": "write c1 · ts = 105",
+     "note": "QUORUM write while replica 3 is down."
+    },
+    {
+     "from": "co",
+     "to": "r1",
+     "label": "write ts=105"
+    },
+    {
+     "from": "co",
+     "to": "r2",
+     "label": "write ts=105"
+    },
+    {
+     "from": "co",
+     "to": "r3",
+     "label": "write ts=105",
+     "style": "lost",
+     "note": "Replica 3 never receives it."
+    },
+    {
+     "from": "r1",
+     "to": "co",
+     "label": "ack",
+     "style": "reply"
+    },
+    {
+     "from": "r2",
+     "to": "co",
+     "label": "ack",
+     "style": "reply"
+    },
+    {
+     "from": "co",
+     "to": "c",
+     "label": "success",
+     "style": "reply",
+     "note": "W = 2 reached: the client is done."
+    },
+    {
+     "from": "co",
+     "to": "co",
+     "label": "store hint for r3",
+     "style": "self",
+     "note": "The hint is the missed mutation, saved on the coordinator's disk."
+    },
+    {
+     "from": "co",
+     "to": "r3",
+     "label": "replay hint ts=105",
+     "style": "async",
+     "note": "Gossip reports replica 3 is back: the coordinator streams the hint and replica 3 is up to date again."
+    }
+   ]
+  },
+  {
+   "name": "Two replicas down",
+   "tone": "failure",
+   "summary": "Only 1 of 3 replicas acknowledges, so the QUORUM write fails; the one replica that applied it keeps it, because failure doesn't mean rollback.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "co",
+     "label": "write c1 · ts = 106",
+     "note": "Same QUORUM write, but now two replicas are unreachable."
+    },
+    {
+     "from": "co",
+     "to": "r1",
+     "label": "write ts=106"
+    },
+    {
+     "from": "co",
+     "to": "r2",
+     "label": "write ts=106",
+     "style": "lost"
+    },
+    {
+     "from": "co",
+     "to": "r3",
+     "label": "write ts=106",
+     "style": "lost"
+    },
+    {
+     "from": "r1",
+     "to": "co",
+     "label": "ack",
+     "style": "reply",
+     "note": "One ack, but W = 2 is needed."
+    },
+    {
+     "from": "co",
+     "to": "c",
+     "label": "WriteTimeout (1 of 2)",
+     "style": "error",
+     "note": "The client gets an error, yet replica 1 has the value and will spread it later. Retrying the same write (same timestamp) is safe; it's idempotent."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: ONE",
+   "tone": "alternative",
+   "summary": "Consistency level ONE acks after the first replica: lowest latency and survives two replicas down, but the value is on one node until it spreads.",
+   "messages": [
+    {
+     "from": "c",
+     "to": "co",
+     "label": "write c1 (ONE)",
+     "note": "W = 1."
+    },
+    {
+     "from": "co",
+     "to": "r1",
+     "label": "write ts=107",
+     "note": "Still sent to all three replicas."
+    },
+    {
+     "from": "co",
+     "to": "r2",
+     "label": "write ts=107"
+    },
+    {
+     "from": "co",
+     "to": "r3",
+     "label": "write ts=107"
+    },
+    {
+     "from": "r1",
+     "to": "co",
+     "label": "ack",
+     "style": "reply",
+     "note": "First ack is enough."
+    },
+    {
+     "from": "co",
+     "to": "c",
+     "label": "success",
+     "style": "reply",
+     "note": "Fast, but if replica 1 dies right now before the others apply it, the write can be lost. Fine for metrics and logs, not for balances."
+    }
+   ]
+  }
  ]
 }

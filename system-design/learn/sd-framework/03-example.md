@@ -23,6 +23,8 @@ leaderboard-v1
 Decompose into two parts: **rank reads** (needs O(log n) rank) and **score ingest** (durable
 writes that feed the ranking). Solve each, merge them on the shared API node:
 
+The tabs show the sorted set being lost, a tournament-end burst, and a simpler dual-write alternative.
+
 ```figure
 leaderboard-v2
 ```

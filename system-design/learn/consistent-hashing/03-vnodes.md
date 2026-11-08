@@ -10,6 +10,8 @@ The fix is to hash each physical server onto the ring many times (**virtual node
 100–200 each): `hash("A#1")`, `hash("A#2")`, … Each server now owns many small arcs scattered
 around the circle.
 
+The tabs compare it with one point per server and show what happens when A comes back.
+
 ```figure
 vnode-failure
 ```

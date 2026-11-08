@@ -12,6 +12,8 @@ offset. Two consequences:
 - Consumption pauses for affected partitions during the rebalance (seconds). Frequent deploys or
   slow handlers that exceed `max.poll.interval` cause rebalance storms.
 
+The tabs compare a graceful shutdown, committing before processing, and a handler too slow for `max.poll.interval`.
+
 ```figure
 rebalance-crash
 ```
@@ -26,6 +28,8 @@ rebalance-crash
 
 Each partition has a **leader** and followers on other brokers (replication factor 3 is the
 usual choice). Followers that are caught up form the **in-sync replica set (ISR)**.
+
+The tabs show `acks=1` losing a write, the ISR shrinking, and a producer retry after the leader dies.
 
 ```figure
 acks-all

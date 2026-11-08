@@ -2,7 +2,8 @@
 
 Pushing a 2 GB video through your API servers wastes their bandwidth and memory, and ties up a
 request for minutes. The standard move is to let the client talk to object storage
-**directly**, with your service only granting permission:
+**directly**, with your service only granting permission (the tabs show the proxy alternative,
+an expired URL and a leaked one):
 
 ```figure
 presigned-upload
@@ -22,7 +23,8 @@ presigned-upload
 >   afterwards, triggered by the upload event.
 > - A leaked URL is usable until it expires: keep it short and scoped to one key.
 
-Once the bytes land, the rest of the pipeline is event-driven, and reads go through a CDN:
+Once the bytes land, the rest of the pipeline is event-driven, and reads go through a CDN (the tabs play out a transcoder crash, life without a
+CDN, and a viral miss storm):
 
 ```figure
 media-pipeline

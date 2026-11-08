@@ -47,7 +47,8 @@ expensive disks fill with data that is just served as is.
 A 4 GB upload over a phone link fails often. Multipart upload cuts the file into parts
 (e.g. 8–100 MB each, numbered 1..n). Each part is a separate request that can be **sent in
 parallel, retried alone, and arrive in any order**. A final *complete* call stitches the
-parts together **by part number**. Until then, nothing is visible under the key.
+parts together **by part number**. Until then, nothing is visible under the key. The tabs
+compare one big PUT and play out an abandoned upload and the part-count limit.
 
 ```figure
 multipart-parts

@@ -76,5 +76,126 @@
    "to": "p1",
    "label": "commit offset 2"
   }
+ ],
+ "base_name": "Crash before commit",
+ "scenarios": [
+  {
+   "name": "Graceful shutdown",
+   "tone": "happy",
+   "summary": "A planned stop (a deploy) commits first and leaves the group on purpose: the new owner starts at the right offset, with no duplicates and no long pause.",
+   "messages": [
+    {
+     "from": "c2",
+     "to": "c2",
+     "label": "process b0, b1",
+     "style": "self"
+    },
+    {
+     "from": "c2",
+     "to": "p1",
+     "label": "commit offset 2",
+     "note": "On SIGTERM the consumer finishes its batch and commits before exiting."
+    },
+    {
+     "from": "c2",
+     "to": "gc",
+     "label": "leave group",
+     "note": "An explicit leave: no waiting for the session timeout."
+    },
+    {
+     "from": "gc",
+     "to": "c1",
+     "label": "rebalance: you now own p1",
+     "style": "async"
+    },
+    {
+     "from": "c1",
+     "to": "p1",
+     "label": "poll from committed offset 2",
+     "note": "b0 and b1 are not re-read. Each record was processed once."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: commit first",
+   "tone": "alternative",
+   "summary": "At-most-once: commit before processing. A crash then skips the batch instead of repeating it. No duplicates, but lost records.",
+   "messages": [
+    {
+     "from": "p1",
+     "to": "c2",
+     "label": "b0, b1",
+     "style": "reply"
+    },
+    {
+     "from": "c2",
+     "to": "p1",
+     "label": "commit offset 2",
+     "note": "Committed before any work is done."
+    },
+    {
+     "from": "c2",
+     "to": "c2",
+     "label": "crash before processing",
+     "style": "error",
+     "note": "b0 and b1 were never handled."
+    },
+    {
+     "from": "gc",
+     "to": "c1",
+     "label": "rebalance: you now own p1",
+     "style": "async"
+    },
+    {
+     "from": "c1",
+     "to": "p1",
+     "label": "poll from committed offset 2",
+     "style": "error",
+     "note": "The group believes b0 and b1 are done. They are skipped for good."
+    }
+   ]
+  },
+  {
+   "name": "Slow handler: storm",
+   "tone": "edge",
+   "summary": "No crash: a handler that exceeds max.poll.interval gets its consumer kicked out, its commit is rejected and the batch is redone, again and again. Use smaller batches or a longer interval.",
+   "messages": [
+    {
+     "from": "p1",
+     "to": "c2",
+     "label": "500 records",
+     "style": "reply",
+     "note": "A big batch, and each record calls a slow API."
+    },
+    {
+     "from": "c2",
+     "to": "c2",
+     "label": "still processing at 5 min",
+     "style": "self",
+     "note": "It hasn't polled within max.poll.interval (5 min by default), so it's considered stuck."
+    },
+    {
+     "from": "gc",
+     "to": "c1",
+     "label": "rebalance: you now own p1",
+     "style": "async",
+     "note": "c2 is removed from the group although it's alive."
+    },
+    {
+     "from": "c2",
+     "to": "p1",
+     "label": "commit offset 500",
+     "style": "error",
+     "note": "Rejected: c2 no longer owns p1. c1 re-reads the same 500 records, and can hit the same limit."
+    },
+    {
+     "from": "c1",
+     "to": "c1",
+     "label": "cap max.poll.records",
+     "style": "self",
+     "note": "Fix: fewer records per poll, a longer max.poll.interval, or hand slow work to a pool and pause the partition."
+    }
+   ]
+  }
  ]
 }

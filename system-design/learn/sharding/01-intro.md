@@ -9,7 +9,7 @@ the problem, and the biggest box is a single point of failure.
 
 **The fix.** Split the data itself. Each **shard** (partition) holds a disjoint subset of rows,
 lives on its own node and usually has its own replicas. A router turns the **shard key** into
-a shard:
+a shard. The tabs replay it with a shard down, a hot tenant, and hash-slot and directory layouts:
 
 ```figure
 shard-router

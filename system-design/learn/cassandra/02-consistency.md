@@ -33,7 +33,8 @@ Two rules keep partitions healthy:
 
 ## Tunable consistency
 Each partition is copied to **N** replicas (the replication factor). Every request picks how many
-replicas must answer: **W** for a write, **R** for a read.
+replicas must answer: **W** for a write, **R** for a read. The tabs on both figures play out
+hints, too many replicas down, other consistency levels and tombstone-heavy reads.
 
 ```figure
 quorum-write

@@ -13,7 +13,8 @@ hybrid-decision
 ```
 
 On the read side, the feed service merges the reader's precomputed timeline with the recent
-posts of the few big accounts they follow:
+posts of the few big accounts they follow. The tabs cover the big-account cache failing, one key read
+on every open, and a reader who follows many big accounts.
 
 ```figure
 hybrid-read
@@ -44,6 +45,8 @@ not 300. Those big accounts' recent posts are the hottest keys in the system, so
 - **Fan-out is async and idempotent.** Workers read a post event from a log, page through the
   follower list in batches of ~1 000 and insert. A retried batch must not duplicate entries
   (timelines keyed by post id).
+
+The tabs show a non-idempotent append, a per-page checkpoint, and splitting a big author's job.
 
 ```figure
 fanout-worker

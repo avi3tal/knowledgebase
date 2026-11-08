@@ -177,5 +177,183 @@
     "late>side"
    ]
   }
+ ],
+ "base_name": "Every path",
+ "scenarios": [
+  {
+   "name": "Late but allowed",
+   "tone": "edge",
+   "summary": "A click from 12:00:59 arrives at 12:03:30, after the watermark closed 12:00, but within the allowed lateness: the emitted row is upserted and the dashboard number ticks up.",
+   "steps": [
+    {
+     "text": "The event id is new.",
+     "nodes": [
+      "in",
+      "seen"
+     ],
+     "edges": [
+      "in>seen"
+     ]
+    },
+    {
+     "text": "Its event time puts it in the 12:00 bucket.",
+     "nodes": [
+      "bucket"
+     ],
+     "edges": [
+      "seen>bucket"
+     ]
+    },
+    {
+     "text": "The watermark has already passed 12:00's end (+2 min), so that row was emitted.",
+     "nodes": [
+      "open",
+      "late"
+     ],
+     "edges": [
+      "bucket>open",
+      "open>late"
+     ]
+    },
+    {
+     "text": "It's within the allowed lateness (say 1 hour): upsert the final row.",
+     "nodes": [
+      "upd"
+     ],
+     "edges": [
+      "late>upd"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Hours late",
+   "tone": "edge",
+   "summary": "A phone reconnects six hours later with yesterday's clicks: past the allowed lateness, so they go to the correction log and the nightly batch rebuilds those buckets from raw.",
+   "steps": [
+    {
+     "text": "A batch of events arrives with event times six hours ago.",
+     "nodes": [
+      "in",
+      "seen",
+      "bucket"
+     ],
+     "edges": [
+      "in>seen",
+      "seen>bucket"
+     ]
+    },
+    {
+     "text": "Their buckets were closed by the watermark long ago.",
+     "nodes": [
+      "open",
+      "late"
+     ],
+     "edges": [
+      "bucket>open",
+      "open>late"
+     ]
+    },
+    {
+     "text": "Beyond the allowed lateness: the stream won't reopen state that old.",
+     "nodes": [
+      "late",
+      "side"
+     ],
+     "edges": [
+      "late>side"
+     ]
+    },
+    {
+     "text": "The nightly job recounts those buckets from the raw log and overwrites them.",
+     "nodes": [
+      "side"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Duplicate delivery",
+   "tone": "edge",
+   "summary": "A broker retry resends an event that was already counted: its id is still in the dedup window, so it's dropped before it touches any bucket.",
+   "steps": [
+    {
+     "text": "The same click arrives a second time after a producer retry.",
+     "nodes": [
+      "in",
+      "seen"
+     ],
+     "edges": [
+      "in>seen"
+     ]
+    },
+    {
+     "text": "Its id is in the dedup window, so it's dropped. Counting it would inflate the bill.",
+     "nodes": [
+      "dup"
+     ],
+     "edges": [
+      "seen>dup"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: lateness too tight",
+   "tone": "risk",
+   "summary": "Set the watermark and allowed lateness below the real delay of mobile traffic and many events land in the correction log: live numbers undercount until the nightly rebuild.",
+   "steps": [
+    {
+     "text": "Mobile clients batch clicks and send them minutes later.",
+     "nodes": [
+      "in",
+      "seen",
+      "bucket",
+      "open"
+     ],
+     "edges": [
+      "in>seen",
+      "seen>bucket",
+      "bucket>open"
+     ]
+    },
+    {
+     "text": "With a tight watermark, most of them miss their open bucket.",
+     "nodes": [
+      "late"
+     ],
+     "edges": [
+      "open>late"
+     ],
+     "fail": [
+      "open>add"
+     ]
+    },
+    {
+     "text": "With little allowed lateness, they skip the upsert and pile into the correction log.",
+     "nodes": [
+      "side"
+     ],
+     "edges": [
+      "late>side"
+     ],
+     "fail": [
+      "late>upd"
+     ]
+    },
+    {
+     "text": "Mitigation: measure the arrival-delay distribution and set lateness above its p99; trade a later 'final' number for a correct one.",
+     "nodes": [
+      "open",
+      "late",
+      "upd"
+     ],
+     "edges": [
+      "open>late",
+      "late>upd"
+     ]
+    }
+   ]
+  }
  ]
 }

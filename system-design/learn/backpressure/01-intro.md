@@ -9,6 +9,8 @@ then memory or disk fills, then the process falls over and takes the queued work
 **Backpressure** means the overloaded part signals upstream to *send less*, so the system slows
 down in a controlled way instead of collapsing.
 
+Its tabs replay a consumer that slows down, a queue with no bound, and a pull-based consumer instead.
+
 ```figure
 bounded-queue
 ```

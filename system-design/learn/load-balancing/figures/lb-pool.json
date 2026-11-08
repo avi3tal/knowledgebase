@@ -128,5 +128,389 @@
     "lb>app3"
    ]
   }
+ ],
+ "base_name": "Healthy pool",
+ "scenarios": [
+  {
+   "name": "A server dies",
+   "tone": "failure",
+   "summary": "Health checks eject the dead server within seconds; the rest of the pool absorbs its share, so you need headroom (N+1).",
+   "steps": [
+    {
+     "text": "Traffic is spread evenly: each of the three servers takes about a third.",
+     "nodes": [
+      "lb",
+      "app1",
+      "app2",
+      "app3"
+     ],
+     "edges": [
+      "lb>app1",
+      "lb>app2",
+      "lb>app3"
+     ]
+    },
+    {
+     "text": "App 2 crashes. Requests already in flight on it fail or time out.",
+     "nodes": [
+      "lb"
+     ],
+     "fail": [
+      "app2",
+      "lb>app2"
+     ]
+    },
+    {
+     "text": "After three missed health checks (~15 s) the LB ejects App 2 and stops routing to it.",
+     "nodes": [
+      "lb",
+      "app1",
+      "app3"
+     ],
+     "edges": [
+      "lb>app1",
+      "lb>app3"
+     ],
+     "fail": [
+      "app2"
+     ]
+    },
+    {
+     "text": "App 1 and App 3 now take half each: 50% more load per server. Size the pool so N-1 servers can carry peak.",
+     "nodes": [
+      "app1",
+      "app3",
+      "db"
+     ],
+     "edges": [
+      "app1>db",
+      "app3>db"
+     ],
+     "fail": [
+      "app2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Sticky sessions",
+   "tone": "edge",
+   "summary": "Pinning a user to one server breaks even spreading: one hot user or a server restart hurts. Keep session state in a shared store instead.",
+   "steps": [
+    {
+     "text": "The LB sets a cookie so each user always lands on the same server (its in-memory session lives there).",
+     "nodes": [
+      "client",
+      "lb",
+      "app1"
+     ],
+     "edges": [
+      "client>lb",
+      "lb>app1"
+     ]
+    },
+    {
+     "text": "One hot user (a bot, a big tenant) sends 10× normal traffic. All of it hits App 1, while App 2 and App 3 sit idle.",
+     "nodes": [
+      "lb",
+      "app1"
+     ],
+     "edges": [
+      "lb>app1"
+     ],
+     "fail": [
+      "app1"
+     ]
+    },
+    {
+     "text": "App 1 is redeployed: every session pinned to it is gone, and those users are logged out.",
+     "nodes": [
+      "lb"
+     ],
+     "fail": [
+      "app1",
+      "lb>app1"
+     ]
+    },
+    {
+     "text": "Fix: move sessions to a shared store and drop stickiness, so any server can serve any request again.",
+     "nodes": [
+      "lb",
+      "app1",
+      "app2",
+      "app3",
+      "db"
+     ],
+     "edges": [
+      "lb>app1",
+      "lb>app2",
+      "lb>app3",
+      "app1>db",
+      "app2>db",
+      "app3>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: DNS round robin",
+   "tone": "alternative",
+   "summary": "No load balancer: DNS hands out all server IPs. Free and simple, but a dead server keeps getting traffic until clients' DNS caches expire.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Users",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "dns",
+     "kind": "dns",
+     "label": "DNS",
+     "sub": "3 A records",
+     "x": 0,
+     "y": 340
+    },
+    {
+     "id": "app1",
+     "kind": "service",
+     "label": "App 1",
+     "x": 300,
+     "y": 30
+    },
+    {
+     "id": "app2",
+     "kind": "service",
+     "label": "App 2",
+     "x": 300,
+     "y": 170
+    },
+    {
+     "id": "app3",
+     "kind": "service",
+     "label": "App 3",
+     "x": 300,
+     "y": 310
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Shared DB",
+     "x": 600,
+     "y": 170
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "dns",
+     "label": "resolve"
+    },
+    {
+     "from": "client",
+     "to": "app1"
+    },
+    {
+     "from": "client",
+     "to": "app2"
+    },
+    {
+     "from": "client",
+     "to": "app3"
+    },
+    {
+     "from": "app1",
+     "to": "db"
+    },
+    {
+     "from": "app2",
+     "to": "db"
+    },
+    {
+     "from": "app3",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "DNS returns all three IPs in rotating order; each client picks the first.",
+     "nodes": [
+      "client",
+      "dns"
+     ],
+     "edges": [
+      "client>dns"
+     ]
+    },
+    {
+     "text": "Clients connect straight to the servers: load spreads roughly evenly, with no extra hop or box.",
+     "nodes": [
+      "client",
+      "app1",
+      "app2",
+      "app3"
+     ],
+     "edges": [
+      "client>app1",
+      "client>app2",
+      "client>app3"
+     ]
+    },
+    {
+     "text": "App 3 dies. DNS has no health checks, and resolvers cache the answer for the TTL: some users keep hitting a dead IP.",
+     "nodes": [
+      "client"
+     ],
+     "fail": [
+      "app3",
+      "client>app3"
+     ]
+    },
+    {
+     "text": "Good enough for internal tools or as the first split across LB nodes; not as the only failover for a product.",
+     "nodes": [
+      "client",
+      "app1",
+      "app2",
+      "db"
+     ],
+     "edges": [
+      "client>app1",
+      "client>app2",
+      "app1>db",
+      "app2>db"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: LB is a SPOF",
+   "tone": "risk",
+   "summary": "One load balancer just moves the single point of failure. Run an active/passive pair sharing a floating IP (VRRP) so a standby takes over.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Users",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "lb1",
+     "kind": "load-balancer",
+     "label": "Active LB",
+     "sub": "holds the VIP",
+     "x": 280,
+     "y": 40
+    },
+    {
+     "id": "lb2",
+     "kind": "load-balancer",
+     "label": "Passive LB",
+     "sub": "standby",
+     "x": 280,
+     "y": 300
+    },
+    {
+     "id": "pool",
+     "kind": "service",
+     "label": "App pool",
+     "sub": "3 servers",
+     "x": 560,
+     "y": 170
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Shared DB",
+     "x": 840,
+     "y": 170
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "lb1",
+     "label": "VIP"
+    },
+    {
+     "from": "client",
+     "to": "lb2",
+     "label": "VIP (failover)"
+    },
+    {
+     "from": "lb1",
+     "to": "lb2",
+     "label": "heartbeat"
+    },
+    {
+     "from": "lb1",
+     "to": "pool"
+    },
+    {
+     "from": "lb2",
+     "to": "pool"
+    },
+    {
+     "from": "pool",
+     "to": "db"
+    }
+   ],
+   "steps": [
+    {
+     "text": "All traffic goes to one virtual IP, owned by the active LB.",
+     "nodes": [
+      "client",
+      "lb1",
+      "pool",
+      "db"
+     ],
+     "edges": [
+      "client>lb1",
+      "lb1>pool",
+      "pool>db"
+     ]
+    },
+    {
+     "text": "The passive LB watches the active one through a heartbeat every second.",
+     "nodes": [
+      "lb1",
+      "lb2"
+     ],
+     "edges": [
+      "lb1>lb2"
+     ]
+    },
+    {
+     "text": "The active LB dies. Without a standby, every user is down, however many app servers are healthy.",
+     "nodes": [
+      "client"
+     ],
+     "fail": [
+      "lb1",
+      "client>lb1",
+      "lb1>lb2"
+     ]
+    },
+    {
+     "text": "Heartbeats stop; within ~3 s the passive LB claims the VIP and traffic flows again. Clients keep the same address.",
+     "nodes": [
+      "client",
+      "lb2",
+      "pool",
+      "db"
+     ],
+     "edges": [
+      "client>lb2",
+      "lb2>pool",
+      "pool>db"
+     ],
+     "fail": [
+      "lb1"
+     ]
+    }
+   ]
+  }
  ]
 }

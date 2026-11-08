@@ -4,6 +4,8 @@ Map **both servers and keys** into the same hash space (here 0–99) and bend it
 key belongs to the **first server you meet walking clockwise** from the key's position. Each
 server therefore owns the arc that ends at it.
 
+The tabs remove a server and show how uneven one point per server can be.
+
 ```figure
 ring-lookup
 ```
@@ -11,6 +13,8 @@ ring-lookup
 Now add server **D**. It hashes to 65, between B (50) and C (85). Only the keys on the arc
 **between D's predecessor and D**, (50, 65], change owner, and all of them move to D. Nothing
 else on the ring is affected.
+
+The tabs show the new node starting cold and how little one random point may relieve.
 
 ```figure
 ring-add-node

@@ -131,5 +131,147 @@
     "D"
    ]
   }
+ ],
+ "base_name": "A fails, with vnodes",
+ "scenarios": [
+  {
+   "name": "Alternative: one point each",
+   "tone": "alternative",
+   "summary": "Without virtual nodes a failed server's whole arc goes to its single successor, which doubles its load and can cascade. Vnodes cost a bigger lookup table; that's all.",
+   "caption": "One point per server: A's single arc passes in one piece to the next server clockwise.",
+   "nodes": [
+    {
+     "id": "A",
+     "kind": "cache",
+     "label": "Server A (down)",
+     "x": 0,
+     "y": 240,
+     "sub": "cache server"
+    },
+    {
+     "id": "arc",
+     "kind": "blob",
+     "label": "arc of A",
+     "x": 300,
+     "y": 240,
+     "sub": "all of A's keys"
+    },
+    {
+     "id": "B",
+     "kind": "cache",
+     "label": "Server B",
+     "x": 600,
+     "y": 240,
+     "sub": "next clockwise"
+    },
+    {
+     "id": "C",
+     "kind": "cache",
+     "label": "Server C",
+     "x": 600,
+     "y": 0,
+     "sub": "cache server"
+    },
+    {
+     "id": "D",
+     "kind": "cache",
+     "label": "Server D",
+     "x": 600,
+     "y": 480,
+     "sub": "cache server"
+    }
+   ],
+   "edges": [
+    {
+     "from": "A",
+     "to": "arc",
+     "label": "owned"
+    },
+    {
+     "from": "arc",
+     "to": "B",
+     "label": "next clockwise"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A owns one contiguous arc, about a quarter of the ring.",
+     "nodes": [
+      "A",
+      "arc"
+     ],
+     "edges": [
+      "A>arc"
+     ]
+    },
+    {
+     "text": "A fails and the whole arc falls to B, the next point clockwise.",
+     "nodes": [
+      "arc",
+      "B"
+     ],
+     "edges": [
+      "arc>B"
+     ],
+     "fail": [
+      "A"
+     ]
+    },
+    {
+     "text": "B's load doubles while C and D carry on as before. If B tips over, its double arc moves to the next server: a cascade.",
+     "nodes": [
+      "B",
+      "C",
+      "D"
+     ],
+     "fail": [
+      "A"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "A comes back",
+   "tone": "edge",
+   "summary": "When A rejoins, its arcs return from B, C and D at once. Keys written while it was away make A's old copies stale, so flush A's cache on rejoin.",
+   "steps": [
+    {
+     "text": "A restarts with its old cache contents and rejoins at the same points.",
+     "nodes": [
+      "A"
+     ]
+    },
+    {
+     "text": "Its arcs move back from B, C and D: each loses a few small slices, so the shift is gradual and spread out.",
+     "nodes": [
+      "a1",
+      "a2",
+      "a3",
+      "B",
+      "C",
+      "D"
+     ],
+     "edges": [
+      "a1>B",
+      "a2>C",
+      "a3>D"
+     ]
+    },
+    {
+     "text": "Values updated while A was away now come from A's old copies: stale reads. Start A empty (or bump a cache epoch) and let it warm up.",
+     "nodes": [
+      "A",
+      "a1",
+      "a2",
+      "a3"
+     ],
+     "edges": [
+      "A>a1",
+      "A>a2",
+      "A>a3"
+     ]
+    }
+   ]
+  }
  ]
 }

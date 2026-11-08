@@ -136,5 +136,244 @@
     "api>blob"
    ]
   }
+ ],
+ "base_name": "Today's numbers",
+ "scenarios": [
+  {
+   "name": "10× traffic",
+   "tone": "edge",
+   "summary": "Multiply every number by 10 and re-ask which box breaks: the read path and egress need more nodes, while writes still fit one primary.",
+   "steps": [
+    {
+     "text": "100 M users instead of 10 M: peak metadata reads ≈ 174 000/s. Stateless API servers just scale out behind the LB.",
+     "nodes": [
+      "client",
+      "lb",
+      "api"
+     ],
+     "edges": [
+      "client>lb",
+      "lb>api"
+     ]
+    },
+    {
+     "text": "One cache node (~100k ops/s) is no longer enough: shard the cache across several nodes by photo id.",
+     "nodes": [
+      "api",
+      "cache"
+     ],
+     "edges": [
+      "api>cache"
+     ],
+     "fail": [
+      "cache"
+     ]
+    },
+    {
+     "text": "Writes ≈ 230/s: still easy for one primary. The DB doesn't need sharding for writes, only for its growing size.",
+     "nodes": [
+      "api",
+      "db"
+     ],
+     "edges": [
+      "api>db"
+     ]
+    },
+    {
+     "text": "Egress ≈ 230 Gbps and storage ≈ 55 PB: the CDN hit ratio and object storage now carry the design (and the bill).",
+     "nodes": [
+      "client",
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "client>cdn",
+      "cdn>blob"
+     ],
+     "fail": [
+      "blob"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: no cache",
+   "tone": "alternative",
+   "summary": "Serve metadata reads from read replicas instead of a cache: one fewer technology, but ~4 more DB machines, replica lag and millisecond reads.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Mobile app",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "cdn",
+     "kind": "cdn",
+     "label": "CDN",
+     "x": 280,
+     "y": 20
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Photo API",
+     "x": 560,
+     "y": 170
+    },
+    {
+     "id": "blob",
+     "kind": "blob",
+     "label": "Photo store",
+     "x": 840,
+     "y": 20
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Metadata DB",
+     "sub": "primary",
+     "x": 840,
+     "y": 170
+    },
+    {
+     "id": "replicas",
+     "kind": "sql",
+     "label": "Read replicas",
+     "sub": "×4",
+     "x": 840,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "cdn",
+     "label": "photo bytes"
+    },
+    {
+     "from": "cdn",
+     "to": "blob",
+     "label": "origin fetch"
+    },
+    {
+     "from": "client",
+     "to": "lb",
+     "label": "API calls"
+    },
+    {
+     "from": "lb",
+     "to": "api"
+    },
+    {
+     "from": "api",
+     "to": "db",
+     "label": "writes"
+    },
+    {
+     "from": "api",
+     "to": "replicas",
+     "label": "reads"
+    },
+    {
+     "from": "api",
+     "to": "blob",
+     "label": "upload"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Writes (23/s) go to the primary, exactly as before.",
+     "nodes": [
+      "api",
+      "db"
+     ],
+     "edges": [
+      "api>db"
+     ]
+    },
+    {
+     "text": "17 400 peak reads/s ÷ ~5 000 per replica ≈ 4 read replicas.",
+     "nodes": [
+      "api",
+      "replicas"
+     ],
+     "edges": [
+      "api>replicas"
+     ]
+    },
+    {
+     "text": "Trade-off: no cache to keep in sync, but more database machines, each read costs ms instead of µs, and replicas can lag a write by a second.",
+     "nodes": [
+      "db",
+      "replicas"
+     ]
+    },
+    {
+     "text": "Worth it when reads have a low hit rate (every user reads different data) and a cache would mostly miss.",
+     "nodes": [
+      "client",
+      "lb",
+      "api",
+      "replicas"
+     ],
+     "edges": [
+      "client>lb",
+      "lb>api",
+      "api>replicas"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: the egress bill",
+   "tone": "risk",
+   "summary": "23 Gbps is ~250 TB a day: if the CDN misses, the origin can't keep up and the transfer bill runs to thousands of dollars a day.",
+   "steps": [
+    {
+     "text": "23 Gbps ≈ 2.9 GB/s ≈ 250 TB per day leaving your system. At a few cents per GB that's on the order of $10 000 a day.",
+     "nodes": [
+      "client",
+      "cdn"
+     ],
+     "edges": [
+      "client>cdn"
+     ]
+    },
+    {
+     "text": "A cold or purged CDN (new region, cache flush, a viral photo) sends misses to the origin, which was sized for a trickle.",
+     "nodes": [
+      "cdn"
+     ],
+     "edges": [
+      "cdn>blob"
+     ],
+     "fail": [
+      "blob",
+      "cdn>blob"
+     ]
+    },
+    {
+     "text": "Mitigation: serve resized variants (a 100 KB thumbnail instead of 500 KB is 5× less), keep the hit ratio high and add an origin shield tier.",
+     "nodes": [
+      "client",
+      "cdn",
+      "blob"
+     ],
+     "edges": [
+      "client>cdn",
+      "cdn>blob"
+     ]
+    }
+   ]
+  }
  ]
 }

@@ -92,5 +92,239 @@
     "l7>img"
    ]
   }
+ ],
+ "base_name": "L4 + L7 stack",
+ "scenarios": [
+  {
+   "name": "Backend down",
+   "tone": "failure",
+   "summary": "Because L7 routes by path, a dead image service only breaks /img: the proxy fails those requests fast and /api keeps working.",
+   "steps": [
+    {
+     "text": "The image service fails its health checks.",
+     "nodes": [
+      "l7"
+     ],
+     "fail": [
+      "img",
+      "l7>img"
+     ]
+    },
+    {
+     "text": "Requests for /img/* get a fast 503 from the proxy (or a placeholder image) instead of hanging.",
+     "nodes": [
+      "client",
+      "l4",
+      "l7"
+     ],
+     "edges": [
+      "client>l4",
+      "l4>l7"
+     ],
+     "fail": [
+      "img"
+     ]
+    },
+    {
+     "text": "/api/* is routed as usual: the failure is contained to one route.",
+     "nodes": [
+      "l7",
+      "api"
+     ],
+     "edges": [
+      "l7>api"
+     ],
+     "fail": [
+      "img"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Long-lived connections",
+   "tone": "edge",
+   "summary": "L4 balances connections, not requests: a few HTTP/2 or WebSocket connections carrying many requests can pin load to one proxy.",
+   "steps": [
+    {
+     "text": "A mobile app opens one HTTP/2 connection and sends thousands of requests over it for hours.",
+     "nodes": [
+      "client",
+      "l4"
+     ],
+     "edges": [
+      "client>l4"
+     ]
+    },
+    {
+     "text": "The L4 LB chose a proxy once, at connect time. Every request on that connection lands on the same proxy, however busy it is.",
+     "nodes": [
+      "l4",
+      "l7"
+     ],
+     "edges": [
+      "l4>l7"
+     ],
+     "fail": [
+      "l7"
+     ]
+    },
+    {
+     "text": "The L7 proxy balances each request separately across backends, so the services behind it stay even.",
+     "nodes": [
+      "l7",
+      "api",
+      "img"
+     ],
+     "edges": [
+      "l7>api",
+      "l7>img"
+     ]
+    },
+    {
+     "text": "Mitigation at L4: cap connection lifetime (servers send GOAWAY) so clients reconnect and get rebalanced.",
+     "nodes": [
+      "client",
+      "l4",
+      "l7"
+     ],
+     "edges": [
+      "client>l4",
+      "l4>l7"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: L4 only",
+   "tone": "alternative",
+   "summary": "Skip the L7 tier: fewer hops and less CPU, but no routing by path, no per-request retries, and every server terminates TLS itself.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Clients",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "l4",
+     "kind": "load-balancer",
+     "label": "L4 network LB",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "app1",
+     "kind": "service",
+     "label": "App 1",
+     "sub": "all routes + TLS",
+     "x": 560,
+     "y": 30
+    },
+    {
+     "id": "app2",
+     "kind": "service",
+     "label": "App 2",
+     "sub": "all routes + TLS",
+     "x": 560,
+     "y": 310
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "l4",
+     "label": "TCP :443"
+    },
+    {
+     "from": "l4",
+     "to": "app1",
+     "label": "TCP stream"
+    },
+    {
+     "from": "l4",
+     "to": "app2",
+     "label": "TCP stream"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The L4 LB forwards encrypted TCP streams; it never sees a URL.",
+     "nodes": [
+      "client",
+      "l4"
+     ],
+     "edges": [
+      "client>l4"
+     ]
+    },
+    {
+     "text": "Each connection goes to one app server, which decrypts TLS and serves every route.",
+     "nodes": [
+      "l4",
+      "app1",
+      "app2"
+     ],
+     "edges": [
+      "l4>app1",
+      "l4>app2"
+     ]
+    },
+    {
+     "text": "Trade-off: great for raw TCP, databases or one uniform service. Splitting /api and /img into separate fleets needs an L7 layer again.",
+     "nodes": [
+      "app1",
+      "app2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: TLS at the proxy",
+   "tone": "risk",
+   "summary": "Terminating TLS makes the L7 tier CPU-heavy and a target: scale it horizontally behind L4 and re-encrypt if the network is untrusted.",
+   "steps": [
+    {
+     "text": "A traffic spike means a flood of new TLS handshakes, the most expensive thing a proxy does.",
+     "nodes": [
+      "client",
+      "l4",
+      "l7"
+     ],
+     "edges": [
+      "client>l4",
+      "l4>l7"
+     ],
+     "fail": [
+      "l7"
+     ]
+    },
+    {
+     "text": "One overloaded proxy adds latency to every service behind it.",
+     "nodes": [
+      "l7",
+      "api",
+      "img"
+     ],
+     "edges": [
+      "l7>api",
+      "l7>img"
+     ],
+     "fail": [
+      "l7"
+     ]
+    },
+    {
+     "text": "Mitigation: many identical proxies behind the L4 LB, session resumption to skip full handshakes, and autoscaling on CPU.",
+     "nodes": [
+      "l4",
+      "l7"
+     ],
+     "edges": [
+      "l4>l7"
+     ]
+    }
+   ]
+  }
  ]
 }

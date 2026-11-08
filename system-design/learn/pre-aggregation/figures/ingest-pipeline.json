@@ -115,5 +115,228 @@
     "dash>roll"
    ]
   }
+ ],
+ "base_name": "Stream rollup",
+ "scenarios": [
+  {
+   "name": "Job crashes, replays",
+   "tone": "failure",
+   "summary": "The job flushes its counts, then crashes before its checkpoint: on restart it re-reads from the last checkpoint and adds the same clicks again unless the write is idempotent.",
+   "steps": [
+    {
+     "text": "The job folds ad1's 12:00 clicks into +120 and upserts it.",
+     "nodes": [
+      "job",
+      "roll"
+     ],
+     "edges": [
+      "job>roll"
+     ]
+    },
+    {
+     "text": "It crashes before saving the checkpoint that records how far into the stream it has read.",
+     "fail": [
+      "job"
+     ]
+    },
+    {
+     "text": "On restart it rewinds to the last checkpoint and reads those clicks a second time.",
+     "nodes": [
+      "log",
+      "job"
+     ],
+     "edges": [
+      "log>job"
+     ]
+    },
+    {
+     "text": "A blind +n upsert adds them again: ad1's 12:00 bucket is now too high.",
+     "nodes": [
+      "roll"
+     ],
+     "fail": [
+      "job>roll"
+     ]
+    },
+    {
+     "text": "Fix: write the bucket's total (SET count = 120 for (ad1, 12:00)) instead of +n, or commit the writes together with the checkpoint (a transactional sink). A replay then rewrites the same value.",
+     "nodes": [
+      "job",
+      "roll"
+     ],
+     "edges": [
+      "job>roll"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: batch rollup",
+   "tone": "alternative",
+   "summary": "A batch job counts the raw log every 5 minutes: no stream state or watermarks to operate, and a rerun simply overwrites buckets, but the numbers are up to 5 minutes old.",
+   "nodes": [
+    {
+     "id": "src",
+     "kind": "client",
+     "label": "Ad servers",
+     "x": 0,
+     "y": 120
+    },
+    {
+     "id": "log",
+     "kind": "stream",
+     "label": "Click stream",
+     "x": 280,
+     "y": 120
+    },
+    {
+     "id": "raw",
+     "kind": "blob",
+     "label": "Raw event log",
+     "x": 560,
+     "y": 120
+    },
+    {
+     "id": "batch",
+     "kind": "worker",
+     "label": "Batch job",
+     "sub": "every 5 min",
+     "x": 840,
+     "y": 120
+    },
+    {
+     "id": "roll",
+     "kind": "nosql",
+     "label": "Minute rollups",
+     "x": 840,
+     "y": 340
+    },
+    {
+     "id": "dash",
+     "kind": "service",
+     "label": "Dashboard API",
+     "x": 560,
+     "y": 340
+    }
+   ],
+   "edges": [
+    {
+     "from": "src",
+     "to": "log",
+     "label": "10k clicks/s"
+    },
+    {
+     "from": "log",
+     "to": "raw",
+     "label": "archive"
+    },
+    {
+     "from": "raw",
+     "to": "batch",
+     "label": "last 5 min"
+    },
+    {
+     "from": "batch",
+     "to": "roll",
+     "label": "overwrite"
+    },
+    {
+     "from": "dash",
+     "to": "roll",
+     "label": "read 60 rows"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Clicks are only archived on ingest; nothing counts them yet.",
+     "nodes": [
+      "src",
+      "log",
+      "raw"
+     ],
+     "edges": [
+      "src>log",
+      "log>raw"
+     ]
+    },
+    {
+     "text": "Every 5 minutes a batch job reads the newest files and computes the (ad, minute) counts with a plain GROUP BY.",
+     "nodes": [
+      "raw",
+      "batch"
+     ],
+     "edges": [
+      "raw>batch"
+     ]
+    },
+    {
+     "text": "It overwrites those buckets, so a rerun after a failure is harmless.",
+     "nodes": [
+      "batch",
+      "roll"
+     ],
+     "edges": [
+      "batch>roll"
+     ]
+    },
+    {
+     "text": "The dashboard read is the same 60 rows; the newest minutes just show up later.",
+     "nodes": [
+      "dash",
+      "roll"
+     ],
+     "edges": [
+      "dash>roll"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: cardinality explosion",
+   "tone": "risk",
+   "summary": "Adding country and device to the key multiplies the buckets until most hold one click: job state and the rollup table grow toward the size of the raw stream. Aggregate only on what panels filter by.",
+   "steps": [
+    {
+     "text": "Product asks for clicks per ad × country × device × minute.",
+     "nodes": [
+      "log",
+      "job"
+     ],
+     "edges": [
+      "log>job"
+     ]
+    },
+    {
+     "text": "The job's keyed state now holds millions of mostly-1 counters; checkpoints balloon and the job falls behind the stream.",
+     "fail": [
+      "job"
+     ]
+    },
+    {
+     "text": "The rollup table gets about one row per click, and the cheap 60-row read becomes thousands of rows per ad.",
+     "nodes": [
+      "dash"
+     ],
+     "edges": [
+      "job>roll",
+      "dash>roll"
+     ],
+     "fail": [
+      "roll"
+     ]
+    },
+    {
+     "text": "Mitigation: keep the dimensions dashboards really filter by, keep top-N values plus an 'other' bucket, and answer rare breakdowns from the raw log with an OLAP scan.",
+     "nodes": [
+      "log",
+      "raw",
+      "roll"
+     ],
+     "edges": [
+      "log>raw"
+     ]
+    }
+   ]
+  }
  ]
 }

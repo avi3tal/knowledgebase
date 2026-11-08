@@ -83,5 +83,183 @@
    "style": "reply",
    "note": "Fix: a global secondary index email → user_id, itself sharded by email, so the lookup becomes two single-shard reads."
   }
+ ],
+ "base_name": "Scatter-gather",
+ "scenarios": [
+  {
+   "name": "One shard times out",
+   "tone": "failure",
+   "summary": "A fan-out query depends on every shard: one slow or dead shard means a timeout or a partial answer for the whole query.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "r",
+     "label": "WHERE email = 'k@x.io'",
+     "note": "No shard key in the filter, so the router fans out."
+    },
+    {
+     "from": "r",
+     "to": "s0",
+     "label": "search"
+    },
+    {
+     "from": "r",
+     "to": "s1",
+     "label": "search"
+    },
+    {
+     "from": "r",
+     "to": "s2",
+     "label": "search",
+     "style": "lost",
+     "note": "Shard 2 is overloaded or down: its reply never comes."
+    },
+    {
+     "from": "s0",
+     "to": "r",
+     "label": "0 rows · 3 ms",
+     "style": "reply"
+    },
+    {
+     "from": "s1",
+     "to": "r",
+     "label": "0 rows · 4 ms",
+     "style": "reply",
+     "note": "Two answers are in, but the matching row could be on shard 2."
+    },
+    {
+     "from": "r",
+     "to": "app",
+     "label": "timeout after 1 s",
+     "style": "error",
+     "note": "The router must either fail the query or return a partial result and say so. With 50 shards, one of them is almost always slow."
+    }
+   ]
+  },
+  {
+   "name": "Edge: top 10 overall",
+   "tone": "edge",
+   "summary": "ORDER BY … LIMIT 10 across shards: every shard must return its own top 10 and the router merges; deep pages cost N × offset rows.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "r",
+     "label": "newest 10 signups",
+     "note": "ORDER BY created_at DESC LIMIT 10, sharded by user_id."
+    },
+    {
+     "from": "r",
+     "to": "s0",
+     "label": "top 10",
+     "note": "Any shard might hold all ten, so each one is asked for its own ten."
+    },
+    {
+     "from": "r",
+     "to": "s1",
+     "label": "top 10"
+    },
+    {
+     "from": "r",
+     "to": "s2",
+     "label": "top 10"
+    },
+    {
+     "from": "s0",
+     "to": "r",
+     "label": "10 rows",
+     "style": "reply"
+    },
+    {
+     "from": "s1",
+     "to": "r",
+     "label": "10 rows",
+     "style": "reply"
+    },
+    {
+     "from": "s2",
+     "to": "r",
+     "label": "10 rows",
+     "style": "reply"
+    },
+    {
+     "from": "r",
+     "to": "r",
+     "label": "merge 30 → keep 10",
+     "style": "self",
+     "note": "Page 100 (OFFSET 990) would pull 1000 rows from each shard to keep 10. Use keyset pagination: WHERE created_at < last_seen."
+    },
+    {
+     "from": "r",
+     "to": "app",
+     "label": "10 rows",
+     "style": "reply"
+    }
+   ]
+  },
+  {
+   "name": "Fix: global index",
+   "tone": "alternative",
+   "summary": "A second table email → user_id, sharded by email, turns the fan-out into two single-shard reads; it is updated asynchronously, so it can briefly lag.",
+   "actors": [
+    {
+     "id": "app",
+     "label": "App",
+     "kind": "service"
+    },
+    {
+     "id": "r",
+     "label": "Router",
+     "kind": "coordinator"
+    },
+    {
+     "id": "idx",
+     "label": "Email index",
+     "kind": "nosql"
+    },
+    {
+     "id": "s1",
+     "label": "Shard 1",
+     "kind": "sql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "app",
+     "to": "r",
+     "label": "WHERE email = 'k@x.io'"
+    },
+    {
+     "from": "r",
+     "to": "idx",
+     "label": "lookup k@x.io",
+     "note": "The index is sharded by email, so this is one shard of the index."
+    },
+    {
+     "from": "idx",
+     "to": "r",
+     "label": "user_id = kim",
+     "style": "reply"
+    },
+    {
+     "from": "r",
+     "to": "s1",
+     "label": "get kim",
+     "note": "Now the shard key is known: one data shard."
+    },
+    {
+     "from": "s1",
+     "to": "app",
+     "label": "1 row · ~4 ms",
+     "style": "reply"
+    },
+    {
+     "from": "s1",
+     "to": "idx",
+     "label": "on change: update index",
+     "style": "async",
+     "note": "Kept in sync off the write path (CDC or a queue). A brand-new email may not be findable for a moment."
+    }
+   ]
+  }
  ]
 }

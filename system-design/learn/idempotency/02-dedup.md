@@ -1,7 +1,8 @@
 ## Getting it right under concurrency
 
 The sketch in the intro has a race. Two retries arriving 5 ms apart both miss the lookup and
-both charge. The fix is to **claim the key first**, with the database as the referee:
+both charge. The fix is to **claim the key first**, with the database as the referee (the tabs
+play out two concurrent retries, a reused key, and check-then-insert going wrong):
 
 ```figure
 claim-decision
@@ -30,7 +31,8 @@ claim-decision
 ## Consumer-side dedup
 A [message queue](#/learn/system-design/message-queues) with at-least-once delivery hands the
 consumer the same message again after a crash or a lost ack. The consumer makes the effect
-happen once:
+happen once. The tabs show an effect outside the transaction, an upsert instead of a dedup
+table, and a window that is too short:
 
 ```figure
 consumer-dedup

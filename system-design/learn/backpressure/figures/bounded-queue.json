@@ -73,5 +73,262 @@
     "q>prod"
    ]
   }
+ ],
+ "base_name": "Bounded queue fills",
+ "scenarios": [
+  {
+   "name": "Consumer slows down",
+   "tone": "failure",
+   "summary": "The database gets slow and the consumer drops to 100/s. The bound is hit in about 3 s instead of 7, and then you must block (delay moves upstream) or shed (work is lost).",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Producer · 400/s",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Queue (max 1 000)",
+     "x": 300,
+     "y": 150
+    },
+    {
+     "id": "cons",
+     "kind": "worker",
+     "label": "Consumer · 100/s",
+     "sub": "slow database",
+     "x": 600,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "q",
+     "label": "400/s"
+    },
+    {
+     "from": "q",
+     "to": "cons",
+     "label": "100/s"
+    },
+    {
+     "from": "q",
+     "to": "prod",
+     "label": "full: wait or 429"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A dependency slows down and the consumer now finishes only 100 items/s.",
+     "nodes": [
+      "q"
+     ],
+     "edges": [
+      "q>cons"
+     ],
+     "fail": [
+      "cons"
+     ]
+    },
+    {
+     "text": "Arrivals don't change, so the backlog grows by 300/s and the queue is full after about 3 s.",
+     "nodes": [
+      "prod",
+      "q"
+     ],
+     "edges": [
+      "prod>q"
+     ],
+     "fail": [
+      "cons"
+     ]
+    },
+    {
+     "text": "Block: the producer waits for space, with a timeout. Nothing is lost, and the slowdown travels upstream to whoever called it.",
+     "nodes": [
+      "q",
+      "prod"
+     ],
+     "edges": [
+      "q>prod"
+     ]
+    },
+    {
+     "text": "Shed: reject with 429 + Retry-After. The producer and its callers stay fast, and the rejected work must be retried or dropped.",
+     "nodes": [
+      "q",
+      "prod"
+     ],
+     "edges": [
+      "q>prod"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: no bound",
+   "tone": "risk",
+   "summary": "An unbounded queue never says no, so it turns overload into growing latency, then an out-of-memory crash that loses everything queued.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Producer · 400/s",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Queue (no max)",
+     "x": 300,
+     "y": 150
+    },
+    {
+     "id": "cons",
+     "kind": "worker",
+     "label": "Consumer · 250/s",
+     "x": 600,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "q",
+     "label": "400/s"
+    },
+    {
+     "from": "q",
+     "to": "cons",
+     "label": "250/s"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Same overload: 400/s in, 250/s out. Nothing ever pushes back, so the producer keeps going at full speed.",
+     "nodes": [
+      "prod",
+      "q"
+     ],
+     "edges": [
+      "prod>q"
+     ]
+    },
+    {
+     "text": "After a minute the queue holds 9 000 items and the newest waits 36 s. Most of their callers have already timed out.",
+     "nodes": [
+      "q",
+      "cons"
+     ],
+     "edges": [
+      "q>cons"
+     ]
+    },
+    {
+     "text": "The consumer keeps working through items nobody is waiting for any more, while fresh requests queue behind them.",
+     "nodes": [
+      "cons"
+     ],
+     "edges": [
+      "q>cons"
+     ],
+     "fail": [
+      "q"
+     ]
+    },
+    {
+     "text": "Memory runs out and the process is killed, taking every queued item with it. Mitigation: bound the queue to seconds of work and decide what happens when it's full.",
+     "fail": [
+      "q",
+      "cons"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: consumer pulls",
+   "tone": "alternative",
+   "summary": "The producer appends to a durable log and the consumer pulls at its own pace. It can't be overrun; the backlog becomes lag on disk, bounded by retention.",
+   "nodes": [
+    {
+     "id": "prod",
+     "kind": "service",
+     "label": "Producer · 400/s",
+     "x": 0,
+     "y": 150
+    },
+    {
+     "id": "log",
+     "kind": "stream",
+     "label": "Durable log",
+     "sub": "7 days retained",
+     "x": 300,
+     "y": 150
+    },
+    {
+     "id": "cons",
+     "kind": "worker",
+     "label": "Consumer · 250/s",
+     "x": 600,
+     "y": 150
+    }
+   ],
+   "edges": [
+    {
+     "from": "prod",
+     "to": "log",
+     "label": "append 400/s"
+    },
+    {
+     "from": "cons",
+     "to": "log",
+     "label": "pull 250/s"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The producer appends to a log on disk. Appends are cheap, and disk holds days of work instead of seconds.",
+     "nodes": [
+      "prod",
+      "log"
+     ],
+     "edges": [
+      "prod>log"
+     ]
+    },
+    {
+     "text": "The consumer asks for the next batch only when it has finished the last one, so it never gets more than it can handle.",
+     "nodes": [
+      "cons",
+      "log"
+     ],
+     "edges": [
+      "cons>log"
+     ]
+    },
+    {
+     "text": "The gap between the newest offset and the consumer's offset is the lag. It grows by 150/s, and that's the metric to alert and autoscale on.",
+     "nodes": [
+      "log",
+      "cons"
+     ]
+    },
+    {
+     "text": "Trade-off: good for background work that may lag. A user waiting for an answer still needs a bound and a fast 'no' at the front.",
+     "nodes": [
+      "prod",
+      "log"
+     ],
+     "edges": [
+      "prod>log"
+     ]
+    }
+   ]
+  }
  ]
 }

@@ -7,6 +7,8 @@ notifying followers takes 1 s, the upload request takes 3 s, and it fails if eit
 A **message broker** sits between a **producer** and a **consumer**: the producer writes a
 message and moves on, and the consumer processes it when it can.
 
+The tabs replay it when a worker crashes mid-job, when the notifier is down, when the backlog keeps growing, and with plain synchronous calls instead.
+
 ```figure
 async-upload
 ```

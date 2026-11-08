@@ -53,5 +53,127 @@
    "style": "self",
    "note": "…the new primary has no order:9. The write the client was told succeeded is gone."
   }
+ ],
+ "base_name": "Write lost on failover",
+ "scenarios": [
+  {
+   "name": "Alternative: WAIT for a replica",
+   "tone": "alternative",
+   "summary": "WAIT blocks until N replicas have the write: the loss window shrinks to almost nothing, at the price of a replica round trip per write. It is still not a consensus protocol.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "p",
+     "label": "SET order:9 paid"
+    },
+    {
+     "from": "p",
+     "to": "rep",
+     "label": "replicate order:9",
+     "style": "async",
+     "note": "The write ships to the replica as usual."
+    },
+    {
+     "from": "app",
+     "to": "p",
+     "label": "WAIT 1 100",
+     "note": "Block until 1 replica acknowledges, or 100 ms pass."
+    },
+    {
+     "from": "p",
+     "to": "app",
+     "label": "1 (replicas that have it)",
+     "style": "reply",
+     "note": "Now a failover to that replica keeps order:9. If WAIT returns 0, the app knows the write is at risk."
+    }
+   ]
+  },
+  {
+   "name": "Read from a replica",
+   "tone": "edge",
+   "summary": "Replicas lag, so a read sent to one right after a write can miss it. Read your own writes from the primary.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "p",
+     "label": "SET cart:5 3 items"
+    },
+    {
+     "from": "p",
+     "to": "app",
+     "label": "OK",
+     "style": "reply"
+    },
+    {
+     "from": "app",
+     "to": "rep",
+     "label": "GET cart:5",
+     "note": "The next read is load-balanced to the replica…"
+    },
+    {
+     "from": "rep",
+     "to": "app",
+     "label": "2 items (old)",
+     "style": "error",
+     "note": "…which hasn't applied the write yet. Usually milliseconds of lag, seconds under load."
+    }
+   ]
+  },
+  {
+   "name": "Risk: split brain",
+   "tone": "risk",
+   "summary": "A partition cuts the primary off; the majority promotes the replica while the old primary keeps accepting writes. Those writes are discarded when it rejoins.",
+   "actors": [
+    {
+     "id": "app",
+     "label": "App (cut-off side)",
+     "kind": "service"
+    },
+    {
+     "id": "p",
+     "label": "Old primary",
+     "kind": "cache"
+    },
+    {
+     "id": "s",
+     "label": "Sentinels",
+     "kind": "service"
+    },
+    {
+     "id": "rep",
+     "label": "Replica",
+     "kind": "cache"
+    }
+   ],
+   "messages": [
+    {
+     "from": "s",
+     "to": "p",
+     "label": "PING",
+     "style": "lost",
+     "note": "A network partition: the sentinels can't reach the primary."
+    },
+    {
+     "from": "s",
+     "to": "rep",
+     "label": "promote to primary",
+     "note": "A majority of sentinels agree and promote the replica."
+    },
+    {
+     "from": "app",
+     "to": "p",
+     "label": "SET order:10 paid → OK",
+     "style": "error",
+     "note": "An app on the primary's side of the partition keeps writing to it, and gets OK."
+    },
+    {
+     "from": "p",
+     "to": "p",
+     "label": "rejoins as replica: writes dropped",
+     "style": "error",
+     "note": "Mitigation: min-replicas-to-write makes an isolated primary refuse writes after a few seconds."
+    }
+   ]
+  }
  ]
 }

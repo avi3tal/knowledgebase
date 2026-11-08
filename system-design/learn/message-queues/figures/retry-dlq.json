@@ -137,5 +137,267 @@
     "left>dlq"
    ]
   }
+ ],
+ "base_name": "Retry or park",
+ "scenarios": [
+  {
+   "name": "Transient error",
+   "tone": "edge",
+   "summary": "A timeout on the first try, success on the second: the retry path exists for errors that go away on their own.",
+   "steps": [
+    {
+     "text": "The handler calls a downstream service, which times out.",
+     "nodes": [
+      "in",
+      "run",
+      "ok"
+     ],
+     "edges": [
+      "in>run",
+      "run>ok"
+     ]
+    },
+    {
+     "text": "First failure, so attempts are left.",
+     "nodes": [
+      "ok",
+      "left"
+     ],
+     "edges": [
+      "ok>left"
+     ]
+    },
+    {
+     "text": "Back on the queue with a short delay plus jitter. Meanwhile other messages overtake it, so order isn't kept.",
+     "nodes": [
+      "left",
+      "retry"
+     ],
+     "edges": [
+      "left>retry"
+     ]
+    },
+    {
+     "text": "Next time round the downstream has recovered: the handler succeeds and the message is acked.",
+     "nodes": [
+      "run",
+      "ok",
+      "ack"
+     ],
+     "edges": [
+      "run>ok",
+      "ok>ack"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: classify first",
+   "tone": "alternative",
+   "summary": "Ask whether the error can ever succeed before spending retries on it: a validation error goes straight to the DLQ.",
+   "nodes": [
+    {
+     "id": "in",
+     "type": "start",
+     "label": "Message arrives",
+     "col": 0,
+     "row": 0
+    },
+    {
+     "id": "run",
+     "type": "step",
+     "label": "Run handler",
+     "col": 0,
+     "row": 1
+    },
+    {
+     "id": "ok",
+     "type": "decision",
+     "label": "Succeeded?",
+     "col": 0,
+     "row": 2
+    },
+    {
+     "id": "ack",
+     "type": "end",
+     "label": "Ack (delete)",
+     "col": 1,
+     "row": 2,
+     "tone": "good"
+    },
+    {
+     "id": "kind",
+     "type": "decision",
+     "label": "Retriable error?",
+     "col": 0,
+     "row": 3
+    },
+    {
+     "id": "left",
+     "type": "decision",
+     "label": "attempts < 3 ?",
+     "col": 0,
+     "row": 4
+    },
+    {
+     "id": "dlq",
+     "type": "end",
+     "label": "Move to DLQ",
+     "col": 1,
+     "row": 4,
+     "tone": "bad"
+    },
+    {
+     "id": "retry",
+     "type": "end",
+     "label": "Retry w/ backoff",
+     "col": 0,
+     "row": 5
+    }
+   ],
+   "edges": [
+    {
+     "from": "in",
+     "to": "run"
+    },
+    {
+     "from": "run",
+     "to": "ok"
+    },
+    {
+     "from": "ok",
+     "to": "ack",
+     "label": "yes"
+    },
+    {
+     "from": "ok",
+     "to": "kind",
+     "label": "no"
+    },
+    {
+     "from": "kind",
+     "to": "left",
+     "label": "yes"
+    },
+    {
+     "from": "kind",
+     "to": "dlq",
+     "label": "no"
+    },
+    {
+     "from": "left",
+     "to": "retry",
+     "label": "yes"
+    },
+    {
+     "from": "left",
+     "to": "dlq",
+     "label": "no"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The handler fails.",
+     "nodes": [
+      "in",
+      "run",
+      "ok"
+     ],
+     "edges": [
+      "in>run",
+      "run>ok"
+     ]
+    },
+    {
+     "text": "Look at the error first. Timeouts, 503s and lock conflicts may succeed later.",
+     "nodes": [
+      "ok",
+      "kind"
+     ],
+     "edges": [
+      "ok>kind"
+     ]
+    },
+    {
+     "text": "A malformed payload or a failed validation will fail the same way every time: park it at once, without burning 3 attempts and their delays.",
+     "nodes": [
+      "kind",
+      "dlq"
+     ],
+     "edges": [
+      "kind>dlq"
+     ]
+    },
+    {
+     "text": "Only retriable errors enter the attempt counter and the backoff loop.",
+     "nodes": [
+      "kind",
+      "left",
+      "retry"
+     ],
+     "edges": [
+      "kind>left",
+      "left>retry"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: retry forever",
+   "tone": "risk",
+   "summary": "Without an attempt cap, a poison message loops for ever, burning consumers and (in ordered queues) blocking everything behind it.",
+   "steps": [
+    {
+     "text": "A message with a bad payload arrives. The handler throws.",
+     "nodes": [
+      "in",
+      "run",
+      "ok"
+     ],
+     "edges": [
+      "in>run",
+      "run>ok"
+     ]
+    },
+    {
+     "text": "There's no cap, so the answer to 'attempts left?' is always yes.",
+     "nodes": [
+      "ok",
+      "left",
+      "retry"
+     ],
+     "edges": [
+      "ok>left",
+      "left>retry"
+     ],
+     "fail": [
+      "left>dlq"
+     ]
+    },
+    {
+     "text": "It comes back, fails again, and again: forever. Each try costs a worker, and in a FIFO queue or a log partition nothing behind it moves.",
+     "nodes": [
+      "run",
+      "ok"
+     ],
+     "edges": [
+      "run>ok"
+     ],
+     "fail": [
+      "run"
+     ]
+    },
+    {
+     "text": "Mitigation: cap attempts, back off exponentially, send the rest to the DLQ and alert on its depth.",
+     "nodes": [
+      "left",
+      "dlq"
+     ],
+     "edges": [
+      "left>dlq"
+     ]
+    }
+   ]
+  }
  ]
 }

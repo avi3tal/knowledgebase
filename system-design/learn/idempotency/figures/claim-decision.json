@@ -191,5 +191,232 @@
     "done>busy"
    ]
   }
+ ],
+ "base_name": "Every outcome",
+ "scenarios": [
+  {
+   "name": "Two retries at once",
+   "tone": "edge",
+   "summary": "Attempts A and B carry the same key 5 ms apart: the unique key lets exactly one INSERT win, and the loser sees in_progress and gets 409.",
+   "steps": [
+    {
+     "text": "A and B both try to INSERT key 7f3a at almost the same moment.",
+     "nodes": [
+      "in",
+      "claim",
+      "new"
+     ],
+     "edges": [
+      "in>claim",
+      "claim>new"
+     ]
+    },
+    {
+     "text": "A's insert wins: it goes on to charge the card.",
+     "nodes": [
+      "new",
+      "work"
+     ],
+     "edges": [
+      "new>work"
+     ]
+    },
+    {
+     "text": "B's insert hits the unique constraint. Its body hash matches, so it's the same request.",
+     "nodes": [
+      "new",
+      "hash",
+      "done"
+     ],
+     "edges": [
+      "new>hash",
+      "hash>done"
+     ]
+    },
+    {
+     "text": "A hasn't stored a response yet (status in_progress), so B gets 409 and retries later.",
+     "nodes": [
+      "done",
+      "busy"
+     ],
+     "edges": [
+      "done>busy"
+     ]
+    },
+    {
+     "text": "A finishes, stores status done with its response and returns it. B's next retry is a replay.",
+     "nodes": [
+      "save",
+      "ok"
+     ],
+     "edges": [
+      "work>save",
+      "save>ok"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Same key, new body",
+   "tone": "edge",
+   "summary": "7f3a already paid $30; a request with 7f3a and $45 fails the fingerprint check and gets 422, never a replayed $30 response.",
+   "steps": [
+    {
+     "text": "A request with key 7f3a and amount $45 arrives; the INSERT conflicts with the existing row.",
+     "nodes": [
+      "in",
+      "claim",
+      "new"
+     ],
+     "edges": [
+      "in>claim",
+      "claim>new"
+     ]
+    },
+    {
+     "text": "Lost the claim, so compare request hashes: the stored one is for $30.",
+     "nodes": [
+      "hash"
+     ],
+     "edges": [
+      "new>hash"
+     ]
+    },
+    {
+     "text": "Different body: answer 422. Checking the hash before the status means a reused key is caught even while the first request is running.",
+     "nodes": [
+      "reuse"
+     ],
+     "edges": [
+      "hash>reuse"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: check, then insert",
+   "tone": "alternative",
+   "summary": "Look the key up, do the work, insert the key last: two retries both read 'not found' in between and both charge, and a crash before the insert loses the key. Only a claim-first unique insert closes both gaps.",
+   "nodes": [
+    {
+     "id": "in",
+     "type": "start",
+     "label": "Request + key",
+     "col": 0,
+     "row": 0
+    },
+    {
+     "id": "get",
+     "type": "step",
+     "label": "SELECT key",
+     "col": 0,
+     "row": 1
+    },
+    {
+     "id": "found",
+     "type": "decision",
+     "label": "Key found?",
+     "col": 0,
+     "row": 2
+    },
+    {
+     "id": "work",
+     "type": "step",
+     "label": "Charge the card",
+     "col": 0,
+     "row": 3
+    },
+    {
+     "id": "save",
+     "type": "step",
+     "label": "INSERT key + resp",
+     "col": 0,
+     "row": 4
+    },
+    {
+     "id": "ok",
+     "type": "end",
+     "label": "Return result",
+     "col": 0,
+     "row": 5,
+     "tone": "good"
+    },
+    {
+     "id": "replay",
+     "type": "end",
+     "label": "Replay response",
+     "col": 1,
+     "row": 2,
+     "tone": "good"
+    }
+   ],
+   "edges": [
+    {
+     "from": "in",
+     "to": "get"
+    },
+    {
+     "from": "get",
+     "to": "found"
+    },
+    {
+     "from": "found",
+     "to": "replay",
+     "label": "yes"
+    },
+    {
+     "from": "found",
+     "to": "work",
+     "label": "no"
+    },
+    {
+     "from": "work",
+     "to": "save"
+    },
+    {
+     "from": "save",
+     "to": "ok"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A and B (the same request, 5 ms apart) both SELECT the key.",
+     "nodes": [
+      "in",
+      "get",
+      "found"
+     ],
+     "edges": [
+      "in>get",
+      "get>found"
+     ]
+    },
+    {
+     "text": "Neither has inserted it yet, so both read 'not found'.",
+     "nodes": [
+      "found",
+      "work"
+     ],
+     "edges": [
+      "found>work"
+     ]
+    },
+    {
+     "text": "Both charge the card: $60 for one checkout.",
+     "fail": [
+      "work"
+     ]
+    },
+    {
+     "text": "Worse, if the process dies between the charge and the INSERT, the key is never stored, and even a much later retry charges again.",
+     "nodes": [
+      "save"
+     ],
+     "fail": [
+      "work>save"
+     ]
+    }
+   ]
+  }
  ]
 }

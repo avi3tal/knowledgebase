@@ -150,5 +150,244 @@
     "cdn>store"
    ]
   }
+ ],
+ "base_name": "Upload, process, view",
+ "scenarios": [
+  {
+   "name": "Transcoder crashes",
+   "tone": "failure",
+   "summary": "A transcoder dies mid-job: the event is redelivered and another worker redoes it. Renditions go to fixed keys, so the redo overwrites instead of duplicating.",
+   "steps": [
+    {
+     "text": "ObjectCreated for v_77 reaches a transcoder.",
+     "nodes": [
+      "store",
+      "q",
+      "w"
+     ],
+     "edges": [
+      "store>q",
+      "q>w"
+     ]
+    },
+    {
+     "text": "The worker crashes halfway through the 1080p rendition, before it acks the event.",
+     "fail": [
+      "w"
+     ]
+    },
+    {
+     "text": "After the visibility timeout, the queue hands the event to another transcoder.",
+     "nodes": [
+      "q",
+      "w"
+     ],
+     "edges": [
+      "q>w"
+     ]
+    },
+    {
+     "text": "It writes v_77/1080p.mp4 again (same key: an overwrite) and marks the row ready. The half-done output never became visible, because a PUT is all or nothing.",
+     "nodes": [
+      "w",
+      "store",
+      "meta"
+     ],
+     "edges": [
+      "w>meta"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: no CDN",
+   "tone": "risk",
+   "summary": "Viewers read the store directly: every view pays egress and 20–100 ms to first byte, and one viral video can exceed the request rate a single key supports.",
+   "nodes": [
+    {
+     "id": "up",
+     "kind": "client",
+     "label": "Uploader",
+     "x": 0,
+     "y": 40
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "Upload API",
+     "x": 280,
+     "y": 40
+    },
+    {
+     "id": "meta",
+     "kind": "sql",
+     "label": "Metadata DB",
+     "x": 560,
+     "y": 40
+    },
+    {
+     "id": "store",
+     "kind": "blob",
+     "label": "Object store",
+     "sub": "serves every view",
+     "x": 280,
+     "y": 260
+    },
+    {
+     "id": "q",
+     "kind": "queue",
+     "label": "Upload events",
+     "x": 560,
+     "y": 260
+    },
+    {
+     "id": "w",
+     "kind": "worker",
+     "label": "Transcoders",
+     "x": 840,
+     "y": 260
+    },
+    {
+     "id": "view",
+     "kind": "client",
+     "label": "Viewers",
+     "x": 0,
+     "y": 470
+    }
+   ],
+   "edges": [
+    {
+     "from": "up",
+     "to": "api",
+     "label": "ask for URL"
+    },
+    {
+     "from": "api",
+     "to": "meta",
+     "label": "pending row"
+    },
+    {
+     "from": "up",
+     "to": "store",
+     "label": "PUT presigned"
+    },
+    {
+     "from": "store",
+     "to": "q",
+     "label": "created"
+    },
+    {
+     "from": "q",
+     "to": "w"
+    },
+    {
+     "from": "w",
+     "to": "meta",
+     "label": "mark ready"
+    },
+    {
+     "from": "view",
+     "to": "store",
+     "label": "GET (every view)"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Uploads and processing work exactly as before.",
+     "nodes": [
+      "up",
+      "store",
+      "q",
+      "w"
+     ],
+     "edges": [
+      "up>store",
+      "store>q",
+      "q>w"
+     ]
+    },
+    {
+     "text": "Every view is a GET on the store: 1M views of a 50 MB clip is 50 TB of egress, paid at origin prices, and each viewer waits for the first byte from one region.",
+     "nodes": [
+      "view",
+      "store"
+     ],
+     "edges": [
+      "view>store"
+     ]
+    },
+    {
+     "text": "A video goes viral: tens of thousands of GETs per second on one key, above what one prefix serves, so the store answers 503 Slow Down.",
+     "nodes": [
+      "view"
+     ],
+     "edges": [
+      "view>store"
+     ],
+     "fail": [
+      "store"
+     ]
+    },
+    {
+     "text": "Mitigation: put a CDN in front with the store as origin. The edges absorb repeat views, and the store sees roughly one fetch per edge.",
+     "nodes": [
+      "view",
+      "store"
+     ],
+     "edges": [
+      "view>store"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Viral miss storm",
+   "tone": "edge",
+   "summary": "A brand-new viral video is in no edge cache yet, so thousands of simultaneous misses reach the origin at once. Request coalescing or an origin shield collapses them into one fetch.",
+   "steps": [
+    {
+     "text": "A video is shared widely seconds after it's marked ready; viewers everywhere request it at once.",
+     "nodes": [
+      "view",
+      "cdn"
+     ],
+     "edges": [
+      "view>cdn"
+     ]
+    },
+    {
+     "text": "No edge has it cached, and each edge server misses separately: thousands of origin fetches for the same object.",
+     "nodes": [
+      "cdn"
+     ],
+     "edges": [
+      "cdn>store"
+     ],
+     "fail": [
+      "store"
+     ]
+    },
+    {
+     "text": "Mitigation: the CDN coalesces concurrent misses for one key into one origin request, and an origin shield (a mid tier) means only that tier talks to the store.",
+     "nodes": [
+      "cdn",
+      "store"
+     ],
+     "edges": [
+      "cdn>store"
+     ]
+    },
+    {
+     "text": "After the first fetch, views are edge hits and the store is quiet again.",
+     "nodes": [
+      "view",
+      "cdn"
+     ],
+     "edges": [
+      "view>cdn"
+     ]
+    }
+   ]
+  }
  ]
 }

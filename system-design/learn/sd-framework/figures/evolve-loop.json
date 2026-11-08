@@ -122,5 +122,114 @@
     "gap>done"
    ]
   }
+ ],
+ "base_name": "The loop",
+ "scenarios": [
+  {
+   "name": "Leaderboard loop",
+   "tone": "edge",
+   "summary": "Two turns of the loop on the leaderboard: each one names a number that fails and adds the one box that fixes it.",
+   "steps": [
+    {
+     "text": "v1: players → API → scores DB.",
+     "nodes": [
+      "v1"
+     ]
+    },
+    {
+     "text": "Check: \"rank of one player among 5 M under 100 ms\" fails; COUNT(*) scans millions of rows.",
+     "nodes": [
+      "check",
+      "gap"
+     ],
+     "edges": [
+      "v1>check",
+      "check>gap"
+     ]
+    },
+    {
+     "text": "Add a sorted set for ranks: \"because rank must be O(log n)\".",
+     "nodes": [
+      "add",
+      "say"
+     ],
+     "edges": [
+      "gap>add",
+      "add>say"
+     ]
+    },
+    {
+     "text": "Check again: writes now go to two stores and the sorted set could miss updates. Add a queue and an updater worker, and say why.",
+     "nodes": [
+      "check",
+      "gap",
+      "add",
+      "say"
+     ],
+     "edges": [
+      "say>check",
+      "check>gap",
+      "gap>add",
+      "add>say"
+     ]
+    },
+    {
+     "text": "Third check: nothing unmet. Stop at v2 and go deep on ranking.",
+     "nodes": [
+      "check",
+      "done"
+     ],
+     "edges": [
+      "say>check",
+      "gap>done"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: boxes, no reasons",
+   "tone": "risk",
+   "summary": "Adding Kafka, microservices and a cache \"for scale\" without a failed number is over-engineering: interviewers mark it down.",
+   "steps": [
+    {
+     "text": "v1 already has eight boxes: queue, cache, three services, two databases.",
+     "nodes": [
+      "v1"
+     ],
+     "fail": [
+      "v1"
+     ]
+    },
+    {
+     "text": "The check is skipped: no number says any of them are needed.",
+     "nodes": [
+      "v1"
+     ],
+     "fail": [
+      "v1>check",
+      "check"
+     ]
+    },
+    {
+     "text": "Asked \"why the cache?\", the only answer is \"for scale\". The \"say why\" step can't be done.",
+     "nodes": [
+      "add"
+     ],
+     "fail": [
+      "say"
+     ]
+    },
+    {
+     "text": "Mitigation: start from three boxes and let each failed requirement earn the next one.",
+     "nodes": [
+      "v1",
+      "check"
+     ],
+     "edges": [
+      "v1>check"
+     ]
+    }
+   ]
+  }
  ]
 }

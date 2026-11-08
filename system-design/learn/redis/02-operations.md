@@ -13,6 +13,8 @@ back without a cleanup job. Many real uses depend on it:
 
 The lease pattern shows why the TTL is the point, not an extra:
 
+The tabs show where a lease alone breaks (an expiry mid-work, an unsafe release) and the fencing-token fix.
+
 ```figure
 lock-lease
 ```

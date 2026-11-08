@@ -111,5 +111,447 @@
    ],
    "edges": []
   }
+ ],
+ "base_name": "Key in the query",
+ "scenarios": [
+  {
+   "name": "Shard 1 down",
+   "tone": "failure",
+   "summary": "Shards fail independently: only the keys on the dead shard (i–p) are unavailable until its replica is promoted.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "router",
+     "kind": "coordinator",
+     "label": "Shard router",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "map",
+     "kind": "cache",
+     "label": "Shard map",
+     "x": 280,
+     "y": 350
+    },
+    {
+     "id": "s0",
+     "kind": "sql",
+     "label": "Shard 0 (a–h)",
+     "x": 580,
+     "y": 20
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1 (i–p)",
+     "x": 580,
+     "y": 170
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2 (q–z)",
+     "x": 580,
+     "y": 320
+    },
+    {
+     "id": "rep",
+     "kind": "sql",
+     "label": "Shard 1 replica",
+     "x": 880,
+     "y": 170
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "router",
+     "label": "user_id = 'kim'"
+    },
+    {
+     "from": "router",
+     "to": "map",
+     "label": "lookup"
+    },
+    {
+     "from": "router",
+     "to": "s0"
+    },
+    {
+     "from": "router",
+     "to": "s1",
+     "label": "'kim' → 1"
+    },
+    {
+     "from": "router",
+     "to": "s2"
+    },
+    {
+     "from": "s1",
+     "to": "rep",
+     "label": "replication"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A query for 'kim' arrives; the map says shard 1, as usual.",
+     "nodes": [
+      "app",
+      "router",
+      "map"
+     ],
+     "edges": [
+      "app>router",
+      "router>map"
+     ]
+    },
+    {
+     "text": "Shard 1's primary has crashed: the query times out. Every user from i to p is affected.",
+     "nodes": [
+      "router"
+     ],
+     "fail": [
+      "s1",
+      "router>s1"
+     ]
+    },
+    {
+     "text": "Users on shards 0 and 2 never notice: the failure is contained to one third of the keys.",
+     "nodes": [
+      "router",
+      "s0",
+      "s2"
+     ],
+     "edges": [
+      "router>s0",
+      "router>s2"
+     ],
+     "fail": [
+      "s1"
+     ]
+    },
+    {
+     "text": "Failover: shard 1's replica is promoted and the shard map entry for i–p is pointed at it. Writes not yet replicated may be lost.",
+     "nodes": [
+      "rep",
+      "map",
+      "router"
+     ],
+     "edges": [
+      "s1>rep",
+      "router>map"
+     ],
+     "fail": [
+      "s1"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Risk: hot tenant",
+   "tone": "risk",
+   "summary": "One key with a huge share of the traffic overloads its shard; adding shards doesn't help because a key lives on exactly one.",
+   "steps": [
+    {
+     "text": "A celebrity or a giant tenant sends 40% of all requests, all with the same shard key.",
+     "nodes": [
+      "app",
+      "router"
+     ],
+     "edges": [
+      "app>router"
+     ]
+    },
+    {
+     "text": "The map sends every one of them to the same shard: it saturates on CPU and disk.",
+     "nodes": [
+      "router"
+     ],
+     "edges": [
+      "router>s1"
+     ],
+     "fail": [
+      "s1"
+     ]
+    },
+    {
+     "text": "Shards 0 and 2 sit half idle. The cluster has spare capacity but can't use it for this key.",
+     "nodes": [
+      "s0",
+      "s2"
+     ],
+     "fail": [
+      "s1"
+     ]
+    },
+    {
+     "text": "Mitigation: split just that key with a salt (key#0 … key#7) across shards and merge on read, or give the tenant a dedicated shard.",
+     "nodes": [
+      "router",
+      "map",
+      "s0",
+      "s1",
+      "s2"
+     ],
+     "edges": [
+      "router>map",
+      "router>s0",
+      "router>s1",
+      "router>s2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: hash slots",
+   "tone": "alternative",
+   "summary": "hash(key) → one of 1024 slots → shard: keys spread evenly with no hot ranges, but a range query has to visit every shard.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "router",
+     "kind": "coordinator",
+     "label": "Hash router",
+     "sub": "hash(key) % 1024",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "map",
+     "kind": "cache",
+     "label": "Slot map",
+     "sub": "slot → shard",
+     "x": 280,
+     "y": 350
+    },
+    {
+     "id": "s0",
+     "kind": "sql",
+     "label": "Shard 0",
+     "sub": "slots 0–341",
+     "x": 580,
+     "y": 20
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "sub": "slots 342–682",
+     "x": 580,
+     "y": 170
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "sub": "slots 683–1023",
+     "x": 580,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "router",
+     "label": "user_id"
+    },
+    {
+     "from": "router",
+     "to": "map",
+     "label": "slot lookup"
+    },
+    {
+     "from": "router",
+     "to": "s0"
+    },
+    {
+     "from": "router",
+     "to": "s1"
+    },
+    {
+     "from": "router",
+     "to": "s2"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The router hashes the shard key and takes it modulo a fixed number of slots.",
+     "nodes": [
+      "app",
+      "router"
+     ],
+     "edges": [
+      "app>router"
+     ]
+    },
+    {
+     "text": "A small slot map assigns slots to shards. Neighbouring keys land in unrelated slots.",
+     "nodes": [
+      "router",
+      "map"
+     ],
+     "edges": [
+      "router>map"
+     ]
+    },
+    {
+     "text": "Each lookup by key still goes to exactly one shard, and load spreads evenly however the keys are distributed.",
+     "nodes": [
+      "router",
+      "s0",
+      "s1",
+      "s2"
+     ],
+     "edges": [
+      "router>s0",
+      "router>s1",
+      "router>s2"
+     ]
+    },
+    {
+     "text": "Trade-off: 'all users from a to c' is no longer one shard's range; it has to ask every shard.",
+     "nodes": [
+      "s0",
+      "s1",
+      "s2"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: directory",
+   "tone": "alternative",
+   "summary": "An explicit tenant → shard table: place or move any tenant freely, at the cost of an extra lookup and a service that must never be down.",
+   "nodes": [
+    {
+     "id": "app",
+     "kind": "service",
+     "label": "App servers",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "router",
+     "kind": "coordinator",
+     "label": "Shard router",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "map",
+     "kind": "sql",
+     "label": "Directory",
+     "sub": "tenant → shard",
+     "x": 280,
+     "y": 350
+    },
+    {
+     "id": "s0",
+     "kind": "sql",
+     "label": "Shard 0",
+     "sub": "small tenants",
+     "x": 580,
+     "y": 20
+    },
+    {
+     "id": "s1",
+     "kind": "sql",
+     "label": "Shard 1",
+     "sub": "acme only",
+     "x": 580,
+     "y": 170
+    },
+    {
+     "id": "s2",
+     "kind": "sql",
+     "label": "Shard 2",
+     "sub": "small tenants",
+     "x": 580,
+     "y": 320
+    }
+   ],
+   "edges": [
+    {
+     "from": "app",
+     "to": "router",
+     "label": "tenant = acme"
+    },
+    {
+     "from": "router",
+     "to": "map",
+     "label": "lookup (cached)"
+    },
+    {
+     "from": "router",
+     "to": "s0"
+    },
+    {
+     "from": "router",
+     "to": "s1",
+     "label": "acme → 1"
+    },
+    {
+     "from": "router",
+     "to": "s2"
+    }
+   ],
+   "steps": [
+    {
+     "text": "The request carries a tenant id.",
+     "nodes": [
+      "app",
+      "router"
+     ],
+     "edges": [
+      "app>router"
+     ]
+    },
+    {
+     "text": "The router looks the tenant up in a directory table (cached in memory, refreshed on change).",
+     "nodes": [
+      "router",
+      "map"
+     ],
+     "edges": [
+      "router>map"
+     ]
+    },
+    {
+     "text": "The directory can put a big tenant on its own shard and pack small ones together: placement is a row, not a formula.",
+     "nodes": [
+      "router",
+      "s1"
+     ],
+     "edges": [
+      "router>s1"
+     ]
+    },
+    {
+     "text": "Rebalancing is copying one tenant and updating its row. Risk: if the directory is down and the cache is cold, nothing can be routed.",
+     "nodes": [
+      "map",
+      "s0",
+      "s2"
+     ],
+     "edges": [
+      "router>s0",
+      "router>s2"
+     ]
+    }
+   ]
+  }
  ]
 }

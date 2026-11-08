@@ -69,5 +69,150 @@
    "label": "OK",
    "style": "reply"
   }
+ ],
+ "base_name": "Crash, then TTL frees it",
+ "scenarios": [
+  {
+   "name": "Risk: lease expires mid-work",
+   "tone": "risk",
+   "summary": "A pause longer than the TTL (GC, swap, slow I/O) lets a second worker take the lease while the first still believes it holds it: two writers.",
+   "actors": [
+    {
+     "id": "w1",
+     "label": "Worker 1",
+     "kind": "worker"
+    },
+    {
+     "id": "r",
+     "label": "Redis",
+     "kind": "cache"
+    },
+    {
+     "id": "w2",
+     "label": "Worker 2",
+     "kind": "worker"
+    },
+    {
+     "id": "db",
+     "label": "Storage",
+     "kind": "sql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "w1",
+     "to": "r",
+     "label": "SET lock:job7 w1 NX PX 30000 → OK",
+     "note": "Worker 1 holds the lease."
+    },
+    {
+     "from": "w1",
+     "to": "w1",
+     "label": "40 s GC pause",
+     "style": "error",
+     "note": "Worker 1 freezes. Its lease expires at 30 s; it can't notice."
+    },
+    {
+     "from": "w2",
+     "to": "r",
+     "label": "SET lock:job7 w2 NX PX 30000 → OK",
+     "note": "Worker 2 legitimately takes the lease and starts the job."
+    },
+    {
+     "from": "w1",
+     "to": "db",
+     "label": "write result (stale holder)",
+     "style": "error",
+     "note": "Worker 1 wakes and writes, unaware. Both workers have now written: the lock didn't protect the data."
+    }
+   ]
+  },
+  {
+   "name": "Fix: fencing token",
+   "tone": "alternative",
+   "summary": "Each grant comes with a number that only grows; storage rejects any write carrying a smaller number than it has already seen.",
+   "caption": "The lock alone can't stop a paused holder; the storage that the lock protects has to check the token.",
+   "actors": [
+    {
+     "id": "w1",
+     "label": "Worker 1",
+     "kind": "worker"
+    },
+    {
+     "id": "r",
+     "label": "Redis",
+     "kind": "cache"
+    },
+    {
+     "id": "w2",
+     "label": "Worker 2",
+     "kind": "worker"
+    },
+    {
+     "id": "db",
+     "label": "Storage",
+     "kind": "sql"
+    }
+   ],
+   "messages": [
+    {
+     "from": "w1",
+     "to": "r",
+     "label": "lease + INCR fence → 33",
+     "note": "Taking the lease also returns a fencing token, 33."
+    },
+    {
+     "from": "w2",
+     "to": "r",
+     "label": "lease (after expiry) → 34",
+     "note": "After worker 1's lease lapses, worker 2 gets token 34."
+    },
+    {
+     "from": "w2",
+     "to": "db",
+     "label": "write, token 34",
+     "note": "Storage records 34 as the highest token seen."
+    },
+    {
+     "from": "w1",
+     "to": "db",
+     "label": "write, token 33 → rejected",
+     "style": "error",
+     "note": "The paused worker's late write carries 33 < 34, so storage refuses it."
+    }
+   ]
+  },
+  {
+   "name": "Unsafe release",
+   "tone": "edge",
+   "summary": "A plain DEL by a holder whose lease has already expired deletes someone else's lock. Release only if the value is still yours.",
+   "messages": [
+    {
+     "from": "w1",
+     "to": "r",
+     "label": "SET lock:job7 w1 NX PX 30000",
+     "note": "Worker 1 holds the lease, then runs slow."
+    },
+    {
+     "from": "w2",
+     "to": "r",
+     "label": "SET lock:job7 w2 NX PX 30000 → OK",
+     "note": "The lease expired, so worker 2 takes it."
+    },
+    {
+     "from": "w1",
+     "to": "r",
+     "label": "DEL lock:job7",
+     "style": "error",
+     "note": "Worker 1 finishes and deletes the key: worker 2's lock is gone, and a third worker can now get in."
+    },
+    {
+     "from": "w1",
+     "to": "r",
+     "label": "fix: EVAL if GET == w1 then DEL",
+     "note": "A tiny Lua script compares and deletes atomically, so only the owner can release."
+    }
+   ]
+  }
  ]
 }

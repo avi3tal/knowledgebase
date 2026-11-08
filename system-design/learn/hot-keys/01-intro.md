@@ -10,6 +10,8 @@ during a live match) can get more traffic than everything else on its shard put 
 A **hot key** is a single key whose request rate is more than the one node that owns it can
 serve. Adding shards doesn't help, because a key always maps to exactly one place.
 
+The tabs play a sudden celebrity spike and what happens when the hot shard dies.
+
 ```figure
 hot-shard
 ```

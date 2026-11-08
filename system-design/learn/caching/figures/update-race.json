@@ -55,5 +55,160 @@
    "label": "fix: DEL stock",
    "note": "With delete-on-write both writers just remove the key, and the next read loads 4 from the database."
   }
+ ],
+ "base_name": "SET race (the bug)",
+ "scenarios": [
+  {
+   "name": "Risk: DEL, then stale refill",
+   "tone": "risk",
+   "summary": "Delete-on-write still has a rare race: a slow reader can put the old row back after the writer's DEL. The TTL bounds how long it lives.",
+   "caption": "Rare in practice (the reader must be slower than the whole write), so most systems accept it and rely on the TTL.",
+   "actors": [
+    {
+     "id": "rd",
+     "label": "Reader",
+     "kind": "service"
+    },
+    {
+     "id": "db",
+     "label": "Database",
+     "kind": "sql"
+    },
+    {
+     "id": "cache",
+     "label": "Cache",
+     "kind": "cache"
+    },
+    {
+     "id": "w2",
+     "label": "Writer",
+     "kind": "service"
+    }
+   ],
+   "messages": [
+    {
+     "from": "rd",
+     "to": "db",
+     "label": "miss → SELECT stock (5)",
+     "note": "A reader misses and reads the current value, 5."
+    },
+    {
+     "from": "w2",
+     "to": "db",
+     "label": "UPDATE stock = 4",
+     "note": "Before the reader fills the cache, a writer commits 4…"
+    },
+    {
+     "from": "w2",
+     "to": "cache",
+     "label": "DEL stock",
+     "note": "…and deletes the key, which isn't there yet."
+    },
+    {
+     "from": "rd",
+     "to": "cache",
+     "label": "SET stock = 5 EX 300",
+     "style": "error",
+     "note": "The reader's fill lands last: the cache holds the old 5 until the TTL."
+    },
+    {
+     "from": "w2",
+     "to": "cache",
+     "label": "fix: delayed second DEL",
+     "style": "async",
+     "note": "Mitigations: short TTL, a second DEL a moment later, or a versioned SET that refuses older versions."
+    }
+   ]
+  },
+  {
+   "name": "Invalidation lost",
+   "tone": "failure",
+   "summary": "The database commits but the DEL never reaches the cache (crash, network blip). Without a TTL the stale value would live forever.",
+   "messages": [
+    {
+     "from": "w1",
+     "to": "db",
+     "label": "UPDATE stock = 5",
+     "note": "The write commits."
+    },
+    {
+     "from": "w1",
+     "to": "cache",
+     "label": "DEL stock",
+     "style": "lost",
+     "note": "Writer 1 crashes, or the network drops the DEL."
+    },
+    {
+     "from": "w2",
+     "to": "cache",
+     "label": "GET stock (old value)",
+     "style": "error",
+     "note": "Readers keep getting the value from before the update."
+    },
+    {
+     "from": "cache",
+     "to": "cache",
+     "label": "TTL expires → reload",
+     "style": "self",
+     "note": "The TTL is the safety net: staleness is bounded by it. Retried or event-driven invalidation shrinks the window."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: invalidate via CDC",
+   "tone": "alternative",
+   "summary": "Writers only write the database; a change-data-capture consumer reads the commit log and deletes keys, in commit order and with retries.",
+   "caption": "Invalidation becomes a pipeline driven by the database's own log instead of code in every writer.",
+   "actors": [
+    {
+     "id": "w1",
+     "label": "Writer",
+     "kind": "service"
+    },
+    {
+     "id": "db",
+     "label": "Database",
+     "kind": "sql"
+    },
+    {
+     "id": "cdc",
+     "label": "CDC consumer",
+     "kind": "worker"
+    },
+    {
+     "id": "cache",
+     "label": "Cache",
+     "kind": "cache"
+    }
+   ],
+   "messages": [
+    {
+     "from": "w1",
+     "to": "db",
+     "label": "UPDATE stock = 4",
+     "note": "The writer does nothing cache-related."
+    },
+    {
+     "from": "db",
+     "to": "cdc",
+     "label": "binlog: stock changed",
+     "style": "async",
+     "note": "The change stream delivers every commit, in order."
+    },
+    {
+     "from": "cdc",
+     "to": "cache",
+     "label": "DEL stock",
+     "note": "The consumer deletes the key; if the cache is down, it retries from its log offset."
+    },
+    {
+     "from": "cdc",
+     "to": "cdc",
+     "label": "lag ≈ 10–100 ms",
+     "style": "self",
+     "note": "Trade-off: one more moving part, and a short window of staleness equal to the stream's lag."
+    }
+   ]
+  }
  ]
 }

@@ -8,7 +8,8 @@
 MVCC handles read/write conflicts. For **write/write** races (two buyers, one seat) you still
 choose a referee.
 
-**Pessimistic: `SELECT … FOR UPDATE`.** Lock the row until commit.
+**Pessimistic: `SELECT … FOR UPDATE`.** Lock the row until commit. The tabs add a deadlock, the optimistic version-column alternative
+and a lock held across a slow call.
 
 ```figure
 row-lock
@@ -40,6 +41,9 @@ referee: the second insert fails, whatever the application did.
 > - Only expresses what a constraint can: uniqueness, ranges, references.
 
 ## Scaling a relational database
+
+The tabs replay this setup through a primary failure, a stale read-after-write, connection
+exhaustion and a sharded alternative.
 
 ```figure
 primary-replicas

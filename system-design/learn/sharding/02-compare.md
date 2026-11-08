@@ -35,6 +35,8 @@ the first figure becomes a small, replicated database of its own.
 > - Fixed slots (say 1024 slots, slot = `hash % 1024`, slots assigned to shards): the new shard
 >   takes 1024 / 4 = 256 slots, so only **~25%** of data moves, which is the minimum possible.
 
+The figure's tabs show what happens if the move crashes, how a router with a stale map recovers, and the `% N` alternative.
+
 ```figure
 resharding
 ```
@@ -48,7 +50,7 @@ Pick the key that appears in **most hot-path queries** and has **many, evenly us
 
 Bad keys: low cardinality (country, status), monotonically increasing values with range
 partitioning, or a column that most queries don't filter on. Every query that skips the key
-pays this:
+pays this (the tabs add a shard timing out, a cross-shard top 10, and the global-index fix):
 
 ```figure
 scatter-gather

@@ -7,6 +7,8 @@ interviewer is grading **how you get to a design**: do you clarify before buildi
 decision with a number, start simple and evolve, and name the trade-offs? Freezing and
 over-engineering have the same cause: no plan. Here is the plan.
 
+The tabs show what happens when you skip scoping, run out of time, or the interviewer steers you.
+
 ```figure
 four-steps
 ```

@@ -83,5 +83,116 @@
    "label": "page of 20",
    "style": "reply"
   }
+ ],
+ "base_name": "Merge on read",
+ "scenarios": [
+  {
+   "name": "Big-account cache down",
+   "tone": "failure",
+   "summary": "The cache of big accounts' posts is unreachable. Fall back to reading those authors' posts from the store: slower, still correct, and only for a few authors.",
+   "messages": [
+    {
+     "from": "feed",
+     "to": "tl",
+     "label": "GET timeline:bob"
+    },
+    {
+     "from": "tl",
+     "to": "feed",
+     "label": "latest ~800 post ids",
+     "style": "reply"
+    },
+    {
+     "from": "feed",
+     "to": "hot",
+     "label": "recent posts of 3 big accounts",
+     "style": "lost",
+     "note": "The cache node is down: the request times out after a short deadline."
+    },
+    {
+     "from": "feed",
+     "to": "posts",
+     "label": "recent posts of those 3 authors",
+     "note": "Fallback: query the posts store directly. A few extra ms for this reader."
+    },
+    {
+     "from": "feed",
+     "to": "rd",
+     "label": "page of 20",
+     "style": "reply",
+     "note": "Same feed. Keep the deadline short so a dead cache costs little."
+    }
+   ]
+  },
+  {
+   "name": "Risk: one key, every read",
+   "tone": "risk",
+   "summary": "The biggest accounts' recent posts are read on nearly every feed open, all from one cache key on one node. Replicate those keys and cache them locally in the feed service.",
+   "messages": [
+    {
+     "from": "rd",
+     "to": "feed",
+     "label": "open feed (23 000/s)"
+    },
+    {
+     "from": "feed",
+     "to": "hot",
+     "label": "recent posts of the top account",
+     "note": "Almost every reader follows a few of the same giant accounts."
+    },
+    {
+     "from": "hot",
+     "to": "feed",
+     "label": "timeout",
+     "style": "error",
+     "note": "One node owns that key and takes all 23 000 reads/s. It saturates while the others idle."
+    },
+    {
+     "from": "feed",
+     "to": "feed",
+     "label": "local copy, refresh 1 s",
+     "style": "self",
+     "note": "Fix: copy the key to several replicas and read any one, plus a short-lived in-process cache."
+    }
+   ]
+  },
+  {
+   "name": "Reader follows many giants",
+   "tone": "edge",
+   "summary": "The merge is cheap because readers follow only a few big accounts. A reader following hundreds of them is back to pull's cost: cap or precompute for them.",
+   "messages": [
+    {
+     "from": "rd",
+     "to": "feed",
+     "label": "open feed"
+    },
+    {
+     "from": "feed",
+     "to": "tl",
+     "label": "GET timeline:fan",
+     "note": "This user follows 400 accounts above the threshold."
+    },
+    {
+     "from": "feed",
+     "to": "hot",
+     "label": "recent posts of 400 big accounts",
+     "note": "400 lookups plus a merge: the cost the hybrid was meant to avoid."
+    },
+    {
+     "from": "feed",
+     "to": "feed",
+     "label": "merge 400 lists",
+     "style": "self",
+     "note": "Slow for this reader, and they're the heaviest users."
+    },
+    {
+     "from": "feed",
+     "to": "rd",
+     "label": "page of 20 (slow)",
+     "style": "reply",
+     "note": "Mitigation: only the most recently active giants per read, or cache this reader's merged result for a short time."
+    }
+   ]
+  }
  ]
 }

@@ -12,6 +12,8 @@ single-server
 The fix is **horizontal scaling**: run N copies of a **stateless** service and put a load
 balancer (LB) in front that spreads requests across them.
 
+Switch the tabs to see a server die, sticky sessions go wrong, the DNS-only alternative and the load balancer itself as a single point of failure.
+
 ```figure
 lb-pool
 ```
@@ -30,6 +32,8 @@ lb-pool
 ## L4 vs L7
 
 An LB works at one of two layers, and real systems often stack both:
+
+The tabs show a backend failing, long-lived connections, an L4-only alternative and the cost of terminating TLS.
 
 ```figure
 l4-vs-l7

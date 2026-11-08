@@ -63,5 +63,108 @@
    "label": "row (hit)",
    "style": "reply"
   }
+ ],
+ "base_name": "Miss, then hit",
+ "scenarios": [
+  {
+   "name": "Cache node dies",
+   "tone": "failure",
+   "summary": "Every read becomes a miss at once, and a database sized for the miss rate gets the full read rate: the herd can take it down too.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "GET user:42",
+     "style": "lost",
+     "note": "The cache node has crashed: the GET times out."
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "SELECT … WHERE id = 42",
+     "note": "The app falls back to the database, and so does every other request on every server."
+    },
+    {
+     "from": "db",
+     "to": "app",
+     "label": "timeout (overloaded)",
+     "style": "error",
+     "note": "With a 95% hit rate the database normally sees 5% of reads; now it sees 100%, twenty times its load."
+    },
+    {
+     "from": "app",
+     "to": "app",
+     "label": "short timeout + breaker",
+     "style": "self",
+     "note": "Mitigation: fail fast on the cache, limit DB concurrency, serve a fallback, and run cache replicas so one node's loss isn't total."
+    }
+   ]
+  },
+  {
+   "name": "Key that doesn't exist",
+   "tone": "edge",
+   "summary": "A miss that the database also misses caches nothing, so lookups for absent keys hit the database every time. Cache the 'not found' too.",
+   "messages": [
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "GET user:999999",
+     "note": "A scraper (or a bug) asks for ids that don't exist."
+    },
+    {
+     "from": "cache",
+     "to": "app",
+     "label": "nil (miss)",
+     "style": "reply"
+    },
+    {
+     "from": "app",
+     "to": "db",
+     "label": "SELECT … WHERE id = 999999",
+     "style": "error",
+     "note": "The row isn't there either, so there is nothing to cache and the next request repeats the query."
+    },
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "SET user:999999 NONE EX 60",
+     "style": "async",
+     "note": "Fix: cache a short-lived 'not found' marker, or check a Bloom filter of existing ids first."
+    }
+   ]
+  },
+  {
+   "name": "Alternative: read-through",
+   "tone": "alternative",
+   "summary": "The cache loads misses itself, so the app only ever talks to the cache. Simpler callers, but the cache layer must know how to query the database.",
+   "caption": "Read-through moves the miss handling from the application into the cache (or a cache library).",
+   "messages": [
+    {
+     "from": "app",
+     "to": "cache",
+     "label": "GET user:42",
+     "note": "The app asks the cache and nothing else."
+    },
+    {
+     "from": "cache",
+     "to": "db",
+     "label": "load user:42",
+     "note": "On a miss the cache (or its loader library) queries the database itself."
+    },
+    {
+     "from": "db",
+     "to": "cache",
+     "label": "row",
+     "style": "reply"
+    },
+    {
+     "from": "cache",
+     "to": "app",
+     "label": "row (stored with TTL)",
+     "style": "reply",
+     "note": "The cache stores the copy and answers. Same latency as cache-aside; the logic just lives in one place."
+    }
+   ]
+  }
  ]
 }

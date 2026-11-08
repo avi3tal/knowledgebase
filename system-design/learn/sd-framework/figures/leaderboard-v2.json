@@ -121,5 +121,220 @@
     "db"
    ]
   }
+ ],
+ "base_name": "Write + read paths",
+ "scenarios": [
+  {
+   "name": "Sorted set lost",
+   "tone": "failure",
+   "summary": "The cache node holding the sorted set dies: reads fall back to the DB for top-n, and the worker rebuilds the set from the source of truth.",
+   "steps": [
+    {
+     "text": "The cache node restarts and the in-memory sorted set is gone.",
+     "nodes": [
+      "svc"
+     ],
+     "fail": [
+      "rank",
+      "svc>rank"
+     ]
+    },
+    {
+     "text": "Writes still succeed: the best score is in the DB and the event is queued.",
+     "nodes": [
+      "client",
+      "svc",
+      "db",
+      "queue"
+     ],
+     "edges": [
+      "client>svc",
+      "svc>db",
+      "svc>queue"
+     ],
+     "fail": [
+      "rank"
+     ]
+    },
+    {
+     "text": "Reads degrade: top-100 comes from the DB index; \"my rank\" returns \"updating\" for a few minutes.",
+     "nodes": [
+      "svc",
+      "db"
+     ],
+     "edges": [
+      "svc>db"
+     ],
+     "fail": [
+      "rank"
+     ]
+    },
+    {
+     "text": "The updater reloads all scores from the DB and replays the queue; ranks are back. A replica of the set would make this seconds.",
+     "nodes": [
+      "queue",
+      "worker",
+      "rank",
+      "db"
+     ],
+     "edges": [
+      "queue>worker",
+      "worker>rank"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Tournament burst",
+   "tone": "edge",
+   "summary": "At the end of a tournament writes jump 20×: the queue absorbs the burst, so the API stays fast while ranks lag for a little longer.",
+   "steps": [
+    {
+     "text": "Everyone submits a final score in the same minute: ~12 000 writes/s instead of 600.",
+     "nodes": [
+      "client",
+      "svc"
+     ],
+     "edges": [
+      "client>svc"
+     ]
+    },
+    {
+     "text": "The API upserts and publishes; the queue grows instead of the API slowing down.",
+     "nodes": [
+      "svc",
+      "db",
+      "queue"
+     ],
+     "edges": [
+      "svc>db",
+      "svc>queue"
+     ],
+     "fail": [
+      "queue"
+     ]
+    },
+    {
+     "text": "The updater drains at its own pace: ranks lag by a minute instead of seconds, which the requirements tolerate.",
+     "nodes": [
+      "queue",
+      "worker",
+      "rank"
+     ],
+     "edges": [
+      "queue>worker",
+      "worker>rank"
+     ]
+    },
+    {
+     "text": "Alert on queue lag, and add updater workers (partitioned by board) if it keeps growing.",
+     "nodes": [
+      "queue",
+      "worker"
+     ],
+     "edges": [
+      "queue>worker"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Alternative: dual write",
+   "tone": "alternative",
+   "summary": "Write to the DB and the sorted set in the request itself: two fewer boxes and fresh ranks, but a failed second write leaves the stores out of sync.",
+   "nodes": [
+    {
+     "id": "client",
+     "kind": "client",
+     "label": "Players",
+     "x": 0,
+     "y": 170
+    },
+    {
+     "id": "svc",
+     "kind": "service",
+     "label": "Leaderboard API",
+     "x": 280,
+     "y": 170
+    },
+    {
+     "id": "rank",
+     "kind": "cache",
+     "label": "Sorted set",
+     "x": 560,
+     "y": 30
+    },
+    {
+     "id": "db",
+     "kind": "sql",
+     "label": "Scores DB",
+     "x": 560,
+     "y": 310
+    }
+   ],
+   "edges": [
+    {
+     "from": "client",
+     "to": "svc",
+     "label": "POST · GET"
+    },
+    {
+     "from": "svc",
+     "to": "db",
+     "label": "1 upsert best"
+    },
+    {
+     "from": "svc",
+     "to": "rank",
+     "label": "2 ZADD · rank"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A score arrives. The API upserts it in the DB, then ZADDs it to the sorted set, before answering.",
+     "nodes": [
+      "client",
+      "svc",
+      "db",
+      "rank"
+     ],
+     "edges": [
+      "client>svc",
+      "svc>db",
+      "svc>rank"
+     ]
+    },
+    {
+     "text": "Ranks are fresh immediately and there is no queue or worker to run.",
+     "nodes": [
+      "svc",
+      "rank"
+     ],
+     "edges": [
+      "svc>rank"
+     ]
+    },
+    {
+     "text": "But if the ZADD fails after the DB write, the stores disagree until a repair job runs; and the write latency includes both stores.",
+     "nodes": [
+      "svc",
+      "db"
+     ],
+     "edges": [
+      "svc>db"
+     ],
+     "fail": [
+      "svc>rank"
+     ]
+    },
+    {
+     "text": "Fine at 600 writes/s with a nightly reconcile; the queue version wins once bursts or strict durability matter.",
+     "nodes": [
+      "db",
+      "rank"
+     ]
+    }
+   ]
+  }
  ]
 }
