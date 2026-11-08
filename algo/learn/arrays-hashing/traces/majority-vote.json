@@ -1,0 +1,463 @@
+{
+ "version": 1,
+ "title": "Boyer-Moore vote — majority element in O(1) space",
+ "code": [
+  "def majority_element(nums: list[int]) -> int:",
+  "    candidate = nums[0]",
+  "    count = 0",
+  "    for x in nums:",
+  "        if count == 0:",
+  "            candidate = x",
+  "        if x == candidate:",
+  "            count += 1",
+  "        else:",
+  "            count -= 1",
+  "    return candidate"
+ ],
+ "view": [
+  {
+   "id": "nums",
+   "type": "array",
+   "var": "nums"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "x",
+    "candidate",
+    "count"
+   ]
+  }
+ ],
+ "input": {
+  "nums": [
+   2,
+   2,
+   1,
+   1,
+   1,
+   2,
+   2
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "candidate": 2,
+      "count": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": "votes for the candidate not yet cancelled by a different value",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": null,
+      "candidate": 2,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "every earlier vote cancelled out — x becomes the new candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "candidate": 2,
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "a different value cancels one vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "candidate": 2,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "a different value cancels one vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "candidate": 2,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "every earlier vote cancelled out — x becomes the new candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "candidate": 1,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 1,
+      "candidate": 1,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 1,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "a different value cancels one vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 1,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "every earlier vote cancelled out — x becomes the new candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a vote for the candidate",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "a strict majority can't be cancelled completely, so it survives",
+   "state": {
+    "nums": {
+     "values": [
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "x": 2,
+      "candidate": 2,
+      "count": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": 2
+}

@@ -148,7 +148,7 @@
      "id": "seen",
      "type": "map",
      "var": "seen",
-     "label": "seen (prefix sum → times seen)"
+     "label": "seen (prefix sum \u2192 times seen)"
     },
     {
      "id": "vars",
@@ -210,6 +210,92 @@
   },
   {
    "type": "markdown",
+   "src": "03a-majority-vote.md"
+  },
+  {
+   "type": "trace",
+   "id": "majority-vote",
+   "title": "Boyer-Moore vote \u2014 majority element in O(1) space",
+   "source": "examples/majority_vote.py",
+   "function": "majority_element",
+   "input": {
+    "nums": [
+     2,
+     2,
+     1,
+     1,
+     1,
+     2,
+     2
+    ]
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums"
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "x",
+      "candidate",
+      "count"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       2,
+       2,
+       1,
+       1,
+       1,
+       2,
+       2
+      ]
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "nums": [
+       3,
+       2,
+       3
+      ]
+     },
+     "expected": 3
+    },
+    {
+     "input": {
+      "nums": [
+       1
+      ]
+     },
+     "expected": 1
+    },
+    {
+     "input": {
+      "nums": [
+       1,
+       2,
+       2,
+       3,
+       3,
+       3,
+       3
+      ]
+     },
+     "expected": 3
+    }
+   ]
+  },
+  {
+   "type": "markdown",
    "src": "03-recognise.md"
   },
   {
@@ -224,7 +310,10 @@
     "two-sum",
     "longest-common-prefix",
     "product-of-array-except-self",
-    "rotate-array"
+    "rotate-array",
+    "majority-element",
+    "max-consecutive-ones",
+    "majority-element-ii"
    ]
   }
  ]

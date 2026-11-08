@@ -11,7 +11,7 @@
   {
    "type": "trace",
    "id": "opposite-ends",
-   "title": "Opposite ends — squares of a sorted array",
+   "title": "Opposite ends \u2014 squares of a sorted array",
    "source": "examples/squares_sorted.py",
    "function": "sorted_squares",
    "input": {
@@ -118,7 +118,7 @@
   {
    "type": "trace",
    "id": "read-write",
-   "title": "Same direction — remove duplicates from a sorted array in place",
+   "title": "Same direction \u2014 remove duplicates from a sorted array in place",
    "source": "examples/remove_duplicates.py",
    "function": "remove_duplicates",
    "input": {
@@ -210,6 +210,111 @@
   },
   {
    "type": "markdown",
+   "src": "02b-move-zeroes.md"
+  },
+  {
+   "type": "trace",
+   "id": "move-zeroes",
+   "title": "Same direction, swap \u2014 move zeroes to the end",
+   "source": "examples/move_zeroes.py",
+   "function": "move_zeroes",
+   "input": {
+    "nums": [
+     0,
+     1,
+     0,
+     3,
+     12
+    ]
+   },
+   "view": [
+    {
+     "id": "nums",
+     "type": "array",
+     "var": "nums",
+     "pointers": {
+      "write": "write",
+      "read": "read"
+     }
+    },
+    {
+     "id": "vars",
+     "type": "vars",
+     "vars": [
+      "write",
+      "read"
+     ]
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "nums": [
+       0,
+       1,
+       0,
+       3,
+       12
+      ]
+     },
+     "expected": [
+      1,
+      3,
+      12,
+      0,
+      0
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       0
+      ]
+     },
+     "expected": [
+      0
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       1,
+       2,
+       0,
+       0
+      ]
+     },
+     "expected": [
+      1,
+      2,
+      0,
+      0
+     ]
+    },
+    {
+     "input": {
+      "nums": [
+       0,
+       0,
+       1,
+       -1,
+       0,
+       2
+      ]
+     },
+     "expected": [
+      1,
+      -1,
+      2,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "type": "markdown",
    "src": "03-recognise.md"
   },
   {
@@ -225,7 +330,12 @@
     "sort-colors",
     "container-with-most-water",
     "three-sum",
-    "trapping-rain-water"
+    "trapping-rain-water",
+    "move-zeroes",
+    "remove-element",
+    "remove-duplicates-from-sorted-array",
+    "apply-operations-to-an-array",
+    "remove-duplicates-from-sorted-array-ii"
    ]
   }
  ]

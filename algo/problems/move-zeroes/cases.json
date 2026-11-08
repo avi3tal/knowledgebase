@@ -1,0 +1,12 @@
+[
+  {"name": "example 1", "args": {"nums": [0, 1, 0, 3, 12]}, "expected": [1, 3, 12, 0, 0]},
+  {"name": "example 2", "args": {"nums": [0]}, "expected": [0]},
+  {"name": "single non-zero", "args": {"nums": [5]}, "expected": [5]},
+  {"name": "no zeroes", "args": {"nums": [1, 2, 3]}, "expected": [1, 2, 3]},
+  {"name": "all zeroes", "args": {"nums": [0, 0, 0]}, "expected": [0, 0, 0]},
+  {"name": "zeroes already at the end", "args": {"nums": [1, 2, 0, 0]}, "expected": [1, 2, 0, 0]},
+  {"name": "zeroes at the front", "args": {"nums": [0, 0, 1, 2]}, "expected": [1, 2, 0, 0]},
+  {"name": "negatives keep their order", "args": {"nums": [-1, 0, -3, 0, 2]}, "expected": [-1, -3, 2, 0, 0]},
+  {"name": "alternating", "args": {"nums": [0, 1, 0, 1, 0, 1]}, "expected": [1, 1, 1, 0, 0, 0]},
+  {"name": "larger mixed", "args": {"nums": [0, 1, 0, 0, 3, 12, 0, 5, 0, 0, 0, 7, 8, 0, -2, 0, 9, 0, 0, 4]}, "expected": [1, 3, 12, 5, 7, 8, -2, 9, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+]
