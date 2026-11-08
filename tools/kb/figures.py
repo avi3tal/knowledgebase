@@ -24,8 +24,8 @@ and edges (`"from>to"`) one step at a time with narration underneath; `fail` mar
 break in that step (red, ✕). Sequence `style: lost` is a message that never arrives.
 
 `scenarios [{name, tone, summary?, steps?, caption?, nodes?/edges?/actors?/messages?}]` are tabs that
-replay the figure for a failure, edge case, alternative design or risk (`tone`: happy | failure |
-edge | alternative | risk). A scenario's fields replace the base figure's; the merged figure must be
+replay the figure for a failure, edge case, alternative design, risk or scaling stage (`tone`:
+happy | failure | edge | alternative | risk | scale). A scenario's fields replace the base figure's; the merged figure must be
 valid on its own. The base figure is the first tab (`base_name`, default "How it works").
 """
 
@@ -41,7 +41,7 @@ NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 KINDS = {"architecture", "sequence", "flowchart"}
 FLOW_TYPES = {"start", "step", "decision", "end"}
 MESSAGE_STYLES = {"call", "reply", "error", "async", "self", "lost"}
-SCENARIO_TONES = {"happy", "failure", "edge", "alternative", "risk"}
+SCENARIO_TONES = {"happy", "failure", "edge", "alternative", "risk", "scale"}
 SCENARIO_FIELDS = {"name", "tone", "summary", "steps", "caption", "nodes", "edges", "actors", "messages"}
 
 

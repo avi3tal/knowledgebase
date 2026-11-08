@@ -1,0 +1,272 @@
+{
+ "kind": "flowchart",
+ "title": "Zoom in: what the limiter does for one request",
+ "caption": "Rule lookup is local and cheap; the only network call is one atomic operation on the counter.",
+ "base_name": "Under the limit",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Request in",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "rule",
+   "type": "step",
+   "label": "Match rule",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "has",
+   "type": "decision",
+   "label": "Rule found?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "free",
+   "type": "end",
+   "label": "Forward, no limit",
+   "col": 1,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "key",
+   "type": "step",
+   "label": "key = id:route",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "incr",
+   "type": "step",
+   "label": "Atomic INCR / Lua",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "over",
+   "type": "decision",
+   "label": "Over limit?",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "rej",
+   "type": "end",
+   "label": "429 + headers",
+   "col": 1,
+   "row": 5,
+   "tone": "bad"
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "Forward + headers",
+   "col": 0,
+   "row": 6,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "rule"
+  },
+  {
+   "from": "rule",
+   "to": "has"
+  },
+  {
+   "from": "has",
+   "to": "free",
+   "label": "no"
+  },
+  {
+   "from": "has",
+   "to": "key",
+   "label": "yes"
+  },
+  {
+   "from": "key",
+   "to": "incr"
+  },
+  {
+   "from": "incr",
+   "to": "over"
+  },
+  {
+   "from": "over",
+   "to": "rej",
+   "label": "yes"
+  },
+  {
+   "from": "over",
+   "to": "ok",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Find the rule for this caller and route in the in-memory rule table (tier, endpoint, method).",
+   "nodes": [
+    "in",
+    "rule"
+   ],
+   "edges": [
+    "in>rule"
+   ]
+  },
+  {
+   "text": "A rule applies.",
+   "nodes": [
+    "has"
+   ],
+   "edges": [
+    "rule>has",
+    "has>key"
+   ]
+  },
+  {
+   "text": "Build the counter key from what the rule limits by: api_key:POST /orders, or ip for anonymous calls.",
+   "nodes": [
+    "key"
+   ],
+   "edges": [
+    "has>key"
+   ]
+  },
+  {
+   "text": "One atomic operation increments (or takes a token) and returns the new value.",
+   "nodes": [
+    "incr",
+    "over"
+   ],
+   "edges": [
+    "key>incr",
+    "incr>over"
+   ]
+  },
+  {
+   "text": "Under the limit: forward, and add X-RateLimit-Remaining so clients can pace themselves.",
+   "nodes": [
+    "ok"
+   ],
+   "edges": [
+    "over>ok"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Over the limit",
+   "tone": "edge",
+   "summary": "The same path ends in a cheap rejection with Retry-After.",
+   "steps": [
+    {
+     "text": "Same lookup and key.",
+     "nodes": [
+      "rule",
+      "key"
+     ],
+     "edges": [
+      "in>rule",
+      "rule>has",
+      "has>key"
+     ]
+    },
+    {
+     "text": "The atomic call returns 101 for a limit of 100.",
+     "nodes": [
+      "incr",
+      "over"
+     ],
+     "edges": [
+      "key>incr",
+      "incr>over"
+     ]
+    },
+    {
+     "text": "Reject with 429, Retry-After and X-RateLimit-Reset.",
+     "nodes": [
+      "rej"
+     ],
+     "edges": [
+      "over>rej"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "No rule",
+   "tone": "edge",
+   "summary": "Unmatched routes skip the counter entirely: zero extra latency. Make sure that is intended (a default rule is safer).",
+   "steps": [
+    {
+     "text": "An internal health-check route has no rule.",
+     "nodes": [
+      "rule",
+      "has"
+     ],
+     "edges": [
+      "in>rule",
+      "rule>has"
+     ]
+    },
+    {
+     "text": "Forward without touching the counter store.",
+     "nodes": [
+      "free"
+     ],
+     "edges": [
+      "has>free"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Store timeout",
+   "tone": "failure",
+   "summary": "The atomic call times out: apply the route's fail-open or fail-closed policy instead of hanging the request.",
+   "steps": [
+    {
+     "text": "The counter call times out after 5 ms.",
+     "fail": [
+      "incr",
+      "key>incr"
+     ],
+     "nodes": [
+      "key"
+     ]
+    },
+    {
+     "text": "Fail-open route: forward and count the miss in metrics.",
+     "nodes": [
+      "ok"
+     ],
+     "edges": [
+      "over>ok"
+     ],
+     "fail": [
+      "incr"
+     ]
+    },
+    {
+     "text": "Fail-closed route (login, OTP): reject.",
+     "nodes": [
+      "rej"
+     ],
+     "edges": [
+      "over>rej"
+     ],
+     "fail": [
+      "incr"
+     ]
+    }
+   ]
+  }
+ ]
+}

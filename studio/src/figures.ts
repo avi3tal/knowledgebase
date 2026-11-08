@@ -11,7 +11,7 @@ export interface FigureStep {
   fail?: string[];
 }
 /** What a scenario is about; drives its tab icon and colour. */
-export type ScenarioTone = "happy" | "failure" | "edge" | "alternative" | "risk";
+export type ScenarioTone = "happy" | "failure" | "edge" | "alternative" | "risk" | "scale";
 /**
  * One way the system can play out: a tab on the figure. Any figure field it sets (nodes, edges,
  * actors, messages, steps, caption) replaces the base figure's for this scenario.
@@ -101,6 +101,7 @@ export const TONE_ICON: Record<ScenarioTone, string> = {
   edge: "🧪",
   alternative: "🔀",
   risk: "🧨",
+  scale: "📈",
 };
 
 /** Tabs of a figure: the base figure first, then its scenarios. */

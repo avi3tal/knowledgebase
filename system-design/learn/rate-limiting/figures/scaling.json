@@ -1,0 +1,405 @@
+{
+ "kind": "architecture",
+ "title": "Scaling the limiter: from one gateway to many regions",
+ "caption": "Each stage removes the bottleneck of the previous one; switch the 📈 tabs to grow the system.",
+ "base_name": "v1: one gateway",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Clients",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "Gateway",
+   "sub": "in-memory counters",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "API servers",
+   "x": 560,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "gw"
+  },
+  {
+   "from": "gw",
+   "to": "api"
+  }
+ ],
+ "steps": [
+  {
+   "text": "One gateway keeps counters in its own memory: exact and about 1 µs per check.",
+   "nodes": [
+    "gw"
+   ],
+   "edges": [
+    "c>gw"
+   ]
+  },
+  {
+   "text": "Fine up to one machine's capacity, roughly 20–50k req/s. The gateway is also a single point of failure.",
+   "nodes": [
+    "gw",
+    "api"
+   ],
+   "edges": [
+    "gw>api"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "v2: many gateways",
+   "tone": "scale",
+   "summary": "Add gateways behind a load balancer and move the counters into a shared store so the limit stays global.",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "client",
+     "label": "Clients",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 270,
+     "y": 160
+    },
+    {
+     "id": "g1",
+     "kind": "api-gateway",
+     "label": "Gateway 1",
+     "x": 540,
+     "y": 40
+    },
+    {
+     "id": "g2",
+     "kind": "api-gateway",
+     "label": "Gateway 2",
+     "x": 540,
+     "y": 280
+    },
+    {
+     "id": "r",
+     "kind": "cache",
+     "label": "Shared counters",
+     "x": 540,
+     "y": 160
+    },
+    {
+     "id": "api",
+     "kind": "service",
+     "label": "API servers",
+     "x": 820,
+     "y": 160
+    }
+   ],
+   "edges": [
+    {
+     "from": "c",
+     "to": "lb"
+    },
+    {
+     "from": "lb",
+     "to": "g1"
+    },
+    {
+     "from": "lb",
+     "to": "g2"
+    },
+    {
+     "from": "g1",
+     "to": "r"
+    },
+    {
+     "from": "g2",
+     "to": "r"
+    },
+    {
+     "from": "g1",
+     "to": "api"
+    },
+    {
+     "from": "g2",
+     "to": "api"
+    }
+   ],
+   "steps": [
+    {
+     "text": "A load balancer spreads traffic over N gateways; any one can die.",
+     "nodes": [
+      "lb",
+      "g1",
+      "g2"
+     ],
+     "edges": [
+      "c>lb",
+      "lb>g1",
+      "lb>g2"
+     ]
+    },
+    {
+     "text": "Counters move to one shared in-memory store with atomic increments, so all gateways enforce one limit.",
+     "nodes": [
+      "g1",
+      "g2",
+      "r"
+     ],
+     "edges": [
+      "g1>r",
+      "g2>r"
+     ]
+    },
+    {
+     "text": "Cost: about 1 ms per check, and the store is the next bottleneck at about 100k ops/s.",
+     "nodes": [
+      "r",
+      "api"
+     ],
+     "edges": [
+      "g1>api",
+      "g2>api"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v3: counter cluster",
+   "tone": "scale",
+   "summary": "Shard counters by key across a cluster, and let gateways lease tokens in batches so most checks stay local.",
+   "nodes": [
+    {
+     "id": "lb",
+     "kind": "load-balancer",
+     "label": "Load balancer",
+     "x": 0,
+     "y": 160
+    },
+    {
+     "id": "g1",
+     "kind": "api-gateway",
+     "label": "Gateway 1",
+     "sub": "local token lease",
+     "x": 270,
+     "y": 40
+    },
+    {
+     "id": "g2",
+     "kind": "api-gateway",
+     "label": "Gateway 2",
+     "sub": "local token lease",
+     "x": 270,
+     "y": 280
+    },
+    {
+     "id": "s1",
+     "kind": "cache",
+     "label": "Shard A",
+     "sub": "keys a–h",
+     "x": 560,
+     "y": 20
+    },
+    {
+     "id": "s2",
+     "kind": "cache",
+     "label": "Shard B",
+     "sub": "keys i–q",
+     "x": 560,
+     "y": 160
+    },
+    {
+     "id": "s3",
+     "kind": "cache",
+     "label": "Shard C",
+     "sub": "keys r–z",
+     "x": 560,
+     "y": 300
+    }
+   ],
+   "edges": [
+    {
+     "from": "lb",
+     "to": "g1"
+    },
+    {
+     "from": "lb",
+     "to": "g2"
+    },
+    {
+     "from": "g1",
+     "to": "s1"
+    },
+    {
+     "from": "g1",
+     "to": "s2",
+     "label": "lease 50"
+    },
+    {
+     "from": "g2",
+     "to": "s2"
+    },
+    {
+     "from": "g2",
+     "to": "s3"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Counters are sharded by key hash across a cluster: capacity grows with shards.",
+     "nodes": [
+      "s1",
+      "s2",
+      "s3"
+     ]
+    },
+    {
+     "text": "Each gateway leases 50 tokens at a time per hot key and spends them locally, so 50× fewer network calls.",
+     "nodes": [
+      "g1",
+      "s2"
+     ],
+     "edges": [
+      "g1>s2"
+     ]
+    },
+    {
+     "text": "Trade-off: a gateway that dies loses its unspent lease, so the limit is slightly approximate.",
+     "nodes": [
+      "g1",
+      "g2"
+     ],
+     "edges": [
+      "lb>g1",
+      "lb>g2",
+      "g2>s2",
+      "g2>s3",
+      "g1>s1"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "v4: multi-region",
+   "tone": "scale",
+   "summary": "Each region enforces its share locally and syncs counts asynchronously; a global limit becomes approximate by design.",
+   "nodes": [
+    {
+     "id": "ua",
+     "kind": "client",
+     "label": "Users (EU)",
+     "x": 0,
+     "y": 40
+    },
+    {
+     "id": "ub",
+     "kind": "client",
+     "label": "Users (US)",
+     "x": 0,
+     "y": 280
+    },
+    {
+     "id": "ga",
+     "kind": "api-gateway",
+     "label": "EU gateways",
+     "x": 280,
+     "y": 40
+    },
+    {
+     "id": "gb",
+     "kind": "api-gateway",
+     "label": "US gateways",
+     "x": 280,
+     "y": 280
+    },
+    {
+     "id": "ra",
+     "kind": "cache",
+     "label": "EU counters",
+     "x": 560,
+     "y": 40
+    },
+    {
+     "id": "rb",
+     "kind": "cache",
+     "label": "US counters",
+     "x": 560,
+     "y": 280
+    }
+   ],
+   "edges": [
+    {
+     "from": "ua",
+     "to": "ga"
+    },
+    {
+     "from": "ub",
+     "to": "gb"
+    },
+    {
+     "from": "ga",
+     "to": "ra"
+    },
+    {
+     "from": "gb",
+     "to": "rb"
+    },
+    {
+     "from": "ra",
+     "to": "rb",
+     "label": "async sync"
+    }
+   ],
+   "steps": [
+    {
+     "text": "Users are routed to their nearest region; checks never cross an ocean (that would add about 80 ms).",
+     "nodes": [
+      "ua",
+      "ub",
+      "ga",
+      "gb"
+     ],
+     "edges": [
+      "ua>ga",
+      "ub>gb"
+     ]
+    },
+    {
+     "text": "Each region counts locally against its share of the global limit.",
+     "nodes": [
+      "ga",
+      "ra",
+      "gb",
+      "rb"
+     ],
+     "edges": [
+      "ga>ra",
+      "gb>rb"
+     ]
+    },
+    {
+     "text": "Regions exchange counts every second or so: a client spraying both regions can overshoot briefly. Say so in the interview.",
+     "nodes": [
+      "ra",
+      "rb"
+     ],
+     "edges": [
+      "ra>rb"
+     ]
+    }
+   ]
+  }
+ ]
+}

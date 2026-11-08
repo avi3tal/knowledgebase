@@ -1,0 +1,349 @@
+{
+ "kind": "architecture",
+ "title": "The system: a public API platform with rate limiting at the edge",
+ "caption": "Every request crosses one gateway that knows the rules and asks a shared counter cluster; services behind it only see traffic within budget.",
+ "base_name": "Normal traffic",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "Apps & partners",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN / WAF",
+   "x": 230,
+   "y": 150
+  },
+  {
+   "id": "rules",
+   "kind": "coordinator",
+   "label": "Rules config",
+   "sub": "limits per key/tier",
+   "x": 460,
+   "y": 0
+  },
+  {
+   "id": "gw",
+   "kind": "api-gateway",
+   "label": "API gateway",
+   "sub": "rate limiter",
+   "x": 460,
+   "y": 150
+  },
+  {
+   "id": "redis",
+   "kind": "cache",
+   "label": "Counter cluster",
+   "sub": "sharded by key",
+   "x": 460,
+   "y": 300
+  },
+  {
+   "id": "mon",
+   "kind": "external",
+   "label": "Metrics & alerts",
+   "x": 230,
+   "y": 300
+  },
+  {
+   "id": "orders",
+   "kind": "service",
+   "label": "Orders",
+   "x": 690,
+   "y": 30
+  },
+  {
+   "id": "search",
+   "kind": "service",
+   "label": "Search",
+   "x": 690,
+   "y": 150
+  },
+  {
+   "id": "auth",
+   "kind": "service",
+   "label": "Auth / login",
+   "x": 690,
+   "y": 270
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Orders DB",
+   "x": 920,
+   "y": 30
+  },
+  {
+   "id": "idx",
+   "kind": "search",
+   "label": "Search index",
+   "x": 920,
+   "y": 150
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "cdn"
+  },
+  {
+   "from": "cdn",
+   "to": "gw"
+  },
+  {
+   "from": "rules",
+   "to": "gw",
+   "label": "hot reload"
+  },
+  {
+   "from": "gw",
+   "to": "redis",
+   "label": "INCR / Lua"
+  },
+  {
+   "from": "gw",
+   "to": "orders"
+  },
+  {
+   "from": "gw",
+   "to": "search"
+  },
+  {
+   "from": "gw",
+   "to": "auth"
+  },
+  {
+   "from": "orders",
+   "to": "db"
+  },
+  {
+   "from": "search",
+   "to": "idx"
+  },
+  {
+   "from": "gw",
+   "to": "cdn",
+   "label": "429 + headers"
+  },
+  {
+   "from": "gw",
+   "to": "mon",
+   "label": "rejects, latency"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Requests from apps and partners hit the edge first. The WAF drops obvious junk (known-bad IPs, malformed requests) before it costs anything.",
+   "nodes": [
+    "users",
+    "cdn"
+   ],
+   "edges": [
+    "users>cdn",
+    "cdn>gw"
+   ]
+  },
+  {
+   "text": "The gateway keeps the limit rules in memory (per API key, tier and endpoint) and hot-reloads them from a config store: no lookup per request.",
+   "nodes": [
+    "rules",
+    "gw"
+   ],
+   "edges": [
+    "rules>gw"
+   ]
+  },
+  {
+   "text": "Per request: build the key (api_key:endpoint) and make one atomic call to the counter cluster, about 1 ms.",
+   "nodes": [
+    "gw",
+    "redis"
+   ],
+   "edges": [
+    "gw>redis"
+   ]
+  },
+  {
+   "text": "Allowed: route to the service. Orders, search and auth and their databases only ever see traffic within budget.",
+   "nodes": [
+    "gw",
+    "orders",
+    "search",
+    "auth",
+    "db",
+    "idx"
+   ],
+   "edges": [
+    "gw>orders",
+    "gw>search",
+    "gw>auth",
+    "orders>db",
+    "search>idx"
+   ]
+  },
+  {
+   "text": "Over the limit: 429 with Retry-After and X-RateLimit-Remaining, returned through the edge.",
+   "nodes": [
+    "gw",
+    "cdn"
+   ],
+   "edges": [
+    "gw>cdn"
+   ]
+  },
+  {
+   "text": "Emit metrics: rejects per key, keys near their limit, counter latency. A spike of 429s means a client bug or an attack.",
+   "nodes": [
+    "gw",
+    "mon"
+   ],
+   "edges": [
+    "gw>mon"
+   ]
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Bot flood",
+   "tone": "edge",
+   "summary": "A credential-stuffing burst on /login: the WAF takes the obvious part, per-key limits take the rest, and services never notice.",
+   "steps": [
+    {
+     "text": "200 000 req/s of login attempts arrive from rotating IPs.",
+     "nodes": [
+      "users",
+      "cdn"
+     ],
+     "edges": [
+      "users>cdn"
+     ]
+    },
+    {
+     "text": "The WAF blocks known-bad IP ranges; what's left reaches the gateway.",
+     "nodes": [
+      "cdn",
+      "gw"
+     ],
+     "edges": [
+      "cdn>gw"
+     ]
+    },
+    {
+     "text": "The strict login rule (5 per minute per account and per IP) rejects almost everything after one atomic call each.",
+     "nodes": [
+      "gw",
+      "redis"
+     ],
+     "edges": [
+      "gw>redis",
+      "gw>cdn"
+     ]
+    },
+    {
+     "text": "Auth sees normal load. The 429 spike on /login pages the on-call engineer.",
+     "nodes": [
+      "auth",
+      "mon"
+     ],
+     "edges": [
+      "gw>mon"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Counter shard down",
+   "tone": "failure",
+   "summary": "Decide per route: fail open where availability matters, fail closed where abuse is the bigger cost.",
+   "steps": [
+    {
+     "text": "One shard of the counter cluster stops answering; calls for keys on it time out after 5 ms.",
+     "fail": [
+      "redis",
+      "gw>redis"
+     ],
+     "nodes": [
+      "gw"
+     ]
+    },
+    {
+     "text": "Orders and search fail open: requests go through unprotected for keys on that shard.",
+     "nodes": [
+      "gw",
+      "orders",
+      "search"
+     ],
+     "edges": [
+      "gw>orders",
+      "gw>search"
+     ],
+     "fail": [
+      "redis"
+     ]
+    },
+    {
+     "text": "Login fails closed: it returns 503 rather than let a brute-force attack through.",
+     "nodes": [
+      "gw",
+      "cdn"
+     ],
+     "edges": [
+      "gw>cdn"
+     ],
+     "fail": [
+      "auth",
+      "redis"
+     ]
+    },
+    {
+     "text": "Alert, promote the shard's replica, and the counters resume (they may restart near zero for a minute).",
+     "nodes": [
+      "mon",
+      "redis"
+     ],
+     "edges": [
+      "gw>mon"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Rule change",
+   "tone": "edge",
+   "summary": "A partner upgrades to a 10× tier: change the rule, not the code. Gateways pick it up within seconds.",
+   "steps": [
+    {
+     "text": "An operator raises partner P's limit from 1 000 to 10 000 per minute in the config store.",
+     "nodes": [
+      "rules"
+     ]
+    },
+    {
+     "text": "Every gateway reloads the rules (push or poll every few seconds). No deploy.",
+     "nodes": [
+      "rules",
+      "gw"
+     ],
+     "edges": [
+      "rules>gw"
+     ]
+    },
+    {
+     "text": "P's next requests are checked against the new limit; the key and the counter don't change.",
+     "nodes": [
+      "gw",
+      "redis"
+     ],
+     "edges": [
+      "gw>redis",
+      "gw>orders"
+     ]
+    }
+   ]
+  }
+ ]
+}

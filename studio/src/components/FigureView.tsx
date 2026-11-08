@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Figure, FlowchartFigure, SequenceFigure } from "../figures";
 import {
   FLOW,
@@ -39,6 +40,7 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
   const steps = useMemo(() => stepsOf(shown), [shown]);
   const [step, setStep] = useState(-1); // -1: whole picture, nothing highlighted
   const [playing, setPlaying] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const ref = useRef<HTMLElement>(null);
   const started = useRef(false);
   const canvas = useRef<CanvasHandle>(null);
@@ -46,7 +48,14 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
   useEffect(() => {
     const t = window.setTimeout(() => canvas.current?.fit(), 0);
     return () => window.clearTimeout(t);
-  }, [scenario]);
+  }, [scenario, expanded]);
+  // Esc closes the expanded view
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setExpanded(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
 
   // Auto-play once, the first time at least half of the figure is visible.
   useEffect(() => {
@@ -91,7 +100,7 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
         diagram={architectureDiagram(shown)}
         highlight={stepHighlight(current)}
         failed={stepFailed(current)}
-        height={Math.max(260, Math.max(...shown.nodes.map((n) => n.y)) + 150)}
+        height={expanded ? "fill" : Math.max(300, Math.max(...shown.nodes.map((n) => n.y)) + 170)}
         presentation
       />
     );
@@ -102,11 +111,21 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
   }
   const tab = tabs[scenario];
 
-  return (
-    <figure ref={ref} className={`fig fig-${shown.kind} ${step >= 0 ? "stepping" : ""}`}>
+  const view = (
+    <figure
+      ref={ref}
+      className={`fig fig-${shown.kind} ${step >= 0 ? "stepping" : ""} ${expanded ? "expanded" : ""}`}
+    >
       <figcaption className="fig-head">
         {number !== undefined && <span className="fig-num">Figure {number}</span>}
         <span className="fig-title">{figure.title}</span>
+        <button
+          className="fig-expand"
+          onClick={() => setExpanded(!expanded)}
+          title={expanded ? "Close (Esc)" : "Expand to full screen"}
+        >
+          {expanded ? "✕ close" : "⛶ expand"}
+        </button>
       </figcaption>
       {tabs.length > 1 && (
         <div className="fig-tabs" role="tablist">
@@ -196,6 +215,16 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
       )}
       {shown.caption && <p className="fig-caption">{shown.caption}</p>}
     </figure>
+  );
+  // expanded: render in a portal so no transformed ancestor traps `position: fixed`
+  if (!expanded) return view;
+  return (
+    <>
+      <div className="fig fig-placeholder" style={{ minHeight: 120 }}>
+        <p className="muted small">Figure open in full screen — press Esc to close.</p>
+      </div>
+      {createPortal(view, document.body)}
+    </>
   );
 }
 
