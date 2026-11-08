@@ -307,10 +307,12 @@ export function SubjectHome({
                           <span className="tc-pill lesson">▶ lesson</span>
                         ) : state === "planned" ? (
                           <span className="tc-pill">planned</span>
-                        ) : (
+                        ) : (t.problems ?? total) > 0 ? (
                           <span className="tc-pill">
                             🧪 practise · {t.problems ?? total} problems
                           </span>
+                        ) : (
+                          <span className="tc-pill">📚 reading</span>
                         )}
                         {f?.review_due && feedback && f.review_due <= feedback.today && (
                           <span className="tc-pill due">review due</span>
