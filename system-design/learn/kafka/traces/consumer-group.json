@@ -1,0 +1,5271 @@
+{
+ "version": 1,
+ "title": "Consumer group — commit offsets, crash before commit, rebalance",
+ "code": [
+  "def consumer_group(",
+  "    logs: list[list[str]], consumers: list[str], batch: int, crash: str, crash_round: int",
+  ") -> dict[str, int]:",
+  "    committed: dict[int, int] = {}",
+  "    owner: dict[int, str] = {}",
+  "    alive = list(consumers)",
+  "    total = 0",
+  "    for p in range(len(logs)):",
+  "        committed[p] = 0",
+  "        owner[p] = alive[p % len(alive)]",
+  "        total += len(logs[p])",
+  "    processed: list[str] = []",
+  "    rnd, off = 0, None",
+  "    while sum(committed.values()) < total:",
+  "        for p in range(len(logs)):",
+  "            start = committed[p]",
+  "            end = min(start + batch, len(logs[p]))",
+  "            for off in range(start, end):",
+  "                processed.append(logs[p][off])",
+  "            if owner[p] == crash and rnd == crash_round:",
+  "                continue",
+  "            committed[p] = end",
+  "        if rnd == crash_round:",
+  "            alive.remove(crash)",
+  "            for p in range(len(logs)):",
+  "                owner[p] = alive[p % len(alive)]",
+  "        rnd += 1",
+  "    return {\"processed\": len(processed), \"duplicates\": len(processed) - total}"
+ ],
+ "view": [
+  {
+   "id": "logs",
+   "type": "grid",
+   "var": "logs",
+   "label": "partitions p0..p2",
+   "cells": {
+    "read": [
+     "p",
+     "off"
+    ]
+   }
+  },
+  {
+   "id": "owner",
+   "type": "map",
+   "var": "owner",
+   "label": "partition → owner"
+  },
+  {
+   "id": "committed",
+   "type": "map",
+   "var": "committed",
+   "label": "committed offset"
+  },
+  {
+   "id": "processed",
+   "type": "array",
+   "var": "processed",
+   "label": "processed (duplicates show up twice)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "rnd",
+    "p",
+    "start",
+    "end",
+    "alive"
+   ]
+  }
+ ],
+ "input": {
+  "logs": [
+   [
+    "a0",
+    "a1",
+    "a2"
+   ],
+   [
+    "b0",
+    "b1"
+   ],
+   [
+    "c0",
+    "c1",
+    "c2"
+   ]
+  ],
+  "consumers": [
+   "c1",
+   "c2"
+  ],
+  "batch": 2,
+  "crash": "c2",
+  "crash_round": 0
+ },
+ "steps": [
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": []
+    },
+    "committed": {
+     "entries": []
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": null,
+      "start": null,
+      "end": null,
+      "alive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": []
+    },
+    "committed": {
+     "entries": []
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": null,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": []
+    },
+    "committed": {
+     "entries": []
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 0,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": []
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 0,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "one owner per partition inside a group",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 0,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 1,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 1,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "one owner per partition inside a group",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 1,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 2,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 2,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "one owner per partition inside a group",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": null,
+      "p": 2,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": null,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "poll resumes from the committed offset",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": null,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": "commit = \"done up to here\"",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "poll resumes from the committed offset",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": "crashed after processing, before the commit",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "poll resumes from the committed offset",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": "commit = \"done up to here\"",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1",
+       "c2"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": "heartbeats stop → the group rebalances",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c2"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 0,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 0,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "poll resumes from the committed offset",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 0,
+      "start": 2,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 0,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 0,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 0,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": "commit = \"done up to here\"",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 0,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "poll resumes from the committed offset",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": "commit = \"done up to here\"",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 1,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 0,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "poll resumes from the committed offset",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 2,
+      "end": 2,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1",
+      "c2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": "commit = \"done up to here\"",
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       3
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1",
+      "c2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 1,
+      "p": 2,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       3
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1",
+      "c2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 2,
+      "p": 2,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "logs": {
+     "rows": [
+      [
+       "a0",
+       "a1",
+       "a2"
+      ],
+      [
+       "b0",
+       "b1"
+      ],
+      [
+       "c0",
+       "c1",
+       "c2"
+      ]
+     ],
+     "cells": {
+      "read": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "owner": {
+     "entries": [
+      [
+       0,
+       "c1"
+      ],
+      [
+       1,
+       "c1"
+      ],
+      [
+       2,
+       "c1"
+      ]
+     ]
+    },
+    "committed": {
+     "entries": [
+      [
+       0,
+       3
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       2,
+       3
+      ]
+     ]
+    },
+    "processed": {
+     "values": [
+      "a0",
+      "a1",
+      "b0",
+      "b1",
+      "c0",
+      "c1",
+      "a2",
+      "b0",
+      "b1",
+      "c2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "rnd": 2,
+      "p": 2,
+      "start": 2,
+      "end": 3,
+      "alive": [
+       "c1"
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": {
+  "processed": 10,
+  "duplicates": 2
+ }
+}

@@ -1,0 +1,1589 @@
+{
+ "version": 1,
+ "title": "Minute → hour rollup — sum and count, not average",
+ "code": [
+  "def rollup(minutes: list[list[int]]) -> list[int]:",
+  "    hours: dict[int, list[int]] = {}",
+  "    minute_avgs: list[int] = []",
+  "    for i in range(len(minutes)):",
+  "        minute, total, count = minutes[i][0], minutes[i][1], minutes[i][2]",
+  "        hour = minute // 60",
+  "        if hour not in hours:",
+  "            hours[hour] = [0, 0]",
+  "        hours[hour][0] += total",
+  "        hours[hour][1] += count",
+  "        if hour == 0:",
+  "            minute_avgs.append(total // count)",
+  "    first = hours[0]",
+  "    exact = first[0] // first[1]",
+  "    total_of_avgs = sum(minute_avgs)",
+  "    naive = total_of_avgs // len(minute_avgs)",
+  "    return [exact, naive]"
+ ],
+ "view": [
+  {
+   "id": "minutes",
+   "type": "array",
+   "var": "minutes",
+   "label": "minute buckets [minute, sum_ms, count]",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "hours",
+   "type": "map",
+   "var": "hours",
+   "label": "hour buckets (hour → [sum_ms, count])"
+  },
+  {
+   "id": "avgs",
+   "type": "array",
+   "var": "minute_avgs",
+   "label": "per-minute averages (hour 0)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "hour",
+    "exact",
+    "naive"
+   ]
+  }
+ ],
+ "input": {
+  "minutes": [
+   [
+    0,
+    1000,
+    100
+   ],
+   [
+    1,
+    40,
+    1
+   ],
+   [
+    2,
+    1800,
+    200
+   ],
+   [
+    60,
+    500,
+    50
+   ]
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": []
+    },
+    "avgs": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": null,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": []
+    },
+    "avgs": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": null,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "the coarser window that contains this minute",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": []
+    },
+    "avgs": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "sums and counts add up exactly across buckets",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1000,
+        0
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1000,
+        100
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a per-minute average, kept to compare",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1000,
+        100
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1000,
+        100
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "the coarser window that contains this minute",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1000,
+        100
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "sums and counts add up exactly across buckets",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1040,
+        100
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1040,
+        101
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a per-minute average, kept to compare",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1040,
+        101
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1040,
+        101
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "the coarser window that contains this minute",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        1040,
+        101
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "sums and counts add up exactly across buckets",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        101
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "a per-minute average, kept to compare",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 0,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": "the coarser window that contains this minute",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ],
+      [
+       1,
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "sums and counts add up exactly across buckets",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ],
+      [
+       1,
+       [
+        500,
+        0
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ],
+      [
+       1,
+       [
+        500,
+        50
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": null,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "correct — total latency over total requests",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ],
+      [
+       1,
+       [
+        500,
+        50
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": 9,
+      "naive": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "wrong — a quiet minute weighs as much as a busy one",
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ],
+      [
+       1,
+       [
+        500,
+        50
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": 9,
+      "naive": 19
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "minutes": {
+     "values": [
+      [
+       0,
+       1000,
+       100
+      ],
+      [
+       1,
+       40,
+       1
+      ],
+      [
+       2,
+       1800,
+       200
+      ],
+      [
+       60,
+       500,
+       50
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "hours": {
+     "entries": [
+      [
+       0,
+       [
+        2840,
+        301
+       ]
+      ],
+      [
+       1,
+       [
+        500,
+        50
+       ]
+      ]
+     ]
+    },
+    "avgs": {
+     "values": [
+      10,
+      40,
+      9
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "hour": 1,
+      "exact": 9,
+      "naive": 19
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  9,
+  19
+ ]
+}

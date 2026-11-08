@@ -1,0 +1,4975 @@
+{
+ "version": 1,
+ "title": "Partition key + clustering key — one-partition read vs full scan",
+ "code": [
+  "def partition_layout(rows: list[list], queries: list[str]) -> list[list[int]]:",
+  "    table: dict[str, list[int]] = {}",
+  "    bodies: dict[str, str] = {}",
+  "    for i in range(len(rows)):",
+  "        pk, ck = rows[i][0], rows[i][1]",
+  "        bodies[pk + \"/\" + str(ck)] = rows[i][2]",
+  "        if pk not in table:",
+  "            table[pk] = []",
+  "        part = table[pk]",
+  "        pos = len(part)",
+  "        while pos > 0 and part[pos - 1] > ck:",
+  "            pos -= 1",
+  "        part.insert(pos, ck)",
+  "    result: list[list[int]] = []",
+  "    for q in range(len(queries)):",
+  "        kind, arg = queries[q].split(\":\", 1)",
+  "        if kind == \"p\":",
+  "            pk, n = arg.split(\":\")",
+  "            part = table[pk]",
+  "            count = int(n)",
+  "            latest = part[-count:]",
+  "            result.append([1, len(latest)])",
+  "            continue",
+  "        touched, read, matches = 0, 0, 0",
+  "        for pk in table:",
+  "            touched += 1",
+  "            for ck in table[pk]:",
+  "                read += 1",
+  "                if bodies[pk + \"/\" + str(ck)] == arg:",
+  "                    matches += 1",
+  "        result.append([touched, read])",
+  "    return result"
+ ],
+ "view": [
+  {
+   "id": "rows",
+   "type": "array",
+   "var": "rows",
+   "label": "inserts [partition, clustering, body]",
+   "pointers": {
+    "row": "i"
+   }
+  },
+  {
+   "id": "table",
+   "type": "map",
+   "var": "table",
+   "label": "partitions (clustering keys, sorted)"
+  },
+  {
+   "id": "queries",
+   "type": "array",
+   "var": "queries",
+   "label": "queries",
+   "pointers": {
+    "q": "q"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "pk",
+    "ck",
+    "pos",
+    "touched",
+    "read",
+    "result"
+   ]
+  }
+ ],
+ "input": {
+  "rows": [
+   [
+    "c1",
+    1,
+    "hi"
+   ],
+   [
+    "c2",
+    1,
+    "yo"
+   ],
+   [
+    "c1",
+    3,
+    "ok"
+   ],
+   [
+    "c1",
+    2,
+    "sup"
+   ],
+   [
+    "c3",
+    1,
+    "hey"
+   ],
+   [
+    "c2",
+    2,
+    "ok"
+   ]
+  ],
+  "queries": [
+   "p:c1:2",
+   "body:ok"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": null
+     },
+     "window": null
+    },
+    "table": {
+     "entries": []
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": null,
+      "ck": null,
+      "pos": null,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 0
+     },
+     "window": null
+    },
+    "table": {
+     "entries": []
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": null,
+      "ck": null,
+      "pos": null,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 0
+     },
+     "window": null
+    },
+    "table": {
+     "entries": []
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": null,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a new partition key hashes to its own place on the ring",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 0
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       []
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": null,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 0
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       []
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "rows inside a partition stay sorted by the clustering key",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 0
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 1
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 1
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a new partition key hashes to its own place on the ring",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 1
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ],
+      [
+       "c2",
+       []
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "rows inside a partition stay sorted by the clustering key",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 1
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 2
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 2
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 2
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "rows inside a partition stay sorted by the clustering key",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 2
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 3
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 3
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 3
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 2,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 3
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "rows inside a partition stay sorted by the clustering key",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 3
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 4
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 4
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "a new partition key hashes to its own place on the ring",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 4
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ],
+      [
+       "c3",
+       []
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 4
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ],
+      [
+       "c3",
+       []
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "rows inside a partition stay sorted by the clustering key",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 4
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 0,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "rows inside a partition stay sorted by the clustering key",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": []
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": []
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": []
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": "one partition, one contiguous slice from the end",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": []
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": null,
+      "read": null,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 24,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": 0,
+      "read": 0,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": "no partition key in the query, so every partition is visited",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": 1,
+      "read": 0,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": 1,
+      "touched": 1,
+      "read": 0,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 1,
+      "pos": 1,
+      "touched": 1,
+      "read": 1,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": 1,
+      "read": 1,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 2,
+      "pos": 1,
+      "touched": 1,
+      "read": 2,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 1,
+      "touched": 1,
+      "read": 2,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 1,
+      "touched": 1,
+      "read": 3,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": "a match, but only after reading every row",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c1",
+      "ck": 3,
+      "pos": 1,
+      "touched": 1,
+      "read": 3,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 3,
+      "pos": 1,
+      "touched": 1,
+      "read": 3,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": "no partition key in the query, so every partition is visited",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 3,
+      "pos": 1,
+      "touched": 2,
+      "read": 3,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 1,
+      "pos": 1,
+      "touched": 2,
+      "read": 3,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 1,
+      "pos": 1,
+      "touched": 2,
+      "read": 4,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": 2,
+      "read": 4,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": 2,
+      "read": 5,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": "a match, but only after reading every row",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c2",
+      "ck": 2,
+      "pos": 1,
+      "touched": 2,
+      "read": 5,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 2,
+      "pos": 1,
+      "touched": 2,
+      "read": 5,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 26,
+   "note": "no partition key in the query, so every partition is visited",
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 2,
+      "pos": 1,
+      "touched": 3,
+      "read": 5,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 1,
+      "touched": 3,
+      "read": 5,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 28,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 1,
+      "touched": 3,
+      "read": 6,
+      "result": [
+       [
+        1,
+        2
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 31,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 1,
+      "touched": 3,
+      "read": 6,
+      "result": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        6
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 32,
+   "note": null,
+   "state": {
+    "rows": {
+     "values": [
+      [
+       "c1",
+       1,
+       "hi"
+      ],
+      [
+       "c2",
+       1,
+       "yo"
+      ],
+      [
+       "c1",
+       3,
+       "ok"
+      ],
+      [
+       "c1",
+       2,
+       "sup"
+      ],
+      [
+       "c3",
+       1,
+       "hey"
+      ],
+      [
+       "c2",
+       2,
+       "ok"
+      ]
+     ],
+     "pointers": {
+      "row": 5
+     },
+     "window": null
+    },
+    "table": {
+     "entries": [
+      [
+       "c1",
+       [
+        1,
+        2,
+        3
+       ]
+      ],
+      [
+       "c2",
+       [
+        1,
+        2
+       ]
+      ],
+      [
+       "c3",
+       [
+        1
+       ]
+      ]
+     ]
+    },
+    "queries": {
+     "values": [
+      "p:c1:2",
+      "body:ok"
+     ],
+     "pointers": {
+      "q": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "pk": "c3",
+      "ck": 1,
+      "pos": 1,
+      "touched": 3,
+      "read": 6,
+      "result": [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        6
+       ]
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  [
+   1,
+   2
+  ],
+  [
+   3,
+   6
+  ]
+ ]
+}

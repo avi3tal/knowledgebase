@@ -54,10 +54,10 @@ def test_problem_context_algo_and_design() -> None:
 
 
 def test_topic_page_roles_co_topics_and_state() -> None:
-    page = learn.topic_page("system-design", "fan-out")
+    page = learn.topic_page("system-design", "outbox-pattern")  # a pattern with problems but no lesson
     assert page["state"] == "practice-only" and len(page["problems"]) >= 5
     assert {p["role"] for p in page["problems"]} == {"pattern"}
-    assert all("fan-out" not in p["other_topics"] for p in page["problems"])
+    assert all("outbox-pattern" not in p["other_topics"] for p in page["problems"])
     counts = [c["count"] for c in page["co_topics"]]
     assert counts == sorted(counts, reverse=True)
     assert learn.topic_page("algo", "two-pointers")["state"] == "lesson"
@@ -74,6 +74,7 @@ def test_topic_state(lesson: bool, problems: int, resources: int, want: str) -> 
 def test_topic_counts_match_topic_pages() -> None:
     counts = learn.topic_counts("system-design")
     page = learn.topic_page("system-design", "fan-out")
+    assert page["state"] == "lesson"
     assert counts["fan-out"][0] == len(page["problems"])
     assert set(counts) == {t["id"] for t in learn.catalog("system-design")["topics"]}
 

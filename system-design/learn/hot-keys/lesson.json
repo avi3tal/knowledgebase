@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "hot-keys",
+  "title": "Hot Keys and Sharded Counters",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "shard-load",
+      "title": "One viral key on 4 shards: hash(key) % 4, no splitting",
+      "source": "examples/shard_load.py",
+      "function": "shard_load",
+      "input": {
+        "requests": [
+          "video:42",
+          "user:3",
+          "video:42",
+          "video:42",
+          "user:2",
+          "video:42",
+          "video:42",
+          "user:14",
+          "video:42",
+          "video:42",
+          "user:1",
+          "video:42"
+        ],
+        "hot": "video:42",
+        "shards": 4,
+        "split": 1
+      },
+      "view": [
+        {
+          "id": "requests",
+          "type": "array",
+          "var": "requests",
+          "label": "requests",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "load",
+          "type": "array",
+          "var": "load",
+          "label": "requests per shard",
+          "pointers": {
+            "shard": "shard"
+          }
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "shard", "hot_seen"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "requests": [
+              "video:42",
+              "user:3",
+              "video:42",
+              "video:42",
+              "user:2",
+              "video:42",
+              "video:42",
+              "user:14",
+              "video:42",
+              "video:42",
+              "user:1",
+              "video:42"
+            ],
+            "hot": "video:42",
+            "shards": 4,
+            "split": 1
+          },
+          "expected": [9, 1, 1, 1]
+        },
+        {
+          "input": {
+            "requests": [
+              "video:42",
+              "user:3",
+              "video:42",
+              "video:42",
+              "user:2",
+              "video:42",
+              "video:42",
+              "user:14",
+              "video:42",
+              "video:42",
+              "user:1",
+              "video:42"
+            ],
+            "hot": "video:42",
+            "shards": 4,
+            "split": 4
+          },
+          "expected": [3, 3, 3, 3]
+        },
+        {
+          "input": {
+            "requests": ["user:1", "user:2"],
+            "hot": "video:42",
+            "shards": 4,
+            "split": 4
+          },
+          "expected": [1, 0, 1, 0]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-mitigations.md"
+    },
+    {
+      "type": "trace",
+      "id": "local-cache",
+      "title": "A 10-tick local cache on 3 app servers absorbing the hot key",
+      "source": "examples/local_cache.py",
+      "function": "local_cache",
+      "input": {
+        "requests": [
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "video:42",
+          "user:7",
+          "video:42"
+        ],
+        "servers": 3,
+        "ttl": 10
+      },
+      "view": [
+        {
+          "id": "requests",
+          "type": "array",
+          "var": "requests",
+          "label": "requests (tick = index)",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "local",
+          "type": "map",
+          "var": "local",
+          "label": "local copies → expiry tick"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["server", "slot", "local_hits", "shard_reads"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "requests": [
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "video:42",
+              "user:7",
+              "video:42"
+            ],
+            "servers": 3,
+            "ttl": 10
+          },
+          "expected": [8, 4]
+        },
+        {
+          "input": {
+            "requests": ["a", "a", "a"],
+            "servers": 1,
+            "ttl": 10
+          },
+          "expected": [2, 1]
+        },
+        {
+          "input": {
+            "requests": ["a", "b", "a", "b"],
+            "servers": 2,
+            "ttl": 1
+          },
+          "expected": [0, 4]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["url-shortener", "live-comments", "news-feed", "youtube", "online-auction", "ad-click-aggregator"]
+    }
+  ]
+}

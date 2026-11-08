@@ -1,0 +1,2008 @@
+{
+ "version": 1,
+ "title": "One viral key on 4 shards: hash(key) % 4, no splitting",
+ "code": [
+  "def shard_load(requests: list[str], hot: str, shards: int, split: int) -> list[int]:",
+  "    load = [0] * shards",
+  "    hot_seen = 0",
+  "    for i in range(len(requests)):",
+  "        key = requests[i]",
+  "        if key == hot and split > 1:",
+  "            key = hot + \"#\" + str(hot_seen % split)",
+  "            hot_seen += 1",
+  "        shard = shard_of(key, shards)",
+  "        load[shard] += 1",
+  "    return load"
+ ],
+ "view": [
+  {
+   "id": "requests",
+   "type": "array",
+   "var": "requests",
+   "label": "requests",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "load",
+   "type": "array",
+   "var": "load",
+   "label": "requests per shard",
+   "pointers": {
+    "shard": "shard"
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "shard",
+    "hot_seen"
+   ]
+  }
+ ],
+ "input": {
+  "requests": [
+   "video:42",
+   "user:3",
+   "video:42",
+   "video:42",
+   "user:2",
+   "video:42",
+   "video:42",
+   "user:14",
+   "video:42",
+   "video:42",
+   "user:1",
+   "video:42"
+  ],
+  "hot": "video:42",
+  "shards": 4,
+  "split": 1
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "shard": null,
+      "hot_seen": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "shard": null,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "shard": null,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": null,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:3",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:3",
+      "shard": 1,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:3",
+      "shard": 1,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:3",
+      "shard": 1,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 1
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 1,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      2,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      2,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:2",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      0,
+      0
+     ],
+     "pointers": {
+      "shard": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:2",
+      "shard": 2,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:2",
+      "shard": 2,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:2",
+      "shard": 2,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 2
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 2,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      3,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      4,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      4,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:14",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      0
+     ],
+     "pointers": {
+      "shard": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:14",
+      "shard": 3,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:14",
+      "shard": 3,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:14",
+      "shard": 3,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 3
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 3,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      5,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      6,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      6,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      7,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      7,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      7,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:1",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      8,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:1",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      8,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "user:1",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      8,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "watch one shard's count run away while the others idle",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      9,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "user:3",
+      "video:42",
+      "video:42",
+      "user:2",
+      "video:42",
+      "video:42",
+      "user:14",
+      "video:42",
+      "video:42",
+      "user:1",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "load": {
+     "values": [
+      9,
+      1,
+      1,
+      1
+     ],
+     "pointers": {
+      "shard": 0
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "video:42",
+      "shard": 0,
+      "hot_seen": 0
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  9,
+  1,
+  1,
+  1
+ ]
+}

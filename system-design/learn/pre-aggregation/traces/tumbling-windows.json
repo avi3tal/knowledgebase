@@ -1,0 +1,6137 @@
+{
+ "version": 1,
+ "title": "Click events rolled into per-minute buckets on ingest",
+ "code": [
+  "def tumbling_windows(events: list[list], query_ad: str) -> list[int]:",
+  "    buckets: dict[str, int] = {}",
+  "    for i in range(len(events)):",
+  "        second, ad = events[i][0], events[i][1]",
+  "        minute = second // 60",
+  "        key = ad + \"@\" + str(minute)",
+  "        if key not in buckets:",
+  "            buckets[key] = 0",
+  "        buckets[key] += 1",
+  "    rows_read = 0",
+  "    series: list[int] = []",
+  "    for key in buckets:",
+  "        ad = key.split(\"@\")[0]",
+  "        if ad == query_ad:",
+  "            rows_read += 1",
+  "            series.append(buckets[key])",
+  "    return [len(events), len(buckets), rows_read]"
+ ],
+ "view": [
+  {
+   "id": "events",
+   "type": "array",
+   "var": "events",
+   "label": "click stream [second, ad]",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "buckets",
+   "type": "map",
+   "var": "buckets",
+   "label": "minute buckets (ad@minute → clicks)"
+  },
+  {
+   "id": "series",
+   "type": "array",
+   "var": "series",
+   "label": "dashboard series"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "second",
+    "minute",
+    "key",
+    "rows_read"
+   ]
+  }
+ ],
+ "input": {
+  "events": [
+   [
+    5,
+    "ad1"
+   ],
+   [
+    12,
+    "ad2"
+   ],
+   [
+    30,
+    "ad1"
+   ],
+   [
+    61,
+    "ad1"
+   ],
+   [
+    70,
+    "ad1"
+   ],
+   [
+    75,
+    "ad2"
+   ],
+   [
+    118,
+    "ad1"
+   ],
+   [
+    125,
+    "ad1"
+   ],
+   [
+    130,
+    "ad2"
+   ],
+   [
+    170,
+    "ad1"
+   ]
+  ],
+  "query_ad": "ad1"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": []
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": null,
+      "minute": null,
+      "key": null,
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": []
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": null,
+      "minute": null,
+      "key": null,
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": []
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 5,
+      "minute": null,
+      "key": null,
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": []
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 5,
+      "minute": 0,
+      "key": null,
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": []
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 5,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "first event of this (ad, minute): open a new bucket row",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       0
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 5,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 5,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 5,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 12,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 12,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 12,
+      "minute": 0,
+      "key": "ad2@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "first event of this (ad, minute): open a new bucket row",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ],
+      [
+       "ad2@0",
+       0
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 12,
+      "minute": 0,
+      "key": "ad2@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 12,
+      "minute": 0,
+      "key": "ad2@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 12,
+      "minute": 0,
+      "key": "ad2@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 30,
+      "minute": 0,
+      "key": "ad2@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 30,
+      "minute": 0,
+      "key": "ad2@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       1
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 30,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 30,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 30,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 61,
+      "minute": 0,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 61,
+      "minute": 1,
+      "key": "ad1@0",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 61,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "first event of this (ad, minute): open a new bucket row",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       0
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 61,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 61,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 61,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 70,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 70,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 70,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 70,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 75,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 75,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 75,
+      "minute": 1,
+      "key": "ad2@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "first event of this (ad, minute): open a new bucket row",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ],
+      [
+       "ad2@1",
+       0
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 75,
+      "minute": 1,
+      "key": "ad2@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 75,
+      "minute": 1,
+      "key": "ad2@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 75,
+      "minute": 1,
+      "key": "ad2@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 118,
+      "minute": 1,
+      "key": "ad2@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 118,
+      "minute": 1,
+      "key": "ad2@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       2
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 118,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 118,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 118,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 125,
+      "minute": 1,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 125,
+      "minute": 2,
+      "key": "ad1@1",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 125,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "first event of this (ad, minute): open a new bucket row",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       0
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 125,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 125,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 125,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 130,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 130,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 130,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "first event of this (ad, minute): open a new bucket row",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ],
+      [
+       "ad2@2",
+       0
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 130,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 130,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 130,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "tumbling window — each second belongs to exactly one minute",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       1
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the raw event is folded into a counter",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@0",
+      "rows_read": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@0",
+      "rows_read": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "the dashboard reads summaries, never raw clicks",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@0",
+      "rows_read": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad2@0",
+      "rows_read": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@1",
+      "rows_read": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@1",
+      "rows_read": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "the dashboard reads summaries, never raw clicks",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@1",
+      "rows_read": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad2@1",
+      "rows_read": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "the dashboard reads summaries, never raw clicks",
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad1@2",
+      "rows_read": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       5,
+       "ad1"
+      ],
+      [
+       12,
+       "ad2"
+      ],
+      [
+       30,
+       "ad1"
+      ],
+      [
+       61,
+       "ad1"
+      ],
+      [
+       70,
+       "ad1"
+      ],
+      [
+       75,
+       "ad2"
+      ],
+      [
+       118,
+       "ad1"
+      ],
+      [
+       125,
+       "ad1"
+      ],
+      [
+       130,
+       "ad2"
+      ],
+      [
+       170,
+       "ad1"
+      ]
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "buckets": {
+     "entries": [
+      [
+       "ad1@0",
+       2
+      ],
+      [
+       "ad2@0",
+       1
+      ],
+      [
+       "ad1@1",
+       3
+      ],
+      [
+       "ad2@1",
+       1
+      ],
+      [
+       "ad1@2",
+       2
+      ],
+      [
+       "ad2@2",
+       1
+      ]
+     ]
+    },
+    "series": {
+     "values": [
+      2,
+      3,
+      2
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "second": 170,
+      "minute": 2,
+      "key": "ad2@2",
+      "rows_read": 3
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  10,
+  6,
+  3
+ ]
+}

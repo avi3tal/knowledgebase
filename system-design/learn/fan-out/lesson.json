@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "fan-out",
+  "title": "Fan-out on Write vs on Read",
+  "blocks": [
+    {"type": "markdown", "src": "01-intro.md"},
+    {
+      "type": "trace",
+      "id": "push",
+      "title": "Fan-out on write — 3 posts, 9 timeline writes, 1 read per open",
+      "source": "examples/push_timelines.py",
+      "function": "push_timelines",
+      "input": {
+        "followers": {"ann": ["bob", "cat", "dan"], "bob": ["ann"], "star": ["ann", "bob", "cat", "dan", "eve"]},
+        "posts": ["ann:p1", "star:p2", "bob:p3"],
+        "opens": ["ann", "cat", "eve"]
+      },
+      "view": [
+        {"id": "posts", "type": "array", "var": "posts", "label": "posts (author:id)", "pointers": {"post": "i"}},
+        {"id": "opens", "type": "array", "var": "opens", "label": "feed opens", "pointers": {"open": "j"}},
+        {"id": "timelines", "type": "map", "var": "timelines", "label": "timelines (user → post ids)"},
+        {"id": "feed", "type": "array", "var": "feed", "label": "feed served"},
+        {"id": "vars", "type": "vars", "vars": ["author", "follower", "user", "writes", "reads", "shown"]}
+      ],
+      "checks": [
+        {"input": {"followers": {"ann": ["bob", "cat", "dan"], "bob": ["ann"], "star": ["ann", "bob", "cat", "dan", "eve"]}, "posts": ["ann:p1", "star:p2", "bob:p3"], "opens": ["ann", "cat", "eve"]}, "expected": [9, 3, 5]},
+        {"input": {"followers": {"a": ["b"]}, "posts": ["a:p1"], "opens": ["b", "c"]}, "expected": [1, 2, 1]},
+        {"input": {"followers": {"a": []}, "posts": ["a:p1"], "opens": ["a"]}, "expected": [0, 1, 0]}
+      ]
+    },
+    {"type": "markdown", "src": "02-hybrid.md"},
+    {
+      "type": "trace",
+      "id": "hybrid",
+      "title": "Hybrid — push below the threshold, merge big accounts at read time",
+      "source": "examples/hybrid_feed.py",
+      "function": "hybrid_feed",
+      "input": {
+        "followers": {"ann": ["bob", "cat", "dan"], "bob": ["ann"], "star": ["ann", "bob", "cat", "dan", "eve"]},
+        "posts": ["ann:p1", "star:p2", "bob:p3"],
+        "opens": ["ann", "cat", "eve"],
+        "threshold": 3
+      },
+      "view": [
+        {"id": "posts", "type": "array", "var": "posts", "label": "posts (author:id)", "pointers": {"post": "i"}},
+        {"id": "opens", "type": "array", "var": "opens", "label": "feed opens", "pointers": {"open": "j"}},
+        {"id": "timelines", "type": "map", "var": "timelines", "label": "pushed timelines"},
+        {"id": "celeb", "type": "map", "var": "celeb_posts", "label": "big accounts' own posts (pulled)"},
+        {"id": "feed", "type": "array", "var": "feed", "label": "feed being assembled"},
+        {"id": "vars", "type": "vars", "vars": ["author", "user", "writes", "reads", "shown"]}
+      ],
+      "checks": [
+        {"input": {"followers": {"ann": ["bob", "cat", "dan"], "bob": ["ann"], "star": ["ann", "bob", "cat", "dan", "eve"]}, "posts": ["ann:p1", "star:p2", "bob:p3"], "opens": ["ann", "cat", "eve"], "threshold": 3}, "expected": [5, 6, 5]},
+        {"input": {"followers": {"ann": ["bob", "cat", "dan"], "bob": ["ann"], "star": ["ann", "bob", "cat", "dan", "eve"]}, "posts": ["ann:p1", "star:p2", "bob:p3"], "opens": ["ann", "cat", "eve"], "threshold": 100}, "expected": [9, 3, 5]},
+        {"input": {"followers": {"ann": ["bob", "cat", "dan"], "bob": ["ann"], "star": ["ann", "bob", "cat", "dan", "eve"]}, "posts": ["ann:p1", "star:p2", "bob:p3"], "opens": ["ann", "cat", "eve"], "threshold": 0}, "expected": [3, 8, 5]}
+      ]
+    },
+    {"type": "markdown", "src": "03-recognise.md"},
+    {"type": "quiz", "src": "quiz.json"},
+    {"type": "problems", "slugs": ["news-feed", "instagram", "chat-system", "live-comments", "youtube"]}
+  ]
+}

@@ -1,0 +1,2409 @@
+{
+ "version": 1,
+ "title": "Sorted-set leaderboard: ZINCRBY keeps the ranking, ZREVRANGE reads the top 3",
+ "code": [
+  "def leaderboard(events: list[str], k: int) -> list[str]:",
+  "    scores: dict[str, int] = {}",
+  "    ranking: list[str] = []  # highest score first",
+  "    for i in range(len(events)):",
+  "        player, points = events[i].split(\"+\")",
+  "        old = scores.get(player, 0)",
+  "        scores[player] = old + int(points)",
+  "        if player in ranking:",
+  "            ranking.remove(player)",
+  "        j = 0",
+  "        while j < len(ranking) and scores[ranking[j]] >= scores[player]:",
+  "            j += 1",
+  "        ranking.insert(j, player)",
+  "    top = ranking[:k]",
+  "    return top"
+ ],
+ "view": [
+  {
+   "id": "events",
+   "type": "array",
+   "var": "events",
+   "label": "score events",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "ranking",
+   "type": "array",
+   "var": "ranking",
+   "label": "sorted set (highest first)",
+   "pointers": {
+    "j": "j"
+   }
+  },
+  {
+   "id": "scores",
+   "type": "map",
+   "var": "scores",
+   "label": "member → score"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "player",
+    "points",
+    "top"
+   ]
+  }
+ ],
+ "input": {
+  "events": [
+   "ann+10",
+   "bob+25",
+   "cat+15",
+   "ann+20",
+   "dan+5",
+   "cat+20",
+   "bob+5"
+  ],
+  "k": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [],
+     "pointers": {
+      "j": null
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "player": null,
+      "points": null,
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [],
+     "pointers": {
+      "j": null
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "player": null,
+      "points": null,
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [],
+     "pointers": {
+      "j": null
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "10",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [],
+     "pointers": {
+      "j": null
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "10",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "10",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "10",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "10",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "25",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "25",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "25",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "25",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "15",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "ann"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "15",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "ann"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "15",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "cat",
+      "ann"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "15",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "cat",
+      "ann"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "15",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "cat",
+      "ann"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       10
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "cat",
+      "ann"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the member leaves its old position...",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "ann",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 2
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat"
+     ],
+     "pointers": {
+      "j": 3
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat",
+      "dan"
+     ],
+     "pointers": {
+      "j": 3
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat",
+      "dan"
+     ],
+     "pointers": {
+      "j": 3
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "dan",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat",
+      "dan"
+     ],
+     "pointers": {
+      "j": 3
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       15
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "cat",
+      "dan"
+     ],
+     "pointers": {
+      "j": 3
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the member leaves its old position...",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 3
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "cat",
+      "points": "20",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       25
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": "ZINCRBY board <points> <player>, atomic in the server",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "the member leaves its old position...",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "dan"
+     ],
+     "pointers": {
+      "j": 0
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "dan"
+     ],
+     "pointers": {
+      "j": 1
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "dan"
+     ],
+     "pointers": {
+      "j": 2
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "...and is re-linked at its new rank, so the set is always sorted",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 2
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "ZREVRANGE board 0 k-1: the top k come straight off the front, no sort at read time",
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 2
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": [
+       "cat",
+       "ann",
+       "bob"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      "ann+10",
+      "bob+25",
+      "cat+15",
+      "ann+20",
+      "dan+5",
+      "cat+20",
+      "bob+5"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "ranking": {
+     "values": [
+      "cat",
+      "ann",
+      "bob",
+      "dan"
+     ],
+     "pointers": {
+      "j": 2
+     },
+     "window": null
+    },
+    "scores": {
+     "entries": [
+      [
+       "ann",
+       30
+      ],
+      [
+       "bob",
+       30
+      ],
+      [
+       "cat",
+       35
+      ],
+      [
+       "dan",
+       5
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "player": "bob",
+      "points": "5",
+      "top": [
+       "cat",
+       "ann",
+       "bob"
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  "cat",
+  "ann",
+  "bob"
+ ]
+}

@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "redis",
+  "title": "Redis",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "leaderboard",
+      "title": "Sorted-set leaderboard: ZINCRBY keeps the ranking, ZREVRANGE reads the top 3",
+      "source": "examples/leaderboard.py",
+      "function": "leaderboard",
+      "input": {
+        "events": ["ann+10", "bob+25", "cat+15", "ann+20", "dan+5", "cat+20", "bob+5"],
+        "k": 3
+      },
+      "view": [
+        {
+          "id": "events",
+          "type": "array",
+          "var": "events",
+          "label": "score events",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "ranking",
+          "type": "array",
+          "var": "ranking",
+          "label": "sorted set (highest first)",
+          "pointers": {
+            "j": "j"
+          }
+        },
+        {
+          "id": "scores",
+          "type": "map",
+          "var": "scores",
+          "label": "member → score"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["player", "points", "top"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "events": ["ann+10", "bob+25", "cat+15", "ann+20", "dan+5", "cat+20", "bob+5"],
+            "k": 3
+          },
+          "expected": ["cat", "ann", "bob"]
+        },
+        {
+          "input": {
+            "events": ["a+5", "b+5", "c+1", "c+9"],
+            "k": 2
+          },
+          "expected": ["c", "a"]
+        },
+        {
+          "input": {
+            "events": ["a+1"],
+            "k": 3
+          },
+          "expected": ["a"]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-operations.md"
+    },
+    {
+      "type": "trace",
+      "id": "counter-ttl",
+      "title": "INCR + EXPIRE: per-user counters that reset when the TTL passes",
+      "source": "examples/counter_ttl.py",
+      "function": "counter_ttl",
+      "input": {
+        "requests": ["0:ann", "1:ann", "2:bob", "3:ann", "4:ann", "6:bob", "10:ann", "11:ann", "12:ann"],
+        "limit": 3,
+        "ttl": 10
+      },
+      "view": [
+        {
+          "id": "requests",
+          "type": "array",
+          "var": "requests",
+          "label": "requests (second:user)",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "store",
+          "type": "map",
+          "var": "store",
+          "label": "keys"
+        },
+        {
+          "id": "expires",
+          "type": "map",
+          "var": "expires_at",
+          "label": "TTL deadline"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["now", "key", "count", "allowed", "rejected"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "requests": ["0:ann", "1:ann", "2:bob", "3:ann", "4:ann", "6:bob", "10:ann", "11:ann", "12:ann"],
+            "limit": 3,
+            "ttl": 10
+          },
+          "expected": [8, 1]
+        },
+        {
+          "input": {
+            "requests": ["0:a", "1:a", "2:a"],
+            "limit": 1,
+            "ttl": 2
+          },
+          "expected": [2, 1]
+        },
+        {
+          "input": {
+            "requests": ["0:a", "5:b"],
+            "limit": 1,
+            "ttl": 10
+          },
+          "expected": [2, 0]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["url-shortener", "rate-limiter-design", "chat-system", "live-comments", "ticketmaster", "uber"]
+    }
+  ]
+}

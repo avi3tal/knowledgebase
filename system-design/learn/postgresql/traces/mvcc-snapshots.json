@@ -1,0 +1,3151 @@
+{
+ "version": 1,
+ "title": "MVCC: T2 keeps its snapshot while T3 updates a and T4 sees the new version",
+ "code": [
+  "def mvcc(rows: dict[str, int], ops: list[str]) -> list[str]:",
+  "    versions: list[list] = []",
+  "    for key in rows:",
+  "        versions.append([key, rows[key], 1, 0])",
+  "    committed = {1: True}",
+  "    snaps: dict[int, dict[int, bool]] = {}",
+  "    reads: list[str] = []",
+  "    for i in range(len(ops)):",
+  "        parts = ops[i].split(\":\")",
+  "        tx = int(parts[0])",
+  "        if parts[1] == \"begin\":",
+  "            snaps[tx] = dict(committed)",
+  "            continue",
+  "        if parts[1] == \"commit\":",
+  "            committed[tx] = True",
+  "            continue",
+  "        key = parts[2].split(\"=\")[0]",
+  "        snap = snaps[tx]",
+  "        seen = -1",
+  "        for j in range(len(versions)):",
+  "            v = versions[j]",
+  "            born = v[0] == key and (v[2] == tx or v[2] in snap)",
+  "            dead = v[3] == tx or v[3] in snap",
+  "            if born and not dead:",
+  "                seen = j",
+  "        if parts[1] == \"get\":",
+  "            reads.append(f\"{tx}:{key}={versions[seen][1]}\")",
+  "            continue",
+  "        value = int(parts[2].split(\"=\")[1])",
+  "        versions[seen][3] = tx",
+  "        versions.append([key, value, tx, 0])",
+  "    return reads"
+ ],
+ "view": [
+  {
+   "id": "ops",
+   "type": "array",
+   "var": "ops",
+   "label": "operations (tx:action)",
+   "pointers": {
+    "op": "i"
+   }
+  },
+  {
+   "id": "versions",
+   "type": "grid",
+   "var": "versions",
+   "label": "row versions [key, value, xmin, xmax]"
+  },
+  {
+   "id": "snaps",
+   "type": "map",
+   "var": "snaps",
+   "label": "snapshots (tx → committed txids at BEGIN)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "tx",
+    "key",
+    "j",
+    "seen",
+    "reads"
+   ]
+  }
+ ],
+ "input": {
+  "rows": {
+   "a": 10,
+   "b": 5
+  },
+  "ops": [
+   "2:begin",
+   "3:begin",
+   "3:set:a=20",
+   "3:commit",
+   "2:get:a",
+   "4:begin",
+   "4:get:a",
+   "2:commit"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": null,
+      "j": null,
+      "seen": null,
+      "reads": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": "a",
+      "j": null,
+      "seen": null,
+      "reads": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": "a",
+      "j": null,
+      "seen": null,
+      "reads": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": null,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the snapshot = which transactions had committed at BEGIN",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the snapshot = which transactions had committed at BEGIN",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "b",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": null,
+      "seen": null,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": null,
+      "seen": -1,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 0,
+      "seen": -1,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "this version is visible to tx under its own snapshot",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 0,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       0
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 30,
+   "note": "an UPDATE doesn't overwrite: it stamps the old version's xmax...",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 31,
+   "note": "...and appends a new version; vacuum removes dead ones later",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "commit just marks the txid committed; no rows are copied or moved",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 3,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 1,
+      "seen": -1,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 0,
+      "seen": -1,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "this version is visible to tx under its own snapshot",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 0,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 1,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 2,
+      "seen": 0,
+      "reads": []
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": "readers never block: each reads its snapshot",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 2,
+      "seen": 0,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 2,
+      "seen": 0,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": 0,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the snapshot = which transactions had committed at BEGIN",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": 0,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": 0,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": -1,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 0,
+      "seen": -1,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 1,
+      "seen": -1,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": -1,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 25,
+   "note": "this version is visible to tx under its own snapshot",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": 2,
+      "reads": [
+       "2:a=10"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 27,
+   "note": "readers never block: each reads its snapshot",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": 2,
+      "reads": [
+       "2:a=10",
+       "4:a=20"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 4,
+      "key": "a",
+      "j": 2,
+      "seen": 2,
+      "reads": [
+       "2:a=10",
+       "4:a=20"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 2,
+      "seen": 2,
+      "reads": [
+       "2:a=10",
+       "4:a=20"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "commit just marks the txid committed; no rows are copied or moved",
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 2,
+      "seen": 2,
+      "reads": [
+       "2:a=10",
+       "4:a=20"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "line": 32,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "2:begin",
+      "3:begin",
+      "3:set:a=20",
+      "3:commit",
+      "2:get:a",
+      "4:begin",
+      "4:get:a",
+      "2:commit"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "versions": {
+     "rows": [
+      [
+       "a",
+       10,
+       1,
+       3
+      ],
+      [
+       "b",
+       5,
+       1,
+       0
+      ],
+      [
+       "a",
+       20,
+       3,
+       0
+      ]
+     ],
+     "cells": {},
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "snaps": {
+     "entries": [
+      [
+       2,
+       {
+        "1": true
+       }
+      ],
+      [
+       3,
+       {
+        "1": true
+       }
+      ],
+      [
+       4,
+       {
+        "1": true,
+        "3": true
+       }
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "tx": 2,
+      "key": "a",
+      "j": 2,
+      "seen": 2,
+      "reads": [
+       "2:a=10",
+       "4:a=20"
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  "2:a=10",
+  "4:a=20"
+ ]
+}

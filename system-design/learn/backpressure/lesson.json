@@ -1,0 +1,229 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "backpressure",
+  "title": "Backpressure, Admission Control and Waiting Rooms",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "bounded-pipe",
+      "title": "Bounded queue (capacity 3) — the producer blocks when it is full",
+      "source": "examples/bounded_pipe.py",
+      "function": "bounded_pipe",
+      "input": {
+        "arrivals": [4, 4, 0],
+        "capacity": 3,
+        "rate": 2,
+        "policy": "block"
+      },
+      "view": [
+        {
+          "id": "arrivals",
+          "type": "array",
+          "var": "arrivals",
+          "label": "requests arriving per tick",
+          "pointers": {
+            "tick": "tick"
+          }
+        },
+        {
+          "id": "pending",
+          "type": "array",
+          "var": "pending",
+          "label": "waiting at the producer"
+        },
+        {
+          "id": "queue",
+          "type": "array",
+          "var": "queue",
+          "label": "bounded queue (capacity 3)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["policy", "tick", "served", "dropped", "max_pending"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "arrivals": [4, 4, 0],
+            "capacity": 3,
+            "rate": 2,
+            "policy": "block"
+          },
+          "expected": {
+            "served": 8,
+            "dropped": 0,
+            "max_pending": 3,
+            "ticks": 4
+          }
+        },
+        {
+          "input": {
+            "arrivals": [4, 4, 0],
+            "capacity": 3,
+            "rate": 2,
+            "policy": "drop"
+          },
+          "expected": {
+            "served": 5,
+            "dropped": 3,
+            "max_pending": 0,
+            "ticks": 3
+          }
+        },
+        {
+          "input": {
+            "arrivals": [4, 4, 0],
+            "capacity": 3,
+            "rate": 2,
+            "policy": "pace"
+          },
+          "expected": {
+            "served": 8,
+            "dropped": 0,
+            "max_pending": 4,
+            "ticks": 4
+          }
+        },
+        {
+          "input": {
+            "arrivals": [1, 1],
+            "capacity": 3,
+            "rate": 2,
+            "policy": "drop"
+          },
+          "expected": {
+            "served": 2,
+            "dropped": 0,
+            "max_pending": 0,
+            "ticks": 2
+          }
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-strategies.md"
+    },
+    {
+      "type": "trace",
+      "id": "waiting-room",
+      "title": "Waiting room — admit 2 per tick, line of 4, ETA up front",
+      "source": "examples/waiting_room.py",
+      "function": "waiting_room",
+      "input": {
+        "arrivals": [5, 3, 0, 1],
+        "admit": 2,
+        "room_size": 4
+      },
+      "view": [
+        {
+          "id": "arrivals",
+          "type": "array",
+          "var": "arrivals",
+          "label": "users arriving per tick",
+          "pointers": {
+            "tick": "tick"
+          }
+        },
+        {
+          "id": "line",
+          "type": "array",
+          "var": "line",
+          "label": "waiting line (head first)"
+        },
+        {
+          "id": "eta",
+          "type": "map",
+          "var": "eta",
+          "label": "ETA shown to each user (ticks)"
+        },
+        {
+          "id": "admitted",
+          "type": "array",
+          "var": "admitted",
+          "label": "admitted to the service"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["tick", "user", "turned_away"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "arrivals": [5, 3, 0, 1],
+            "admit": 2,
+            "room_size": 4
+          },
+          "expected": {
+            "admitted": ["u1", "u2", "u3", "u4", "u6", "u7", "u9"],
+            "turned_away": 2,
+            "eta": {
+              "u1": 0,
+              "u2": 0,
+              "u3": 1,
+              "u4": 1,
+              "u6": 1,
+              "u7": 1,
+              "u9": 0
+            }
+          }
+        },
+        {
+          "input": {
+            "arrivals": [2],
+            "admit": 1,
+            "room_size": 5
+          },
+          "expected": {
+            "admitted": ["u1", "u2"],
+            "turned_away": 0,
+            "eta": {
+              "u1": 0,
+              "u2": 1
+            }
+          }
+        },
+        {
+          "input": {
+            "arrivals": [],
+            "admit": 2,
+            "room_size": 3
+          },
+          "expected": {
+            "admitted": [],
+            "turned_away": 0,
+            "eta": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": [
+        "rate-limiter-design",
+        "job-scheduler",
+        "web-crawler",
+        "ticketmaster",
+        "message-queue",
+        "metrics-monitoring"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2446 @@
+{
+ "version": 1,
+ "title": "Multipart upload — 6 parts, out of order, one retry",
+ "code": [
+  "def multipart_upload(data: str, part_size: int, arrivals: list[int]) -> list:",
+  "    parts: list[str] = []",
+  "    for start in range(0, len(data), part_size):",
+  "        piece = data[start : start + part_size]",
+  "        parts.append(piece)",
+  "    received: dict[int, str] = {}",
+  "    for i in range(len(arrivals)):",
+  "        number = arrivals[i]",
+  "        received[number] = parts[number - 1]",
+  "    assembled = \"\"",
+  "    for number in range(1, len(parts) + 1):",
+  "        if number not in received:",
+  "            return [len(parts), \"missing:\" + str(number)]",
+  "        assembled += received[number]",
+  "    return [len(parts), assembled]"
+ ],
+ "view": [
+  {
+   "id": "parts",
+   "type": "array",
+   "var": "parts",
+   "label": "parts on the client (part 1 first)"
+  },
+  {
+   "id": "arrivals",
+   "type": "array",
+   "var": "arrivals",
+   "label": "part numbers in arrival order",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "received",
+   "type": "map",
+   "var": "received",
+   "label": "parts held by the store"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "number",
+    "assembled"
+   ]
+  }
+ ],
+ "input": {
+  "data": "multipart-upload-demo",
+  "part_size": 4,
+  "arrivals": [
+   3,
+   1,
+   6,
+   2,
+   5,
+   2,
+   4
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "the client cuts the file into fixed-size parts, numbered 1..n",
+   "state": {
+    "parts": {
+     "values": [
+      "mult"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "the client cuts the file into fixed-size parts, numbered 1..n",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "the client cuts the file into fixed-size parts, numbered 1..n",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "the client cuts the file into fixed-size parts, numbered 1..n",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "the client cuts the file into fixed-size parts, numbered 1..n",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "the client cuts the file into fixed-size parts, numbered 1..n",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": null,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "received": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "number": 3,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 3,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 3,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 1,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 1,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 1,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 6,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 6,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 6,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 5,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 5,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 5,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "each part is its own PUT; a retry just overwrites the same number",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "assembled": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "assembled": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 1,
+      "assembled": ""
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "complete orders parts by number, not by arrival time",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 1,
+      "assembled": "mult"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": "mult"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "complete orders parts by number, not by arrival time",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 2,
+      "assembled": "multipar"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 3,
+      "assembled": "multipar"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "complete orders parts by number, not by arrival time",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 3,
+      "assembled": "multipart-up"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "assembled": "multipart-up"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "complete orders parts by number, not by arrival time",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 4,
+      "assembled": "multipart-upload"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 5,
+      "assembled": "multipart-upload"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "complete orders parts by number, not by arrival time",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 5,
+      "assembled": "multipart-upload-dem"
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 6,
+      "assembled": "multipart-upload-dem"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "complete orders parts by number, not by arrival time",
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 6,
+      "assembled": "multipart-upload-demo"
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "parts": {
+     "values": [
+      "mult",
+      "ipar",
+      "t-up",
+      "load",
+      "-dem",
+      "o"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "arrivals": {
+     "values": [
+      3,
+      1,
+      6,
+      2,
+      5,
+      2,
+      4
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "received": {
+     "entries": [
+      [
+       3,
+       "t-up"
+      ],
+      [
+       1,
+       "mult"
+      ],
+      [
+       6,
+       "o"
+      ],
+      [
+       2,
+       "ipar"
+      ],
+      [
+       5,
+       "-dem"
+      ],
+      [
+       4,
+       "load"
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "number": 6,
+      "assembled": "multipart-upload-demo"
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  6,
+  "multipart-upload-demo"
+ ]
+}

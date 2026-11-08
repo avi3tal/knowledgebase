@@ -1,0 +1,1918 @@
+{
+ "version": 1,
+ "title": "Tunable consistency — N=3 with W=1, R=1 (no overlap)",
+ "code": [
+  "def quorum_reads(ops: list[str], n: int, w: int, r: int) -> int:",
+  "    replicas = [0] * n  # version held by each replica",
+  "    latest = 0",
+  "    stale = 0",
+  "    write_lo, write_hi = 0, w - 1",
+  "    read_lo, read_hi = n - r, n - 1",
+  "    for i in range(len(ops)):",
+  "        if ops[i] == \"w\":",
+  "            latest += 1",
+  "            for k in range(write_lo, write_hi + 1):",
+  "                replicas[k] = latest",
+  "            continue",
+  "        seen = 0",
+  "        for k in range(read_lo, read_hi + 1):",
+  "            seen = max(seen, replicas[k])",
+  "        if seen < latest:",
+  "            stale += 1",
+  "        for k in range(read_lo, read_hi + 1):",
+  "            replicas[k] = seen",
+  "    return stale"
+ ],
+ "view": [
+  {
+   "id": "ops",
+   "type": "array",
+   "var": "ops",
+   "label": "operations",
+   "pointers": {
+    "op": "i"
+   }
+  },
+  {
+   "id": "write-set",
+   "type": "array",
+   "var": "replicas",
+   "label": "replicas (write set)",
+   "window": [
+    "write_lo",
+    "write_hi"
+   ]
+  },
+  {
+   "id": "read-set",
+   "type": "array",
+   "var": "replicas",
+   "label": "replicas (read set)",
+   "window": [
+    "read_lo",
+    "read_hi"
+   ]
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "latest",
+    "seen",
+    "stale"
+   ]
+  }
+ ],
+ "input": {
+  "ops": [
+   "w",
+   "r",
+   "w",
+   "w",
+   "r",
+   "r",
+   "w",
+   "r"
+  ],
+  "n": 3,
+  "w": 1,
+  "r": 1
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "latest": null,
+      "seen": null,
+      "stale": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "latest": 0,
+      "seen": null,
+      "stale": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "latest": 0,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "latest": 0,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": null
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 0,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 0,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      0,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the coordinator acks once w replicas confirm",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 0
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": null,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": 0,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the newest timestamp among r replies wins",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": 0,
+      "stale": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "stale — no replica in the read set saw the last write",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "read repair copies the winner to the replicas it read",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 1
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 1,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      1,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 2,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the coordinator acks once w replicas confirm",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 2
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 2,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 2,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      2,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the coordinator acks once w replicas confirm",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 3
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the newest timestamp among r replies wins",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "stale — no replica in the read set saw the last write",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "read repair copies the winner to the replicas it read",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 4
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the newest timestamp among r replies wins",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "stale — no replica in the read set saw the last write",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "read repair copies the winner to the replicas it read",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 5
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 3,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      3,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the coordinator acks once w replicas confirm",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 6
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the newest timestamp among r replies wins",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "stale — no replica in the read set saw the last write",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "read repair copies the winner to the replicas it read",
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "ops": {
+     "values": [
+      "w",
+      "r",
+      "w",
+      "w",
+      "r",
+      "r",
+      "w",
+      "r"
+     ],
+     "pointers": {
+      "op": 7
+     },
+     "window": null
+    },
+    "write-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      0,
+      0
+     ]
+    },
+    "read-set": {
+     "values": [
+      4,
+      0,
+      0
+     ],
+     "pointers": {},
+     "window": [
+      2,
+      2
+     ]
+    },
+    "vars": {
+     "values": {
+      "latest": 4,
+      "seen": 0,
+      "stale": 4
+     }
+    }
+   }
+  }
+ ],
+ "result": 4
+}

@@ -1,0 +1,1820 @@
+{
+ "version": 1,
+ "title": "Bounded queue (capacity 3) — the producer blocks when it is full",
+ "code": [
+  "def bounded_pipe(arrivals: list[int], capacity: int, rate: int, policy: str) -> dict[str, int]:",
+  "    queue: list[str] = []",
+  "    pending: list[str] = []",
+  "    served, dropped, max_pending, next_id, tick = 0, 0, 0, 1, 0",
+  "    while tick < len(arrivals) or queue or pending:",
+  "        incoming = arrivals[tick] if tick < len(arrivals) else 0",
+  "        for _ in range(incoming):",
+  "            pending.append(\"r\" + str(next_id))",
+  "            next_id += 1",
+  "        budget = rate if policy == \"pace\" else capacity",
+  "        while pending and len(queue) < capacity and budget > 0:",
+  "            queue.append(pending.pop(0))",
+  "            budget -= 1",
+  "        if policy == \"drop\":",
+  "            dropped += len(pending)",
+  "            pending = []",
+  "        max_pending = max(max_pending, len(pending))",
+  "        for _ in range(min(rate, len(queue))):",
+  "            queue.pop(0)",
+  "            served += 1",
+  "        tick += 1",
+  "    return {\"served\": served, \"dropped\": dropped, \"max_pending\": max_pending, \"ticks\": tick}"
+ ],
+ "view": [
+  {
+   "id": "arrivals",
+   "type": "array",
+   "var": "arrivals",
+   "label": "requests arriving per tick",
+   "pointers": {
+    "tick": "tick"
+   }
+  },
+  {
+   "id": "pending",
+   "type": "array",
+   "var": "pending",
+   "label": "waiting at the producer"
+  },
+  {
+   "id": "queue",
+   "type": "array",
+   "var": "queue",
+   "label": "bounded queue (capacity 3)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "policy",
+    "tick",
+    "served",
+    "dropped",
+    "max_pending"
+   ]
+  }
+ ],
+ "input": {
+  "arrivals": [
+   4,
+   4,
+   0
+  ],
+  "capacity": 3,
+  "rate": 2,
+  "policy": "block"
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": null
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": null,
+      "served": null,
+      "dropped": null,
+      "max_pending": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r1",
+      "r2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r1",
+      "r2",
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r1",
+      "r2",
+      "r3",
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r2",
+      "r3",
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r3",
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r1",
+      "r2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r1",
+      "r2",
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "blocked work waits upstream",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r1",
+      "r2",
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r2",
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 0,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r2",
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 1,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 1,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 0,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4",
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4",
+      "r5",
+      "r6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4",
+      "r5",
+      "r6",
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r4",
+      "r5",
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r5",
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3",
+      "r4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3",
+      "r4",
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "blocked work waits upstream",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r3",
+      "r4",
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r4",
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 2,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r4",
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 3,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 3,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 1,
+      "served": 4,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r6",
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r5"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 4,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r5",
+      "r6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 4,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r5",
+      "r6",
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 4,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "blocked work waits upstream",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r5",
+      "r6",
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 4,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r6",
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 4,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r6",
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 5,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 5,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 2,
+      "served": 6,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 6,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "hand over only while there is room",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 6,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "blocked work waits upstream",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r7",
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 6,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 6,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [
+      "r8"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 7,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "the consumer never holds more than it can handle",
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 7,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 3,
+      "served": 8,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 4
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 4,
+      "served": 8,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      4,
+      4,
+      0
+     ],
+     "pointers": {
+      "tick": 4
+     },
+     "window": null
+    },
+    "pending": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "queue": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "policy": "block",
+      "tick": 4,
+      "served": 8,
+      "dropped": 0,
+      "max_pending": 3
+     }
+    }
+   }
+  }
+ ],
+ "result": {
+  "served": 8,
+  "dropped": 0,
+  "max_pending": 3,
+  "ticks": 4
+ }
+}

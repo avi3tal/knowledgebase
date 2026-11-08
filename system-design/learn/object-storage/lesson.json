@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "object-storage",
+  "title": "Object Storage (S3)",
+  "blocks": [
+    {"type": "markdown", "src": "01-intro.md"},
+    {
+      "type": "trace",
+      "id": "multipart",
+      "title": "Multipart upload — 6 parts, out of order, one retry",
+      "source": "examples/multipart_upload.py",
+      "function": "multipart_upload",
+      "input": {"data": "multipart-upload-demo", "part_size": 4, "arrivals": [3, 1, 6, 2, 5, 2, 4]},
+      "view": [
+        {"id": "parts", "type": "array", "var": "parts", "label": "parts on the client (part 1 first)"},
+        {"id": "arrivals", "type": "array", "var": "arrivals", "label": "part numbers in arrival order", "pointers": {"now": "i"}},
+        {"id": "received", "type": "map", "var": "received", "label": "parts held by the store"},
+        {"id": "vars", "type": "vars", "vars": ["number", "assembled"]}
+      ],
+      "checks": [
+        {"input": {"data": "multipart-upload-demo", "part_size": 4, "arrivals": [3, 1, 6, 2, 5, 2, 4]}, "expected": [6, "multipart-upload-demo"]},
+        {"input": {"data": "abcdefgh", "part_size": 3, "arrivals": [3, 1]}, "expected": [3, "missing:2"]},
+        {"input": {"data": "abc", "part_size": 5, "arrivals": [1]}, "expected": [1, "abc"]}
+      ]
+    },
+    {"type": "markdown", "src": "02-uploads.md"},
+    {
+      "type": "trace",
+      "id": "dedup",
+      "title": "Content-addressed parts — three files, four stored parts",
+      "source": "examples/dedup_parts.py",
+      "function": "dedup_parts",
+      "input": {"files": {"report-v1.txt": "headbodyfoot", "report-v2.txt": "headbodyFOOT", "copy.txt": "headbodyfoot"}, "part_size": 4},
+      "view": [
+        {"id": "store", "type": "map", "var": "store", "label": "object store (hash → bytes)"},
+        {"id": "manifests", "type": "map", "var": "manifests", "label": "manifests (file → part hashes)"},
+        {"id": "vars", "type": "vars", "vars": ["name", "part", "key", "referenced"]}
+      ],
+      "checks": [
+        {"input": {"files": {"report-v1.txt": "headbodyfoot", "report-v2.txt": "headbodyFOOT", "copy.txt": "headbodyfoot"}, "part_size": 4}, "expected": [9, 4]},
+        {"input": {"files": {"a": "xxxxxxxx"}, "part_size": 4}, "expected": [2, 1]},
+        {"input": {"files": {"a": "abcd", "b": "efgh"}, "part_size": 2}, "expected": [4, 4]}
+      ]
+    },
+    {"type": "markdown", "src": "03-recognise.md"},
+    {"type": "quiz", "src": "quiz.json"},
+    {"type": "problems", "slugs": ["instagram", "news-feed", "web-crawler", "dropbox", "youtube"]}
+  ]
+}

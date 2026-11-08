@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "2 million app events per second must reach billing, fraud detection and a data lake. A new recommendations team will join next month and wants the last 5 days too.",
+   "options": [
+    "kafka",
+    "task-queues",
+    "stream-processing"
+   ],
+   "answer": "kafka",
+   "why": "Very high volume, several independent consumer groups and replay of past days → a retained, partitioned log."
+  },
+  {
+   "id": "q2",
+   "prompt": "Each uploaded video needs one transcoding job. Jobs take 1–20 minutes, failed jobs retry after 5 minutes, and premium users' jobs go first.",
+   "options": [
+    "task-queues",
+    "kafka",
+    "change-data-capture"
+   ],
+   "answer": "task-queues",
+   "why": "Per-job acks, delayed retries and priorities are task-queue features. In a Kafka partition, one slow job blocks every record behind it."
+  },
+  {
+   "id": "q3",
+   "prompt": "Every status change of an order (created, paid, shipped) must be processed in order for that order, at 300k updates per second across all orders.",
+   "options": [
+    "kafka",
+    "message-queues",
+    "load-balancing"
+   ],
+   "answer": "kafka",
+   "why": "Per-key ordering at scale → partition by order_id. Order holds inside a partition, and the partitions give the parallelism."
+  },
+  {
+   "id": "q4",
+   "prompt": "From a stream of page views, compute the number of unique visitors per page in 1-minute tumbling windows, handling events that arrive up to 30 s late.",
+   "options": [
+    "stream-processing",
+    "kafka",
+    "olap-stores"
+   ],
+   "answer": "stream-processing",
+   "why": "Windows, late events and aggregation are computation on the stream. Kafka would carry the events, but it doesn't compute anything."
+  },
+  {
+   "id": "q5",
+   "prompt": "The search index must reflect every insert, update and delete in the products table within seconds, without changing the application code that writes to the table.",
+   "options": [
+    "change-data-capture",
+    "kafka",
+    "caching"
+   ],
+   "answer": "change-data-capture",
+   "why": "The key requirement is getting changes out of the database's own log without touching the writers. That's CDC. Kafka is usually only the transport."
+  },
+  {
+   "id": "q6",
+   "prompt": "A consumer bug corrupted the analytics tables for the last 3 days. After the fix, the team wants to recompute them from the original events.",
+   "options": [
+    "kafka",
+    "retries-dlq",
+    "replication"
+   ],
+   "answer": "kafka",
+   "why": "Replay: reset the group's offsets to 3 days ago and reprocess. That only works if a retained log still holds the events."
+  },
+  {
+   "id": "q7",
+   "prompt": "A small internal tool sends a welcome email after sign-up, about 200 per day. The team wants it out of the request path.",
+   "options": [
+    "message-queues",
+    "kafka",
+    "rate-limiting"
+   ],
+   "answer": "message-queues",
+   "why": "Simple async work at tiny volume, with no replay or fan-out. Any queue works, and running a Kafka cluster for it is overkill."
+  }
+ ]
+}

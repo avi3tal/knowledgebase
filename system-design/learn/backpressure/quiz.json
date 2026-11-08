@@ -1,0 +1,81 @@
+{
+ "items": [
+  {
+   "id": "q1",
+   "prompt": "A crawler discovers 5 000 URLs/s but the fetchers manage 800/s. After an hour the in-memory frontier holds 15 million URLs and the process is killed for running out of memory.",
+   "options": [
+    "backpressure",
+    "message-queues",
+    "retries-dlq"
+   ],
+   "answer": "backpressure",
+   "why": "Sustained overload with an unbounded buffer. Bound the stages and slow discovery down (or spill to disk). Adding a bigger queue only delays the crash."
+  },
+  {
+   "id": "q2",
+   "prompt": "A public API must allow each API key at most 1 000 requests per hour, no matter how idle the servers are.",
+   "options": [
+    "rate-limiting",
+    "backpressure",
+    "circuit-breaker"
+   ],
+   "answer": "rate-limiting",
+   "why": "A fixed per-client quota that ignores current load is rate limiting. Backpressure reacts to the system's actual capacity."
+  },
+  {
+   "id": "q3",
+   "prompt": "A sneaker drop brings 2 million users in the first minute; checkout can process 3 000 per minute. The business wants fair, first-come access and a checkout that stays up.",
+   "options": [
+    "backpressure",
+    "rate-limiting",
+    "caching"
+   ],
+   "answer": "backpressure",
+   "why": "Demand far above core capacity for a known spike → admission control: a waiting room at the edge releasing users at the sustainable rate, with position and ETA."
+  },
+  {
+   "id": "q4",
+   "prompt": "The recommendation service is timing out on every call. Callers keep waiting 2 s for each request and their own thread pools are exhausted.",
+   "options": [
+    "circuit-breaker",
+    "backpressure",
+    "retries-dlq"
+   ],
+   "answer": "circuit-breaker",
+   "why": "The dependency is failing, not merely busy. Trip a breaker, fail fast, and serve a fallback until it recovers."
+  },
+  {
+   "id": "q5",
+   "prompt": "Under peak load the order API's latency grows from 80 ms to 40 s before clients time out; the servers keep processing requests whose callers have already left.",
+   "options": [
+    "backpressure",
+    "load-balancing",
+    "caching"
+   ],
+   "answer": "backpressure",
+   "why": "A growing queue with work nobody waits for. Bound in-flight requests, shed fast with 503 + Retry-After, and drop work past its deadline."
+  },
+  {
+   "id": "q6",
+   "prompt": "A payment webhook handler fails on about 1 in 10 000 messages because of malformed payloads; those messages are retried forever and block the queue.",
+   "options": [
+    "retries-dlq",
+    "backpressure",
+    "rate-limiting"
+   ],
+   "answer": "retries-dlq",
+   "why": "Individual poison messages, not overload. Cap the attempts and move them to a dead-letter queue."
+  },
+  {
+   "id": "q7",
+   "prompt": "A nightly job imports 50 million rows into the main database and saturates it, so user queries slow to a crawl until the import finishes.",
+   "options": [
+    "backpressure",
+    "sharding",
+    "message-queues"
+   ],
+   "answer": "backpressure",
+   "why": "The producer outruns a shared consumer. Pace the importer (bounded concurrency, adaptive to DB latency) so it yields to user traffic."
+  }
+ ]
+}

@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "cassandra",
+  "title": "Cassandra and Wide-Column Stores",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "partition-layout",
+      "title": "Partition key + clustering key — one-partition read vs full scan",
+      "source": "examples/partition_layout.py",
+      "function": "partition_layout",
+      "input": {
+        "rows": [
+          ["c1", 1, "hi"],
+          ["c2", 1, "yo"],
+          ["c1", 3, "ok"],
+          ["c1", 2, "sup"],
+          ["c3", 1, "hey"],
+          ["c2", 2, "ok"]
+        ],
+        "queries": ["p:c1:2", "body:ok"]
+      },
+      "view": [
+        {
+          "id": "rows",
+          "type": "array",
+          "var": "rows",
+          "label": "inserts [partition, clustering, body]",
+          "pointers": {
+            "row": "i"
+          }
+        },
+        {
+          "id": "table",
+          "type": "map",
+          "var": "table",
+          "label": "partitions (clustering keys, sorted)"
+        },
+        {
+          "id": "queries",
+          "type": "array",
+          "var": "queries",
+          "label": "queries",
+          "pointers": {
+            "q": "q"
+          }
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["pk", "ck", "pos", "touched", "read", "result"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "rows": [
+              ["c1", 1, "hi"],
+              ["c2", 1, "yo"],
+              ["c1", 3, "ok"],
+              ["c1", 2, "sup"],
+              ["c3", 1, "hey"],
+              ["c2", 2, "ok"]
+            ],
+            "queries": ["p:c1:2", "body:ok"]
+          },
+          "expected": [
+            [1, 2],
+            [3, 6]
+          ]
+        },
+        {
+          "input": {
+            "rows": [
+              ["a", 2, "x"],
+              ["a", 1, "y"]
+            ],
+            "queries": ["p:a:5", "body:z"]
+          },
+          "expected": [
+            [1, 2],
+            [1, 2]
+          ]
+        },
+        {
+          "input": {
+            "rows": [
+              ["a", 1, "x"],
+              ["b", 1, "x"],
+              ["c", 1, "x"]
+            ],
+            "queries": ["body:x", "p:b:1"]
+          },
+          "expected": [
+            [3, 3],
+            [1, 1]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-consistency.md"
+    },
+    {
+      "type": "trace",
+      "id": "quorum",
+      "title": "Tunable consistency — N=3 with W=1, R=1 (no overlap)",
+      "source": "examples/quorum.py",
+      "function": "quorum_reads",
+      "input": {
+        "ops": ["w", "r", "w", "w", "r", "r", "w", "r"],
+        "n": 3,
+        "w": 1,
+        "r": 1
+      },
+      "view": [
+        {
+          "id": "ops",
+          "type": "array",
+          "var": "ops",
+          "label": "operations",
+          "pointers": {
+            "op": "i"
+          }
+        },
+        {
+          "id": "write-set",
+          "type": "array",
+          "var": "replicas",
+          "label": "replicas (write set)",
+          "window": ["write_lo", "write_hi"]
+        },
+        {
+          "id": "read-set",
+          "type": "array",
+          "var": "replicas",
+          "label": "replicas (read set)",
+          "window": ["read_lo", "read_hi"]
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["latest", "seen", "stale"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "ops": ["w", "r", "w", "w", "r", "r", "w", "r"],
+            "n": 3,
+            "w": 1,
+            "r": 1
+          },
+          "expected": 4
+        },
+        {
+          "input": {
+            "ops": ["w", "r", "w", "w", "r", "r", "w", "r"],
+            "n": 3,
+            "w": 2,
+            "r": 2
+          },
+          "expected": 0
+        },
+        {
+          "input": {
+            "ops": ["w", "r", "w", "w", "r", "r", "w", "r"],
+            "n": 3,
+            "w": 1,
+            "r": 3
+          },
+          "expected": 0
+        },
+        {
+          "input": {
+            "ops": ["w", "r", "w", "w", "r", "r", "w", "r"],
+            "n": 3,
+            "w": 2,
+            "r": 1
+          },
+          "expected": 4
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["notification-system", "news-feed", "instagram", "chat-system", "live-comments", "key-value-store"]
+    }
+  ]
+}

@@ -1,0 +1,2259 @@
+{
+ "version": 1,
+ "title": "Content-addressed parts — three files, four stored parts",
+ "code": [
+  "def dedup_parts(files: dict[str, str], part_size: int) -> list[int]:",
+  "    store: dict[str, str] = {}",
+  "    manifests: dict[str, list[str]] = {}",
+  "    referenced = 0",
+  "    for name in files:",
+  "        data = files[name]",
+  "        manifests[name] = []",
+  "        for start in range(0, len(data), part_size):",
+  "            part = data[start : start + part_size]",
+  "            key = hashlib.sha256(part.encode()).hexdigest()[:8]",
+  "            referenced += 1",
+  "            if key not in store:",
+  "                store[key] = part",
+  "            manifests[name].append(key)",
+  "    return [referenced, len(store)]"
+ ],
+ "view": [
+  {
+   "id": "store",
+   "type": "map",
+   "var": "store",
+   "label": "object store (hash → bytes)"
+  },
+  {
+   "id": "manifests",
+   "type": "map",
+   "var": "manifests",
+   "label": "manifests (file → part hashes)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "name",
+    "part",
+    "key",
+    "referenced"
+   ]
+  }
+ ],
+ "input": {
+  "files": {
+   "report-v1.txt": "headbodyfoot",
+   "report-v2.txt": "headbodyFOOT",
+   "copy.txt": "headbodyfoot"
+  },
+  "part_size": 4
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "name": null,
+      "part": null,
+      "key": null,
+      "referenced": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "name": null,
+      "part": null,
+      "key": null,
+      "referenced": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": null,
+      "key": null,
+      "referenced": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": null,
+      "key": null,
+      "referenced": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "head",
+      "key": null,
+      "referenced": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": []
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "new content — upload and store these bytes once",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "body",
+      "key": "9f2e6d33",
+      "referenced": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "new content — upload and store these bytes once",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "foot",
+      "key": "230d8358",
+      "referenced": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "new content — upload and store these bytes once",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v1.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "head",
+      "key": "22e4f691",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "body",
+      "key": "9f2e6d33",
+      "referenced": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "FOOT",
+      "key": "230d8358",
+      "referenced": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "FOOT",
+      "key": "cb6dc9c3",
+      "referenced": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "FOOT",
+      "key": "cb6dc9c3",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "new content — upload and store these bytes once",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "FOOT",
+      "key": "cb6dc9c3",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "report-v2.txt",
+      "part": "FOOT",
+      "key": "cb6dc9c3",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "FOOT",
+      "key": "cb6dc9c3",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "FOOT",
+      "key": "cb6dc9c3",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "head",
+      "key": "cb6dc9c3",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 6
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       []
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "head",
+      "key": "9f2e6d33",
+      "referenced": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "body",
+      "key": "9f2e6d33",
+      "referenced": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 7
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "body",
+      "key": "230d8358",
+      "referenced": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "foot",
+      "key": "230d8358",
+      "referenced": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "the key is derived from the content itself",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 8
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33",
+        "230d8358"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "the file only records which part it needs, in order",
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 9
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "store": {
+     "entries": [
+      [
+       "9f2e6d33",
+       "head"
+      ],
+      [
+       "230d8358",
+       "body"
+      ],
+      [
+       "22e4f691",
+       "foot"
+      ],
+      [
+       "cb6dc9c3",
+       "FOOT"
+      ]
+     ]
+    },
+    "manifests": {
+     "entries": [
+      [
+       "report-v1.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ],
+      [
+       "report-v2.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "cb6dc9c3"
+       ]
+      ],
+      [
+       "copy.txt",
+       [
+        "9f2e6d33",
+        "230d8358",
+        "22e4f691"
+       ]
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "name": "copy.txt",
+      "part": "foot",
+      "key": "22e4f691",
+      "referenced": 9
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  9,
+  4
+ ]
+}

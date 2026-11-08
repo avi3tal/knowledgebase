@@ -1,0 +1,3092 @@
+{
+ "version": 1,
+ "title": "INCR + EXPIRE: per-user counters that reset when the TTL passes",
+ "code": [
+  "def counter_ttl(requests: list[str], limit: int, ttl: int) -> list[int]:",
+  "    store: dict[str, int] = {}",
+  "    expires_at: dict[str, int] = {}",
+  "    allowed, rejected = 0, 0",
+  "    for i in range(len(requests)):",
+  "        second, user = requests[i].split(\":\")",
+  "        now = int(second)",
+  "        key = \"hits:\" + user",
+  "        if key in expires_at and now >= expires_at[key]:",
+  "            del store[key]",
+  "            del expires_at[key]",
+  "        count = store.get(key, 0) + 1",
+  "        store[key] = count",
+  "        if count == 1:",
+  "            expires_at[key] = now + ttl",
+  "        if count <= limit:",
+  "            allowed += 1",
+  "        else:",
+  "            rejected += 1",
+  "    return [allowed, rejected]"
+ ],
+ "view": [
+  {
+   "id": "requests",
+   "type": "array",
+   "var": "requests",
+   "label": "requests (second:user)",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "store",
+   "type": "map",
+   "var": "store",
+   "label": "keys"
+  },
+  {
+   "id": "expires",
+   "type": "map",
+   "var": "expires_at",
+   "label": "TTL deadline"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "now",
+    "key",
+    "count",
+    "allowed",
+    "rejected"
+   ]
+  }
+ ],
+ "input": {
+  "requests": [
+   "0:ann",
+   "1:ann",
+   "2:bob",
+   "3:ann",
+   "4:ann",
+   "6:bob",
+   "10:ann",
+   "11:ann",
+   "12:ann"
+  ],
+  "limit": 3,
+  "ttl": 10
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "store": {
+     "entries": []
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "key": null,
+      "count": null,
+      "allowed": null,
+      "rejected": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "store": {
+     "entries": []
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "key": null,
+      "count": null,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": []
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": null,
+      "key": null,
+      "count": null,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": []
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": null,
+      "count": null,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": []
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": "hits:ann",
+      "count": null,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": []
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "EXPIRE only on the first hit, so the window starts here",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 0,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 1,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:bob",
+      "count": 2,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:bob",
+      "count": 1,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:bob",
+      "count": 1,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "EXPIRE only on the first hit, so the window starts here",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:bob",
+      "count": 1,
+      "allowed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:bob",
+      "count": 1,
+      "allowed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 2,
+      "key": "hits:bob",
+      "count": 1,
+      "allowed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "key": "hits:bob",
+      "count": 1,
+      "allowed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       2
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       3
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       3
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 4,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       3
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 3,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 4,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       3
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 4,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       3
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "key": "hits:ann",
+      "count": 4,
+      "allowed": 4,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "key": "hits:ann",
+      "count": 4,
+      "allowed": 4,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "over the limit until the key expires",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "key": "hits:ann",
+      "count": 4,
+      "allowed": 4,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 4,
+      "key": "hits:ann",
+      "count": 4,
+      "allowed": 4,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 6,
+      "key": "hits:ann",
+      "count": 4,
+      "allowed": 4,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 6,
+      "key": "hits:bob",
+      "count": 4,
+      "allowed": 4,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 6,
+      "key": "hits:bob",
+      "count": 2,
+      "allowed": 4,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 6,
+      "key": "hits:bob",
+      "count": 2,
+      "allowed": 4,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 6,
+      "key": "hits:bob",
+      "count": 2,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 6,
+      "key": "hits:bob",
+      "count": 2,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:bob",
+      "count": 2,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:ann",
+       4
+      ],
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "TTL reached, so Redis has deleted the key itself; no cleanup job needed",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:ann",
+       10
+      ],
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "EXPIRE only on the first hit, so the window starts here",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 5,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 6,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 10,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 6,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "key": "hits:ann",
+      "count": 1,
+      "allowed": 6,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       1
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 6,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 6,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 7,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 11,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 7,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "key": "hits:ann",
+      "count": 2,
+      "allowed": 7,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       2
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 7,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "INCR hits:<user> is atomic and returns the new value in one round trip",
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       3
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 7,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       3
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 8,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "0:ann",
+      "1:ann",
+      "2:bob",
+      "3:ann",
+      "4:ann",
+      "6:bob",
+      "10:ann",
+      "11:ann",
+      "12:ann"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "store": {
+     "entries": [
+      [
+       "hits:bob",
+       2
+      ],
+      [
+       "hits:ann",
+       3
+      ]
+     ]
+    },
+    "expires": {
+     "entries": [
+      [
+       "hits:bob",
+       12
+      ],
+      [
+       "hits:ann",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "now": 12,
+      "key": "hits:ann",
+      "count": 3,
+      "allowed": 8,
+      "rejected": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  8,
+  1
+ ]
+}

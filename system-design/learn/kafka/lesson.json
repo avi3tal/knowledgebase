@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "kafka",
+  "title": "Kafka",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "partition-by-key",
+      "title": "Partitioning by key — 7 events into 3 partitions",
+      "source": "examples/partition_by_key.py",
+      "function": "partition_by_key",
+      "input": {
+        "events": [
+          ["u1", "login"],
+          ["u2", "view"],
+          ["u3", "cart"],
+          ["u1", "view"],
+          ["u4", "login"],
+          ["u2", "buy"],
+          ["u1", "logout"]
+        ],
+        "partitions": 3
+      },
+      "view": [
+        {
+          "id": "events",
+          "type": "array",
+          "var": "events",
+          "label": "events produced (key, value)"
+        },
+        {
+          "id": "logs",
+          "type": "grid",
+          "var": "logs",
+          "label": "partitions p0..p2 (offset →)",
+          "cells": {
+            "append": ["p", "offset"]
+          }
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "h", "p", "offset"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "events": [
+              ["u1", "login"],
+              ["u2", "view"],
+              ["u3", "cart"],
+              ["u1", "view"],
+              ["u4", "login"],
+              ["u2", "buy"],
+              ["u1", "logout"]
+            ],
+            "partitions": 3
+          },
+          "expected": [["u3:cart"], ["u1:login", "u1:view", "u4:login", "u1:logout"], ["u2:view", "u2:buy"]]
+        },
+        {
+          "input": {
+            "events": [
+              ["a", "x"],
+              ["a", "y"]
+            ],
+            "partitions": 2
+          },
+          "expected": [[], ["a:x", "a:y"]]
+        },
+        {
+          "input": {
+            "events": [
+              ["k1", "1"],
+              ["k2", "2"]
+            ],
+            "partitions": 1
+          },
+          "expected": [["k1:1", "k2:2"]]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-operations.md"
+    },
+    {
+      "type": "trace",
+      "id": "consumer-group",
+      "title": "Consumer group — commit offsets, crash before commit, rebalance",
+      "source": "examples/consumer_group.py",
+      "function": "consumer_group",
+      "input": {
+        "logs": [
+          ["a0", "a1", "a2"],
+          ["b0", "b1"],
+          ["c0", "c1", "c2"]
+        ],
+        "consumers": ["c1", "c2"],
+        "batch": 2,
+        "crash": "c2",
+        "crash_round": 0
+      },
+      "view": [
+        {
+          "id": "logs",
+          "type": "grid",
+          "var": "logs",
+          "label": "partitions p0..p2",
+          "cells": {
+            "read": ["p", "off"]
+          }
+        },
+        {
+          "id": "owner",
+          "type": "map",
+          "var": "owner",
+          "label": "partition → owner"
+        },
+        {
+          "id": "committed",
+          "type": "map",
+          "var": "committed",
+          "label": "committed offset"
+        },
+        {
+          "id": "processed",
+          "type": "array",
+          "var": "processed",
+          "label": "processed (duplicates show up twice)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["rnd", "p", "start", "end", "alive"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "logs": [
+              ["a0", "a1", "a2"],
+              ["b0", "b1"],
+              ["c0", "c1", "c2"]
+            ],
+            "consumers": ["c1", "c2"],
+            "batch": 2,
+            "crash": "c2",
+            "crash_round": 0
+          },
+          "expected": {
+            "processed": 10,
+            "duplicates": 2
+          }
+        },
+        {
+          "input": {
+            "logs": [
+              ["a0", "a1", "a2"],
+              ["b0", "b1"],
+              ["c0", "c1", "c2"]
+            ],
+            "consumers": ["c1", "c2"],
+            "batch": 2,
+            "crash": "c2",
+            "crash_round": 9
+          },
+          "expected": {
+            "processed": 8,
+            "duplicates": 0
+          }
+        },
+        {
+          "input": {
+            "logs": [["x0", "x1", "x2", "x3"]],
+            "consumers": ["c1", "c2"],
+            "batch": 2,
+            "crash": "c1",
+            "crash_round": 1
+          },
+          "expected": {
+            "processed": 6,
+            "duplicates": 2
+          }
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": [
+        "chat-system",
+        "notification-system",
+        "live-comments",
+        "metrics-monitoring",
+        "ad-click-aggregator",
+        "message-queue"
+      ]
+    }
+  ]
+}

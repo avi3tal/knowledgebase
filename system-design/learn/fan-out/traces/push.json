@@ -1,0 +1,4159 @@
+{
+ "version": 1,
+ "title": "Fan-out on write — 3 posts, 9 timeline writes, 1 read per open",
+ "code": [
+  "def push_timelines(followers: dict[str, list[str]], posts: list[str], opens: list[str]) -> list[int]:",
+  "    timelines: dict[str, list[str]] = {}",
+  "    writes = 0",
+  "    for i in range(len(posts)):",
+  "        author, post = posts[i].split(\":\")",
+  "        for follower in followers[author]:",
+  "            if follower not in timelines:",
+  "                timelines[follower] = []",
+  "            timelines[follower].append(post)",
+  "            writes += 1",
+  "    reads, shown = 0, 0",
+  "    for j in range(len(opens)):",
+  "        user = opens[j]",
+  "        feed = timelines.get(user, [])",
+  "        reads += 1",
+  "        shown += len(feed)",
+  "    return [writes, reads, shown]"
+ ],
+ "view": [
+  {
+   "id": "posts",
+   "type": "array",
+   "var": "posts",
+   "label": "posts (author:id)",
+   "pointers": {
+    "post": "i"
+   }
+  },
+  {
+   "id": "opens",
+   "type": "array",
+   "var": "opens",
+   "label": "feed opens",
+   "pointers": {
+    "open": "j"
+   }
+  },
+  {
+   "id": "timelines",
+   "type": "map",
+   "var": "timelines",
+   "label": "timelines (user → post ids)"
+  },
+  {
+   "id": "feed",
+   "type": "array",
+   "var": "feed",
+   "label": "feed served"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "author",
+    "follower",
+    "user",
+    "writes",
+    "reads",
+    "shown"
+   ]
+  }
+ ],
+ "input": {
+  "followers": {
+   "ann": [
+    "bob",
+    "cat",
+    "dan"
+   ],
+   "bob": [
+    "ann"
+   ],
+   "star": [
+    "ann",
+    "bob",
+    "cat",
+    "dan",
+    "eve"
+   ]
+  },
+  "posts": [
+   "ann:p1",
+   "star:p2",
+   "bob:p3"
+  ],
+  "opens": [
+   "ann",
+   "cat",
+   "eve"
+  ]
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": null
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": []
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": null,
+      "follower": null,
+      "user": null,
+      "writes": null,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": null
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": []
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": null,
+      "follower": null,
+      "user": null,
+      "writes": 0,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": []
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": null,
+      "follower": null,
+      "user": null,
+      "writes": 0,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": []
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": null,
+      "user": null,
+      "writes": 0,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": []
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "bob",
+      "user": null,
+      "writes": 0,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       []
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "bob",
+      "user": null,
+      "writes": 0,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "bob",
+      "user": null,
+      "writes": 0,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "bob",
+      "user": null,
+      "writes": 1,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "cat",
+      "user": null,
+      "writes": 1,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       []
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "cat",
+      "user": null,
+      "writes": 1,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "cat",
+      "user": null,
+      "writes": 1,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "cat",
+      "user": null,
+      "writes": 2,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "dan",
+      "user": null,
+      "writes": 2,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       []
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "dan",
+      "user": null,
+      "writes": 2,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "dan",
+      "user": null,
+      "writes": 2,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 0
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "dan",
+      "user": null,
+      "writes": 3,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "ann",
+      "follower": "dan",
+      "user": null,
+      "writes": 3,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "dan",
+      "user": null,
+      "writes": 3,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "ann",
+      "user": null,
+      "writes": 3,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       []
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "ann",
+      "user": null,
+      "writes": 3,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "ann",
+      "user": null,
+      "writes": 3,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "ann",
+      "user": null,
+      "writes": 4,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "bob",
+      "user": null,
+      "writes": 4,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "bob",
+      "user": null,
+      "writes": 4,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "bob",
+      "user": null,
+      "writes": 5,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "cat",
+      "user": null,
+      "writes": 5,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "cat",
+      "user": null,
+      "writes": 5,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "cat",
+      "user": null,
+      "writes": 6,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "dan",
+      "user": null,
+      "writes": 6,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "dan",
+      "user": null,
+      "writes": 6,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "dan",
+      "user": null,
+      "writes": 7,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "eve",
+      "user": null,
+      "writes": 7,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ],
+      [
+       "eve",
+       []
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "eve",
+      "user": null,
+      "writes": 7,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "eve",
+      "user": null,
+      "writes": 7,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 1
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "eve",
+      "user": null,
+      "writes": 8,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "star",
+      "follower": "eve",
+      "user": null,
+      "writes": 8,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "eve",
+      "user": null,
+      "writes": 8,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": null,
+      "writes": 8,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "one write per follower — the cost is paid when posting",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": null,
+      "writes": 8,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": null,
+      "writes": 9,
+      "reads": null,
+      "shown": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": null
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": null,
+      "writes": 9,
+      "reads": 0,
+      "shown": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 0
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": null,
+      "writes": 9,
+      "reads": 0,
+      "shown": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 0
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "ann",
+      "writes": 9,
+      "reads": 0,
+      "shown": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "opening the feed is a single read of a ready-made list",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 0
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2",
+      "p3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "ann",
+      "writes": 9,
+      "reads": 0,
+      "shown": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 0
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2",
+      "p3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "ann",
+      "writes": 9,
+      "reads": 1,
+      "shown": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 0
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2",
+      "p3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "ann",
+      "writes": 9,
+      "reads": 1,
+      "shown": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 1
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2",
+      "p3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "ann",
+      "writes": 9,
+      "reads": 1,
+      "shown": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 1
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2",
+      "p3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "cat",
+      "writes": 9,
+      "reads": 1,
+      "shown": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "opening the feed is a single read of a ready-made list",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 1
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p1",
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "cat",
+      "writes": 9,
+      "reads": 1,
+      "shown": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 1
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p1",
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "cat",
+      "writes": 9,
+      "reads": 2,
+      "shown": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 1
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p1",
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "cat",
+      "writes": 9,
+      "reads": 2,
+      "shown": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 2
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p1",
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "cat",
+      "writes": 9,
+      "reads": 2,
+      "shown": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 2
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p1",
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "eve",
+      "writes": 9,
+      "reads": 2,
+      "shown": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "opening the feed is a single read of a ready-made list",
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 2
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "eve",
+      "writes": 9,
+      "reads": 2,
+      "shown": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 2
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "eve",
+      "writes": 9,
+      "reads": 3,
+      "shown": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 2
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "eve",
+      "writes": 9,
+      "reads": 3,
+      "shown": 5
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": null,
+   "state": {
+    "posts": {
+     "values": [
+      "ann:p1",
+      "star:p2",
+      "bob:p3"
+     ],
+     "pointers": {
+      "post": 2
+     },
+     "window": null
+    },
+    "opens": {
+     "values": [
+      "ann",
+      "cat",
+      "eve"
+     ],
+     "pointers": {
+      "open": 2
+     },
+     "window": null
+    },
+    "timelines": {
+     "entries": [
+      [
+       "bob",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "cat",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "dan",
+       [
+        "p1",
+        "p2"
+       ]
+      ],
+      [
+       "ann",
+       [
+        "p2",
+        "p3"
+       ]
+      ],
+      [
+       "eve",
+       [
+        "p2"
+       ]
+      ]
+     ]
+    },
+    "feed": {
+     "values": [
+      "p2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "author": "bob",
+      "follower": "ann",
+      "user": "eve",
+      "writes": 9,
+      "reads": 3,
+      "shown": 5
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  9,
+  3,
+  5
+ ]
+}

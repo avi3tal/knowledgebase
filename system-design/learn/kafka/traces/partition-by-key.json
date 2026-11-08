@@ -1,0 +1,3793 @@
+{
+ "version": 1,
+ "title": "Partitioning by key — 7 events into 3 partitions",
+ "code": [
+  "def partition_by_key(events: list[list[str]], partitions: int) -> list[list[str]]:",
+  "    logs: list[list[str]] = []",
+  "    for _ in range(partitions):",
+  "        logs.append([])",
+  "    p, offset = None, None",
+  "    for key, value in events:",
+  "        h = 0",
+  "        for ch in key:",
+  "            h += ord(ch)",
+  "        p = h % partitions",
+  "        offset = len(logs[p])",
+  "        logs[p].insert(offset, key + \":\" + value)",
+  "    return logs"
+ ],
+ "view": [
+  {
+   "id": "events",
+   "type": "array",
+   "var": "events",
+   "label": "events produced (key, value)"
+  },
+  {
+   "id": "logs",
+   "type": "grid",
+   "var": "logs",
+   "label": "partitions p0..p2 (offset →)",
+   "cells": {
+    "append": [
+     "p",
+     "offset"
+    ]
+   }
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "h",
+    "p",
+    "offset"
+   ]
+  }
+ ],
+ "input": {
+  "events": [
+   [
+    "u1",
+    "login"
+   ],
+   [
+    "u2",
+    "view"
+   ],
+   [
+    "u3",
+    "cart"
+   ],
+   [
+    "u1",
+    "view"
+   ],
+   [
+    "u4",
+    "login"
+   ],
+   [
+    "u2",
+    "buy"
+   ],
+   [
+    "u1",
+    "logout"
+   ]
+  ],
+  "partitions": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "h": null,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "a topic is N independent append-only logs",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "h": null,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "a topic is N independent append-only logs",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "h": null,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": "a topic is N independent append-only logs",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "h": null,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": null,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 0,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 117,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": null,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": null
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [],
+      []
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 166,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 0,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 117,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      []
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 167,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 0,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 117,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 168,
+      "p": 2,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 168,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 168,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u3",
+      "h": 168,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 168,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 0,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 117,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 0,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 166,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 0,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 117,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 169,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 169,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 169,
+      "p": 1,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u4",
+      "h": 169,
+      "p": 1,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 169,
+      "p": 1,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 0,
+      "p": 1,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 117,
+      "p": 1,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 1,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 2,
+      "offset": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 2,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u2",
+      "h": 167,
+      "p": 2,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 167,
+      "p": 2,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 0,
+      "p": 2,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 117,
+      "p": 2,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": "a stable hash of the key (Kafka uses murmur2)",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 2,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key → same partition, every time",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "the next offset is the current length of the log",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "write at the tail; offsets never move",
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login",
+       "u1:logout"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "events": {
+     "values": [
+      [
+       "u1",
+       "login"
+      ],
+      [
+       "u2",
+       "view"
+      ],
+      [
+       "u3",
+       "cart"
+      ],
+      [
+       "u1",
+       "view"
+      ],
+      [
+       "u4",
+       "login"
+      ],
+      [
+       "u2",
+       "buy"
+      ],
+      [
+       "u1",
+       "logout"
+      ]
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "logs": {
+     "rows": [
+      [
+       "u3:cart"
+      ],
+      [
+       "u1:login",
+       "u1:view",
+       "u4:login",
+       "u1:logout"
+      ],
+      [
+       "u2:view",
+       "u2:buy"
+      ]
+     ],
+     "cells": {
+      "append": [
+       1,
+       3
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "vars": {
+     "values": {
+      "key": "u1",
+      "h": 166,
+      "p": 1,
+      "offset": 3
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  [
+   "u3:cart"
+  ],
+  [
+   "u1:login",
+   "u1:view",
+   "u4:login",
+   "u1:logout"
+  ],
+  [
+   "u2:view",
+   "u2:buy"
+  ]
+ ]
+}

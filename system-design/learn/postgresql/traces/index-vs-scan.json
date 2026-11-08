@@ -1,0 +1,4172 @@
+{
+ "version": 1,
+ "title": "Find key 42: sequential scan of 4 heap pages vs a sorted index",
+ "code": [
+  "def index_vs_scan(pages: list[list[int]], index: list[list[int]], target: int) -> list[int]:",
+  "    pages_read = 0",
+  "    page_found = -1",
+  "    for p in range(len(pages)):",
+  "        pages_read += 1",
+  "        for r in range(len(pages[p])):",
+  "            if pages[p][r] == target:",
+  "                page_found = p",
+  "    probes = 0",
+  "    lo = 0",
+  "    hi = len(index) - 1",
+  "    while lo <= hi:",
+  "        mid = (lo + hi) // 2",
+  "        probes += 1",
+  "        if index[mid][0] == target:",
+  "            page_found = index[mid][1]",
+  "            break",
+  "        if index[mid][0] < target:",
+  "            lo = mid + 1",
+  "        else:",
+  "            hi = mid - 1",
+  "    return [pages_read, probes, page_found]"
+ ],
+ "view": [
+  {
+   "id": "heap",
+   "type": "grid",
+   "var": "pages",
+   "label": "heap pages (one row per page)",
+   "cells": {
+    "scan": [
+     "p",
+     "r"
+    ]
+   }
+  },
+  {
+   "id": "index",
+   "type": "array",
+   "var": "index",
+   "label": "index [key, page] (sorted)",
+   "pointers": {
+    "lo": "lo",
+    "mid": "mid",
+    "hi": "hi"
+   },
+   "window": [
+    "lo",
+    "hi"
+   ]
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "target",
+    "pages_read",
+    "probes",
+    "page_found"
+   ]
+  }
+ ],
+ "input": {
+  "pages": [
+   [
+    8,
+    23,
+    11
+   ],
+   [
+    42,
+    5,
+    19
+   ],
+   [
+    3,
+    30,
+    7
+   ],
+   [
+    15,
+    2,
+    27
+   ]
+  ],
+  "index": [
+   [
+    2,
+    3
+   ],
+   [
+    3,
+    2
+   ],
+   [
+    5,
+    1
+   ],
+   [
+    7,
+    2
+   ],
+   [
+    8,
+    0
+   ],
+   [
+    11,
+    0
+   ],
+   [
+    15,
+    3
+   ],
+   [
+    19,
+    1
+   ],
+   [
+    23,
+    0
+   ],
+   [
+    27,
+    3
+   ],
+   [
+    30,
+    2
+   ],
+   [
+    42,
+    1
+   ]
+  ],
+  "target": 42
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 0,
+      "probes": null,
+      "page_found": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 0,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "sequential scan — every heap page is read, there is no order to exploit",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": null
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 1,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       0,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 1,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       0,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 1,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       0,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 1,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 1,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "sequential scan — every heap page is read, there is no order to exploit",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 2,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 2,
+      "probes": null,
+      "page_found": -1
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "found it, but keys aren't unique, so the scan still reads the rest",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       1,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 2,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       1,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 2,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       1,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 2,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 2,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "sequential scan — every heap page is read, there is no order to exploit",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 3,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       2,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 3,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       2,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 3,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       2,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 3,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 3,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": "sequential scan — every heap page is read, there is no order to exploit",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       0
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       1
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": null,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": null,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 0,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": null,
+      "hi": null
+     },
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 0,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": null,
+      "hi": 11
+     },
+     "window": [
+      0,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 0,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 11
+     },
+     "window": [
+      0,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 0,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "index probe — keys are sorted, so each probe halves the range",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 0,
+      "mid": 5,
+      "hi": 11
+     },
+     "window": [
+      0,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 1,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 5,
+      "hi": 11
+     },
+     "window": [
+      6,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 1,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 8,
+      "hi": 11
+     },
+     "window": [
+      6,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 1,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "index probe — keys are sorted, so each probe halves the range",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 6,
+      "mid": 8,
+      "hi": 11
+     },
+     "window": [
+      6,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 2,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 9,
+      "mid": 8,
+      "hi": 11
+     },
+     "window": [
+      9,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 2,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 9,
+      "mid": 10,
+      "hi": 11
+     },
+     "window": [
+      9,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 2,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "index probe — keys are sorted, so each probe halves the range",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 9,
+      "mid": 10,
+      "hi": 11
+     },
+     "window": [
+      9,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 3,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 11,
+      "mid": 10,
+      "hi": 11
+     },
+     "window": [
+      11,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 3,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 11,
+      "mid": 11,
+      "hi": 11
+     },
+     "window": [
+      11,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 3,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": "index probe — keys are sorted, so each probe halves the range",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 11,
+      "mid": 11,
+      "hi": 11
+     },
+     "window": [
+      11,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 4,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "the index entry points straight at the heap page to read",
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 11,
+      "mid": 11,
+      "hi": 11
+     },
+     "window": [
+      11,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 4,
+      "page_found": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 22,
+   "note": null,
+   "state": {
+    "heap": {
+     "rows": [
+      [
+       8,
+       23,
+       11
+      ],
+      [
+       42,
+       5,
+       19
+      ],
+      [
+       3,
+       30,
+       7
+      ],
+      [
+       15,
+       2,
+       27
+      ]
+     ],
+     "cells": {
+      "scan": [
+       3,
+       2
+      ]
+     },
+     "marked": [],
+     "row_labels": null,
+     "col_labels": null
+    },
+    "index": {
+     "values": [
+      [
+       2,
+       3
+      ],
+      [
+       3,
+       2
+      ],
+      [
+       5,
+       1
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       8,
+       0
+      ],
+      [
+       11,
+       0
+      ],
+      [
+       15,
+       3
+      ],
+      [
+       19,
+       1
+      ],
+      [
+       23,
+       0
+      ],
+      [
+       27,
+       3
+      ],
+      [
+       30,
+       2
+      ],
+      [
+       42,
+       1
+      ]
+     ],
+     "pointers": {
+      "lo": 11,
+      "mid": 11,
+      "hi": 11
+     },
+     "window": [
+      11,
+      11
+     ]
+    },
+    "vars": {
+     "values": {
+      "target": 42,
+      "pages_read": 4,
+      "probes": 4,
+      "page_found": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  4,
+  4,
+  1
+ ]
+}

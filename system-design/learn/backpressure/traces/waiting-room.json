@@ -1,0 +1,2468 @@
+{
+ "version": 1,
+ "title": "Waiting room — admit 2 per tick, line of 4, ETA up front",
+ "code": [
+  "def waiting_room(arrivals: list[int], admit: int, room_size: int) -> dict[str, object]:",
+  "    line: list[str] = []",
+  "    eta: dict[str, int] = {}",
+  "    admitted: list[str] = []",
+  "    turned_away, next_id, tick = 0, 1, 0",
+  "    while tick < len(arrivals) or line:",
+  "        incoming = arrivals[tick] if tick < len(arrivals) else 0",
+  "        for _ in range(incoming):",
+  "            user = \"u\" + str(next_id)",
+  "            next_id += 1",
+  "            if len(line) >= room_size:",
+  "                turned_away += 1",
+  "                continue",
+  "            line.append(user)",
+  "            eta[user] = (len(line) - 1) // admit",
+  "        for _ in range(min(admit, len(line))):",
+  "            admitted.append(line.pop(0))",
+  "        tick += 1",
+  "    return {\"admitted\": admitted, \"turned_away\": turned_away, \"eta\": eta}"
+ ],
+ "view": [
+  {
+   "id": "arrivals",
+   "type": "array",
+   "var": "arrivals",
+   "label": "users arriving per tick",
+   "pointers": {
+    "tick": "tick"
+   }
+  },
+  {
+   "id": "line",
+   "type": "array",
+   "var": "line",
+   "label": "waiting line (head first)"
+  },
+  {
+   "id": "eta",
+   "type": "map",
+   "var": "eta",
+   "label": "ETA shown to each user (ticks)"
+  },
+  {
+   "id": "admitted",
+   "type": "array",
+   "var": "admitted",
+   "label": "admitted to the service"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "tick",
+    "user",
+    "turned_away"
+   ]
+  }
+ ],
+ "input": {
+  "arrivals": [
+   5,
+   3,
+   0,
+   1
+  ],
+  "admit": 2,
+  "room_size": 4
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": null
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": []
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": null,
+      "user": null,
+      "turned_away": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": []
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": null,
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": []
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u1",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": []
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u1",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u1",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u2",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u2",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u2",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u3",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u3",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u3",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u4",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u4",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u4",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u5",
+      "turned_away": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the line is bounded too — beyond it, \"try later\"",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u5",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u5",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 0
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 0,
+      "user": "u5",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u5",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u6",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u6",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u6",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u7",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u7",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u7",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u8",
+      "turned_away": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "the line is bounded too — beyond it, \"try later\"",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 1
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 1,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 2,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 2,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 2
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 2,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "user": "u8",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 9,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "user": "u9",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "user": "u9",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "tell users their wait up front",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "line": {
+     "values": [
+      "u9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ],
+      [
+       "u9",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "user": "u9",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 17,
+   "note": "token issued — the core sees a steady rate",
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 3
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ],
+      [
+       "u9",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7",
+      "u9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 3,
+      "user": "u9",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 4
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ],
+      [
+       "u9",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7",
+      "u9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 4,
+      "user": "u9",
+      "turned_away": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "arrivals": {
+     "values": [
+      5,
+      3,
+      0,
+      1
+     ],
+     "pointers": {
+      "tick": 4
+     },
+     "window": null
+    },
+    "line": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "eta": {
+     "entries": [
+      [
+       "u1",
+       0
+      ],
+      [
+       "u2",
+       0
+      ],
+      [
+       "u3",
+       1
+      ],
+      [
+       "u4",
+       1
+      ],
+      [
+       "u6",
+       1
+      ],
+      [
+       "u7",
+       1
+      ],
+      [
+       "u9",
+       0
+      ]
+     ]
+    },
+    "admitted": {
+     "values": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u6",
+      "u7",
+      "u9"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "tick": 4,
+      "user": "u9",
+      "turned_away": 2
+     }
+    }
+   }
+  }
+ ],
+ "result": {
+  "admitted": [
+   "u1",
+   "u2",
+   "u3",
+   "u4",
+   "u6",
+   "u7",
+   "u9"
+  ],
+  "turned_away": 2,
+  "eta": {
+   "u1": 0,
+   "u2": 0,
+   "u3": 1,
+   "u4": 1,
+   "u6": 1,
+   "u7": 1,
+   "u9": 0
+  }
+ }
+}

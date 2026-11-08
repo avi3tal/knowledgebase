@@ -1,0 +1,1922 @@
+{
+ "version": 1,
+ "title": "Consumer dedup with a 3-id window: m2 is caught, m1 slips through after expiring",
+ "code": [
+  "def dedup_window(messages: list[str], window: int) -> list[int]:",
+  "    seen: dict[str, int] = {}",
+  "    handled: dict[str, int] = {}",
+  "    processed = 0",
+  "    dropped = 0",
+  "    slipped = 0",
+  "    for i in range(len(messages)):",
+  "        msg = messages[i]",
+  "        if msg in seen:",
+  "            dropped += 1",
+  "            continue",
+  "        if msg in handled:",
+  "            slipped += 1",
+  "        processed += 1",
+  "        handled[msg] = i",
+  "        seen[msg] = i",
+  "        if len(seen) > window:",
+  "            ids = iter(seen)",
+  "            oldest = next(ids)",
+  "            del seen[oldest]",
+  "    return [processed, dropped, slipped]"
+ ],
+ "view": [
+  {
+   "id": "messages",
+   "type": "array",
+   "var": "messages",
+   "label": "deliveries (at-least-once)",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "seen",
+   "type": "map",
+   "var": "seen",
+   "label": "dedup table (id → position, oldest first)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "msg",
+    "processed",
+    "dropped",
+    "slipped",
+    "oldest"
+   ]
+  }
+ ],
+ "input": {
+  "messages": [
+   "m1",
+   "m2",
+   "m1",
+   "m3",
+   "m4",
+   "m2",
+   "m5",
+   "m1"
+  ],
+  "window": 3
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": null,
+      "processed": null,
+      "dropped": null,
+      "slipped": null,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": null,
+      "processed": 0,
+      "dropped": null,
+      "slipped": null,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": null,
+      "processed": 0,
+      "dropped": 0,
+      "slipped": null,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": null,
+      "processed": 0,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": null,
+      "processed": 0,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 0,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 1,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "record the id with the processing (same transaction in a real system)",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 1,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 1,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 1,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 2,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "record the id with the processing (same transaction in a real system)",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 2,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 2,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 2,
+      "dropped": 0,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "id still in the dedup table — ack and skip, no second side effect",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 2,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 2,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m3",
+      "processed": 2,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m3",
+      "processed": 3,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "record the id with the processing (same transaction in a real system)",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m3",
+      "processed": 3,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m3",
+      "processed": 3,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m4",
+      "processed": 3,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m4",
+      "processed": 4,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "record the id with the processing (same transaction in a real system)",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m4",
+      "processed": 4,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": null
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m1",
+       0
+      ],
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m4",
+      "processed": 4,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": "bounded memory — the oldest id expires from the dedup table",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m4",
+      "processed": 4,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m4",
+      "processed": 4,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 4,
+      "dropped": 1,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "id still in the dedup table — ack and skip, no second side effect",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 4,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m2",
+      "processed": 4,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m5",
+      "processed": 4,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m5",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "record the id with the processing (same transaction in a real system)",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m5",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m1"
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m2",
+       1
+      ],
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m5",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": "bounded memory — the oldest id expires from the dedup table",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m5",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m5",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 0,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": "a duplicate the table forgot — the window was shorter than the redelivery delay",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 5,
+      "dropped": 2,
+      "slipped": 1,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 14,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 6,
+      "dropped": 2,
+      "slipped": 1,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": "record the id with the processing (same transaction in a real system)",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ],
+      [
+       "m1",
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 6,
+      "dropped": 2,
+      "slipped": 1,
+      "oldest": "m2"
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m3",
+       3
+      ],
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ],
+      [
+       "m1",
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 6,
+      "dropped": 2,
+      "slipped": 1,
+      "oldest": "m3"
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": "bounded memory — the oldest id expires from the dedup table",
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ],
+      [
+       "m1",
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 6,
+      "dropped": 2,
+      "slipped": 1,
+      "oldest": "m3"
+     }
+    }
+   }
+  },
+  {
+   "line": 21,
+   "note": null,
+   "state": {
+    "messages": {
+     "values": [
+      "m1",
+      "m2",
+      "m1",
+      "m3",
+      "m4",
+      "m2",
+      "m5",
+      "m1"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "seen": {
+     "entries": [
+      [
+       "m4",
+       4
+      ],
+      [
+       "m5",
+       6
+      ],
+      [
+       "m1",
+       7
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "msg": "m1",
+      "processed": 6,
+      "dropped": 2,
+      "slipped": 1,
+      "oldest": "m3"
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  6,
+  2,
+  1
+ ]
+}

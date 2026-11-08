@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "postgresql",
+  "title": "PostgreSQL / relational DB",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "index-vs-scan",
+      "title": "Find key 42: sequential scan of 4 heap pages vs a sorted index",
+      "source": "examples/index_vs_scan.py",
+      "function": "index_vs_scan",
+      "input": {
+        "pages": [[8, 23, 11], [42, 5, 19], [3, 30, 7], [15, 2, 27]],
+        "index": [[2, 3], [3, 2], [5, 1], [7, 2], [8, 0], [11, 0], [15, 3], [19, 1], [23, 0], [27, 3], [30, 2], [42, 1]],
+        "target": 42
+      },
+      "view": [
+        {
+          "id": "heap",
+          "type": "grid",
+          "var": "pages",
+          "label": "heap pages (one row per page)",
+          "cells": {
+            "scan": ["p", "r"]
+          }
+        },
+        {
+          "id": "index",
+          "type": "array",
+          "var": "index",
+          "label": "index [key, page] (sorted)",
+          "pointers": {
+            "lo": "lo",
+            "mid": "mid",
+            "hi": "hi"
+          },
+          "window": ["lo", "hi"]
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["target", "pages_read", "probes", "page_found"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "pages": [[8, 23, 11], [42, 5, 19], [3, 30, 7], [15, 2, 27]],
+            "index": [[2, 3], [3, 2], [5, 1], [7, 2], [8, 0], [11, 0], [15, 3], [19, 1], [23, 0], [27, 3], [30, 2], [42, 1]],
+            "target": 42
+          },
+          "expected": [4, 4, 1]
+        },
+        {
+          "input": {
+            "pages": [[8, 23, 11], [42, 5, 19], [3, 30, 7], [15, 2, 27]],
+            "index": [[2, 3], [3, 2], [5, 1], [7, 2], [8, 0], [11, 0], [15, 3], [19, 1], [23, 0], [27, 3], [30, 2], [42, 1]],
+            "target": 11
+          },
+          "expected": [4, 1, 0]
+        },
+        {
+          "input": {
+            "pages": [[4, 9], [1, 6]],
+            "index": [[1, 1], [4, 0], [6, 1], [9, 0]],
+            "target": 5
+          },
+          "expected": [2, 2, -1]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-mvcc.md"
+    },
+    {
+      "type": "trace",
+      "id": "mvcc-snapshots",
+      "title": "MVCC: T2 keeps its snapshot while T3 updates a and T4 sees the new version",
+      "source": "examples/mvcc.py",
+      "function": "mvcc",
+      "input": {
+        "rows": {
+          "a": 10,
+          "b": 5
+        },
+        "ops": ["2:begin", "3:begin", "3:set:a=20", "3:commit", "2:get:a", "4:begin", "4:get:a", "2:commit"]
+      },
+      "view": [
+        {
+          "id": "ops",
+          "type": "array",
+          "var": "ops",
+          "label": "operations (tx:action)",
+          "pointers": {
+            "op": "i"
+          }
+        },
+        {
+          "id": "versions",
+          "type": "grid",
+          "var": "versions",
+          "label": "row versions [key, value, xmin, xmax]"
+        },
+        {
+          "id": "snaps",
+          "type": "map",
+          "var": "snaps",
+          "label": "snapshots (tx → committed txids at BEGIN)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["tx", "key", "j", "seen", "reads"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "rows": {
+              "a": 10,
+              "b": 5
+            },
+            "ops": ["2:begin", "3:begin", "3:set:a=20", "3:commit", "2:get:a", "4:begin", "4:get:a", "2:commit"]
+          },
+          "expected": ["2:a=10", "4:a=20"]
+        },
+        {
+          "input": {
+            "rows": {
+              "a": 10
+            },
+            "ops": ["2:begin", "2:set:a=11", "2:get:a", "3:begin", "3:get:a"]
+          },
+          "expected": ["2:a=11", "3:a=10"]
+        },
+        {
+          "input": {
+            "rows": {
+              "x": 1
+            },
+            "ops": ["2:begin", "2:set:x=2", "2:commit", "3:begin", "3:set:x=3", "3:commit", "4:begin", "4:get:x"]
+          },
+          "expected": ["4:x=3"]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["rate-limiter-design", "job-scheduler", "local-delivery", "ticketmaster", "payment-system", "online-auction"]
+    }
+  ]
+}

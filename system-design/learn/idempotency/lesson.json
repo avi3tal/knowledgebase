@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "idempotency",
+  "title": "Idempotency keys & dedup",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "payment-retries",
+      "title": "Payment API with retries: an idempotency-key table turns duplicates into stored responses",
+      "source": "examples/payment_retries.py",
+      "function": "payment_retries",
+      "input": {
+        "requests": ["k1:30", "k1:30", "k2:50", "k3:20", "k2:50", "k2:50", "k3:25"],
+        "use_key": true
+      },
+      "view": [
+        {
+          "id": "requests",
+          "type": "array",
+          "var": "requests",
+          "label": "incoming requests (key:amount)",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "keys",
+          "type": "map",
+          "var": "keys",
+          "label": "idempotency_keys (key → [amount, response])"
+        },
+        {
+          "id": "ledger",
+          "type": "array",
+          "var": "ledger",
+          "label": "ledger (actual charges)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["key", "amount", "response", "replayed", "rejected"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "requests": ["k1:30", "k1:30", "k2:50", "k3:20", "k2:50", "k2:50", "k3:25"],
+            "use_key": true
+          },
+          "expected": [3, 3, 1]
+        },
+        {
+          "input": {
+            "requests": ["k1:30", "k1:30", "k2:50", "k3:20", "k2:50", "k2:50", "k3:25"],
+            "use_key": false
+          },
+          "expected": [7, 0, 0]
+        },
+        {
+          "input": {
+            "requests": ["k9:10"],
+            "use_key": true
+          },
+          "expected": [1, 0, 0]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-dedup.md"
+    },
+    {
+      "type": "trace",
+      "id": "dedup-window",
+      "title": "Consumer dedup with a 3-id window: m2 is caught, m1 slips through after expiring",
+      "source": "examples/dedup_window.py",
+      "function": "dedup_window",
+      "input": {
+        "messages": ["m1", "m2", "m1", "m3", "m4", "m2", "m5", "m1"],
+        "window": 3
+      },
+      "view": [
+        {
+          "id": "messages",
+          "type": "array",
+          "var": "messages",
+          "label": "deliveries (at-least-once)",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "seen",
+          "type": "map",
+          "var": "seen",
+          "label": "dedup table (id → position, oldest first)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["msg", "processed", "dropped", "slipped", "oldest"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "messages": ["m1", "m2", "m1", "m3", "m4", "m2", "m5", "m1"],
+            "window": 3
+          },
+          "expected": [6, 2, 1]
+        },
+        {
+          "input": {
+            "messages": ["m1", "m2", "m1", "m3", "m4", "m2", "m5", "m1"],
+            "window": 5
+          },
+          "expected": [5, 3, 0]
+        },
+        {
+          "input": {
+            "messages": ["a", "a", "a"],
+            "window": 1
+          },
+          "expected": [1, 2, 0]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["url-shortener", "notification-system", "job-scheduler", "message-queue", "payment-system", "ad-click-aggregator"]
+    }
+  ]
+}

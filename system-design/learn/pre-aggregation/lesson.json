@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "subject": "system-design",
+  "topic": "pre-aggregation",
+  "title": "Pre-aggregation and Rollups",
+  "blocks": [
+    {
+      "type": "markdown",
+      "src": "01-intro.md"
+    },
+    {
+      "type": "trace",
+      "id": "tumbling-windows",
+      "title": "Click events rolled into per-minute buckets on ingest",
+      "source": "examples/tumbling_windows.py",
+      "function": "tumbling_windows",
+      "input": {
+        "events": [
+          [5, "ad1"],
+          [12, "ad2"],
+          [30, "ad1"],
+          [61, "ad1"],
+          [70, "ad1"],
+          [75, "ad2"],
+          [118, "ad1"],
+          [125, "ad1"],
+          [130, "ad2"],
+          [170, "ad1"]
+        ],
+        "query_ad": "ad1"
+      },
+      "view": [
+        {
+          "id": "events",
+          "type": "array",
+          "var": "events",
+          "label": "click stream [second, ad]",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "buckets",
+          "type": "map",
+          "var": "buckets",
+          "label": "minute buckets (ad@minute → clicks)"
+        },
+        {
+          "id": "series",
+          "type": "array",
+          "var": "series",
+          "label": "dashboard series"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["second", "minute", "key", "rows_read"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "events": [
+              [5, "ad1"],
+              [12, "ad2"],
+              [30, "ad1"],
+              [61, "ad1"],
+              [70, "ad1"],
+              [75, "ad2"],
+              [118, "ad1"],
+              [125, "ad1"],
+              [130, "ad2"],
+              [170, "ad1"]
+            ],
+            "query_ad": "ad1"
+          },
+          "expected": [10, 6, 3]
+        },
+        {
+          "input": {
+            "events": [[0, "x"]],
+            "query_ad": "x"
+          },
+          "expected": [1, 1, 1]
+        },
+        {
+          "input": {
+            "events": [
+              [0, "a"],
+              [59, "a"],
+              [60, "a"]
+            ],
+            "query_ad": "b"
+          },
+          "expected": [3, 2, 0]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "02-rollups.md"
+    },
+    {
+      "type": "trace",
+      "id": "rollup",
+      "title": "Minute → hour rollup — sum and count, not average",
+      "source": "examples/rollup.py",
+      "function": "rollup",
+      "input": {
+        "minutes": [
+          [0, 1000, 100],
+          [1, 40, 1],
+          [2, 1800, 200],
+          [60, 500, 50]
+        ]
+      },
+      "view": [
+        {
+          "id": "minutes",
+          "type": "array",
+          "var": "minutes",
+          "label": "minute buckets [minute, sum_ms, count]",
+          "pointers": {
+            "now": "i"
+          }
+        },
+        {
+          "id": "hours",
+          "type": "map",
+          "var": "hours",
+          "label": "hour buckets (hour → [sum_ms, count])"
+        },
+        {
+          "id": "avgs",
+          "type": "array",
+          "var": "minute_avgs",
+          "label": "per-minute averages (hour 0)"
+        },
+        {
+          "id": "vars",
+          "type": "vars",
+          "vars": ["hour", "exact", "naive"]
+        }
+      ],
+      "checks": [
+        {
+          "input": {
+            "minutes": [
+              [0, 1000, 100],
+              [1, 40, 1],
+              [2, 1800, 200],
+              [60, 500, 50]
+            ]
+          },
+          "expected": [9, 19]
+        },
+        {
+          "input": {
+            "minutes": [
+              [0, 100, 10],
+              [1, 200, 20]
+            ]
+          },
+          "expected": [10, 10]
+        },
+        {
+          "input": {
+            "minutes": [
+              [0, 90, 1],
+              [30, 10, 1]
+            ]
+          },
+          "expected": [50, 50]
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "src": "03-recognise.md"
+    },
+    {
+      "type": "quiz",
+      "src": "quiz.json"
+    },
+    {
+      "type": "problems",
+      "slugs": ["url-shortener", "instagram", "typeahead", "youtube", "ad-click-aggregator", "metrics-monitoring"]
+    }
+  ]
+}

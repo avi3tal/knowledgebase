@@ -1,0 +1,2705 @@
+{
+ "version": 1,
+ "title": "A 10-tick local cache on 3 app servers absorbing the hot key",
+ "code": [
+  "def local_cache(requests: list[str], servers: int, ttl: int) -> list[int]:",
+  "    local: dict[str, int] = {}  # \"s<server>:<key>\" -> tick the copy expires",
+  "    local_hits, shard_reads = 0, 0",
+  "    for i in range(len(requests)):",
+  "        server = i % servers",
+  "        slot = \"s\" + str(server) + \":\" + requests[i]",
+  "        if slot in local and i < local[slot]:",
+  "            local_hits += 1",
+  "            continue",
+  "        shard_reads += 1",
+  "        local[slot] = i + ttl",
+  "    return [local_hits, shard_reads]"
+ ],
+ "view": [
+  {
+   "id": "requests",
+   "type": "array",
+   "var": "requests",
+   "label": "requests (tick = index)",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "local",
+   "type": "map",
+   "var": "local",
+   "label": "local copies → expiry tick"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "server",
+    "slot",
+    "local_hits",
+    "shard_reads"
+   ]
+  }
+ ],
+ "input": {
+  "requests": [
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "video:42",
+   "user:7",
+   "video:42"
+  ],
+  "servers": 3,
+  "ttl": 10
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "local": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "server": null,
+      "slot": null,
+      "local_hits": null,
+      "shard_reads": null
+     }
+    }
+   }
+  },
+  {
+   "line": 3,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "local": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "server": null,
+      "slot": null,
+      "local_hits": 0,
+      "shard_reads": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "local": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "server": null,
+      "slot": null,
+      "local_hits": 0,
+      "shard_reads": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "local": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": null,
+      "local_hits": 0,
+      "shard_reads": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "local": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 0,
+      "shard_reads": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "miss or expired copy: one read goes to the shard that owns the key",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "local": {
+     "entries": []
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 0,
+      "shard_reads": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "keep the copy for ttl ticks; staleness is bounded by ttl",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 0,
+      "shard_reads": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 0,
+      "shard_reads": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s0:video:42",
+      "local_hits": 0,
+      "shard_reads": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 0,
+      "shard_reads": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "miss or expired copy: one read goes to the shard that owns the key",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 0,
+      "shard_reads": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "keep the copy for ttl ticks; staleness is bounded by ttl",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 0,
+      "shard_reads": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 0,
+      "shard_reads": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s1:video:42",
+      "local_hits": 0,
+      "shard_reads": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 0,
+      "shard_reads": 2
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "miss or expired copy: one read goes to the shard that owns the key",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 0,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "keep the copy for ttl ticks; staleness is bounded by ttl",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 0,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 0,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s2:video:42",
+      "local_hits": 0,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 0,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 1,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 1,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s0:video:42",
+      "local_hits": 1,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 1,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 2,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 2,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s1:video:42",
+      "local_hits": 2,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 2,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 3,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 3,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s2:video:42",
+      "local_hits": 3,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 3,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 4,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 4,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s0:video:42",
+      "local_hits": 4,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 4,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 7
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 5,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:video:42",
+      "local_hits": 5,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s1:video:42",
+      "local_hits": 5,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 5,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 8
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 6,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 6,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s2:video:42",
+      "local_hits": 6,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 6,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 9
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 7,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 0,
+      "slot": "s0:video:42",
+      "local_hits": 7,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s0:video:42",
+      "local_hits": 7,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:user:7",
+      "local_hits": 7,
+      "shard_reads": 3
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "miss or expired copy: one read goes to the shard that owns the key",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:user:7",
+      "local_hits": 7,
+      "shard_reads": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 11,
+   "note": "keep the copy for ttl ticks; staleness is bounded by ttl",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 10
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ],
+      [
+       "s1:user:7",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:user:7",
+      "local_hits": 7,
+      "shard_reads": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ],
+      [
+       "s1:user:7",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 1,
+      "slot": "s1:user:7",
+      "local_hits": 7,
+      "shard_reads": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ],
+      [
+       "s1:user:7",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s1:user:7",
+      "local_hits": 7,
+      "shard_reads": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ],
+      [
+       "s1:user:7",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 7,
+      "shard_reads": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 8,
+   "note": "served from this server's memory; the shard never sees it",
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ],
+      [
+       "s1:user:7",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 8,
+      "shard_reads": 4
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "video:42",
+      "user:7",
+      "video:42"
+     ],
+     "pointers": {
+      "now": 11
+     },
+     "window": null
+    },
+    "local": {
+     "entries": [
+      [
+       "s0:video:42",
+       10
+      ],
+      [
+       "s1:video:42",
+       11
+      ],
+      [
+       "s2:video:42",
+       12
+      ],
+      [
+       "s1:user:7",
+       20
+      ]
+     ]
+    },
+    "vars": {
+     "values": {
+      "server": 2,
+      "slot": "s2:video:42",
+      "local_hits": 8,
+      "shard_reads": 4
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  8,
+  4
+ ]
+}

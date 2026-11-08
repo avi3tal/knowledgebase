@@ -1,0 +1,1737 @@
+{
+ "version": 1,
+ "title": "Payment API with retries: an idempotency-key table turns duplicates into stored responses",
+ "code": [
+  "def payment_retries(requests: list[str], use_key: bool) -> list[int]:",
+  "    keys: dict[str, list] = {}",
+  "    ledger: list[str] = []",
+  "    replayed = 0",
+  "    rejected = 0",
+  "    for i in range(len(requests)):",
+  "        key, amount = requests[i].split(\":\")",
+  "        if use_key and key in keys:",
+  "            if keys[key][0] != amount:",
+  "                rejected += 1",
+  "                continue",
+  "            replayed += 1",
+  "            response = keys[key][1]",
+  "            continue",
+  "        ledger.append(f\"{key}:{amount}\")",
+  "        response = f\"ch_{len(ledger)}\"",
+  "        if use_key:",
+  "            keys[key] = [amount, response]",
+  "    charges = len(ledger)",
+  "    return [charges, replayed, rejected]"
+ ],
+ "view": [
+  {
+   "id": "requests",
+   "type": "array",
+   "var": "requests",
+   "label": "incoming requests (key:amount)",
+   "pointers": {
+    "now": "i"
+   }
+  },
+  {
+   "id": "keys",
+   "type": "map",
+   "var": "keys",
+   "label": "idempotency_keys (key → [amount, response])"
+  },
+  {
+   "id": "ledger",
+   "type": "array",
+   "var": "ledger",
+   "label": "ledger (actual charges)"
+  },
+  {
+   "id": "vars",
+   "type": "vars",
+   "vars": [
+    "key",
+    "amount",
+    "response",
+    "replayed",
+    "rejected"
+   ]
+  }
+ ],
+ "input": {
+  "requests": [
+   "k1:30",
+   "k1:30",
+   "k2:50",
+   "k3:20",
+   "k2:50",
+   "k2:50",
+   "k3:25"
+  ],
+  "use_key": true
+ },
+ "steps": [
+  {
+   "line": 2,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "amount": null,
+      "response": null,
+      "replayed": null,
+      "rejected": null
+     }
+    }
+   }
+  },
+  {
+   "line": 4,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "amount": null,
+      "response": null,
+      "replayed": 0,
+      "rejected": null
+     }
+    }
+   }
+  },
+  {
+   "line": 5,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": null
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "amount": null,
+      "response": null,
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": null,
+      "amount": null,
+      "response": null,
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": null,
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the side effect — money actually moves",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": null,
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": []
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": "ch_1",
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "save key + response in the same transaction as the charge",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 0
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": "ch_1",
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": "ch_1",
+      "replayed": 0,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "duplicate — return the stored response; the card is not charged again",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 1
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": "ch_1",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k1",
+      "amount": "30",
+      "response": "ch_1",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_1",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the side effect — money actually moves",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_1",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "save key + response in the same transaction as the charge",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 2
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "20",
+      "response": "ch_2",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 15,
+   "note": "the side effect — money actually moves",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "20",
+      "response": "ch_2",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 16,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "20",
+      "response": "ch_3",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 18,
+   "note": "save key + response in the same transaction as the charge",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 3
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "20",
+      "response": "ch_3",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "20",
+      "response": "ch_3",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_3",
+      "replayed": 1,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "duplicate — return the stored response; the card is not charged again",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_3",
+      "replayed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 13,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 4
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 2,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 12,
+   "note": "duplicate — return the stored response; the card is not charged again",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 5
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 6,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k2",
+      "amount": "50",
+      "response": "ch_2",
+      "replayed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 7,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "25",
+      "response": "ch_2",
+      "replayed": 3,
+      "rejected": 0
+     }
+    }
+   }
+  },
+  {
+   "line": 10,
+   "note": "same key, different body — a client bug, answer 422 instead of guessing",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "25",
+      "response": "ch_2",
+      "replayed": 3,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 19,
+   "note": "without keys every retry is another charge; with them, one per key",
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "25",
+      "response": "ch_2",
+      "replayed": 3,
+      "rejected": 1
+     }
+    }
+   }
+  },
+  {
+   "line": 20,
+   "note": null,
+   "state": {
+    "requests": {
+     "values": [
+      "k1:30",
+      "k1:30",
+      "k2:50",
+      "k3:20",
+      "k2:50",
+      "k2:50",
+      "k3:25"
+     ],
+     "pointers": {
+      "now": 6
+     },
+     "window": null
+    },
+    "keys": {
+     "entries": [
+      [
+       "k1",
+       [
+        "30",
+        "ch_1"
+       ]
+      ],
+      [
+       "k2",
+       [
+        "50",
+        "ch_2"
+       ]
+      ],
+      [
+       "k3",
+       [
+        "20",
+        "ch_3"
+       ]
+      ]
+     ]
+    },
+    "ledger": {
+     "values": [
+      "k1:30",
+      "k2:50",
+      "k3:20"
+     ],
+     "pointers": {},
+     "window": null
+    },
+    "vars": {
+     "values": {
+      "key": "k3",
+      "amount": "25",
+      "response": "ch_2",
+      "replayed": 3,
+      "rejected": 1
+     }
+    }
+   }
+  }
+ ],
+ "result": [
+  3,
+  3,
+  1
+ ]
+}
