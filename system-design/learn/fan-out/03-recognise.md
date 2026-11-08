@@ -26,12 +26,20 @@
 - **[Scatter-gather](#/topic/system-design/scatter-gather)** sends one **query** to many
   shards and merges the answers. That's the read side of pull, not a delivery pattern.
 
-**Interview pitfalls:**
-- Choosing push or pull without the numbers: followers per user, opens/s, posts/s.
-- Forgetting the celebrity case, or not saying where the threshold sits and why.
-- Fanning out **synchronously** inside the post request, so the author waits for 40 M inserts.
-- Copying whole posts into timelines, which turns every edit and delete into another fan-out.
-- Keeping timelines for users who never come back.
+> [!DIALOGUE] Scoping a feed
+> **Candidate:** How many daily users, and how often do they open the feed and post?
+> **Interviewer:** 200 M daily users, about 10 opens a day, a post every other day.
+> **Candidate:** And the follower distribution? Average, and the biggest accounts?
+> **Interviewer:** Around 300 on average; the top accounts have tens of millions.
+> **Candidate:** Then reads dominate, so I'll push by default, with a threshold above which big accounts are merged in at read time. Is a few seconds of delivery delay acceptable?
+> **Interviewer:** Yes.
+
+> [!PITFALL] Interview pitfalls
+> - Choosing push or pull without the numbers: followers per user, opens/s, posts/s.
+> - Forgetting the celebrity case, or not saying where the threshold sits and why.
+> - Fanning out **synchronously** inside the post request, so the author waits for 40 M inserts.
+> - Copying whole posts into timelines, which turns every edit and delete into another fan-out.
+> - Keeping timelines for users who never come back.
 
 **In our problems:**
 - **news-feed**: distributing each post to followers is the core part of the design.

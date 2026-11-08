@@ -1,0 +1,154 @@
+{
+ "kind": "architecture",
+ "title": "The full media path: direct upload, event-driven processing, CDN reads",
+ "caption": "Object storage is both the landing zone for uploads and the origin behind the CDN.",
+ "nodes": [
+  {
+   "id": "up",
+   "kind": "client",
+   "label": "Uploader",
+   "x": 0,
+   "y": 40
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Upload API",
+   "x": 280,
+   "y": 40
+  },
+  {
+   "id": "meta",
+   "kind": "sql",
+   "label": "Metadata DB",
+   "x": 560,
+   "y": 40
+  },
+  {
+   "id": "store",
+   "kind": "blob",
+   "label": "Object store",
+   "x": 280,
+   "y": 260
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Upload events",
+   "x": 560,
+   "y": 260
+  },
+  {
+   "id": "w",
+   "kind": "worker",
+   "label": "Transcoders",
+   "x": 840,
+   "y": 260
+  },
+  {
+   "id": "view",
+   "kind": "client",
+   "label": "Viewers",
+   "x": 0,
+   "y": 470
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN",
+   "x": 280,
+   "y": 470
+  }
+ ],
+ "edges": [
+  {
+   "from": "up",
+   "to": "api",
+   "label": "ask for URL"
+  },
+  {
+   "from": "api",
+   "to": "meta",
+   "label": "pending row"
+  },
+  {
+   "from": "up",
+   "to": "store",
+   "label": "PUT presigned"
+  },
+  {
+   "from": "store",
+   "to": "q",
+   "label": "created"
+  },
+  {
+   "from": "q",
+   "to": "w"
+  },
+  {
+   "from": "w",
+   "to": "meta",
+   "label": "mark ready"
+  },
+  {
+   "from": "view",
+   "to": "cdn",
+   "label": "GET"
+  },
+  {
+   "from": "cdn",
+   "to": "store",
+   "label": "miss only"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The uploader asks the API for a URL; the API records a pending row.",
+   "nodes": [
+    "up",
+    "api",
+    "meta"
+   ],
+   "edges": [
+    "up>api",
+    "api>meta"
+   ]
+  },
+  {
+   "text": "The uploader PUTs the bytes straight to the store with the presigned URL.",
+   "nodes": [
+    "up",
+    "store"
+   ],
+   "edges": [
+    "up>store"
+   ]
+  },
+  {
+   "text": "ObjectCreated lands on a queue; transcoders read the raw file, write each rendition back to the store, and mark the row ready.",
+   "nodes": [
+    "store",
+    "q",
+    "w",
+    "meta"
+   ],
+   "edges": [
+    "store>q",
+    "q>w",
+    "w>meta"
+   ]
+  },
+  {
+   "text": "Viewers read through the CDN. Only misses reach the store, so a video watched 1M times is fetched from the origin about once per edge.",
+   "nodes": [
+    "view",
+    "cdn",
+    "store"
+   ],
+   "edges": [
+    "view>cdn",
+    "cdn>store"
+   ]
+  }
+ ]
+}

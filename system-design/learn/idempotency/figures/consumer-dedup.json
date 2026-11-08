@@ -1,0 +1,84 @@
+{
+ "kind": "architecture",
+ "title": "Consumer dedup: the effect and the processed id commit together",
+ "caption": "The broker may deliver a message twice; writing the id and the effect in one transaction makes the second delivery a no-op.",
+ "nodes": [
+  {
+   "id": "prod",
+   "kind": "service",
+   "label": "Order service",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Broker",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "cons",
+   "kind": "worker",
+   "label": "Shipping worker",
+   "x": 560,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Labels + seen ids",
+   "x": 840,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "prod",
+   "to": "q",
+   "label": "OrderPlaced"
+  },
+  {
+   "from": "q",
+   "to": "cons",
+   "label": "deliver (≥ 1×)"
+  },
+  {
+   "from": "cons",
+   "to": "db",
+   "label": "1 txn"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The producer publishes OrderPlaced with a stable id (message id or order_id + event type).",
+   "nodes": [
+    "prod",
+    "q"
+   ],
+   "edges": [
+    "prod>q"
+   ]
+  },
+  {
+   "text": "Delivery is at-least-once: after a crash or a rebalance the same message comes back.",
+   "nodes": [
+    "q",
+    "cons"
+   ],
+   "edges": [
+    "q>cons"
+   ]
+  },
+  {
+   "text": "In one transaction: INSERT the id into processed_ids (unique) and write the label. A duplicate fails the insert, so the worker skips the effect and acks.",
+   "nodes": [
+    "cons",
+    "db"
+   ],
+   "edges": [
+    "cons>db"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "kind": "architecture",
+ "title": "A read can be answered at several layers; the earlier, the cheaper",
+ "caption": "Each layer keeps its own copy. The closer to the user, the faster the hit, and the harder it is to invalidate.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Browser",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN / edge",
+   "x": 270,
+   "y": 120
+  },
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App + local cache",
+   "x": 540,
+   "y": 120
+  },
+  {
+   "id": "cache",
+   "kind": "cache",
+   "label": "Shared cache",
+   "x": 820,
+   "y": 0
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Database",
+   "x": 820,
+   "y": 240
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "cdn",
+   "label": "HTTP"
+  },
+  {
+   "from": "cdn",
+   "to": "app",
+   "label": "cache miss"
+  },
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "GET key"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "SELECT"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The browser's HTTP cache answers repeat visits with zero network: images, scripts, and anything sent with Cache-Control.",
+   "nodes": [
+    "client"
+   ]
+  },
+  {
+   "text": "A CDN keeps public, static content (media, bundles) close to users, often 10-50 ms closer than your region.",
+   "nodes": [
+    "client",
+    "cdn"
+   ],
+   "edges": [
+    "client>cdn"
+   ]
+  },
+  {
+   "text": "An in-process cache costs no hop at all (~100 ns), but each of your servers holds its own copy, and the copies drift.",
+   "nodes": [
+    "cdn",
+    "app"
+   ],
+   "edges": [
+    "cdn>app"
+   ]
+  },
+  {
+   "text": "A shared in-memory cache is one copy for all servers, about 0.5 ms away. This is the layer interviews usually mean.",
+   "nodes": [
+    "app",
+    "cache"
+   ],
+   "edges": [
+    "app>cache"
+   ]
+  },
+  {
+   "text": "Only misses reach the database (5-50 ms per query). Every hit above is load it never sees.",
+   "nodes": [
+    "app",
+    "db"
+   ],
+   "edges": [
+    "app>db"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "kind": "sequence",
+ "title": "Multipart upload: a failed part costs one part, not the whole file",
+ "caption": "Parts go in parallel and in any order; nothing is visible under the key until complete stitches them by part number.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "s",
+   "label": "Object store",
+   "kind": "blob"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "s",
+   "label": "initiate upload clip.mp4",
+   "note": "The store returns an uploadId that ties the parts together."
+  },
+  {
+   "from": "s",
+   "to": "c",
+   "label": "uploadId u-91",
+   "style": "reply"
+  },
+  {
+   "from": "c",
+   "to": "s",
+   "label": "PUT part 3 (64 MB)",
+   "style": "async",
+   "note": "Parts are separate requests, so several connections run at once."
+  },
+  {
+   "from": "c",
+   "to": "s",
+   "label": "PUT part 1 (64 MB)",
+   "style": "async"
+  },
+  {
+   "from": "c",
+   "to": "s",
+   "label": "PUT part 2 (64 MB)",
+   "style": "error",
+   "note": "The connection drops mid-part. Only these 64 MB are lost."
+  },
+  {
+   "from": "c",
+   "to": "s",
+   "label": "retry PUT part 2",
+   "note": "Retry just this part. Each success returns an ETag for it."
+  },
+  {
+   "from": "c",
+   "to": "s",
+   "label": "complete [1:e1, 2:e2, 3:e3]",
+   "note": "The client lists part numbers and ETags; the store assembles in part order, not arrival order."
+  },
+  {
+   "from": "s",
+   "to": "c",
+   "label": "200 · object visible",
+   "style": "reply",
+   "note": "Atomic: readers see the whole object or nothing. Abandoned uploads are cleaned up by a lifecycle rule."
+  }
+ ]
+}

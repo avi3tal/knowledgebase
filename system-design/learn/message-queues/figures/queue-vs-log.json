@@ -1,0 +1,141 @@
+{
+ "kind": "architecture",
+ "title": "A queue splits the messages; a log gives every group all of them",
+ "caption": "Top: competing workers, each message handled once and then deleted. Bottom: each consumer group keeps its own offset into the same retained log.",
+ "nodes": [
+  {
+   "id": "p1",
+   "kind": "service",
+   "label": "Producer",
+   "x": 0,
+   "y": 70
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Work queue",
+   "x": 280,
+   "y": 70
+  },
+  {
+   "id": "w1",
+   "kind": "worker",
+   "label": "Worker A",
+   "x": 560,
+   "y": 0
+  },
+  {
+   "id": "w2",
+   "kind": "worker",
+   "label": "Worker B",
+   "x": 560,
+   "y": 140
+  },
+  {
+   "id": "p2",
+   "kind": "service",
+   "label": "Producer",
+   "x": 0,
+   "y": 350
+  },
+  {
+   "id": "log",
+   "kind": "stream",
+   "label": "Event log",
+   "x": 280,
+   "y": 350
+  },
+  {
+   "id": "g1",
+   "kind": "worker",
+   "label": "Billing group",
+   "x": 560,
+   "y": 280
+  },
+  {
+   "id": "g2",
+   "kind": "worker",
+   "label": "Analytics group",
+   "x": 560,
+   "y": 420
+  }
+ ],
+ "edges": [
+  {
+   "from": "p1",
+   "to": "q",
+   "label": "m1 m2 m3 m4"
+  },
+  {
+   "from": "q",
+   "to": "w1",
+   "label": "m1 m3"
+  },
+  {
+   "from": "q",
+   "to": "w2",
+   "label": "m2 m4"
+  },
+  {
+   "from": "p2",
+   "to": "log",
+   "label": "e1 e2 e3 e4"
+  },
+  {
+   "from": "log",
+   "to": "g1",
+   "label": "e1..e4"
+  },
+  {
+   "from": "log",
+   "to": "g2",
+   "label": "e1..e4"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Work queue: four messages go in.",
+   "nodes": [
+    "p1",
+    "q"
+   ],
+   "edges": [
+    "p1>q"
+   ]
+  },
+  {
+   "text": "Workers compete. Each message goes to exactly one of them, and the broker deletes it on ack. More workers = more throughput.",
+   "nodes": [
+    "q",
+    "w1",
+    "w2"
+   ],
+   "edges": [
+    "q>w1",
+    "q>w2"
+   ]
+  },
+  {
+   "text": "Log: the same four events are appended and kept for the retention period, read or not.",
+   "nodes": [
+    "p2",
+    "log"
+   ],
+   "edges": [
+    "p2>log"
+   ]
+  },
+  {
+   "text": "Every consumer group reads all four, at its own pace, from its own offset. A new group can start from the beginning (replay).",
+   "nodes": [
+    "log",
+    "g1",
+    "g2"
+   ],
+   "edges": [
+    "log>g1",
+    "log>g2"
+   ]
+  }
+ ]
+}

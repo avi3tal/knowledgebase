@@ -1,0 +1,59 @@
+{
+ "kind": "sequence",
+ "title": "Why writers delete the key instead of updating it",
+ "caption": "Two writers that each SET the cache can finish in the opposite order to their database writes, leaving an old value that only the TTL will clear.",
+ "actors": [
+  {
+   "id": "w1",
+   "label": "Writer 1",
+   "kind": "service"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  },
+  {
+   "id": "cache",
+   "label": "Cache",
+   "kind": "cache"
+  },
+  {
+   "id": "w2",
+   "label": "Writer 2",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "w1",
+   "to": "db",
+   "label": "UPDATE stock = 5",
+   "note": "Writer 1 commits first."
+  },
+  {
+   "from": "w2",
+   "to": "db",
+   "label": "UPDATE stock = 4",
+   "note": "Writer 2 commits second, so the database correctly holds 4."
+  },
+  {
+   "from": "w2",
+   "to": "cache",
+   "label": "SET stock = 4"
+  },
+  {
+   "from": "w1",
+   "to": "cache",
+   "label": "SET stock = 5",
+   "style": "error",
+   "note": "Writer 1 was slow (GC pause, network) and its cache write lands last. The cache now says 5 while the database says 4."
+  },
+  {
+   "from": "w1",
+   "to": "cache",
+   "label": "fix: DEL stock",
+   "note": "With delete-on-write both writers just remove the key, and the next read loads 4 from the database."
+  }
+ ]
+}

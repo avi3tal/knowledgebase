@@ -1,0 +1,58 @@
+{
+ "kind": "sequence",
+ "title": "Credit-based flow control: the receiver decides how much may be in flight",
+ "caption": "TCP windows, HTTP/2 stream windows and reactive streams' request(n) all follow this pattern.",
+ "actors": [
+  {
+   "id": "snd",
+   "label": "Sender",
+   "kind": "service"
+  },
+  {
+   "id": "rcv",
+   "label": "Receiver",
+   "kind": "worker"
+  }
+ ],
+ "messages": [
+  {
+   "from": "rcv",
+   "to": "snd",
+   "label": "request(3)",
+   "note": "The receiver has room for 3 items, so it grants 3 credits."
+  },
+  {
+   "from": "snd",
+   "to": "rcv",
+   "label": "item 1, item 2, item 3",
+   "style": "async",
+   "note": "Each item spends one credit."
+  },
+  {
+   "from": "snd",
+   "to": "snd",
+   "label": "credits = 0: wait",
+   "style": "self",
+   "note": "The sender may not send more, however much work it has. Its own buffer, or its caller, absorbs the wait."
+  },
+  {
+   "from": "rcv",
+   "to": "rcv",
+   "label": "finish item 1 and item 2",
+   "style": "self"
+  },
+  {
+   "from": "rcv",
+   "to": "snd",
+   "label": "request(2)",
+   "note": "Credits come back only as fast as the receiver actually finishes work."
+  },
+  {
+   "from": "snd",
+   "to": "rcv",
+   "label": "item 4, item 5",
+   "style": "async",
+   "note": "The sender's rate now matches the receiver's speed exactly, without either side knowing a number up front."
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "kind": "architecture",
+ "title": "Fan-out on read: one write when posting, N queries and a merge on every read",
+ "caption": "Publishing is trivial. The cost moves to the read path, which is the one the user is waiting on.",
+ "nodes": [
+  {
+   "id": "author",
+   "kind": "client",
+   "label": "Author",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "post",
+   "kind": "service",
+   "label": "Post service",
+   "x": 280,
+   "y": 0
+  },
+  {
+   "id": "posts",
+   "kind": "nosql",
+   "label": "Posts by author",
+   "x": 560,
+   "y": 0
+  },
+  {
+   "id": "reader",
+   "kind": "client",
+   "label": "Reader",
+   "x": 0,
+   "y": 250
+  },
+  {
+   "id": "feed",
+   "kind": "service",
+   "label": "Feed service",
+   "x": 280,
+   "y": 250
+  },
+  {
+   "id": "graph",
+   "kind": "sql",
+   "label": "Follow graph",
+   "x": 560,
+   "y": 250
+  }
+ ],
+ "edges": [
+  {
+   "from": "author",
+   "to": "post",
+   "label": "new post"
+  },
+  {
+   "from": "post",
+   "to": "posts",
+   "label": "1 write"
+  },
+  {
+   "from": "reader",
+   "to": "feed",
+   "label": "open feed"
+  },
+  {
+   "from": "feed",
+   "to": "graph",
+   "label": "who do I follow?"
+  },
+  {
+   "from": "feed",
+   "to": "posts",
+   "label": "300 queries"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Publishing is one write to the author's own post list. There's no fan-out at all.",
+   "nodes": [
+    "author",
+    "post",
+    "posts"
+   ],
+   "edges": [
+    "author>post",
+    "post>posts"
+   ]
+  },
+  {
+   "text": "A reader opens the feed. The feed service first looks up the 300 accounts they follow.",
+   "nodes": [
+    "reader",
+    "feed",
+    "graph"
+   ],
+   "edges": [
+    "reader>feed",
+    "feed>graph"
+   ]
+  },
+  {
+   "text": "It queries the recent posts of every followee (300 lookups), merges them by time and keeps the top 20, on every single open.",
+   "nodes": [
+    "feed",
+    "posts"
+   ],
+   "edges": [
+    "feed>posts"
+   ]
+  }
+ ]
+}

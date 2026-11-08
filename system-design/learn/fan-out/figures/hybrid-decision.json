@@ -1,0 +1,117 @@
+{
+ "kind": "flowchart",
+ "title": "The hybrid decides per author: push for most, no fan-out for the very big",
+ "caption": "One threshold on follower count. A huge threshold is pure push; a threshold of 0 is pure pull.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "New post",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "count",
+   "type": "step",
+   "label": "Count followers",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "big",
+   "type": "decision",
+   "label": "Over threshold?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "celeb",
+   "type": "end",
+   "label": "Store, no fan-out",
+   "col": 1,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "active",
+   "type": "step",
+   "label": "Skip inactive",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "push",
+   "type": "end",
+   "label": "Push to timelines",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "count"
+  },
+  {
+   "from": "count",
+   "to": "big"
+  },
+  {
+   "from": "big",
+   "to": "celeb",
+   "label": "yes"
+  },
+  {
+   "from": "big",
+   "to": "active",
+   "label": "no"
+  },
+  {
+   "from": "active",
+   "to": "push"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A post arrives. Look up the author's follower count (kept as a counter, not counted live).",
+   "nodes": [
+    "in",
+    "count"
+   ],
+   "edges": [
+    "in>count"
+   ]
+  },
+  {
+   "text": "Above the threshold (say 100 000): write the post once and keep it in a hot, replicated cache. Readers merge it in when they open the feed.",
+   "nodes": [
+    "big",
+    "celeb"
+   ],
+   "edges": [
+    "count>big",
+    "big>celeb"
+   ]
+  },
+  {
+   "text": "Below it: fan out, but skip followers who haven't opened the app in 30 days. Their timeline is rebuilt with pull if they return.",
+   "nodes": [
+    "big",
+    "active"
+   ],
+   "edges": [
+    "big>active"
+   ]
+  },
+  {
+   "text": "Push the post id into the remaining followers' timelines, asynchronously.",
+   "nodes": [
+    "push"
+   ],
+   "edges": [
+    "active>push"
+   ]
+  }
+ ]
+}

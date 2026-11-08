@@ -1,0 +1,102 @@
+{
+ "kind": "flowchart",
+ "title": "B-tree lookup on 100M rows: 4 page reads instead of 1M",
+ "caption": "Each level narrows the key range about 500-fold; the top levels stay in memory, so usually only the leaf and heap page hit disk.",
+ "nodes": [
+  {
+   "id": "q",
+   "type": "start",
+   "label": "WHERE id = 42",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "root",
+   "type": "step",
+   "label": "Root page",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "inner",
+   "type": "step",
+   "label": "Internal page",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "leaf",
+   "type": "step",
+   "label": "Leaf: 42 → page p1",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "heap",
+   "type": "end",
+   "label": "Read heap page p1",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "q",
+   "to": "root"
+  },
+  {
+   "from": "root",
+   "to": "inner",
+   "label": "42 in [1, 200k)"
+  },
+  {
+   "from": "inner",
+   "to": "leaf",
+   "label": "42 in [1, 400)"
+  },
+  {
+   "from": "leaf",
+   "to": "heap"
+  }
+ ],
+ "steps": [
+  {
+   "text": "1. Start at the root page. It holds ~500 separator keys, each pointing to a child that covers ~200k keys.",
+   "nodes": [
+    "q",
+    "root"
+   ],
+   "edges": [
+    "q>root"
+   ]
+  },
+  {
+   "text": "2. Binary-search the keys and follow the child whose range contains 42. That internal page splits its range again into ~400-key leaves.",
+   "nodes": [
+    "inner"
+   ],
+   "edges": [
+    "root>inner"
+   ]
+  },
+  {
+   "text": "3. Repeat until a leaf page, which stores the key and a pointer (page, slot) to the row in the heap.",
+   "nodes": [
+    "leaf"
+   ],
+   "edges": [
+    "inner>leaf"
+   ]
+  },
+  {
+   "text": "4. Read that one heap page. Three index levels (log₅₀₀(100M) ≈ 3) plus the heap page = 4 reads, against ~1M pages for a sequential scan.",
+   "nodes": [
+    "heap"
+   ],
+   "edges": [
+    "leaf>heap"
+   ]
+  }
+ ]
+}

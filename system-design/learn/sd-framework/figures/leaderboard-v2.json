@@ -1,0 +1,125 @@
+{
+ "kind": "architecture",
+ "title": "Leaderboard v2: two parts merged into one design",
+ "caption": "Part \"rank reads\" adds the sorted set; part \"score ingest\" adds the queue and worker. They share the API node.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Players",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "svc",
+   "kind": "service",
+   "label": "Leaderboard API",
+   "x": 280,
+   "y": 170
+  },
+  {
+   "id": "rank",
+   "kind": "cache",
+   "label": "Sorted set",
+   "x": 560,
+   "y": 30
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Scores DB",
+   "x": 560,
+   "y": 170
+  },
+  {
+   "id": "queue",
+   "kind": "queue",
+   "label": "Score events",
+   "x": 560,
+   "y": 310
+  },
+  {
+   "id": "worker",
+   "kind": "worker",
+   "label": "Rank updater",
+   "x": 840,
+   "y": 170
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "svc",
+   "label": "POST · GET"
+  },
+  {
+   "from": "svc",
+   "to": "db",
+   "label": "upsert best"
+  },
+  {
+   "from": "svc",
+   "to": "queue",
+   "label": "publish"
+  },
+  {
+   "from": "queue",
+   "to": "worker"
+  },
+  {
+   "from": "worker",
+   "to": "rank",
+   "label": "ZADD"
+  },
+  {
+   "from": "svc",
+   "to": "rank",
+   "label": "rank / top n"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Write path: store the best score durably first, then publish an event. The player gets 200 right away.",
+   "nodes": [
+    "client",
+    "svc",
+    "db",
+    "queue"
+   ],
+   "edges": [
+    "client>svc",
+    "svc>db",
+    "svc>queue"
+   ]
+  },
+  {
+   "text": "The updater applies events to an in-memory sorted set. Ranks lag by seconds, which the requirements allow.",
+   "nodes": [
+    "queue",
+    "worker",
+    "rank"
+   ],
+   "edges": [
+    "queue>worker",
+    "worker>rank"
+   ]
+  },
+  {
+   "text": "Read path: rank and top-n come from the sorted set in O(log n), well under 100 ms.",
+   "nodes": [
+    "svc",
+    "rank"
+   ],
+   "edges": [
+    "svc>rank"
+   ]
+  },
+  {
+   "text": "Failure plan: lose the sorted set and you rebuild it from the scores DB, which stays the source of truth.",
+   "nodes": [
+    "rank",
+    "db"
+   ]
+  }
+ ]
+}

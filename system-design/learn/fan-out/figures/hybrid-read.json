@@ -1,0 +1,87 @@
+{
+ "kind": "sequence",
+ "title": "Hybrid read: one timeline plus a few big accounts, merged by time",
+ "caption": "A reader follows only a handful of huge accounts, so the read-time merge costs a few extra lookups, not 300.",
+ "actors": [
+  {
+   "id": "rd",
+   "label": "Reader",
+   "kind": "client"
+  },
+  {
+   "id": "feed",
+   "label": "Feed service",
+   "kind": "service"
+  },
+  {
+   "id": "tl",
+   "label": "Timelines",
+   "kind": "cache"
+  },
+  {
+   "id": "hot",
+   "label": "Big-account cache",
+   "kind": "cache"
+  },
+  {
+   "id": "posts",
+   "label": "Posts",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "rd",
+   "to": "feed",
+   "label": "open feed"
+  },
+  {
+   "from": "feed",
+   "to": "tl",
+   "label": "GET timeline:bob",
+   "note": "Everything pushed by normal authors is already here, newest first."
+  },
+  {
+   "from": "tl",
+   "to": "feed",
+   "label": "latest ~800 post ids",
+   "style": "reply"
+  },
+  {
+   "from": "feed",
+   "to": "hot",
+   "label": "recent posts of 3 big accounts",
+   "note": "Bob follows 3 accounts above the threshold. Their posts were never fanned out."
+  },
+  {
+   "from": "hot",
+   "to": "feed",
+   "label": "a few ids each",
+   "style": "reply"
+  },
+  {
+   "from": "feed",
+   "to": "feed",
+   "label": "merge by time, keep top 20",
+   "style": "self"
+  },
+  {
+   "from": "feed",
+   "to": "posts",
+   "label": "batch GET 20 bodies",
+   "note": "Timelines hold ids, so an edit or delete needs no fan-out, only a filter here."
+  },
+  {
+   "from": "posts",
+   "to": "feed",
+   "label": "20 posts",
+   "style": "reply"
+  },
+  {
+   "from": "feed",
+   "to": "rd",
+   "label": "page of 20",
+   "style": "reply"
+  }
+ ]
+}

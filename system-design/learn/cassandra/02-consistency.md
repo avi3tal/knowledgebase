@@ -15,14 +15,34 @@ Two rules keep partitions healthy:
 - **Spread them.** A partition lives on just RF nodes (usually 3). One hot key can't be split,
   so a viral video hammers three machines while the rest idle.
 
+> [!NUMBERS] Sizing a partition
+> 200 messages/day × 1 KB = 200 KB/day per busy chat. Unbucketed, 5 years is ~365 MB: too big.
+> Bucket by month, `((conversation_id, month), seq)`: ~6 MB per partition, and "latest
+> messages" reads the current bucket first.
+
+## SQL vs wide-column
+
+| | PostgreSQL | Cassandra |
+|---|---|---|
+| model | normalised tables, any query later | one denormalised table per query |
+| writes | one primary, ~5k–20k/s | every node, adds linearly |
+| queries | joins, ad-hoc filters, aggregates | by partition key, then a clustering range |
+| transactions | multi-row ACID | single partition; LWT for compare-and-set |
+| consistency | strong on the primary | tunable per request (R, W) |
+| failure | failover to a replica | none needed: any node coordinates |
+
 ## Tunable consistency
 Each partition is copied to **N** replicas (the replication factor). Every request picks how many
-replicas must answer:
+replicas must answer: **W** for a write, **R** for a read.
+
+```figure
+quorum-write
 ```
-           write W of N                read R of N
- client ─► coordinator ─► r0 r1 r2     client ─► coordinator ─► r0 r1 r2
-           ack after W confirm                   newest timestamp wins
+
+```figure
+quorum-read
 ```
+
 - **R + W > N** (e.g. N=3, QUORUM writes W=2 and QUORUM reads R=2): every read set overlaps every
   write set, so a read sees the latest acknowledged write.
 - **W=1, R=1:** fastest and still available with two replicas down, but a read can miss a write

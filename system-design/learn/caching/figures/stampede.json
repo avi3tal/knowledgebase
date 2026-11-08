@@ -1,0 +1,71 @@
+{
+ "kind": "sequence",
+ "title": "Cache stampede: one hot key expires and every request goes to the database",
+ "caption": "Fix: let one request rebuild the value while the others wait or get the slightly old copy.",
+ "actors": [
+  {
+   "id": "r1",
+   "label": "Request A",
+   "kind": "client"
+  },
+  {
+   "id": "r2",
+   "label": "Request B…Z",
+   "kind": "client"
+  },
+  {
+   "id": "cache",
+   "label": "Cache",
+   "kind": "cache"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "r1",
+   "to": "cache",
+   "label": "GET home:top (TTL just expired)",
+   "note": "A key read 10 000 times a second has just expired."
+  },
+  {
+   "from": "r2",
+   "to": "cache",
+   "label": "GET home:top",
+   "note": "In the ~50 ms it takes to rebuild, about 500 more requests miss too."
+  },
+  {
+   "from": "r2",
+   "to": "db",
+   "label": "~500 identical queries",
+   "style": "error",
+   "note": "Without protection they all query the database at once, and it falls over exactly when traffic peaks."
+  },
+  {
+   "from": "r1",
+   "to": "cache",
+   "label": "SET lock:home:top NX PX 5000",
+   "note": "Fix: the first miss takes a short lock and is the only one to rebuild."
+  },
+  {
+   "from": "r1",
+   "to": "db",
+   "label": "one query"
+  },
+  {
+   "from": "r1",
+   "to": "cache",
+   "label": "SET home:top EX 300±30",
+   "note": "Store the fresh value with a jittered TTL so hot keys don't all expire together."
+  },
+  {
+   "from": "cache",
+   "to": "r2",
+   "label": "fresh value (others waited or got stale)",
+   "style": "reply"
+  }
+ ]
+}

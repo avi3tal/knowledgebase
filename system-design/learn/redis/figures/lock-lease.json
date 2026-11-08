@@ -1,0 +1,73 @@
+{
+ "kind": "sequence",
+ "title": "A lease with a TTL frees itself when its owner crashes",
+ "caption": "SET NX creates the key only if it is absent; PX makes it expire, so a dead holder can't block everyone forever.",
+ "actors": [
+  {
+   "id": "w1",
+   "label": "Worker 1",
+   "kind": "worker"
+  },
+  {
+   "id": "r",
+   "label": "Redis",
+   "kind": "cache"
+  },
+  {
+   "id": "w2",
+   "label": "Worker 2",
+   "kind": "worker"
+  }
+ ],
+ "messages": [
+  {
+   "from": "w1",
+   "to": "r",
+   "label": "SET lock:job7 w1 NX PX 30000",
+   "note": "The key doesn't exist, so it is created: worker 1 holds the lease for 30 s."
+  },
+  {
+   "from": "r",
+   "to": "w1",
+   "label": "OK",
+   "style": "reply"
+  },
+  {
+   "from": "w2",
+   "to": "r",
+   "label": "SET lock:job7 w2 NX PX 30000",
+   "note": "The key exists, so NX refuses. Worker 2 backs off and retries."
+  },
+  {
+   "from": "r",
+   "to": "w2",
+   "label": "nil (taken)",
+   "style": "reply"
+  },
+  {
+   "from": "w1",
+   "to": "w1",
+   "label": "crashes mid-job",
+   "style": "error",
+   "note": "Worker 1 never sends DEL. Without a TTL the job would be stuck forever."
+  },
+  {
+   "from": "r",
+   "to": "r",
+   "label": "30 s pass: key expires",
+   "style": "self"
+  },
+  {
+   "from": "w2",
+   "to": "r",
+   "label": "SET lock:job7 w2 NX PX 30000",
+   "note": "The retry now succeeds and worker 2 takes over the job."
+  },
+  {
+   "from": "r",
+   "to": "w2",
+   "label": "OK",
+   "style": "reply"
+  }
+ ]
+}

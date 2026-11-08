@@ -1,0 +1,119 @@
+{
+ "kind": "architecture",
+ "title": "Count once on ingest, read tiny rows forever after",
+ "caption": "The stream job folds clicks into (ad, minute) counters; the dashboard never touches raw events.",
+ "nodes": [
+  {
+   "id": "src",
+   "kind": "client",
+   "label": "Ad servers",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "log",
+   "kind": "stream",
+   "label": "Click stream",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "job",
+   "kind": "worker",
+   "label": "Stream job",
+   "x": 560,
+   "y": 120
+  },
+  {
+   "id": "roll",
+   "kind": "nosql",
+   "label": "Minute rollups",
+   "x": 840,
+   "y": 120
+  },
+  {
+   "id": "raw",
+   "kind": "blob",
+   "label": "Raw event log",
+   "x": 280,
+   "y": 340
+  },
+  {
+   "id": "dash",
+   "kind": "service",
+   "label": "Dashboard API",
+   "x": 840,
+   "y": 340
+  }
+ ],
+ "edges": [
+  {
+   "from": "src",
+   "to": "log",
+   "label": "10k clicks/s"
+  },
+  {
+   "from": "log",
+   "to": "job"
+  },
+  {
+   "from": "job",
+   "to": "roll",
+   "label": "upsert +n"
+  },
+  {
+   "from": "log",
+   "to": "raw",
+   "label": "archive"
+  },
+  {
+   "from": "dash",
+   "to": "roll",
+   "label": "read 60 rows"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Every click is appended to a partitioned stream, keyed by ad_id so one ad's events land on one partition.",
+   "nodes": [
+    "src",
+    "log"
+   ],
+   "edges": [
+    "src>log"
+   ]
+  },
+  {
+   "text": "The stream job keeps a counter per (ad_id, minute) in keyed state and flushes finished buckets as +n upserts, not one write per click.",
+   "nodes": [
+    "log",
+    "job",
+    "roll"
+   ],
+   "edges": [
+    "log>job",
+    "job>roll"
+   ]
+  },
+  {
+   "text": "The raw events are archived too: you'll need them to backfill a new dimension or to fix a bad count.",
+   "nodes": [
+    "log",
+    "raw"
+   ],
+   "edges": [
+    "log>raw"
+   ]
+  },
+  {
+   "text": "The dashboard's \"last hour for ad1\" is 60 point lookups on (ad1, minute), a few kilobytes.",
+   "nodes": [
+    "dash",
+    "roll"
+   ],
+   "edges": [
+    "dash>roll"
+   ]
+  }
+ ]
+}

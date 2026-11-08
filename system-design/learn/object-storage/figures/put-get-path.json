@@ -1,0 +1,98 @@
+{
+ "kind": "architecture",
+ "title": "An object store is an index of keys plus a fleet of disks",
+ "caption": "The front end writes the bytes across zones, then records where they went; reads look up the key and stream the bytes back.",
+ "nodes": [
+  {
+   "id": "c",
+   "kind": "client",
+   "label": "Client",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "fe",
+   "kind": "api-gateway",
+   "label": "Front end",
+   "x": 280,
+   "y": 150
+  },
+  {
+   "id": "idx",
+   "kind": "nosql",
+   "label": "Metadata index",
+   "x": 580,
+   "y": 20
+  },
+  {
+   "id": "nodes",
+   "kind": "blob",
+   "label": "Storage nodes",
+   "x": 580,
+   "y": 280
+  }
+ ],
+ "edges": [
+  {
+   "from": "c",
+   "to": "fe",
+   "label": "PUT / GET key"
+  },
+  {
+   "from": "fe",
+   "to": "nodes",
+   "label": "bytes × 3 zones"
+  },
+  {
+   "from": "fe",
+   "to": "idx",
+   "label": "key → location"
+  }
+ ],
+ "steps": [
+  {
+   "text": "PUT /bucket/photos/abc.jpg: a flat key, not a folder. The whole object goes in one request (or in parts).",
+   "nodes": [
+    "c",
+    "fe"
+   ],
+   "edges": [
+    "c>fe"
+   ]
+  },
+  {
+   "text": "The bytes are written to disks in several availability zones (replicas or erasure-coded fragments) before the PUT is acknowledged.",
+   "nodes": [
+    "fe",
+    "nodes"
+   ],
+   "edges": [
+    "fe>nodes"
+   ]
+  },
+  {
+   "text": "The index records key → locations, size and ETag. LIST by prefix is a range scan over this index.",
+   "nodes": [
+    "fe",
+    "idx"
+   ],
+   "edges": [
+    "fe>idx"
+   ]
+  },
+  {
+   "text": "GET with Range: bytes=0-1048575 looks up the key and streams just that slice, which is how video players seek.",
+   "nodes": [
+    "c",
+    "fe",
+    "idx",
+    "nodes"
+   ],
+   "edges": [
+    "c>fe",
+    "fe>idx",
+    "fe>nodes"
+   ]
+  }
+ ]
+}

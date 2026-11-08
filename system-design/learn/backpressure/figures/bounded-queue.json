@@ -1,0 +1,77 @@
+{
+ "kind": "architecture",
+ "title": "A bound turns 'out of memory later' into a decision now",
+ "caption": "The producer outruns the consumer by 150/s. A queue of 1 000 fills in about 7 s, and then the full queue has to push back.",
+ "nodes": [
+  {
+   "id": "prod",
+   "kind": "service",
+   "label": "Producer · 400/s",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Queue (max 1 000)",
+   "x": 300,
+   "y": 150
+  },
+  {
+   "id": "cons",
+   "kind": "worker",
+   "label": "Consumer · 250/s",
+   "x": 600,
+   "y": 150
+  }
+ ],
+ "edges": [
+  {
+   "from": "prod",
+   "to": "q",
+   "label": "400/s"
+  },
+  {
+   "from": "q",
+   "to": "cons",
+   "label": "250/s"
+  },
+  {
+   "from": "q",
+   "to": "prod",
+   "label": "full: wait or 429"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Work arrives at 400/s but the consumer can only finish 250/s, so the backlog grows by 150 items every second.",
+   "nodes": [
+    "prod",
+    "q"
+   ],
+   "edges": [
+    "prod>q"
+   ]
+  },
+  {
+   "text": "The consumer drains at its own fixed pace. More waiting doesn't make it faster: it only makes every item wait longer.",
+   "nodes": [
+    "q",
+    "cons"
+   ],
+   "edges": [
+    "q>cons"
+   ]
+  },
+  {
+   "text": "With max depth 1 000, the queue is full after 1 000 ÷ 150 ≈ 7 s. From then on it must signal upstream: block the producer, reject the item, or tell it to slow down.",
+   "nodes": [
+    "q",
+    "prod"
+   ],
+   "edges": [
+    "q>prod"
+   ]
+  }
+ ]
+}

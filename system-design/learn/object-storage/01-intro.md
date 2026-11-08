@@ -8,21 +8,30 @@ is just a long key, not a real folder. You `PUT` a whole object, `GET` it (or a 
 a new object or a new version. In return you get almost unlimited capacity, very high
 durability, and a low price per GB.
 
-```
-client ──PUT /bucket/key──► front end ──► metadata index   (key → where the bytes live, size, etag)
-                                     └──► storage nodes    (the bytes, spread across disks / zones)
-client ◄─GET (Range: bytes=0-1048575)─┘
+```figure
+put-get-path
 ```
 
 ## Numbers worth knowing
-```
-durability   ~11 nines: replicas or erasure coding across 3+ availability zones
-latency      first byte ~20–100 ms (much slower than a KV store or a local disk)
-throughput   ~100 MB/s per connection; scale by running many requests in parallel
-request rate thousands of PUTs/GETs per second per key prefix; spread hot keys over prefixes
-object size  bytes up to ~5 TB; a single PUT is capped (~5 GB), so big files use multipart
-price        hot tier ~$20/TB-month; cold / archive tiers 5–20× cheaper, with slower reads
-```
+
+| property | ballpark | design consequence |
+|---|---|---|
+| durability | ~11 nines, across 3+ zones | the copy you never back up elsewhere |
+| first-byte latency | ~20–100 ms | never on a hot per-request path; cache or CDN in front |
+| throughput | ~100 MB/s per connection | parallel requests (multipart, ranged GETs) for big files |
+| request rate | thousands/s per key prefix | spread hot keys over many prefixes |
+| object size | up to ~5 TB; one PUT ~5 GB | multipart for anything large |
+| price | hot ~$20/TB-month; cold 5–20× less | lifecycle rules decide the bill |
+
+**How 11 nines is reached.** Either keep full **replicas** in three zones, or split the object
+into fragments with **erasure coding**:
+
+| scheme | storage used | survives | cost |
+|---|---|---|---|
+| 3 replicas | 3× | losing 2 copies | simple, fast reads, expensive |
+| erasure code 6 + 3 | 1.5× | losing any 3 of 9 fragments | half the disk, but reads and repairs touch many nodes |
+
+Large stores use erasure coding for most data; you only need to name the trade-off.
 
 ## The usual split
 Put **metadata in a database** and **bytes in object storage**. The photos table holds
@@ -30,11 +39,24 @@ Put **metadata in a database** and **bytes in object storage**. The photos table
 should never hold the media itself: rows get huge, backups slow down, and the database's
 expensive disks fill with data that is just served as is.
 
+> [!PITFALL]
+> It's not a filesystem. "Renaming a folder" means copying and deleting every object under the
+> prefix, and listing is a paginated scan. Design keys so you never need either.
+
 ## Multipart upload
 A 4 GB upload over a phone link fails often. Multipart upload cuts the file into parts
 (e.g. 8–100 MB each, numbered 1..n). Each part is a separate request that can be **sent in
 parallel, retried alone, and arrive in any order**. A final *complete* call stitches the
 parts together **by part number**. Until then, nothing is visible under the key.
+
+```figure
+multipart-parts
+```
+
+> [!NUMBERS] What multipart saves
+> 4 GB / 64 MB = **64 parts**. A drop at 90% without multipart re-sends 4 GB; with it, one
+> 64 MB part (1/64 of the file). Eight parts in flight at ~100 MB/s each also turns a
+> 40-second single stream into about 5 seconds on a fast link.
 
 Step through it below. The object is split into 6 parts, part 2 is retried, and the parts
 arrive out of order. *Complete* still rebuilds the file in the right order.

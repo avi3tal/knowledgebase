@@ -1,0 +1,66 @@
+{
+ "kind": "sequence",
+ "title": "Request coalescing: concurrent misses for one key share a single fetch",
+ "caption": "Inside one server, the first miss starts the fetch and later requests for the same key wait on it instead of starting their own.",
+ "actors": [
+  {
+   "id": "r1",
+   "label": "Request 1",
+   "kind": "client"
+  },
+  {
+   "id": "r2",
+   "label": "Requests 2…50",
+   "kind": "client"
+  },
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "shard",
+   "label": "Shard",
+   "kind": "cache"
+  }
+ ],
+ "messages": [
+  {
+   "from": "r1",
+   "to": "app",
+   "label": "GET product:77",
+   "note": "The local copy has just expired."
+  },
+  {
+   "from": "app",
+   "to": "shard",
+   "label": "fetch product:77 (in flight)",
+   "note": "The first miss registers an in-flight fetch for this key."
+  },
+  {
+   "from": "r2",
+   "to": "app",
+   "label": "GET product:77",
+   "note": "49 more requests arrive during the 1 ms fetch. They find the in-flight entry and wait."
+  },
+  {
+   "from": "shard",
+   "to": "app",
+   "label": "product row",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "r1",
+   "label": "product row",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "r2",
+   "label": "same row, shared",
+   "style": "reply",
+   "note": "50 requests, 1 shard read. Combined with the local cache, the shard sees one fetch per server per TTL even at the moment of expiry."
+  }
+ ]
+}

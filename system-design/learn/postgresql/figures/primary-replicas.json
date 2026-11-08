@@ -1,0 +1,108 @@
+{
+ "kind": "architecture",
+ "title": "Scale reads with replicas; every write still goes through one primary",
+ "caption": "Replicas replay the primary's WAL a few ms to seconds behind, so reads that must see your own write go to the primary.",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "primary",
+   "kind": "sql",
+   "label": "Primary",
+   "x": 300,
+   "y": 170
+  },
+  {
+   "id": "r1",
+   "kind": "sql",
+   "label": "Read replica 1",
+   "x": 600,
+   "y": 20
+  },
+  {
+   "id": "r2",
+   "kind": "sql",
+   "label": "Read replica 2",
+   "x": 600,
+   "y": 320
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "primary",
+   "label": "writes"
+  },
+  {
+   "from": "primary",
+   "to": "r1",
+   "label": "WAL stream"
+  },
+  {
+   "from": "primary",
+   "to": "r2",
+   "label": "WAL stream"
+  },
+  {
+   "from": "app",
+   "to": "r1",
+   "label": "reads"
+  },
+  {
+   "from": "app",
+   "to": "r2",
+   "label": "reads"
+  }
+ ],
+ "steps": [
+  {
+   "text": "All writes go to the primary. A commit is durable once its WAL record is fsynced: this is the ~5k–20k writes/s ceiling.",
+   "nodes": [
+    "app",
+    "primary"
+   ],
+   "edges": [
+    "app>primary"
+   ]
+  },
+  {
+   "text": "The primary streams WAL to each replica, which replays it. Asynchronous by default: lag is usually milliseconds, seconds under load.",
+   "nodes": [
+    "primary",
+    "r1",
+    "r2"
+   ],
+   "edges": [
+    "primary>r1",
+    "primary>r2"
+   ]
+  },
+  {
+   "text": "Read-heavy traffic spreads over the replicas: 2 replicas ≈ 3× the read capacity. Writes don't scale at all.",
+   "nodes": [
+    "app",
+    "r1",
+    "r2"
+   ],
+   "edges": [
+    "app>r1",
+    "app>r2"
+   ]
+  },
+  {
+   "text": "Read-your-writes: right after a user changes something, read it from the primary (or wait until the replica has replayed that WAL position).",
+   "nodes": [
+    "app",
+    "primary"
+   ],
+   "edges": [
+    "app>primary"
+   ]
+  }
+ ]
+}

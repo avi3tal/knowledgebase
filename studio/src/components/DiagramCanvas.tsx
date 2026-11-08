@@ -562,7 +562,9 @@ export function DiagramCanvas({
                       {truncate(n.label || n.id, presentation ? 18 : 13)}
                     </text>
                     <text className="dg-kind" x={46} y={41}>
-                      {presentation ? s.label : truncate(`${s.label} · ${n.id}`, 17)}
+                      {presentation
+                        ? truncate(n.sub ?? s.label, 20)
+                        : truncate(`${s.label} · ${n.id}`, 17)}
                     </text>
                     {isNew && !presentation && (
                       <g className="dg-new-badge" transform={`translate(${NODE_W - 30} -9)`}>

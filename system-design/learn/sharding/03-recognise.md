@@ -15,9 +15,15 @@
 - **Message queues** smooth a write **burst**. They don't raise the sustained write capacity
   of the database behind them.
 
-**Interview pitfalls:**
-- Sharding too early. Say first that one well-tuned primary plus replicas and a cache handles
-  more than people think, and back it with an estimate.
-- Naming "shard by user_id" without checking which queries then become scatter-gather.
-- Range-partitioning on a timestamp and not noticing the hot last shard.
-- Forgetting the rebalancing story, and that `% N` moves almost everything.
+> [!INTERVIEW] How to bring up sharding
+> Start with the estimate: "50k writes/s and 40 TB is past one primary, so we shard." Then name
+> the key and why: "by `conversation_id`, because every hot query (load a chat, append a
+> message) includes it." Say what becomes scatter-gather ("search by user is now a global index")
+> and how you rebalance ("fixed slots, moved online"). Mention the hot-key plan last.
+
+> [!PITFALL] Interview pitfalls
+> - Sharding too early. Say first that one well-tuned primary plus replicas and a cache handles
+>   more than people think, and back it with an estimate.
+> - Naming "shard by user_id" without checking which queries then become scatter-gather.
+> - Range-partitioning on a timestamp and not noticing the hot last shard.
+> - Forgetting the rebalancing story, and that `% N` moves almost everything.

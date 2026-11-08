@@ -250,26 +250,10 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
         const b = byId.get(e.to);
         if (!a || !b) return null;
         const key = `${e.from}>${e.to}`;
-        const p = flowCenter(a);
-        const q = flowCenter(b);
-        const n = nums.get(key);
-        const label = [n ? circled(n) : "", e.label ?? ""].filter(Boolean).join(" ");
-        const lx = a.col === b.col ? p.x + 10 : (p.x + q.x) / 2;
-        const ly = a.col === b.col ? (p.y + q.y) / 2 + 4 : p.y - 8;
         const cls = `flow-edge ${litEdges.has(key) ? "on" : dim ? "dim" : ""} ${/^no\b/i.test(e.label ?? "") ? "no" : ""}`;
         return (
           <g key={key} className={cls}>
             <path d={flowEdgePath(a, b)} markerEnd={`url(#${uid}-a)`} />
-            {label && (
-              <text
-                className="flow-edge-label"
-                x={lx}
-                y={ly}
-                textAnchor={a.col === b.col ? "start" : "middle"}
-              >
-                {label}
-              </text>
-            )}
           </g>
         );
       })}
@@ -295,6 +279,32 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
             )}
             <text x={c.x} y={c.y + 5} textAnchor="middle">
               {n.label}
+            </text>
+          </g>
+        );
+      })}
+      {f.edges.map((e) => {
+        const a = byId.get(e.from);
+        const b = byId.get(e.to);
+        if (!a || !b) return null;
+        const key = `${e.from}>${e.to}`;
+        const n = nums.get(key);
+        const label = [n ? circled(n) : "", e.label ?? ""].filter(Boolean).join(" ");
+        if (!label) return null;
+        const p = flowCenter(a);
+        const q = flowCenter(b);
+        const lx = a.col === b.col ? p.x + 10 : (p.x + q.x) / 2;
+        const ly = a.col === b.col ? (p.y + q.y) / 2 + 4 : p.y - 8;
+        const cls = `flow-edge ${litEdges.has(key) ? "on" : dim ? "dim" : ""}`;
+        return (
+          <g key={`l-${key}`} className={cls}>
+            <text
+              className="flow-edge-label"
+              x={lx}
+              y={ly}
+              textAnchor={a.col === b.col ? "start" : "middle"}
+            >
+              {label}
             </text>
           </g>
         );

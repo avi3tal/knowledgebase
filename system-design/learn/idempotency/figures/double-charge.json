@@ -1,0 +1,56 @@
+{
+ "kind": "sequence",
+ "title": "Without a key, a lost reply turns one payment into two charges",
+ "caption": "The client can't tell \"never arrived\" from \"done, reply lost\", so it retries, and the server has no way to know it already did the work.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "api",
+   "label": "Payments API",
+   "kind": "service"
+  },
+  {
+   "id": "card",
+   "label": "Card network",
+   "kind": "external"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "api",
+   "label": "POST /pay $30",
+   "note": "The first attempt reaches the server."
+  },
+  {
+   "from": "api",
+   "to": "card",
+   "label": "charge $30",
+   "note": "The side effect happens: the customer is charged once."
+  },
+  {
+   "from": "api",
+   "to": "c",
+   "label": "201 Created (lost)",
+   "style": "error",
+   "note": "The reply is dropped by a flaky mobile link or a proxy timeout. The client only sees a timeout."
+  },
+  {
+   "from": "c",
+   "to": "api",
+   "label": "POST /pay $30 (retry)",
+   "note": "Retrying is the only safe-looking move, and the request is identical."
+  },
+  {
+   "from": "api",
+   "to": "card",
+   "label": "charge $30 again",
+   "style": "error",
+   "note": "The server treats it as a new payment. The customer is now charged $60 for one checkout."
+  }
+ ]
+}

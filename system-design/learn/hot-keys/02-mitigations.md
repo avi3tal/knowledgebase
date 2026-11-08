@@ -11,27 +11,43 @@ different shards: the load becomes 3/3/3/3 instead of 9/1/1/1.
 | **request coalescing** | reads on a miss | one in-flight fetch per key, others wait for it | a little latency for the waiters |
 
 ### Sharded counters, the write side
+
+```figure
+split-counter
 ```
-like ──► INCR likes:post7#3      (r = random 0..7)
-                                          read: MGET likes:post7#0..#7 → sum
-```
-Eight sub-counters accept 8× the write rate. Counting is additive, so the read side is just a
-sum, and it can be cached for a second. Often you go further: count in memory per app server
-and flush every second, so 50 000 likes/s become a few hundred `INCRBY` calls (that's
+
+Counting is additive, so the read side is just a sum, and it can be cached for a second.
+
+> [!NUMBERS] Sizing N
+> `N = ceil(peak writes/s ÷ safe writes/s per node)`. 120 000 reactions/s at a safe 25 000/s per
+> node → N = 5. Round up to 8 for headroom. Reads now cost one `MGET` of 8 keys.
+
+Often you go further: count in memory per app server and flush every second, so 50 000 reactions/s
+from 200 servers become 200 `INCRBY` calls per second (that's
 [pre-aggregation](#/topic/system-design/pre-aggregation)).
 
+> [!PROS]
+> - Write capacity grows linearly with N.
+> - No coordination: any writer can pick any sub-key.
+
+> [!CONS]
+> - Only for **commutative** updates (add, count, set-add). A "current value" can't be split.
+> - Every reader must know N and merge, and changing N needs care.
+
 ### Local cache, the read side
-With 200 app servers and a 2 s local TTL, the shard owning a viral key sees at most
-**200 / 2 = 100 reads/s** for it, however many million users ask. The price is bounded
-staleness, which is fine for a like count and not fine for a stock level at checkout.
+
+```figure
+local-cache
+```
+
+> [!PROS]
+> - The shard's load is capped at `servers ÷ TTL`, independent of the audience size.
+> - Reads are served from process memory in microseconds.
+
+> [!CONS]
+> - Up to one TTL of staleness, different on every server. Fine for a like count, not for a
+>   stock level at checkout.
+> - Memory on every server, so keep it to the few keys that are actually hot.
 
 The trace below routes 12 requests round-robin over 3 app servers, each with its own short-lived
 copy. Count how many requests actually reach the shard.
-
-### Choosing
-- Mostly **reads** of a value that can lag a second → local cache, plus coalescing on miss.
-- Mostly **writes** that are commutative (counts, sums, set adds) → split into sub-keys.
-- Writes that must be **ordered or exact** (the current high bid) → you can't split. Serialise
-  them through one partition and make that single path fast, or shrink what each write does.
-- Make it **adaptive**: only split or locally cache keys that the detector flags, so that the
-  millions of cold keys don't pay N-way reads.

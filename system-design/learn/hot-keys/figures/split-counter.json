@@ -1,0 +1,130 @@
+{
+ "kind": "architecture",
+ "title": "Sharded counter: writes spread over N sub-keys, reads add them up",
+ "caption": "Counting is commutative, so each reaction can go to any sub-counter; the reader fans out once and sums.",
+ "nodes": [
+  {
+   "id": "writers",
+   "kind": "service",
+   "label": "Reaction handler",
+   "x": 0,
+   "y": 330
+  },
+  {
+   "id": "k0",
+   "kind": "cache",
+   "label": "reacts:s5#0",
+   "x": 300,
+   "y": 0
+  },
+  {
+   "id": "k1",
+   "kind": "cache",
+   "label": "reacts:s5#1",
+   "x": 300,
+   "y": 220
+  },
+  {
+   "id": "k2",
+   "kind": "cache",
+   "label": "reacts:s5#2",
+   "x": 300,
+   "y": 440
+  },
+  {
+   "id": "k3",
+   "kind": "cache",
+   "label": "reacts:s5#3",
+   "x": 300,
+   "y": 660
+  },
+  {
+   "id": "reader",
+   "kind": "service",
+   "label": "Count reader",
+   "x": 600,
+   "y": 330
+  }
+ ],
+ "edges": [
+  {
+   "from": "writers",
+   "to": "k0",
+   "label": "INCR"
+  },
+  {
+   "from": "writers",
+   "to": "k1",
+   "label": "INCR"
+  },
+  {
+   "from": "writers",
+   "to": "k2",
+   "label": "INCR"
+  },
+  {
+   "from": "writers",
+   "to": "k3",
+   "label": "INCR"
+  },
+  {
+   "from": "reader",
+   "to": "k0"
+  },
+  {
+   "from": "reader",
+   "to": "k1"
+  },
+  {
+   "from": "reader",
+   "to": "k2"
+  },
+  {
+   "from": "reader",
+   "to": "k3"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Each reaction picks r = random(0..3) and runs INCR reacts:s5#r. The suffix changes the hash, so the four sub-keys live on four different shards.",
+   "nodes": [
+    "writers",
+    "k0",
+    "k1",
+    "k2",
+    "k3"
+   ],
+   "edges": [
+    "writers>k0",
+    "writers>k1",
+    "writers>k2",
+    "writers>k3"
+   ]
+  },
+  {
+   "text": "120 000 reactions/s become ~30 000/s per shard, well under one node's ~100k. Need more headroom? Raise N.",
+   "nodes": [
+    "k0",
+    "k1",
+    "k2",
+    "k3"
+   ]
+  },
+  {
+   "text": "The reader issues one MGET of all four sub-keys and adds them. Cache that total for a second and reads stay cheap too.",
+   "nodes": [
+    "reader",
+    "k0",
+    "k1",
+    "k2",
+    "k3"
+   ],
+   "edges": [
+    "reader>k0",
+    "reader>k1",
+    "reader>k2",
+    "reader>k3"
+   ]
+  }
+ ]
+}

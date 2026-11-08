@@ -343,3 +343,48 @@
 .seq-msg.error.on .seq-label {
   fill: var(--bad);
 }
+
+.flow-edge-label,
+.seq-label {
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.fig .dg-label {
+  font-size: 12px;
+}
+
+/* comparison tables in lessons and design pages */
+.markdown table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin: 14px 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.9rem;
+  background: var(--panel);
+}
+.markdown th {
+  background: var(--panel-2);
+  text-align: left;
+  font-weight: 650;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.markdown td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.markdown tr:last-child td {
+  border-bottom: none;
+}
+.markdown tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--panel-2) 45%, var(--panel));
+}
+.markdown td:first-child {
+  font-weight: 600;
+}

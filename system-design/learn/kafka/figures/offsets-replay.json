@@ -1,0 +1,66 @@
+{
+ "kind": "sequence",
+ "title": "Reading doesn't delete: every group keeps its own offset",
+ "caption": "Billing reads the newest record while a brand-new analytics group replays the same partition from the start.",
+ "actors": [
+  {
+   "id": "prod",
+   "label": "Producer",
+   "kind": "service"
+  },
+  {
+   "id": "p0",
+   "label": "Partition p0",
+   "kind": "stream"
+  },
+  {
+   "id": "bill",
+   "label": "Group billing",
+   "kind": "worker"
+  },
+  {
+   "id": "ana",
+   "label": "Group analytics",
+   "kind": "worker"
+  }
+ ],
+ "messages": [
+  {
+   "from": "prod",
+   "to": "p0",
+   "label": "append key 17 → offset 3",
+   "note": "Offsets 0–2 already exist. The new record goes to the tail and gets offset 3 for good."
+  },
+  {
+   "from": "bill",
+   "to": "p0",
+   "label": "poll from committed offset 3",
+   "note": "Billing has finished 0–2, so its committed offset is 3: the next one to read."
+  },
+  {
+   "from": "p0",
+   "to": "bill",
+   "label": "record at offset 3",
+   "style": "reply"
+  },
+  {
+   "from": "bill",
+   "to": "p0",
+   "label": "commit offset 4",
+   "note": "A commit just saves 'done up to here' for this group. The record stays in the log."
+  },
+  {
+   "from": "ana",
+   "to": "p0",
+   "label": "poll from offset 0 (earliest)",
+   "note": "A new group, or one rewound after a bug fix, starts wherever it likes inside the retention window."
+  },
+  {
+   "from": "p0",
+   "to": "ana",
+   "label": "records 0, 1, 2, 3",
+   "style": "reply",
+   "note": "Same records, independent position. Billing isn't affected, and the producer did nothing extra."
+  }
+ ]
+}

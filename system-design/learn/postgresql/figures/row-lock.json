@@ -1,0 +1,62 @@
+{
+ "kind": "sequence",
+ "title": "Two buyers, one seat: FOR UPDATE makes the second one wait",
+ "caption": "The row lock serialises writers on that row only. The loser re-reads after the winner commits and sees the seat is gone.",
+ "actors": [
+  {
+   "id": "a",
+   "label": "Buyer A",
+   "kind": "service"
+  },
+  {
+   "id": "db",
+   "label": "PostgreSQL",
+   "kind": "sql"
+  },
+  {
+   "id": "b",
+   "label": "Buyer B",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "a",
+   "to": "db",
+   "label": "SELECT seat 12A FOR UPDATE",
+   "note": "A takes a row lock on seat 12A."
+  },
+  {
+   "from": "db",
+   "to": "a",
+   "label": "status = free",
+   "style": "reply"
+  },
+  {
+   "from": "b",
+   "to": "db",
+   "label": "SELECT seat 12A FOR UPDATE",
+   "note": "B asks for the same row lock and blocks. Other seats are not affected."
+  },
+  {
+   "from": "a",
+   "to": "db",
+   "label": "UPDATE status = booked; COMMIT",
+   "note": "A books and commits; the lock is released."
+  },
+  {
+   "from": "db",
+   "to": "b",
+   "label": "status = booked",
+   "style": "reply",
+   "note": "B wakes up and reads the committed row."
+  },
+  {
+   "from": "b",
+   "to": "db",
+   "label": "ROLLBACK: sold out",
+   "style": "error",
+   "note": "No double booking. Cost: hot rows queue, so 1 row at ~2 ms per transaction caps near 500 writes/s."
+  }
+ ]
+}

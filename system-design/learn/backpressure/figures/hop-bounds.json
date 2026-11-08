@@ -1,0 +1,128 @@
+{
+ "kind": "architecture",
+ "title": "Every hop needs its own bound, and the cheapest place to say no is the edge",
+ "caption": "Each arrow is a place where work can pile up, so each one gets a limit and a policy for when it's reached.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Client",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "edge",
+   "kind": "api-gateway",
+   "label": "Edge gateway",
+   "x": 280,
+   "y": 0
+  },
+  {
+   "id": "svc",
+   "kind": "service",
+   "label": "Order service",
+   "x": 560,
+   "y": 0
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Job queue",
+   "x": 560,
+   "y": 220
+  },
+  {
+   "id": "wk",
+   "kind": "worker",
+   "label": "Workers",
+   "x": 280,
+   "y": 220
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Database",
+   "x": 0,
+   "y": 220
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "edge",
+   "label": "request"
+  },
+  {
+   "from": "edge",
+   "to": "svc",
+   "label": "admitted"
+  },
+  {
+   "from": "svc",
+   "to": "q",
+   "label": "max depth"
+  },
+  {
+   "from": "wk",
+   "to": "q",
+   "label": "pull"
+  },
+  {
+   "from": "wk",
+   "to": "db",
+   "label": "pool of 20"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Edge: admission control. A token bucket or waiting-room token decides who gets in; a 429 here costs microseconds.",
+   "nodes": [
+    "client",
+    "edge"
+   ],
+   "edges": [
+    "client>edge"
+   ]
+  },
+  {
+   "text": "Service: bounded concurrency, e.g. at most 200 requests in flight per instance. Request 201 gets a fast 503 instead of queueing in memory.",
+   "nodes": [
+    "edge",
+    "svc"
+   ],
+   "edges": [
+    "edge>svc"
+   ]
+  },
+  {
+   "text": "Queue: a maximum depth. When it's full, the service rejects or waits briefly, so the queue can't grow without limit.",
+   "nodes": [
+    "svc",
+    "q"
+   ],
+   "edges": [
+    "svc>q"
+   ]
+  },
+  {
+   "text": "Workers pull, so they can't be overrun. If they fall behind, the queue's lag grows, and lag is the metric you alert on.",
+   "nodes": [
+    "wk",
+    "q"
+   ],
+   "edges": [
+    "wk>q"
+   ]
+  },
+  {
+   "text": "Database: a connection pool of 20. Extra work waits for a connection, with a deadline, instead of opening the 500th connection.",
+   "nodes": [
+    "wk",
+    "db"
+   ],
+   "edges": [
+    "wk>db"
+   ]
+  }
+ ]
+}

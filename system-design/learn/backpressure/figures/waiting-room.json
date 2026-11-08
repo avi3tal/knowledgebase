@@ -1,0 +1,126 @@
+{
+ "kind": "architecture",
+ "title": "A waiting room lets a spike in at the rate the core can take",
+ "caption": "The crowd hits a cheap edge page and a FIFO line. The core only sees users who hold a signed admission token.",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "Users (100× cap)",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "room",
+   "kind": "cdn",
+   "label": "Waiting room",
+   "x": 300,
+   "y": 170
+  },
+  {
+   "id": "line",
+   "kind": "cache",
+   "label": "Line (FIFO)",
+   "x": 300,
+   "y": 350
+  },
+  {
+   "id": "adm",
+   "kind": "scheduler",
+   "label": "Admitter",
+   "x": 600,
+   "y": 350
+  },
+  {
+   "id": "core",
+   "kind": "service",
+   "label": "Ticket service",
+   "x": 300,
+   "y": 0
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Inventory",
+   "x": 600,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "room",
+   "label": "join"
+  },
+  {
+   "from": "room",
+   "to": "line",
+   "label": "position + ETA"
+  },
+  {
+   "from": "adm",
+   "to": "line",
+   "label": "pop 2 000/min"
+  },
+  {
+   "from": "adm",
+   "to": "room",
+   "label": "signed token"
+  },
+  {
+   "from": "users",
+   "to": "core",
+   "label": "request + token"
+  },
+  {
+   "from": "core",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Everyone who arrives gets a static page from the edge. It's cheap to serve, so the spike lands here and not on the core.",
+   "nodes": [
+    "users",
+    "room"
+   ],
+   "edges": [
+    "users>room"
+   ]
+  },
+  {
+   "text": "Each user is appended to a FIFO line in a fast store and shown a position and ETA. When the line is full, new arrivals are told to come back later.",
+   "nodes": [
+    "room",
+    "line"
+   ],
+   "edges": [
+    "room>line"
+   ]
+  },
+  {
+   "text": "The admitter pops users at the rate the core can sustain and issues each one a signed, short-lived admission token.",
+   "nodes": [
+    "adm",
+    "line",
+    "room"
+   ],
+   "edges": [
+    "adm>line",
+    "adm>room"
+   ]
+  },
+  {
+   "text": "Only token holders reach the core, which checks the token on every request. The core's load stays flat however big the crowd is.",
+   "nodes": [
+    "users",
+    "core",
+    "db"
+   ],
+   "edges": [
+    "users>core",
+    "core>db"
+   ]
+  }
+ ]
+}

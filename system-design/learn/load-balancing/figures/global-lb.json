@@ -1,0 +1,117 @@
+{
+ "kind": "architecture",
+ "title": "Global load balancing: send users to the nearest healthy region",
+ "caption": "DNS (or anycast) chooses the region; each region's load balancer then spreads load inside it.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Users",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "dns",
+   "kind": "dns",
+   "label": "GeoDNS",
+   "x": 0,
+   "y": 340
+  },
+  {
+   "id": "lbeu",
+   "kind": "load-balancer",
+   "label": "EU load balancer",
+   "x": 300,
+   "y": 40
+  },
+  {
+   "id": "lbus",
+   "kind": "load-balancer",
+   "label": "US load balancer",
+   "x": 300,
+   "y": 300
+  },
+  {
+   "id": "appeu",
+   "kind": "service",
+   "label": "EU app servers",
+   "x": 600,
+   "y": 40
+  },
+  {
+   "id": "appus",
+   "kind": "service",
+   "label": "US app servers",
+   "x": 600,
+   "y": 300
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "dns",
+   "label": "resolve"
+  },
+  {
+   "from": "client",
+   "to": "lbeu",
+   "label": "nearest region"
+  },
+  {
+   "from": "client",
+   "to": "lbus",
+   "label": "failover"
+  },
+  {
+   "from": "lbeu",
+   "to": "appeu"
+  },
+  {
+   "from": "lbus",
+   "to": "appus"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The resolver asks GeoDNS, which answers with the address of the closest region that passes its health checks.",
+   "nodes": [
+    "client",
+    "dns"
+   ],
+   "edges": [
+    "client>dns"
+   ]
+  },
+  {
+   "text": "European users land on the EU load balancer, which spreads them over EU servers: ~20 ms away instead of ~150 ms.",
+   "nodes": [
+    "client",
+    "lbeu",
+    "appeu"
+   ],
+   "edges": [
+    "client>lbeu",
+    "lbeu>appeu"
+   ]
+  },
+  {
+   "text": "The EU region fails. DNS starts answering with the US address, and new connections fail over. Clients holding a cached answer wait out the TTL, so keep it short (30–60 s).",
+   "nodes": [
+    "client",
+    "lbus",
+    "appus"
+   ],
+   "edges": [
+    "client>lbus",
+    "lbus>appus"
+   ]
+  },
+  {
+   "text": "Each regional LB is itself a redundant pair or cluster with a floating IP, so the LB is never the single point of failure.",
+   "nodes": [
+    "lbeu",
+    "lbus"
+   ]
+  }
+ ]
+}

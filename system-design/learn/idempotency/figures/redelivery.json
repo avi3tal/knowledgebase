@@ -1,0 +1,63 @@
+{
+ "kind": "sequence",
+ "title": "Crash after commit, before ack: the redelivery is caught by the seen id",
+ "caption": "At-least-once delivery plus dedup in the consumer gives an exactly-once effect.",
+ "actors": [
+  {
+   "id": "q",
+   "label": "Broker",
+   "kind": "queue"
+  },
+  {
+   "id": "w",
+   "label": "Worker",
+   "kind": "worker"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "q",
+   "to": "w",
+   "label": "deliver m1 (OrderPlaced #81)"
+  },
+  {
+   "from": "w",
+   "to": "db",
+   "label": "txn: insert seen m1 + print label",
+   "note": "Both rows commit together, or neither does."
+  },
+  {
+   "from": "w",
+   "to": "w",
+   "label": "crash before ack",
+   "style": "self",
+   "note": "The broker never hears that m1 was handled."
+  },
+  {
+   "from": "q",
+   "to": "w",
+   "label": "redeliver m1",
+   "style": "async",
+   "note": "After the visibility timeout or rebalance, m1 goes to a worker again."
+  },
+  {
+   "from": "w",
+   "to": "db",
+   "label": "insert seen m1 → duplicate",
+   "style": "error",
+   "note": "The unique id rejects it, so the transaction rolls back and no second label is printed."
+  },
+  {
+   "from": "w",
+   "to": "q",
+   "label": "ack m1",
+   "style": "reply",
+   "note": "Ack anyway: the message is handled. The window must outlive the longest redelivery delay."
+  }
+ ]
+}

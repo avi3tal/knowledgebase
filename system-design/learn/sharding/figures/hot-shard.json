@@ -1,0 +1,104 @@
+{
+ "kind": "architecture",
+ "title": "Range on a timestamp: every new write lands on the last shard",
+ "caption": "New rows always carry the largest key, so the newest range takes all of today's writes while older shards sit idle.",
+ "nodes": [
+  {
+   "id": "orders",
+   "kind": "service",
+   "label": "Order service",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "router",
+   "kind": "coordinator",
+   "label": "Range router",
+   "x": 280,
+   "y": 170
+  },
+  {
+   "id": "s0",
+   "kind": "sql",
+   "label": "Jan – Apr",
+   "x": 580,
+   "y": 20
+  },
+  {
+   "id": "s1",
+   "kind": "sql",
+   "label": "May – Aug",
+   "x": 580,
+   "y": 170
+  },
+  {
+   "id": "s2",
+   "kind": "sql",
+   "label": "Sep – Dec (hot)",
+   "x": 580,
+   "y": 320
+  }
+ ],
+ "edges": [
+  {
+   "from": "orders",
+   "to": "router",
+   "label": "created_at = now"
+  },
+  {
+   "from": "router",
+   "to": "s0",
+   "label": "old reads"
+  },
+  {
+   "from": "router",
+   "to": "s1",
+   "label": "old reads"
+  },
+  {
+   "from": "router",
+   "to": "s2",
+   "label": "100% of writes"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Orders are keyed by created_at and each shard owns a range of months.",
+   "nodes": [
+    "orders",
+    "router"
+   ],
+   "edges": [
+    "orders>router"
+   ]
+  },
+  {
+   "text": "Every insert has created_at = now, which falls in the newest range: one node takes 100% of write traffic.",
+   "nodes": [
+    "router",
+    "s2"
+   ],
+   "edges": [
+    "router>s2"
+   ]
+  },
+  {
+   "text": "Older shards only serve occasional reads of history. Three shards, the write capacity of one.",
+   "nodes": [
+    "s0",
+    "s1"
+   ],
+   "edges": [
+    "router>s0",
+    "router>s1"
+   ]
+  },
+  {
+   "text": "Fix: hash the key, or lead with a well-spread column such as (customer_id, created_at), so writes spread while one customer's orders stay sorted.",
+   "nodes": [
+    "router"
+   ],
+   "edges": []
+  }
+ ]
+}

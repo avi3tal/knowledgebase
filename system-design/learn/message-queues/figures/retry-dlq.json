@@ -1,0 +1,141 @@
+{
+ "kind": "flowchart",
+ "title": "Every failed message is either retried later or parked in the DLQ",
+ "caption": "Transient errors get another try after a growing delay. A message that keeps failing is moved aside so it stops blocking or burning the consumers.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Message arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "run",
+   "type": "step",
+   "label": "Run handler",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "ok",
+   "type": "decision",
+   "label": "Succeeded?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "ack",
+   "type": "end",
+   "label": "Ack (delete)",
+   "col": 0,
+   "row": 3,
+   "tone": "good"
+  },
+  {
+   "id": "left",
+   "type": "decision",
+   "label": "attempts < 3 ?",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "retry",
+   "type": "end",
+   "label": "Retry w/ backoff",
+   "col": 1,
+   "row": 4
+  },
+  {
+   "id": "dlq",
+   "type": "end",
+   "label": "Move to DLQ",
+   "col": 2,
+   "row": 4,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "run"
+  },
+  {
+   "from": "run",
+   "to": "ok"
+  },
+  {
+   "from": "ok",
+   "to": "ack",
+   "label": "yes"
+  },
+  {
+   "from": "ok",
+   "to": "left",
+   "label": "no"
+  },
+  {
+   "from": "left",
+   "to": "retry",
+   "label": "yes"
+  },
+  {
+   "from": "left",
+   "to": "dlq",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The consumer receives a message and runs the handler.",
+   "nodes": [
+    "in",
+    "run"
+   ],
+   "edges": [
+    "in>run"
+   ]
+  },
+  {
+   "text": "Success: ack, and the broker deletes the message.",
+   "nodes": [
+    "ok",
+    "ack"
+   ],
+   "edges": [
+    "run>ok",
+    "ok>ack"
+   ]
+  },
+  {
+   "text": "Failure: has it already used up its attempts?",
+   "nodes": [
+    "ok",
+    "left"
+   ],
+   "edges": [
+    "ok>left"
+   ]
+  },
+  {
+   "text": "Not yet: put it back with a delay of base × 2^attempt plus jitter (1 s, 2 s, 4 s…). It comes back to 'Run handler' later.",
+   "nodes": [
+    "left",
+    "retry"
+   ],
+   "edges": [
+    "left>retry"
+   ]
+  },
+  {
+   "text": "Out of attempts: it's a poison message. Park it in the dead-letter queue, alert, and replay it by hand once the bug is fixed.",
+   "nodes": [
+    "left",
+    "dlq"
+   ],
+   "edges": [
+    "left>dlq"
+   ]
+  }
+ ]
+}

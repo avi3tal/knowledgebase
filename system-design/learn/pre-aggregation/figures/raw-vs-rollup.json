@@ -1,0 +1,50 @@
+{
+ "kind": "sequence",
+ "title": "Same question, 36M rows scanned vs 60 rows read",
+ "caption": "Pre-aggregation moves the counting from every query to ingest time, where it happens once.",
+ "actors": [
+  {
+   "id": "d",
+   "label": "Dashboard",
+   "kind": "service"
+  },
+  {
+   "id": "raw",
+   "label": "Raw events",
+   "kind": "blob"
+  },
+  {
+   "id": "roll",
+   "label": "Minute rollups",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "d",
+   "to": "raw",
+   "label": "clicks for ad1, last hour?",
+   "note": "Without an index by ad, the query reads every click of the hour: 10k/s × 3,600 s = 36M rows."
+  },
+  {
+   "from": "raw",
+   "to": "d",
+   "label": "answer after seconds",
+   "style": "error",
+   "note": "Too slow for a panel that refreshes every 10 s, and the cost repeats on every refresh by every viewer."
+  },
+  {
+   "from": "d",
+   "to": "roll",
+   "label": "GET ad1 @ 12:00 … 12:59",
+   "note": "The counting already happened as events arrived."
+  },
+  {
+   "from": "roll",
+   "to": "d",
+   "label": "60 rows, ~2 ms",
+   "style": "reply",
+   "note": "60 small rows. The work no longer depends on how many clicks there were."
+  }
+ ]
+}

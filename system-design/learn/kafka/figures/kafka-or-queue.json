@@ -1,0 +1,139 @@
+{
+ "kind": "flowchart",
+ "title": "Kafka or a task queue? Ask what the readers need",
+ "caption": "A log pays off when events are read more than once. Per-job retries and delays point to a task queue.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Async work",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "replay",
+   "type": "decision",
+   "label": "Replay needed?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "kafka",
+   "type": "end",
+   "label": "Kafka (a log)",
+   "col": 1,
+   "row": 1,
+   "tone": "good"
+  },
+  {
+   "id": "many",
+   "type": "decision",
+   "label": "Many readers?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "retry",
+   "type": "decision",
+   "label": "Per-job retries?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "tq",
+   "type": "end",
+   "label": "Task queue",
+   "col": 1,
+   "row": 3,
+   "tone": "good"
+  },
+  {
+   "id": "either",
+   "type": "end",
+   "label": "Simplest to run",
+   "col": 0,
+   "row": 4
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "replay"
+  },
+  {
+   "from": "replay",
+   "to": "kafka",
+   "label": "yes"
+  },
+  {
+   "from": "replay",
+   "to": "many",
+   "label": "no"
+  },
+  {
+   "from": "many",
+   "to": "kafka",
+   "label": "yes"
+  },
+  {
+   "from": "many",
+   "to": "retry",
+   "label": "no"
+  },
+  {
+   "from": "retry",
+   "to": "tq",
+   "label": "yes"
+  },
+  {
+   "from": "retry",
+   "to": "either",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Will you ever reprocess old events (bug fix, backfill, new index)? Only a retained log can do that.",
+   "nodes": [
+    "in",
+    "replay",
+    "kafka"
+   ],
+   "edges": [
+    "in>replay",
+    "replay>kafka"
+   ]
+  },
+  {
+   "text": "Will several independent services read the same events, or do you need per-key order at high volume? A log serves every group for the cost of one write.",
+   "nodes": [
+    "many",
+    "kafka"
+   ],
+   "edges": [
+    "replay>many",
+    "many>kafka"
+   ]
+  },
+  {
+   "text": "Do individual jobs need retries, delays, priorities or a DLQ? Kafka has none of these per record. Use SQS, RabbitMQ or a job framework.",
+   "nodes": [
+    "retry",
+    "tq"
+   ],
+   "edges": [
+    "many>retry",
+    "retry>tq"
+   ]
+  },
+  {
+   "text": "None of the above: either works, so choose the one your team already runs.",
+   "nodes": [
+    "either"
+   ],
+   "edges": [
+    "retry>either"
+   ]
+  }
+ ]
+}

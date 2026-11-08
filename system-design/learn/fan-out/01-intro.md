@@ -7,30 +7,49 @@ follower's feed, a group message to every member's inbox, a comment to everyone 
 stream. Somewhere, one event has to turn into N deliveries. The only real choice is **when**
 you pay for those N: at write time or at read time.
 
-```
-fan-out on WRITE (push)                      fan-out on READ (pull)
+## Fan-out on write (push)
+Precompute every recipient's result. When someone posts, workers copy the post id into each
+follower's timeline. Reading is then one key lookup.
 
-post ─► workers ─┬─► timeline:bob  [p9, …]   post ─► posts:ann [p9, …]   (one write)
-                 ├─► timeline:cat  [p9, …]
-                 └─► timeline:dan  [p9, …]   open feed (bob) ─► read posts of each followee
-open feed (bob) ─► read timeline:bob            ann, star, eve, … ─► merge + sort ─► top 20
+```figure
+push-flow
 ```
 
-- **Push** precomputes every recipient's result. Reading is one key lookup, so feeds load in a
-  few ms. Writing costs one insert **per follower**.
-- **Pull** writes each post once. Reading costs one query **per followee**, then a merge and a
-  sort, on every open.
+> [!PROS]
+> - Reads are one lookup in a few ms, whatever the reader follows.
+> - The expensive part runs asynchronously, off the request path, and can lag a few seconds.
+
+> [!CONS]
+> - One insert **per follower**, so a 40 M-follower account is a 40 M-write event.
+> - Storage for every timeline, including for users who never come back.
+
+## Fan-out on read (pull)
+Write each post once. When someone opens the feed, fetch the recent posts of everyone they
+follow, merge and sort.
+
+```figure
+pull-flow
+```
+
+> [!PROS]
+> - Posting is one write, and big accounts cost nothing extra.
+> - Always fresh, with no timelines to store or repair.
+
+> [!CONS]
+> - One query **per followee** plus a merge on every open, on the path the user waits for.
+> - Read latency grows with the number of accounts followed.
 
 ## Do the arithmetic
-Take 200 M daily users who open the feed 10× a day and post every other day: about
-**23 000 feed opens/s** against **~1 200 posts/s**. Reads win by ~20:1, which points to push.
+> [!NUMBERS] The inputs
+> - 200 M daily users × 10 opens a day ÷ 86 400 s ≈ **23 000 feed opens/s**.
+> - 200 M × 0.5 posts a day ÷ 86 400 s ≈ **1 200 posts/s**.
+> - Average 300 followers. Reads outnumber posts about **20 : 1**, which points to push.
 
-```
-push:  1 200 posts/s × 300 followers  ≈ 360 000 timeline inserts/s   (spread over workers)
-       23 000 opens/s × 1 read        ≈  23 000 reads/s
-pull:  1 200 posts/s × 1 write        ≈   1 200 writes/s
-       23 000 opens/s × 300 followees ≈ 6 900 000 reads/s, plus merging
-```
+| per second | push | pull |
+|---|---|---|
+| writes | 1 200 posts × 300 followers ≈ **360 000** timeline inserts (async) | 1 200 posts × 1 ≈ **1 200** |
+| reads | 23 000 opens × 1 timeline ≈ **23 000** | 23 000 opens × 300 followees ≈ **6 900 000**, plus merging |
+| latency the user feels | one key read, a few ms | 300 lookups and a sort, every open |
 
 Push moves the cost to the cheaper side: writes can run **asynchronously**, through a
 [queue](#/learn/system-design/message-queues) with workers, a few seconds behind. A read is the

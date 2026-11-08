@@ -1,0 +1,121 @@
+{
+ "kind": "flowchart",
+ "title": "A deep dive is a decision, not a lecture",
+ "caption": "Name the problem, compare a few options against the requirements, commit to one and say why.",
+ "nodes": [
+  {
+   "id": "pick",
+   "type": "start",
+   "label": "Pick a hard part",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "problem",
+   "type": "step",
+   "label": "State the problem",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "opts",
+   "type": "step",
+   "label": "List 2–3 options",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "fits",
+   "type": "decision",
+   "label": "Meets the NFRs?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "drop",
+   "type": "end",
+   "label": "Drop it, say why",
+   "col": 1,
+   "row": 3,
+   "tone": "bad"
+  },
+  {
+   "id": "choose",
+   "type": "end",
+   "label": "Choose + why",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "pick",
+   "to": "problem"
+  },
+  {
+   "from": "problem",
+   "to": "opts"
+  },
+  {
+   "from": "opts",
+   "to": "fits"
+  },
+  {
+   "from": "fits",
+   "to": "drop",
+   "label": "no"
+  },
+  {
+   "from": "fits",
+   "to": "choose",
+   "label": "yes"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Pick the part with the most risk, or ask: \"I'd like to go deep on ranking and the write path. Any preference?\"",
+   "nodes": [
+    "pick"
+   ]
+  },
+  {
+   "text": "One sentence of problem: \"rank of one player among 5 M, under 100 ms\".",
+   "nodes": [
+    "problem"
+   ],
+   "edges": [
+    "pick>problem"
+   ]
+  },
+  {
+   "text": "Two or three real options, each with a pro and a con.",
+   "nodes": [
+    "opts"
+   ],
+   "edges": [
+    "problem>opts"
+   ]
+  },
+  {
+   "text": "Test each against the requirements. Say out loud why an option loses: that is the trade-off talk interviewers listen for.",
+   "nodes": [
+    "fits",
+    "drop"
+   ],
+   "edges": [
+    "opts>fits",
+    "fits>drop"
+   ]
+  },
+  {
+   "text": "Commit: \"sorted set, because reads need O(log n) rank and a few seconds of lag is allowed\". A dive without a choice doesn't count.",
+   "nodes": [
+    "choose"
+   ],
+   "edges": [
+    "fits>choose"
+   ]
+  }
+ ]
+}

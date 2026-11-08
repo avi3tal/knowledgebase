@@ -8,24 +8,34 @@ when a request times out, the client **can't tell** whether the server never got
 the work and lost the reply. The only safe move is to retry, so the server must make retries
 harmless.
 
-```
-client ──POST /pay $30──► server ──charge──► card network   ✓ charged
-client ◄──── timeout ──── (reply lost)
-client ──POST /pay $30──► server ──charge──► card network   ✓ charged AGAIN
+```figure
+double-charge
 ```
 
-At 1M payments a day with a 0.1% timeout-and-retry rate, that's **1 000 double charges a
-day** without protection.
+> [!NUMBERS] What "rare" retries cost
+> 1M payments/day × 0.1% timeout-and-retry rate = **1 000 double charges a day**, each one a
+> support ticket and a refund. Retries are not an edge case at scale; they are steady traffic.
 
 ## The idempotency key
-The client generates a unique key (a UUID) **once per logical operation** and sends it on
-every attempt, e.g. an `Idempotency-Key` header. The server keeps a table:
+The client generates a unique key (a UUID) **once per logical operation**, for example when
+the user presses *Pay*, and sends it on every attempt in an `Idempotency-Key` header. The
+server remembers each key with the response it produced:
 
+```figure
+key-replay
 ```
-idempotency_keys
- key (PK)  │ request_hash │ status       │ response            │ created_at
- 7f3a…     │ sha256(body) │ done         │ 201 {payment_id: …} │ 10:02:11
-```
+
+The table behind it is small and boring, which is the point:
+
+| column | example | why it's there |
+|---|---|---|
+| `key` (unique) | `7f3a…` | the referee: only one insert can win |
+| `request_hash` | `sha256(body)` | catches a key reused with a different body |
+| `status` | `in_progress` / `done` | tells a retry whether to wait or replay |
+| `response` | `201 {payment_id: pay_42}` | replayed byte for byte |
+| `created_at` | `10:02:11` | drives the TTL clean-up |
+
+The simplest version of the handler:
 
 ```python
 def pay(key, body):
@@ -37,9 +47,17 @@ def pay(key, body):
     return result
 ```
 
-The second attempt finds the key and gets back the **stored response**, byte for byte, so the
-client can't tell it was a retry. Storage is cheap: 1M keys a day × ~500 B × a 24 h TTL is
-about **0.5 GB**.
+The second attempt finds the key and gets back the **stored response**, so the client can't
+tell it was a retry. This sketch still has a race (two retries 5 ms apart both miss the
+lookup); the next section fixes it.
+
+> [!NUMBERS] Storage for the key table
+> keys/day × row size × TTL = 1M × ~500 B × 1 day ≈ **0.5 GB**. Even a 7-day TTL is 3.5 GB:
+> one small indexed table, not a new system.
+
+> [!TIP]
+> The key must come from the **client** and stay the same across retries. A key the server
+> generates per request is new on every attempt, so it can never match.
 
 Step through it below. Seven requests arrive, but only three are distinct operations.
 Duplicates are replayed from `keys`, and the reused key `k3` with a different amount is

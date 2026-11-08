@@ -7,21 +7,22 @@ last hour", "p50 latency per hour this week". Answering from raw events means sc
 of rows on every refresh. **Pre-aggregation** does the counting **once, as events arrive**, and
 stores small summary rows that the query reads instead.
 
-```
-raw events (10k/s)                     minute buckets                  dashboard
-─────────────────────                  ──────────────────              ─────────────
- 12:00:05 ad1 click ┐                   ad1 @12:00 → 2      ┐
- 12:00:30 ad1 click ┘──► stream job ──► ad1 @12:01 → 3      ├──►  reads 60 rows
- 12:01:01 ad1 click ┐    (count per     ad1 @12:02 → 2      ┘     for "last hour"
- 12:01:10 ad1 click ┘     ad, minute)   ad2 @12:00 → 1
+```figure
+ingest-pipeline
 ```
 
 ## The numbers
-An ad platform with 10k clicks/s produces ~864M raw events a day. One ad's "last hour" query
-over raw data scans every click of that hour, roughly 36M rows if you can't index by ad. With
-per-minute buckets it reads **60 rows**, a few kilobytes, in a millisecond or two. Storage shrinks too:
-10M ads × 1,440 minutes is the upper bound, but only active ads produce buckets, so a day's
-rollups are often ~100× smaller than the raw stream.
+
+> [!NUMBERS] Raw scan vs minute buckets (10k clicks/s)
+> - Raw volume: 10k/s × 86,400 s ≈ **864M events/day**.
+> - "Last hour for one ad" over raw data, without an index by ad: 10k/s × 3,600 s = **36M rows**.
+> - The same question over `(ad, minute)` buckets: **60 rows**, a few kilobytes, ~1–2 ms.
+> - Storage: 10M ads × 1,440 minutes is the upper bound, but only active ads produce buckets, so
+>   a day's rollups are often ~100× smaller than the raw stream.
+
+```figure
+raw-vs-rollup
+```
 
 ## Tumbling windows
 A **tumbling window** is a fixed, non-overlapping interval: every event belongs to exactly one
@@ -32,9 +33,25 @@ def on_event(ad_id, ts):
     key = (ad_id, ts // 60)
     buckets[key] += 1          # upsert: insert at 0 if missing, then add
 ```
-In production this runs in a [stream processor](#/topic/system-design/stream-processing)
-(e.g. Flink or Kafka Streams) with keyed state, and the finished buckets are upserted into the
-serving store. For modest volumes, a batch job every few minutes over the raw log works too.
+
+## Where the counting runs
+
+| option | freshness | cost per query | flexibility |
+|---|---|---|---|
+| query raw events (OLAP scan) | seconds | scans every matching event | any filter, any group-by |
+| batch rollup every N minutes | N minutes | reads buckets | fixed dimensions |
+| stream rollup on ingest | seconds | reads buckets | fixed dimensions |
+
+> [!PROS] Stream rollup
+> - Fresh numbers and constant-cost reads, whatever the traffic.
+> - Writes shrink too: one `+n` upsert per bucket per flush instead of one write per event.
+
+> [!CONS] Stream rollup
+> - A [stream processor](#/topic/system-design/stream-processing) (Flink, Kafka Streams) with
+>   keyed state, checkpoints and watermarks to run and operate.
+> - Only answers the questions you planned for.
+
+For modest volumes, a batch job every few minutes over the raw log is simpler and good enough.
 
 ## What you give up
 - **Resolution:** once events are folded into minutes, you can't ask about a 10-second spike
@@ -42,6 +59,11 @@ serving store. For modest volumes, a batch job every few minutes over the raw lo
 - **Flexibility:** you can only slice by the dimensions you aggregated on. A new "by country"
   breakdown needs a new rollup and a backfill from raw data.
 - **Freshness:** the current bucket is still open, so the newest point is partial.
+
+> [!PITFALL] Dimension explosion
+> Every dimension multiplies the key space: 10M ads × 200 countries × 3 devices = 6B possible
+> buckets per minute against 600k clicks per minute, so most buckets hold one click and the
+> rollup is as big as the raw stream. Aggregate on what the dashboards actually filter by.
 
 Step through the trace: ten clicks fold into six bucket rows, and the dashboard query for `ad1`
 reads only three.

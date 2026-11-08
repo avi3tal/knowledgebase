@@ -23,13 +23,19 @@
 - **[Circuit breakers](#/topic/system-design/circuit-breaker)** stop calling a dependency that is
   **failing**. Backpressure slows down for one that is **working but saturated**.
 
-**Interview pitfalls:**
-- "Just add a queue" with no maximum depth and no plan for when it's full.
-- Bounding the queue but blocking the request thread forever. Give every wait a timeout.
-- Shedding deep in the stack after the expensive work is done, instead of at the edge.
-- Returning 503 without `Retry-After` and jitter, so clients come back all at once.
-- Treating every request the same. Say what gets shed first.
-- Forgetting the metric: queue depth or consumer lag, plus in-flight count against the limit.
+> [!INTERVIEW] What to say
+> "Every queue in this design has a maximum depth sized for a few seconds of work. When the
+> ingest queue is full, the API returns 503 with Retry-After, and clients back off with jitter.
+> Under overload we shed free-tier and recommendation traffic first. I'd alert on queue depth
+> and in-flight requests against their limits."
+
+> [!PITFALL] Interview pitfalls
+> - "Just add a queue" with no maximum depth and no plan for when it's full.
+> - Bounding the queue but blocking the request thread forever. Give every wait a timeout.
+> - Shedding deep in the stack after the expensive work is done, instead of at the edge.
+> - Returning 503 without `Retry-After` and jitter, so clients come back all at once.
+> - Treating every request the same. Say what gets shed first.
+> - Forgetting the metric: queue depth or consumer lag, plus in-flight count against the limit.
 
 **In our problems:**
 - **rate-limiter-design**: the 429 response is the signal that tells callers to slow down.

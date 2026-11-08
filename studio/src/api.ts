@@ -321,6 +321,8 @@ export interface DiagramNode {
   id: string;
   kind: string;
   label?: string;
+  /** lesson figures: subtitle shown instead of the shape's name */
+  sub?: string;
   x?: number;
   y?: number;
 }

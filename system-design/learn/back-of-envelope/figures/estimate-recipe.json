@@ -1,0 +1,154 @@
+{
+ "kind": "flowchart",
+ "title": "Every estimate ends in a design decision, or it gets dropped",
+ "caption": "Five minutes, four to six numbers. Round hard at each step and say the unit.",
+ "nodes": [
+  {
+   "id": "assume",
+   "type": "start",
+   "label": "Write assumptions",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "daily",
+   "type": "step",
+   "label": "Volume per day",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "qps",
+   "type": "step",
+   "label": "÷ 1e5 → avg QPS",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "peak",
+   "type": "step",
+   "label": "× 2–3 for peak",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "size",
+   "type": "step",
+   "label": "Storage, egress",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "use",
+   "type": "decision",
+   "label": "Changes a design?",
+   "col": 0,
+   "row": 5
+  },
+  {
+   "id": "say",
+   "type": "end",
+   "label": "Say \"therefore…\"",
+   "col": 0,
+   "row": 6,
+   "tone": "good"
+  },
+  {
+   "id": "drop",
+   "type": "end",
+   "label": "Drop the number",
+   "col": 1,
+   "row": 5,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "assume",
+   "to": "daily"
+  },
+  {
+   "from": "daily",
+   "to": "qps"
+  },
+  {
+   "from": "qps",
+   "to": "peak"
+  },
+  {
+   "from": "peak",
+   "to": "size"
+  },
+  {
+   "from": "size",
+   "to": "use"
+  },
+  {
+   "from": "use",
+   "to": "say",
+   "label": "yes"
+  },
+  {
+   "from": "use",
+   "to": "drop",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Say the assumptions out loud: DAU, actions per user, object size, retention, replicas.",
+   "nodes": [
+    "assume"
+   ]
+  },
+  {
+   "text": "Multiply to a daily volume, separately for reads and writes: 10 M users × 50 views = 500 M reads/day.",
+   "nodes": [
+    "daily"
+   ],
+   "edges": [
+    "assume>daily"
+   ]
+  },
+  {
+   "text": "Divide by ~1e5 seconds per day: 500 M / 86 400 ≈ 5 800 reads/s on average.",
+   "nodes": [
+    "qps"
+   ],
+   "edges": [
+    "daily>qps"
+   ]
+  },
+  {
+   "text": "Traffic isn't flat. Multiply by a peak factor: 5 800 × 3 ≈ 17 000 reads/s.",
+   "nodes": [
+    "peak"
+   ],
+   "edges": [
+    "qps>peak"
+   ]
+  },
+  {
+   "text": "Storage = writes/day × size × days × replicas. Egress = QPS × bytes per response × 8 for bits.",
+   "nodes": [
+    "size"
+   ],
+   "edges": [
+    "peak>size"
+   ]
+  },
+  {
+   "text": "Tie each number to a box: \"17k reads/s → cache and replicas\". A number that changes nothing wasted your time.",
+   "nodes": [
+    "use",
+    "say",
+    "drop"
+   ],
+   "edges": [
+    "size>use",
+    "use>say",
+    "use>drop"
+   ]
+  }
+ ]
+}

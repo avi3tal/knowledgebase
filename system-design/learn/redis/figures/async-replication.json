@@ -1,0 +1,57 @@
+{
+ "kind": "sequence",
+ "title": "Replication is asynchronous: an acknowledged write can vanish on failover",
+ "caption": "The primary replies before the replica has the write. If the primary dies in that gap, the promoted replica never saw it.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "p",
+   "label": "Primary",
+   "kind": "cache"
+  },
+  {
+   "id": "rep",
+   "label": "Replica",
+   "kind": "cache"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "p",
+   "label": "SET order:9 paid"
+  },
+  {
+   "from": "p",
+   "to": "app",
+   "label": "OK",
+   "style": "reply",
+   "note": "The client sees success in under a millisecond."
+  },
+  {
+   "from": "p",
+   "to": "rep",
+   "label": "replicate order:9",
+   "style": "async",
+   "note": "Shipping the write to the replica happens afterwards."
+  },
+  {
+   "from": "p",
+   "to": "p",
+   "label": "primary crashes",
+   "style": "error",
+   "note": "If it dies before that message arrives…"
+  },
+  {
+   "from": "rep",
+   "to": "rep",
+   "label": "promoted to primary",
+   "style": "self",
+   "note": "…the new primary has no order:9. The write the client was told succeeded is gone."
+  }
+ ]
+}

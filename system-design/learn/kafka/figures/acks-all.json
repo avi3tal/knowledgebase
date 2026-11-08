@@ -1,0 +1,67 @@
+{
+ "kind": "sequence",
+ "title": "acks=all: the write is acknowledged once enough replicas have it",
+ "caption": "Replication factor 3, min.insync.replicas = 2. Losing any one broker loses no acknowledged record.",
+ "actors": [
+  {
+   "id": "prod",
+   "label": "Producer",
+   "kind": "service"
+  },
+  {
+   "id": "lead",
+   "label": "Leader (broker 1)",
+   "kind": "stream"
+  },
+  {
+   "id": "f2",
+   "label": "Follower (broker 2)",
+   "kind": "stream"
+  },
+  {
+   "id": "f3",
+   "label": "Follower (broker 3)",
+   "kind": "stream"
+  }
+ ],
+ "messages": [
+  {
+   "from": "prod",
+   "to": "lead",
+   "label": "produce batch (acks=all)",
+   "note": "With acks=1 the leader would answer right here, and a leader crash in the next millisecond loses the batch."
+  },
+  {
+   "from": "f2",
+   "to": "lead",
+   "label": "fetch → copy batch",
+   "note": "Followers pull from the leader, just like consumers do."
+  },
+  {
+   "from": "f3",
+   "to": "lead",
+   "label": "fetch → copy batch"
+  },
+  {
+   "from": "lead",
+   "to": "lead",
+   "label": "all in-sync replicas have it",
+   "style": "self",
+   "note": "acks=all waits for every replica in the ISR. min.insync.replicas = 2 is a floor: if fewer than 2 are in sync, the leader refuses the write instead of acking it."
+  },
+  {
+   "from": "lead",
+   "to": "prod",
+   "label": "ack",
+   "style": "reply",
+   "note": "This costs a few ms more than acks=1."
+  },
+  {
+   "from": "lead",
+   "to": "lead",
+   "label": "broker 1 dies",
+   "style": "error",
+   "note": "A follower from the in-sync set becomes leader. It has the batch, so nothing acknowledged is lost."
+  }
+ ]
+}

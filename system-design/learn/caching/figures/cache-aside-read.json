@@ -1,0 +1,67 @@
+{
+ "kind": "sequence",
+ "title": "Cache-aside: the first read pays for the miss, the next ones are hits",
+ "caption": "The application owns the logic: look in the cache, fall back to the database, then fill the cache with a TTL.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "cache",
+   "label": "Cache",
+   "kind": "cache"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "GET user:42",
+   "note": "First request for this user: the cache has never seen the key."
+  },
+  {
+   "from": "cache",
+   "to": "app",
+   "label": "nil (miss)",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "SELECT … WHERE id = 42",
+   "note": "Only now does the database do any work: about 20 ms."
+  },
+  {
+   "from": "db",
+   "to": "app",
+   "label": "row",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "SET user:42 row EX 300",
+   "style": "async",
+   "note": "Store the copy with a 5-minute TTL so a missed invalidation can't live forever."
+  },
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "GET user:42 (next request)",
+   "note": "Every later read within the TTL is a ~0.5 ms hit, and the database is untouched."
+  },
+  {
+   "from": "cache",
+   "to": "app",
+   "label": "row (hit)",
+   "style": "reply"
+  }
+ ]
+}

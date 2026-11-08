@@ -1,0 +1,62 @@
+{
+ "kind": "architecture",
+ "title": "Leaderboard v1: correct, but rank needs a scan",
+ "caption": "Fine for top 100 with an index on score; \"what is my rank?\" counts millions of rows per call.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Players",
+   "x": 0,
+   "y": 120
+  },
+  {
+   "id": "svc",
+   "kind": "service",
+   "label": "Leaderboard API",
+   "x": 300,
+   "y": 120
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Scores DB",
+   "x": 600,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "svc",
+   "label": "POST · GET"
+  },
+  {
+   "from": "svc",
+   "to": "db",
+   "label": "ORDER BY score"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Players submit scores and read the board through one API: ~600 writes/s, ~1 800 reads/s.",
+   "nodes": [
+    "client",
+    "svc"
+   ],
+   "edges": [
+    "client>svc"
+   ]
+  },
+  {
+   "text": "Top 100 is an index range read. Rank of player X is COUNT(score > mine): a scan that grows with the player base.",
+   "nodes": [
+    "svc",
+    "db"
+   ],
+   "edges": [
+    "svc>db"
+   ]
+  }
+ ]
+}

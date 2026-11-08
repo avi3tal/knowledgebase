@@ -15,7 +15,8 @@ interface FigureBase {
 }
 export interface ArchitectureFigure extends FigureBase {
   kind: "architecture";
-  nodes: { id: string; kind: string; label?: string; x: number; y: number }[];
+  /** `sub` replaces the shape's name under the label (e.g. "keys 20–50") */
+  nodes: { id: string; kind: string; label?: string; sub?: string; x: number; y: number }[];
   edges: { from: string; to: string; label?: string }[];
 }
 export type FlowType = "start" | "step" | "decision" | "end";
@@ -89,7 +90,7 @@ export function stepsOf(f: Figure): FigureStep[] {
 
 // ---------------------------------------------------------------- flowchart layout
 
-export const FLOW = { colW: 210, rowH: 96, w: 170, h: 52, pad: 24 } as const;
+export const FLOW = { colW: 250, rowH: 96, w: 170, h: 52, pad: 24 } as const;
 
 /** Centre of a flowchart node in SVG units. */
 export function flowCenter(n: { col: number; row: number }): { x: number; y: number } {

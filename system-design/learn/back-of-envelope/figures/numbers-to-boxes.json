@@ -1,0 +1,180 @@
+{
+ "kind": "flowchart",
+ "title": "Each estimate either buys a box or rules one out",
+ "caption": "Ask all four questions; several can be yes. Thresholds are rough single-node limits, not laws.",
+ "nodes": [
+  {
+   "id": "start",
+   "type": "start",
+   "label": "Your estimates",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "reads",
+   "type": "decision",
+   "label": "Peak reads >10k/s?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "cache",
+   "type": "end",
+   "label": "Cache + replicas",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "writes",
+   "type": "decision",
+   "label": "Writes > ~5k/s?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "shard",
+   "type": "end",
+   "label": "Shard the writes",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "data",
+   "type": "decision",
+   "label": "Data > a few TB?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "blob",
+   "type": "end",
+   "label": "Blob store / shard",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "egress",
+   "type": "decision",
+   "label": "Egress > 1 Gbps?",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "cdn",
+   "type": "end",
+   "label": "Put a CDN in front",
+   "col": 1,
+   "row": 4
+  },
+  {
+   "id": "simple",
+   "type": "end",
+   "label": "Keep it simple",
+   "col": 0,
+   "row": 5,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "start",
+   "to": "reads"
+  },
+  {
+   "from": "reads",
+   "to": "cache",
+   "label": "yes"
+  },
+  {
+   "from": "reads",
+   "to": "writes",
+   "label": "no"
+  },
+  {
+   "from": "writes",
+   "to": "shard",
+   "label": "yes"
+  },
+  {
+   "from": "writes",
+   "to": "data",
+   "label": "no"
+  },
+  {
+   "from": "data",
+   "to": "blob",
+   "label": "yes"
+  },
+  {
+   "from": "data",
+   "to": "egress",
+   "label": "no"
+  },
+  {
+   "from": "egress",
+   "to": "cdn",
+   "label": "yes"
+  },
+  {
+   "from": "egress",
+   "to": "simple",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Read load first. One database handles a few thousand reads/s comfortably; beyond ~10k/s, a cache (~100k ops/s per node) and read replicas take it.",
+   "nodes": [
+    "start",
+    "reads",
+    "cache"
+   ],
+   "edges": [
+    "start>reads",
+    "reads>cache"
+   ]
+  },
+  {
+   "text": "Write load. Caches and replicas don't add write capacity; past what one primary can take, partition the data.",
+   "nodes": [
+    "writes",
+    "shard"
+   ],
+   "edges": [
+    "reads>writes",
+    "writes>shard"
+   ]
+  },
+  {
+   "text": "Size. Large binary objects go to object storage with only metadata in a DB; many TB of rows means sharding.",
+   "nodes": [
+    "data",
+    "blob"
+   ],
+   "edges": [
+    "writes>data",
+    "data>blob"
+   ]
+  },
+  {
+   "text": "Bandwidth. Gigabits per second of the same static content belong at the edge, not on your servers.",
+   "nodes": [
+    "egress",
+    "cdn"
+   ],
+   "edges": [
+    "data>egress",
+    "egress>cdn"
+   ]
+  },
+  {
+   "text": "All no? Say so: \"one database and a couple of app servers handle this\". That is a strong answer too.",
+   "nodes": [
+    "simple"
+   ],
+   "edges": [
+    "egress>simple"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,133 @@
+{
+ "kind": "flowchart",
+ "title": "Content-addressed parts: upload only what the store doesn't have",
+ "caption": "A file becomes a manifest of part hashes; identical parts are stored once and shared.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Next part",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "hash",
+   "type": "step",
+   "label": "key = sha256(part)",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "have",
+   "type": "decision",
+   "label": "Key in store?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "put",
+   "type": "step",
+   "label": "Upload the part",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "add",
+   "type": "step",
+   "label": "Append to manifest",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "Commit manifest",
+   "col": 0,
+   "row": 5,
+   "tone": "good"
+  },
+  {
+   "id": "skip",
+   "type": "step",
+   "label": "Skip the upload",
+   "col": 1,
+   "row": 4
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "hash"
+  },
+  {
+   "from": "hash",
+   "to": "have"
+  },
+  {
+   "from": "have",
+   "to": "put",
+   "label": "no"
+  },
+  {
+   "from": "put",
+   "to": "add"
+  },
+  {
+   "from": "add",
+   "to": "ok"
+  },
+  {
+   "from": "have",
+   "to": "skip",
+   "label": "yes"
+  },
+  {
+   "from": "skip",
+   "to": "add"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Hash each part's bytes; the hash is the part's key.",
+   "nodes": [
+    "in",
+    "hash",
+    "have"
+   ],
+   "edges": [
+    "in>hash",
+    "hash>have"
+   ]
+  },
+  {
+   "text": "New content: upload it. This is the only case that costs bandwidth.",
+   "nodes": [
+    "put"
+   ],
+   "edges": [
+    "have>put"
+   ]
+  },
+  {
+   "text": "Already stored (another version, another user): skip the bytes, just reference the key.",
+   "nodes": [
+    "skip"
+   ],
+   "edges": [
+    "have>skip"
+   ]
+  },
+  {
+   "text": "Either way the hash goes into the file's manifest. Once all parts are in, commit the manifest. A part is deleted only when no manifest refers to it.",
+   "nodes": [
+    "add",
+    "ok"
+   ],
+   "edges": [
+    "put>add",
+    "skip>add",
+    "add>ok"
+   ]
+  }
+ ]
+}

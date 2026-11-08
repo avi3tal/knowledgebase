@@ -1,0 +1,115 @@
+{
+ "kind": "architecture",
+ "title": "The shard key picks one shard; the router knows which",
+ "caption": "A small, cached shard map turns the key into a shard. Each shard is an ordinary database with its own replicas.",
+ "nodes": [
+  {
+   "id": "app",
+   "kind": "service",
+   "label": "App servers",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "router",
+   "kind": "coordinator",
+   "label": "Shard router",
+   "x": 280,
+   "y": 170
+  },
+  {
+   "id": "map",
+   "kind": "cache",
+   "label": "Shard map",
+   "x": 280,
+   "y": 350
+  },
+  {
+   "id": "s0",
+   "kind": "sql",
+   "label": "Shard 0 (a–h)",
+   "x": 580,
+   "y": 20
+  },
+  {
+   "id": "s1",
+   "kind": "sql",
+   "label": "Shard 1 (i–p)",
+   "x": 580,
+   "y": 170
+  },
+  {
+   "id": "s2",
+   "kind": "sql",
+   "label": "Shard 2 (q–z)",
+   "x": 580,
+   "y": 320
+  }
+ ],
+ "edges": [
+  {
+   "from": "app",
+   "to": "router",
+   "label": "user_id = 'kim'"
+  },
+  {
+   "from": "router",
+   "to": "map",
+   "label": "lookup"
+  },
+  {
+   "from": "router",
+   "to": "s0"
+  },
+  {
+   "from": "router",
+   "to": "s1",
+   "label": "'kim' → 1"
+  },
+  {
+   "from": "router",
+   "to": "s2"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Every query carries the shard key (here user_id). The router can be a library inside the app or a proxy in front of the shards.",
+   "nodes": [
+    "app",
+    "router"
+   ],
+   "edges": [
+    "app>router"
+   ]
+  },
+  {
+   "text": "The router maps key → shard with the shard map: key ranges, hash slots or a lookup table. The map is tiny and cached, so this costs microseconds.",
+   "nodes": [
+    "router",
+    "map"
+   ],
+   "edges": [
+    "router>map"
+   ]
+  },
+  {
+   "text": "The query goes to exactly one shard. The other shards never see it, so adding shards adds capacity.",
+   "nodes": [
+    "router",
+    "s1"
+   ],
+   "edges": [
+    "router>s1"
+   ]
+  },
+  {
+   "text": "Each shard holds a disjoint slice of the rows and has its own replicas. Shards share nothing, which is the point and also the problem: no joins or transactions across them.",
+   "nodes": [
+    "s0",
+    "s1",
+    "s2"
+   ],
+   "edges": []
+  }
+ ]
+}

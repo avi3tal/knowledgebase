@@ -1,33 +1,59 @@
 ## Writes and staleness: the hard part
 
-As soon as data can change, the cache and the database can disagree. You have four main
-options:
+As soon as data can change, the cache and the database can disagree. There are four main ways
+to handle a write:
 
-| strategy | how a write flows | pros | cons |
-|---|---|---|---|
-| **cache-aside + invalidate** | write DB, then **delete** the cache key | simple; cache only holds read data | small race window; next read is a miss |
-| **write-through** | write cache **and** DB synchronously | cache always fresh for written keys | slower writes; caches data nobody reads |
-| **write-back (write-behind)** | write cache, flush to DB later | very fast writes, batching | data loss if the cache dies before flush |
-| **write-around** | write DB only, let TTL expire the cache | no cache churn for write-once data | reads see old data until TTL |
+| strategy | how a write flows | write latency | staleness | data-loss risk |
+|---|---|---|---|---|
+| **cache-aside + invalidate** | write DB, then **delete** the key | DB only | small race window | none |
+| **write-through** | write cache **and** DB synchronously | cache + DB | none for written keys | none |
+| **write-behind (write-back)** | write cache, flush to DB later | cache only | none in cache | unflushed writes |
+| **write-around** | write DB only, let the TTL expire the copy | DB only | until TTL | none |
 
-Prefer **delete** over **update** on write. Two concurrent writers updating the cache can
-leave it holding the older value forever, while a delete just forces a fresh load.
+### Write-through
+
+```figure
+write-through
+```
+
+> [!PROS]
+> - A read right after a write sees the new value.
+> - Simple mental model: the cache mirrors the database for every written key.
+
+> [!CONS]
+> - Every write pays two round trips.
+> - Caches data nobody may ever read. Pair it with a TTL so cold keys age out.
+
+### Write-behind
+
+```figure
+write-behind
+```
+
+> [!PROS]
+> - Writes at memory speed, and many writes to one key collapse into one database update.
+> - Smooths write bursts the database couldn't take directly.
+
+> [!CONS]
+> - The cache is briefly the only copy: a crash loses everything not yet flushed.
+> - Harder to reason about. Other readers of the database see old data until the flush.
+
+> [!PITFALL] Write-behind for money
+> Using write-behind for orders, payments or stock without saying what happens on a cache crash
+> is a red flag. It's for counters, view counts and other data you can lose or recompute.
+
+### Cache-aside writes: delete, don't update
+
+The default pairs cache-aside reads with **delete-on-write**: commit to the database, then
+`DEL` the key so the next read loads fresh data. Why not `SET` the new value instead? Because
+two writers can finish in the opposite order:
+
+```figure
+update-race
+```
+
+A delete is safe whichever order it lands in. The worst case is one extra miss.
 
 The trace below runs cache-aside **without** invalidation (`invalidate = false`). Reads after a
 write keep returning the old cached value, and `stale` counts them. Try to predict the count
 before stepping. With invalidation on, the same operations give 0 stale reads.
-
-## TTL as a safety net
-Even with invalidation, give every entry a TTL. It bounds how long any missed invalidation or
-race can serve wrong data. Choose the TTL from **how stale the product can tolerate**, not
-from memory size: seconds for prices, hours for avatars.
-
-## Failure modes to name in an interview
-- **Thundering herd / cache stampede:** a hot key expires and 10 000 requests miss at the same
-  instant and all query the database. Fixes: a per-key lock so one request recomputes while the
-  rest wait, serving stale-while-revalidate, and jittered TTLs.
-- **Hot key:** one key gets so much traffic that its single cache shard melts. Fixes: replicate
-  that key across shards (`key#1..key#n`) or cache it in-process too.
-- **Cold start:** a new or flushed cache sends everything to the database. Warm it up first.
-- **Cache penetration:** lookups for keys that **don't exist** always miss. Cache the
-  negative result briefly, or check a Bloom filter first.

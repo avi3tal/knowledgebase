@@ -1,0 +1,79 @@
+{
+ "kind": "sequence",
+ "title": "With an idempotency key, the retry gets the stored response, not a second charge",
+ "caption": "The client picks the key once per checkout and resends it on every attempt; the server claims it before doing the work.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "api",
+   "label": "Payments API",
+   "kind": "service"
+  },
+  {
+   "id": "keys",
+   "label": "Key table",
+   "kind": "sql"
+  },
+  {
+   "id": "card",
+   "label": "Card network",
+   "kind": "external"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "api",
+   "label": "POST /pay $30 · Key: 7f3a",
+   "note": "The client generates the UUID 7f3a when the user presses Pay, not per attempt."
+  },
+  {
+   "from": "api",
+   "to": "keys",
+   "label": "INSERT 7f3a (in_progress)",
+   "note": "The unique key column makes this claim succeed exactly once."
+  },
+  {
+   "from": "api",
+   "to": "card",
+   "label": "charge $30 · key 7f3a",
+   "note": "The key is passed downstream too, so the processor also dedupes."
+  },
+  {
+   "from": "api",
+   "to": "keys",
+   "label": "UPDATE 7f3a: done, 201 {pay_42}",
+   "note": "The response is stored next to the key."
+  },
+  {
+   "from": "api",
+   "to": "c",
+   "label": "201 {pay_42} (lost)",
+   "style": "error",
+   "note": "Same failure as before: the reply never arrives."
+  },
+  {
+   "from": "c",
+   "to": "api",
+   "label": "POST /pay $30 · Key: 7f3a (retry)",
+   "note": "Same key, same body."
+  },
+  {
+   "from": "api",
+   "to": "keys",
+   "label": "INSERT 7f3a → conflict, row is done",
+   "note": "The claim fails, and the existing row says the work is finished."
+  },
+  {
+   "from": "api",
+   "to": "c",
+   "label": "201 {pay_42} (replayed)",
+   "style": "reply",
+   "note": "Byte-for-byte the original response. One charge, and the client can't tell it was a retry."
+  }
+ ]
+}

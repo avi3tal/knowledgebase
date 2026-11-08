@@ -25,15 +25,25 @@
 - **[Event sourcing](#/topic/system-design/event-sourcing)** makes events the source of truth for
   state. Kafka can carry them, but its retention isn't a permanent database by default.
 
-**Interview pitfalls:**
-- Promising global ordering. Say which **key** gives the ordering you need, and accept that there
-  is none across keys.
-- More consumers than partitions: the extra ones sit idle.
-- Ignoring rebalances and at-least-once redelivery. Name the idempotency key.
-- Choosing a key with skew (one celebrity, one huge tenant) and creating a hot partition.
-- Using Kafka for request/response or for per-job retries and delays. Use a task queue.
-- Not sizing retention × throughput × replication, or forgetting that the partition count is
-  hard to change.
+```figure
+kafka-or-queue
+```
+
+> [!INTERVIEW] What to say when you introduce Kafka
+> "Events go to topic `orders`, keyed by `order_id`, so each order's events stay in order. I'll
+> start with 30 partitions for 10× headroom over the 3 consumers we need today, replication
+> factor 3 with `acks=all`, and 7 days of retention so we can replay after a bad deploy.
+> Consumers commit after processing and dedupe on the event id."
+
+> [!PITFALL] Interview pitfalls
+> - Promising global ordering. Say which **key** gives the ordering you need, and accept that
+>   there is none across keys.
+> - More consumers than partitions: the extra ones sit idle.
+> - Ignoring rebalances and at-least-once redelivery. Name the idempotency key.
+> - Choosing a key with skew (one celebrity, one huge tenant) and creating a hot partition.
+> - Using Kafka for request/response or for per-job retries and delays. Use a task queue.
+> - Not sizing retention × throughput × replication, or forgetting that the partition count is
+>   hard to change.
 
 **In our problems:**
 - **chat-system**: the durable stream between accepting a message and delivering it, with the

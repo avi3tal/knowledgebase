@@ -1,0 +1,112 @@
+{
+ "kind": "architecture",
+ "title": "On the ring, a key belongs to the first server clockwise from it",
+ "caption": "Servers and keys share one hash space 0–99 bent into a circle, read clockwise from the top. Labels give ring positions; spacing is for readability.",
+ "nodes": [
+  {
+   "id": "g1",
+   "kind": "blob",
+   "label": "k4 91·k3 8·k1 17",
+   "x": 340,
+   "y": 12,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "A",
+   "kind": "cache",
+   "label": "Server A @ 20",
+   "x": 573,
+   "y": 109,
+   "sub": "cache server"
+  },
+  {
+   "id": "g2",
+   "kind": "blob",
+   "label": "k6 25·k8 36",
+   "x": 670,
+   "y": 342,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "B",
+   "kind": "cache",
+   "label": "Server B @ 50",
+   "x": 573,
+   "y": 575,
+   "sub": "cache server"
+  },
+  {
+   "id": "g3",
+   "kind": "blob",
+   "label": "k2 58·k5 63·k7 74",
+   "x": 107,
+   "y": 575,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "C",
+   "kind": "cache",
+   "label": "Server C @ 85",
+   "x": 107,
+   "y": 109,
+   "sub": "cache server"
+  }
+ ],
+ "edges": [
+  {
+   "from": "g1",
+   "to": "A",
+   "label": "clockwise"
+  },
+  {
+   "from": "g2",
+   "to": "B",
+   "label": "clockwise"
+  },
+  {
+   "from": "g3",
+   "to": "C",
+   "label": "clockwise"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Hash every server name onto the ring: A at 20, B at 50, C at 85. Hash every key onto the same ring.",
+   "nodes": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "text": "Keys at 25 and 36 walk clockwise and meet B at 50 first, so B owns them.",
+   "nodes": [
+    "g2",
+    "B"
+   ],
+   "edges": [
+    "g2>B"
+   ]
+  },
+  {
+   "text": "Keys at 58, 63 and 74 meet C at 85.",
+   "nodes": [
+    "g3",
+    "C"
+   ],
+   "edges": [
+    "g3>C"
+   ]
+  },
+  {
+   "text": "Key 91 walks past 99, wraps to 0, and meets A at 20, together with keys 8 and 17. Each server owns the arc that ends at it.",
+   "nodes": [
+    "g1",
+    "A"
+   ],
+   "edges": [
+    "g1>A"
+   ]
+  }
+ ]
+}

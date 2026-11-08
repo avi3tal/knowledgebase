@@ -1,0 +1,83 @@
+{
+ "kind": "architecture",
+ "title": "One server: a hard ceiling and a single point of failure",
+ "caption": "DNS hands every user the same address. When that box is full or down, so is the product.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Users",
+   "x": 0,
+   "y": 140
+  },
+  {
+   "id": "dns",
+   "kind": "dns",
+   "label": "DNS",
+   "x": 0,
+   "y": 320
+  },
+  {
+   "id": "web",
+   "kind": "service",
+   "label": "Web + app server",
+   "x": 300,
+   "y": 140
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Database",
+   "x": 600,
+   "y": 140
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "dns",
+   "label": "resolve name"
+  },
+  {
+   "from": "client",
+   "to": "web",
+   "label": "HTTPS"
+  },
+  {
+   "from": "web",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The browser or app resolves the hostname and gets back one IP address.",
+   "nodes": [
+    "client",
+    "dns"
+   ],
+   "edges": [
+    "client>dns"
+   ]
+  },
+  {
+   "text": "Every request goes to that one machine. Its CPU, memory and connection limit are the product's limit.",
+   "nodes": [
+    "client",
+    "web"
+   ],
+   "edges": [
+    "client>web"
+   ]
+  },
+  {
+   "text": "Deploy, crash or hardware failure: everyone is down. Scaling up to a bigger box helps for a while, then gets expensive and still fails as one unit.",
+   "nodes": [
+    "web",
+    "db"
+   ],
+   "edges": [
+    "web>db"
+   ]
+  }
+ ]
+}

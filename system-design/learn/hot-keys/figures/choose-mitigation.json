@@ -1,0 +1,154 @@
+{
+ "kind": "flowchart",
+ "title": "Picking a mitigation: what kind of traffic is hot?",
+ "caption": "Reads that may lag get cached near the caller; commutative writes get split; ordered writes stay on one fast path.",
+ "nodes": [
+  {
+   "id": "start",
+   "type": "start",
+   "label": "Key flagged hot",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "reads",
+   "type": "decision",
+   "label": "Mostly reads?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "lag",
+   "type": "decision",
+   "label": "May lag ~1 s?",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "local",
+   "type": "end",
+   "label": "Local cache 1–2 s",
+   "col": 2,
+   "row": 1,
+   "tone": "good"
+  },
+  {
+   "id": "replicas",
+   "type": "end",
+   "label": "Replicate key ×N",
+   "col": 1,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "comm",
+   "type": "decision",
+   "label": "Commutative?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "split",
+   "type": "end",
+   "label": "Split sub-keys",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  },
+  {
+   "id": "serial",
+   "type": "end",
+   "label": "Single fast path",
+   "col": 1,
+   "row": 3
+  }
+ ],
+ "edges": [
+  {
+   "from": "start",
+   "to": "reads"
+  },
+  {
+   "from": "reads",
+   "to": "lag",
+   "label": "yes"
+  },
+  {
+   "from": "lag",
+   "to": "local",
+   "label": "yes"
+  },
+  {
+   "from": "lag",
+   "to": "replicas",
+   "label": "no"
+  },
+  {
+   "from": "reads",
+   "to": "comm",
+   "label": "no"
+  },
+  {
+   "from": "comm",
+   "to": "split",
+   "label": "yes"
+  },
+  {
+   "from": "comm",
+   "to": "serial",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Only keys the detector flags get special treatment; cold keys keep the plain path.",
+   "nodes": [
+    "start",
+    "reads"
+   ],
+   "edges": [
+    "start>reads"
+   ]
+  },
+  {
+   "text": "Hot reads that tolerate a second of lag: cache in-process with a short TTL and coalesce misses.",
+   "nodes": [
+    "lag",
+    "local"
+   ],
+   "edges": [
+    "reads>lag",
+    "lag>local"
+   ]
+  },
+  {
+   "text": "Hot reads that must be fresher: keep N copies of the key on different shards and update them all on write.",
+   "nodes": [
+    "replicas"
+   ],
+   "edges": [
+    "lag>replicas"
+   ]
+  },
+  {
+   "text": "Hot writes that add up (counts, sums, set adds): split into sub-keys and merge on read.",
+   "nodes": [
+    "comm",
+    "split"
+   ],
+   "edges": [
+    "reads>comm",
+    "comm>split"
+   ]
+  },
+  {
+   "text": "Writes that must be ordered or exact (current high bid): you can't split. Keep one owner and make each write as small as possible.",
+   "nodes": [
+    "serial"
+   ],
+   "edges": [
+    "comm>serial"
+   ]
+  }
+ ]
+}

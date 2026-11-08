@@ -1,0 +1,132 @@
+{
+ "kind": "architecture",
+ "title": "Redis Cluster: every key hashes to one of 16 384 slots, each slot to one primary",
+ "caption": "The client computes the slot itself and talks to the right primary directly; replicas take over if a primary fails.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "service",
+   "label": "Cluster client",
+   "x": 0,
+   "y": 240
+  },
+  {
+   "id": "pa",
+   "kind": "cache",
+   "label": "Primary A",
+   "x": 300,
+   "y": 0
+  },
+  {
+   "id": "pb",
+   "kind": "cache",
+   "label": "Primary B",
+   "x": 300,
+   "y": 240
+  },
+  {
+   "id": "pc",
+   "kind": "cache",
+   "label": "Primary C",
+   "x": 300,
+   "y": 480
+  },
+  {
+   "id": "ra",
+   "kind": "cache",
+   "label": "Replica A",
+   "x": 600,
+   "y": 0
+  },
+  {
+   "id": "rb",
+   "kind": "cache",
+   "label": "Replica B",
+   "x": 600,
+   "y": 240
+  },
+  {
+   "id": "rc",
+   "kind": "cache",
+   "label": "Replica C",
+   "x": 600,
+   "y": 480
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "pa",
+   "label": "slots 0–5460"
+  },
+  {
+   "from": "client",
+   "to": "pb",
+   "label": "slots 5461–10922"
+  },
+  {
+   "from": "client",
+   "to": "pc",
+   "label": "slots 10923–16383"
+  },
+  {
+   "from": "pa",
+   "to": "ra",
+   "label": "async copy"
+  },
+  {
+   "from": "pb",
+   "to": "rb",
+   "label": "async copy"
+  },
+  {
+   "from": "pc",
+   "to": "rc",
+   "label": "async copy"
+  }
+ ],
+ "steps": [
+  {
+   "text": "slot = CRC16(key) mod 16384. For {user42}:cart only the part in braces is hashed, so all of user 42's keys share one slot.",
+   "nodes": [
+    "client"
+   ]
+  },
+  {
+   "text": "The client caches the slot → node map and sends each command straight to the owner. A wrong guess gets a MOVED reply with the new owner.",
+   "nodes": [
+    "client",
+    "pa",
+    "pb",
+    "pc"
+   ],
+   "edges": [
+    "client>pa",
+    "client>pb",
+    "client>pc"
+   ]
+  },
+  {
+   "text": "Each primary streams its writes to a replica. If a primary fails, its replica is promoted and takes over the same slots.",
+   "nodes": [
+    "pa",
+    "pb",
+    "pc",
+    "ra",
+    "rb",
+    "rc"
+   ],
+   "edges": [
+    "pa>ra",
+    "pb>rb",
+    "pc>rc"
+   ]
+  },
+  {
+   "text": "Scaling out means moving whole slots to a new primary. A single key never splits, so one viral key still lands on one node.",
+   "nodes": [
+    "pb"
+   ]
+  }
+ ]
+}

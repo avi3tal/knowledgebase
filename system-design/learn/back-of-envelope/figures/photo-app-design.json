@@ -1,0 +1,140 @@
+{
+ "kind": "architecture",
+ "title": "The photo-app numbers, turned into boxes",
+ "caption": "23 writes/s, 17k peak reads/s, 5.5 PB and 23 Gbps each pick a different component.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Mobile app",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "cdn",
+   "kind": "cdn",
+   "label": "CDN",
+   "x": 280,
+   "y": 20
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "x": 280,
+   "y": 170
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Photo API",
+   "x": 560,
+   "y": 170
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Photo store",
+   "x": 840,
+   "y": 20
+  },
+  {
+   "id": "cache",
+   "kind": "cache",
+   "label": "Metadata cache",
+   "x": 840,
+   "y": 170
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Metadata DB",
+   "x": 840,
+   "y": 320
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "cdn",
+   "label": "photo bytes"
+  },
+  {
+   "from": "cdn",
+   "to": "blob",
+   "label": "origin fetch"
+  },
+  {
+   "from": "client",
+   "to": "lb",
+   "label": "API calls"
+  },
+  {
+   "from": "lb",
+   "to": "api"
+  },
+  {
+   "from": "api",
+   "to": "cache",
+   "label": "metadata"
+  },
+  {
+   "from": "api",
+   "to": "db",
+   "label": "on miss / write"
+  },
+  {
+   "from": "api",
+   "to": "blob",
+   "label": "upload"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Egress ≈ 23 Gbps (5 800 reads/s × 500 KB × 8). The CDN serves photo bytes from the edge and only goes to the origin on a miss.",
+   "nodes": [
+    "client",
+    "cdn",
+    "blob"
+   ],
+   "edges": [
+    "client>cdn",
+    "cdn>blob"
+   ]
+  },
+  {
+   "text": "Peak ≈ 17 400 metadata reads/s: too much for one database, easy for a few stateless API servers behind a load balancer.",
+   "nodes": [
+    "client",
+    "lb",
+    "api"
+   ],
+   "edges": [
+    "client>lb",
+    "lb>api"
+   ]
+  },
+  {
+   "text": "Read:write ≈ 250:1, so optimise the read path: a cache holds hot metadata, and the DB (plus read replicas) serves misses. 23 writes/s is trivial for one primary.",
+   "nodes": [
+    "api",
+    "cache",
+    "db"
+   ],
+   "edges": [
+    "api>cache",
+    "api>db"
+   ]
+  },
+  {
+   "text": "Storage ≈ 5 475 TB over 5 years with 3 replicas: that is object storage, never database rows. Metadata is ~1 KB per photo, about 2 GB/day.",
+   "nodes": [
+    "api",
+    "blob"
+   ],
+   "edges": [
+    "api>blob"
+   ]
+  }
+ ]
+}

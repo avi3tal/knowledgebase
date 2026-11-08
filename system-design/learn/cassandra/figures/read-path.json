@@ -1,0 +1,123 @@
+{
+ "kind": "flowchart",
+ "title": "Read path: memtable first, then only the SSTables that might hold the key",
+ "caption": "A bloom filter per SSTable answers 'definitely not here' from memory, so most files are skipped without disk I/O.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Read arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "mem",
+   "type": "step",
+   "label": "Check memtable",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "bloom",
+   "type": "decision",
+   "label": "Bloom: maybe?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "skip",
+   "type": "step",
+   "label": "Skip this SSTable",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "read",
+   "type": "step",
+   "label": "Read SSTable rows",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "merge",
+   "type": "end",
+   "label": "Merge, newest wins",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "mem"
+  },
+  {
+   "from": "mem",
+   "to": "bloom",
+   "label": "each SSTable"
+  },
+  {
+   "from": "bloom",
+   "to": "skip",
+   "label": "no"
+  },
+  {
+   "from": "bloom",
+   "to": "read",
+   "label": "yes"
+  },
+  {
+   "from": "read",
+   "to": "merge"
+  }
+ ],
+ "steps": [
+  {
+   "text": "1. Look in the memtable: the most recent writes are there.",
+   "nodes": [
+    "in",
+    "mem"
+   ],
+   "edges": [
+    "in>mem"
+   ]
+  },
+  {
+   "text": "2. For each SSTable, ask its in-memory bloom filter whether the partition key might be inside.",
+   "nodes": [
+    "bloom"
+   ],
+   "edges": [
+    "mem>bloom"
+   ]
+  },
+  {
+   "text": "3. 'No' is certain: skip the file with zero disk reads. A 1% false-positive rate means about 1 wasted read per 100 files.",
+   "nodes": [
+    "skip"
+   ],
+   "edges": [
+    "bloom>skip"
+   ]
+  },
+  {
+   "text": "4. 'Maybe': use the partition index to seek straight to the partition and read the slice of rows.",
+   "nodes": [
+    "read"
+   ],
+   "edges": [
+    "bloom>read"
+   ]
+  },
+  {
+   "text": "5. Merge the pieces from memtable and SSTables by cell timestamp; the newest value wins. Fewer SSTables (good compaction) means faster reads.",
+   "nodes": [
+    "merge"
+   ],
+   "edges": [
+    "read>merge"
+   ]
+  }
+ ]
+}

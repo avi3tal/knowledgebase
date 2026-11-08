@@ -1,0 +1,122 @@
+{
+ "kind": "flowchart",
+ "title": "LSM write path: two cheap appends, then acknowledge",
+ "caption": "Nothing is updated in place. Flushing and compaction happen in the background, off the request path.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Write arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "log",
+   "type": "step",
+   "label": "Append commit log",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "mem",
+   "type": "step",
+   "label": "Insert memtable",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "ack",
+   "type": "end",
+   "label": "Ack to coordinator",
+   "col": 0,
+   "row": 3,
+   "tone": "good"
+  },
+  {
+   "id": "flush",
+   "type": "step",
+   "label": "Flush to SSTable",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "compact",
+   "type": "end",
+   "label": "Compaction merges",
+   "col": 1,
+   "row": 3
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "log"
+  },
+  {
+   "from": "log",
+   "to": "mem"
+  },
+  {
+   "from": "mem",
+   "to": "ack"
+  },
+  {
+   "from": "mem",
+   "to": "flush",
+   "label": "when full"
+  },
+  {
+   "from": "flush",
+   "to": "compact"
+  }
+ ],
+ "steps": [
+  {
+   "text": "1. Append the mutation to the commit log: a sequential write to disk, so a crash can replay it.",
+   "nodes": [
+    "in",
+    "log"
+   ],
+   "edges": [
+    "in>log"
+   ]
+  },
+  {
+   "text": "2. Insert it into the memtable, an in-memory structure sorted by partition and clustering key.",
+   "nodes": [
+    "mem"
+   ],
+   "edges": [
+    "log>mem"
+   ]
+  },
+  {
+   "text": "3. Acknowledge. The replica has done one sequential append and one memory write: tens of microseconds.",
+   "nodes": [
+    "ack"
+   ],
+   "edges": [
+    "mem>ack"
+   ]
+  },
+  {
+   "text": "4. Later, when the memtable reaches its size limit, it is written out as an immutable sorted file (SSTable) and the commit log segment is dropped.",
+   "nodes": [
+    "flush"
+   ],
+   "edges": [
+    "mem>flush"
+   ]
+  },
+  {
+   "text": "5. Background compaction merges SSTables, keeps the newest cell per key and drops expired tombstones, so reads touch fewer files.",
+   "nodes": [
+    "flush",
+    "compact"
+   ],
+   "edges": [
+    "flush>compact"
+   ]
+  }
+ ]
+}

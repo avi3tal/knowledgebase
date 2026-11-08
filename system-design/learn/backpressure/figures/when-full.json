@@ -1,0 +1,147 @@
+{
+ "kind": "flowchart",
+ "title": "When the queue is full: pace if you can, block if you must, otherwise shed",
+ "caption": "The same decision runs at every bounded hop. Only an item that arrives at a full queue reaches the second question.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Item arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "full",
+   "type": "decision",
+   "label": "Queue full?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "enq",
+   "type": "end",
+   "label": "Enqueue",
+   "col": 1,
+   "row": 1,
+   "tone": "good"
+  },
+  {
+   "id": "fb",
+   "type": "decision",
+   "label": "Sender adapts?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "pace",
+   "type": "end",
+   "label": "Pace the sender",
+   "col": 1,
+   "row": 2,
+   "tone": "good"
+  },
+  {
+   "id": "keep",
+   "type": "decision",
+   "label": "Must keep it?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "block",
+   "type": "end",
+   "label": "Block w/ timeout",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "drop",
+   "type": "end",
+   "label": "Shed (429/drop)",
+   "col": 0,
+   "row": 4,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "full"
+  },
+  {
+   "from": "full",
+   "to": "enq",
+   "label": "no"
+  },
+  {
+   "from": "full",
+   "to": "fb",
+   "label": "yes"
+  },
+  {
+   "from": "fb",
+   "to": "pace",
+   "label": "yes"
+  },
+  {
+   "from": "fb",
+   "to": "keep",
+   "label": "no"
+  },
+  {
+   "from": "keep",
+   "to": "block",
+   "label": "yes"
+  },
+  {
+   "from": "keep",
+   "to": "drop",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Room in the queue: enqueue. This is the normal case, and short bursts never get further.",
+   "nodes": [
+    "in",
+    "full",
+    "enq"
+   ],
+   "edges": [
+    "in>full",
+    "full>enq"
+   ]
+  },
+  {
+   "text": "Full, and the sender listens to feedback (credits, Retry-After, a rate it's told): ask it to send at most the consumer's rate. Smoothest outcome.",
+   "nodes": [
+    "fb",
+    "pace"
+   ],
+   "edges": [
+    "full>fb",
+    "fb>pace"
+   ]
+  },
+  {
+   "text": "No feedback channel, but the work must not be lost (payments, writes): make the sender wait, always with a timeout. The delay moves upstream.",
+   "nodes": [
+    "keep",
+    "block"
+   ],
+   "edges": [
+    "fb>keep",
+    "keep>block"
+   ]
+  },
+  {
+   "text": "Otherwise shed: reject with 429/503 plus Retry-After, drop the oldest, or sample. Latency stays low and the service stays up; this work is lost.",
+   "nodes": [
+    "drop"
+   ],
+   "edges": [
+    "keep>drop"
+   ]
+  }
+ ]
+}

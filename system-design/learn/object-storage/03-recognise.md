@@ -26,12 +26,19 @@
 - **[Chunking and dedup](#/topic/system-design/chunking-dedup)** decides **how a file is split**
   and when parts are equal. Object storage just holds the resulting parts.
 
-**Interview pitfalls:**
-- Streaming uploads through the API servers instead of using direct, presigned uploads.
-- Storing media in database rows, or forgetting the metadata table that maps ids to keys.
-- No CDN in front of popular media, so every view pays storage egress and latency.
-- Treating it like a filesystem: renaming a "folder" means copying every object under it.
-- Deleting shared (deduplicated) parts while a manifest still uses them.
+> [!DIALOGUE] Scoping storage for user uploads
+> **Candidate:** What are we storing, and how big? Photos, or also long videos?
+> **Interviewer:** Both. Photos around 2 MB, videos up to 10 GB.
+> **Candidate:** How are they read: whole files, or streamed with seeking?
+> **Interviewer:** Videos are streamed, and a few files go viral.
+> **Candidate:** Then object storage for the bytes, multipart presigned uploads, ranged GETs for seeking, and a CDN in front for the viral ones.
+
+> [!PITFALL] Interview pitfalls
+> - Streaming uploads through the API servers instead of using direct, presigned uploads.
+> - Storing media in database rows, or forgetting the metadata table that maps ids to keys.
+> - No CDN in front of popular media, so every view pays storage egress and latency.
+> - Treating it like a filesystem: renaming a "folder" means copying every object under it.
+> - Deleting shared (deduplicated) parts while a manifest still uses them.
 
 **In our problems:**
 - **instagram**: where the original photo and its resized copies live, uploaded directly.

@@ -1,0 +1,149 @@
+{
+ "kind": "architecture",
+ "title": "With a queue, the user waits for the enqueue and nothing else",
+ "caption": "The API answers 202 as soon as the job is durable. Workers and the notifier catch up at their own pace.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "User",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "Upload API",
+   "x": 280,
+   "y": 150
+  },
+  {
+   "id": "jobs",
+   "kind": "queue",
+   "label": "resize-jobs",
+   "x": 560,
+   "y": 150
+  },
+  {
+   "id": "workers",
+   "kind": "worker",
+   "label": "Resize workers",
+   "x": 840,
+   "y": 150
+  },
+  {
+   "id": "blob",
+   "kind": "blob",
+   "label": "Image store",
+   "x": 840,
+   "y": 330
+  },
+  {
+   "id": "events",
+   "kind": "queue",
+   "label": "image-ready",
+   "x": 840,
+   "y": 0
+  },
+  {
+   "id": "notify",
+   "kind": "service",
+   "label": "Notifier",
+   "x": 1120,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "api",
+   "label": "upload"
+  },
+  {
+   "from": "api",
+   "to": "jobs",
+   "label": "enqueue"
+  },
+  {
+   "from": "api",
+   "to": "client",
+   "label": "202 Accepted"
+  },
+  {
+   "from": "workers",
+   "to": "jobs",
+   "label": "pull"
+  },
+  {
+   "from": "workers",
+   "to": "blob",
+   "label": "thumbnails"
+  },
+  {
+   "from": "workers",
+   "to": "events",
+   "label": "publish"
+  },
+  {
+   "from": "notify",
+   "to": "events",
+   "label": "pull"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The user uploads a photo. The API stores the original and writes one small job message.",
+   "nodes": [
+    "client",
+    "api",
+    "jobs"
+   ],
+   "edges": [
+    "client>api",
+    "api>jobs"
+   ]
+  },
+  {
+   "text": "As soon as the broker has the message on disk, the API answers 202 Accepted. The user is done in milliseconds.",
+   "nodes": [
+    "api",
+    "client"
+   ],
+   "edges": [
+    "api>client"
+   ]
+  },
+  {
+   "text": "Resize workers pull jobs when they have capacity. A burst of uploads just makes the queue longer for a while.",
+   "nodes": [
+    "workers",
+    "jobs"
+   ],
+   "edges": [
+    "workers>jobs"
+   ]
+  },
+  {
+   "text": "Each worker writes the thumbnails, then publishes an 'image ready' event and acks its job.",
+   "nodes": [
+    "workers",
+    "blob",
+    "events"
+   ],
+   "edges": [
+    "workers>blob",
+    "workers>events"
+   ]
+  },
+  {
+   "text": "The notifier reads the event on its own schedule. The upload API doesn't know it exists.",
+   "nodes": [
+    "notify",
+    "events"
+   ],
+   "edges": [
+    "notify>events"
+   ]
+  }
+ ]
+}

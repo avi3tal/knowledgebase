@@ -1,0 +1,126 @@
+{
+ "kind": "flowchart",
+ "title": "Evolve the diagram: every new box answers a named flaw",
+ "caption": "Start with the simplest thing that works, then add one box per unmet requirement or number.",
+ "nodes": [
+  {
+   "id": "v1",
+   "type": "start",
+   "label": "Draw v1",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "check",
+   "type": "step",
+   "label": "Check vs NFRs",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "gap",
+   "type": "decision",
+   "label": "Anything unmet?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "add",
+   "type": "step",
+   "label": "Add one box",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "say",
+   "type": "step",
+   "label": "Say why (v + 1)",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "done",
+   "type": "end",
+   "label": "Go deep",
+   "col": 0,
+   "row": 3,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "v1",
+   "to": "check"
+  },
+  {
+   "from": "check",
+   "to": "gap"
+  },
+  {
+   "from": "gap",
+   "to": "add",
+   "label": "yes"
+  },
+  {
+   "from": "add",
+   "to": "say"
+  },
+  {
+   "from": "say",
+   "to": "check"
+  },
+  {
+   "from": "gap",
+   "to": "done",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "v1 is client → service → database. It meets the functional requirements and nothing else.",
+   "nodes": [
+    "v1"
+   ]
+  },
+  {
+   "text": "Hold it against the non-functional requirements and your estimates: peak QPS, data size, latency, availability.",
+   "nodes": [
+    "check",
+    "gap"
+   ],
+   "edges": [
+    "v1>check",
+    "check>gap"
+   ]
+  },
+  {
+   "text": "Something fails, e.g. 17k reads/s on one database. Add exactly one box that fixes it (a cache) and say which number forced it.",
+   "nodes": [
+    "add",
+    "say"
+   ],
+   "edges": [
+    "gap>add",
+    "add>say"
+   ]
+  },
+  {
+   "text": "Then check the new version again. New boxes bring new flaws.",
+   "nodes": [
+    "check"
+   ],
+   "edges": [
+    "say>check"
+   ]
+  },
+  {
+   "text": "Nothing unmet: stop drawing and move to the deep dives. Extra boxes without a reason count against you.",
+   "nodes": [
+    "done"
+   ],
+   "edges": [
+    "gap>done"
+   ]
+  }
+ ]
+}

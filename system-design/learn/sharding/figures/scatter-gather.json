@@ -1,0 +1,87 @@
+{
+ "kind": "sequence",
+ "title": "A query without the shard key has to ask every shard",
+ "caption": "The query is as slow as the slowest shard and fails if any one shard fails. More shards make it worse, not better.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App",
+   "kind": "service"
+  },
+  {
+   "id": "r",
+   "label": "Router",
+   "kind": "coordinator"
+  },
+  {
+   "id": "s0",
+   "label": "Shard 0",
+   "kind": "sql"
+  },
+  {
+   "id": "s1",
+   "label": "Shard 1",
+   "kind": "sql"
+  },
+  {
+   "id": "s2",
+   "label": "Shard 2",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "r",
+   "label": "WHERE user_id = 'kim'",
+   "note": "The shard key is in the query: the router sends it to one shard."
+  },
+  {
+   "from": "r",
+   "to": "s1",
+   "label": "get kim"
+  },
+  {
+   "from": "s1",
+   "to": "app",
+   "label": "1 row · ~2 ms",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "r",
+   "label": "WHERE email = 'k@x.io'",
+   "note": "Sharded by user_id, but this filters on email. The router can't know which shard holds it."
+  },
+  {
+   "from": "r",
+   "to": "s0",
+   "label": "search",
+   "note": "It fans out to all N shards in parallel."
+  },
+  {
+   "from": "r",
+   "to": "s1",
+   "label": "search"
+  },
+  {
+   "from": "r",
+   "to": "s2",
+   "label": "search"
+  },
+  {
+   "from": "s2",
+   "to": "r",
+   "label": "slowest reply · 40 ms",
+   "style": "reply",
+   "note": "The answer waits for the slowest shard (tail latency), then the router merges the results."
+  },
+  {
+   "from": "r",
+   "to": "app",
+   "label": "merged result",
+   "style": "reply",
+   "note": "Fix: a global secondary index email → user_id, itself sharded by email, so the lookup becomes two single-shard reads."
+  }
+ ]
+}

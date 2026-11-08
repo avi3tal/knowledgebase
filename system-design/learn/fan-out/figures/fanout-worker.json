@@ -1,0 +1,71 @@
+{
+ "kind": "sequence",
+ "title": "Fan-out workers page through followers, and a retried batch is harmless",
+ "caption": "The worker commits its progress only after a batch is written, and timeline entries are keyed by post id, so a redelivered batch is a no-op.",
+ "actors": [
+  {
+   "id": "log",
+   "label": "Post events",
+   "kind": "stream"
+  },
+  {
+   "id": "wk",
+   "label": "Fan-out worker",
+   "kind": "worker"
+  },
+  {
+   "id": "graph",
+   "label": "Follow graph",
+   "kind": "sql"
+  },
+  {
+   "id": "tl",
+   "label": "Timelines",
+   "kind": "cache"
+  }
+ ],
+ "messages": [
+  {
+   "from": "log",
+   "to": "wk",
+   "label": "post p9 by ann",
+   "style": "async"
+  },
+  {
+   "from": "wk",
+   "to": "graph",
+   "label": "followers of ann, page 1 (1 000)"
+  },
+  {
+   "from": "graph",
+   "to": "wk",
+   "label": "1 000 user ids",
+   "style": "reply"
+  },
+  {
+   "from": "wk",
+   "to": "tl",
+   "label": "add p9 to 1 000 timelines",
+   "note": "One pipelined batch, not 1 000 round trips."
+  },
+  {
+   "from": "wk",
+   "to": "wk",
+   "label": "crash before recording progress",
+   "style": "error",
+   "note": "The event is redelivered to another worker, which starts again at page 1."
+  },
+  {
+   "from": "wk",
+   "to": "tl",
+   "label": "add p9 to the same 1 000 again",
+   "note": "Each timeline is a set keyed by post id, so p9 is already there. No duplicates."
+  },
+  {
+   "from": "wk",
+   "to": "graph",
+   "label": "followers of ann, page 2…",
+   "note": "Continues until the follower list runs out, then commits the event."
+  }
+ ]
+}

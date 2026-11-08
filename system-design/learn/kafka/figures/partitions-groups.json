@@ -1,0 +1,127 @@
+{
+ "kind": "architecture",
+ "title": "The key picks the partition; the group gives each partition one reader",
+ "caption": "Topic 'orders' with 3 partitions and consumer group 'billing' with 2 members. Order is kept inside a partition, never across them.",
+ "nodes": [
+  {
+   "id": "prod",
+   "kind": "service",
+   "label": "Order service",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "p0",
+   "kind": "stream",
+   "label": "orders · p0",
+   "x": 300,
+   "y": 30
+  },
+  {
+   "id": "p1",
+   "kind": "stream",
+   "label": "orders · p1",
+   "x": 300,
+   "y": 170
+  },
+  {
+   "id": "p2",
+   "kind": "stream",
+   "label": "orders · p2",
+   "x": 300,
+   "y": 310
+  },
+  {
+   "id": "c1",
+   "kind": "worker",
+   "label": "billing · c1",
+   "x": 600,
+   "y": 100
+  },
+  {
+   "id": "c2",
+   "kind": "worker",
+   "label": "billing · c2",
+   "x": 600,
+   "y": 310
+  }
+ ],
+ "edges": [
+  {
+   "from": "prod",
+   "to": "p0",
+   "label": "key 17, 42, 99"
+  },
+  {
+   "from": "prod",
+   "to": "p1",
+   "label": "key 08, 23"
+  },
+  {
+   "from": "prod",
+   "to": "p2",
+   "label": "key 55, 61"
+  },
+  {
+   "from": "p0",
+   "to": "c1",
+   "label": "from offset 3"
+  },
+  {
+   "from": "p1",
+   "to": "c1",
+   "label": "from offset 1"
+  },
+  {
+   "from": "p2",
+   "to": "c2",
+   "label": "from offset 0"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The producer computes hash(order_id) % 3 for every record. Every event of order 17 lands in p0, in the order it was written.",
+   "nodes": [
+    "prod",
+    "p0",
+    "p1",
+    "p2"
+   ],
+   "edges": [
+    "prod>p0",
+    "prod>p1",
+    "prod>p2"
+   ]
+  },
+  {
+   "text": "Each partition is an append-only file. A record's offset (0, 1, 2…) is its permanent position in that partition.",
+   "nodes": [
+    "p0",
+    "p1",
+    "p2"
+   ]
+  },
+  {
+   "text": "Group 'billing' splits the partitions: c1 owns p0 and p1, c2 owns p2. Each partition has exactly one reader in the group, so per-key order survives.",
+   "nodes": [
+    "p0",
+    "p1",
+    "c1"
+   ],
+   "edges": [
+    "p0>c1",
+    "p1>c1"
+   ]
+  },
+  {
+   "text": "Each consumer pulls from its committed offset. A third consumer would get p0 or p1 from c1; a fourth would sit idle, because there are only 3 partitions.",
+   "nodes": [
+    "p2",
+    "c2"
+   ],
+   "edges": [
+    "p2>c2"
+   ]
+  }
+ ]
+}

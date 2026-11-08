@@ -1,0 +1,67 @@
+{
+ "kind": "sequence",
+ "title": "Resharding with fixed slots: move one slot at a time, then flip the map",
+ "caption": "Keys map to many fixed slots (say 1024), and slots map to shards. Only whole slots move, and the app never notices.",
+ "actors": [
+  {
+   "id": "op",
+   "label": "Rebalancer",
+   "kind": "worker"
+  },
+  {
+   "id": "map",
+   "label": "Shard map",
+   "kind": "cache"
+  },
+  {
+   "id": "a",
+   "label": "Shard A (old)",
+   "kind": "sql"
+  },
+  {
+   "id": "b",
+   "label": "Shard B (new)",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "op",
+   "to": "a",
+   "label": "snapshot slot 37 → B",
+   "note": "Pick a slot on the overloaded shard. Copy its rows to the new shard while A keeps serving reads and writes."
+  },
+  {
+   "from": "a",
+   "to": "b",
+   "label": "bulk copy",
+   "style": "async"
+  },
+  {
+   "from": "a",
+   "to": "b",
+   "label": "stream changes since snapshot",
+   "style": "async",
+   "note": "Writes that hit slot 37 during the copy are replayed from A's change log until B is only milliseconds behind."
+  },
+  {
+   "from": "op",
+   "to": "a",
+   "label": "pause writes to slot 37",
+   "note": "A short freeze (milliseconds to a second) on just this slot, so the last changes can drain."
+  },
+  {
+   "from": "op",
+   "to": "map",
+   "label": "slot 37 → B",
+   "note": "Flip one entry in the map. Routers pick it up and send slot 37 traffic to B."
+  },
+  {
+   "from": "op",
+   "to": "a",
+   "label": "delete slot 37 rows",
+   "style": "async",
+   "note": "Clean up the old copy later. Repeat slot by slot until the load is even."
+  }
+ ]
+}

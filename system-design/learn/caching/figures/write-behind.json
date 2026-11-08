@@ -1,0 +1,51 @@
+{
+ "kind": "sequence",
+ "title": "Write-behind: the cache acknowledges now and the database catches up later",
+ "caption": "Writes are as fast as the cache, and can be batched, but anything not yet flushed is lost if the cache dies.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "cache",
+   "label": "Cache",
+   "kind": "cache"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "INCR views:9 (×1000)",
+   "note": "A thousand writes land in memory at ~0.5 ms each."
+  },
+  {
+   "from": "cache",
+   "to": "app",
+   "label": "ok",
+   "style": "reply",
+   "note": "The caller is acknowledged before the database knows anything."
+  },
+  {
+   "from": "cache",
+   "to": "db",
+   "label": "flush: views += 1000",
+   "style": "async",
+   "note": "Every second, a background flush writes one batched update instead of a thousand."
+  },
+  {
+   "from": "cache",
+   "to": "cache",
+   "label": "crash before flush",
+   "style": "error",
+   "note": "If the cache node fails between flushes, those increments are gone. Use it only for data you can lose or rebuild."
+  }
+ ]
+}

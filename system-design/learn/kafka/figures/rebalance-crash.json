@@ -1,0 +1,80 @@
+{
+ "kind": "sequence",
+ "title": "Crash before commit: the new owner re-reads, so records are processed twice",
+ "caption": "c2 processes b0 and b1 from p1, dies before committing, and c1 takes over p1 from the last committed offset, 0.",
+ "actors": [
+  {
+   "id": "c1",
+   "label": "Consumer c1",
+   "kind": "worker"
+  },
+  {
+   "id": "p1",
+   "label": "Partition p1",
+   "kind": "stream"
+  },
+  {
+   "id": "c2",
+   "label": "Consumer c2",
+   "kind": "worker"
+  },
+  {
+   "id": "gc",
+   "label": "Group coordinator",
+   "kind": "coordinator"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c2",
+   "to": "p1",
+   "label": "poll from offset 0",
+   "note": "c2 owns p1. Its committed offset is 0."
+  },
+  {
+   "from": "p1",
+   "to": "c2",
+   "label": "b0, b1",
+   "style": "reply"
+  },
+  {
+   "from": "c2",
+   "to": "c2",
+   "label": "process b0, b1",
+   "style": "self",
+   "note": "The side effects (emails, DB writes) happen here."
+  },
+  {
+   "from": "c2",
+   "to": "c2",
+   "label": "crash before commit",
+   "style": "error",
+   "note": "The commit of offset 2 never happens, and c2's heartbeats stop."
+  },
+  {
+   "from": "gc",
+   "to": "c1",
+   "label": "rebalance: you now own p1",
+   "style": "async",
+   "note": "No heartbeat within the session timeout (about 10–45 s), so the coordinator reassigns c2's partitions. Consumption of p1 pauses meanwhile."
+  },
+  {
+   "from": "c1",
+   "to": "p1",
+   "label": "poll from committed offset 0",
+   "note": "The only progress the group knows about is the committed offset."
+  },
+  {
+   "from": "p1",
+   "to": "c1",
+   "label": "b0, b1 (again)",
+   "style": "reply",
+   "note": "b0 and b1 are processed a second time. That's at-least-once: the handler must be idempotent."
+  },
+  {
+   "from": "c1",
+   "to": "p1",
+   "label": "commit offset 2"
+  }
+ ]
+}

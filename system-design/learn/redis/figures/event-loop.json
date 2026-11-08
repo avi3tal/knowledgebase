@@ -1,0 +1,104 @@
+{
+ "kind": "architecture",
+ "title": "One thread runs one command at a time, so each command is atomic",
+ "caption": "Commands from all clients queue up and run start to finish on a single event loop against data in RAM; disk is a background copy.",
+ "nodes": [
+  {
+   "id": "c1",
+   "kind": "client",
+   "label": "App server 1",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "c2",
+   "kind": "client",
+   "label": "App server 2",
+   "x": 0,
+   "y": 240
+  },
+  {
+   "id": "loop",
+   "kind": "service",
+   "label": "Event loop",
+   "x": 280,
+   "y": 120
+  },
+  {
+   "id": "ram",
+   "kind": "cache",
+   "label": "RAM: key → value",
+   "x": 560,
+   "y": 120
+  },
+  {
+   "id": "disk",
+   "kind": "blob",
+   "label": "AOF / RDB on disk",
+   "x": 840,
+   "y": 120
+  }
+ ],
+ "edges": [
+  {
+   "from": "c1",
+   "to": "loop",
+   "label": "INCR hits"
+  },
+  {
+   "from": "c2",
+   "to": "loop",
+   "label": "INCR hits"
+  },
+  {
+   "from": "loop",
+   "to": "ram",
+   "label": "run to the end"
+  },
+  {
+   "from": "ram",
+   "to": "disk",
+   "label": "background"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Two app servers send INCR hits at the same moment.",
+   "nodes": [
+    "c1",
+    "c2",
+    "loop"
+   ],
+   "edges": [
+    "c1>loop",
+    "c2>loop"
+   ]
+  },
+  {
+   "text": "The loop takes one command, runs it to completion (read 7, write 8, reply 8), then the next (8 → 9). No interleaving, so no lost update.",
+   "nodes": [
+    "loop",
+    "ram"
+   ],
+   "edges": [
+    "loop>ram"
+   ]
+  },
+  {
+   "text": "Persistence happens off the request path: appending to a log (AOF) or forking a snapshot (RDB).",
+   "nodes": [
+    "ram",
+    "disk"
+   ],
+   "edges": [
+    "ram>disk"
+   ]
+  },
+  {
+   "text": "The flip side: a slow command (KEYS *, a huge HGETALL) blocks every client for its whole run time.",
+   "nodes": [
+    "loop"
+   ]
+  }
+ ]
+}

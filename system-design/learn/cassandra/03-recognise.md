@@ -27,13 +27,18 @@
 - **[Redis](#/topic/system-design/redis)** is in memory, with sub-millisecond latency and limited
   durability. Cassandra is disk-backed and durable, at 1–10 ms.
 
-**Interview pitfalls:**
-- Choosing the partition key without saying what bounds its size. Unbounded partitions and hot
-  partitions are the two classic failures.
-- Writing a query that has no partition key in it (a scan of the cluster).
-- Claiming strong consistency without stating R + W > N, or forgetting that clock skew breaks
-  last write wins.
-- Using Cassandra as a queue: deletes write **tombstones**, and reading past millions of them is slow.
+> [!INTERVIEW] How to pitch Cassandra
+> "Device readings are write-heavy (200k/s) and always read by device, newest first, so I'd use
+> Cassandra with `PRIMARY KEY ((device_id, day), ts)`. The day bucket bounds each partition.
+> Writes and reads at QUORUM with RF = 3, so R + W > N and we survive one node down."
+
+> [!PITFALL] Interview pitfalls
+> - Choosing the partition key without saying what bounds its size. Unbounded partitions and hot
+>   partitions are the two classic failures.
+> - Writing a query that has no partition key in it (a scan of the cluster).
+> - Claiming strong consistency without stating R + W > N, or forgetting that clock skew breaks
+>   last write wins.
+> - Using Cassandra as a queue: deletes write **tombstones**, and reading past millions of them is slow.
 
 **In our problems:**
 - **notification-system:** the delivery log, written once per send and expired by TTL.

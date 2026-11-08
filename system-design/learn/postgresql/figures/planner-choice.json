@@ -1,0 +1,125 @@
+{
+ "kind": "flowchart",
+ "title": "The planner uses an index only when it makes the query read less",
+ "caption": "Random index lookups cost more per row than a sequential read, so for a large share of the table the seq scan wins.",
+ "nodes": [
+  {
+   "id": "q",
+   "type": "start",
+   "label": "Query + WHERE",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "idx",
+   "type": "decision",
+   "label": "Usable index?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "sel",
+   "type": "decision",
+   "label": "Few rows match?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "iscan",
+   "type": "end",
+   "label": "Index scan",
+   "col": 0,
+   "row": 3,
+   "tone": "good"
+  },
+  {
+   "id": "noidx",
+   "type": "end",
+   "label": "Full seq scan",
+   "col": 1,
+   "row": 1,
+   "tone": "bad"
+  },
+  {
+   "id": "seq",
+   "type": "end",
+   "label": "Seq scan (cheaper)",
+   "col": 1,
+   "row": 2
+  }
+ ],
+ "edges": [
+  {
+   "from": "q",
+   "to": "idx"
+  },
+  {
+   "from": "idx",
+   "to": "noidx",
+   "label": "no"
+  },
+  {
+   "from": "idx",
+   "to": "sel",
+   "label": "yes"
+  },
+  {
+   "from": "sel",
+   "to": "iscan",
+   "label": "yes"
+  },
+  {
+   "from": "sel",
+   "to": "seq",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "1. Is there an index whose leading column(s) match the filter? WHERE lower(email) = … can't use a plain index on email.",
+   "nodes": [
+    "q",
+    "idx"
+   ],
+   "edges": [
+    "q>idx"
+   ]
+  },
+  {
+   "text": "2. No index: read every heap page. Fine for a 10k-row table, a disaster on the hot path of a 100M-row one.",
+   "nodes": [
+    "noidx"
+   ],
+   "edges": [
+    "idx>noidx"
+   ]
+  },
+  {
+   "text": "3. Index exists: estimate selectivity from table statistics. Will the filter match a small fraction of rows?",
+   "nodes": [
+    "sel"
+   ],
+   "edges": [
+    "idx>sel"
+   ]
+  },
+  {
+   "text": "4. Yes (one user, one order, the last hour): descend the B-tree and fetch just those pages.",
+   "nodes": [
+    "iscan"
+   ],
+   "edges": [
+    "sel>iscan"
+   ]
+  },
+  {
+   "text": "5. No (status = 'active' on 80% of rows): one sequential pass beats millions of random page reads, so the planner ignores the index. Run EXPLAIN ANALYZE to see the choice.",
+   "nodes": [
+    "seq"
+   ],
+   "edges": [
+    "sel>seq"
+   ]
+  }
+ ]
+}

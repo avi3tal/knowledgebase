@@ -27,13 +27,26 @@
   based on a stale version (lost updates between **different** writers). Idempotency recognises
   the **same** request arriving twice.
 
-**Interview pitfalls:**
-- Check-then-insert without a unique constraint, which still races.
-- Storing the key **after** the side effect in a separate step. A crash in between means a
-  double charge on retry.
-- A server-generated key: it has to come from the client, and stay the same across retries.
-- No TTL, or a TTL shorter than the retry or replay horizon.
-- Claiming "exactly-once delivery". Say at-least-once plus dedup = exactly-once **effect**.
+> [!DIALOGUE] Scoping retries in a payment design
+> **Candidate:** Can clients retry a payment request, for example on a mobile timeout?
+> **Interviewer:** Yes, the app retries up to three times over about a minute.
+> **Candidate:** Then the client sends an idempotency key per checkout, and I keep keys for a day, well past that horizon.
+> **Interviewer:** What about the processor's webhooks?
+> **Candidate:** Those are at-least-once too, so I dedupe on the processor's event id in the same transaction as the ledger write.
+
+> [!INTERVIEW] What to say
+> "Delivery is at-least-once everywhere, so I make every side effect idempotent: a
+> client-chosen key claimed with a unique insert before the work, the response stored and
+> replayed, and a dedup id committed with the effect on every consumer. That gives an
+> exactly-once **effect**."
+
+> [!PITFALL] Interview pitfalls
+> - Check-then-insert without a unique constraint, which still races.
+> - Storing the key **after** the side effect in a separate step. A crash in between means a
+>   double charge on retry.
+> - A server-generated key: it has to come from the client, and stay the same across retries.
+> - No TTL, or a TTL shorter than the retry or replay horizon.
+> - Claiming "exactly-once delivery". Say at-least-once plus dedup = exactly-once **effect**.
 
 **In our problems:**
 - **url-shortener:** a retried create must return the same short code, not mint a second one.

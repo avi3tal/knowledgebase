@@ -2,10 +2,8 @@
 
 Backpressure works hop by hop, and every hop needs a **bound**:
 
-```
-client ─► edge / gateway ─► service ─► queue ─► worker ─► database
-          admission         concurrency  max depth  pull at    connection
-          (token, 429)      limit (N)    (reject)   own pace   pool (wait)
+```figure
+hop-bounds
 ```
 
 - **Pull instead of push.** Consumers that fetch work (log consumers, job workers) can't be
@@ -14,6 +12,10 @@ client ─► edge / gateway ─► service ─► queue ─► worker ─► da
   wait briefly or get a fast 503. Adaptive limiters lower the cap when latency rises.
 - **Credits / windows.** The receiver grants N items and the sender may not exceed them. TCP flow
   control, HTTP/2 stream windows and reactive streams' `request(n)` all work this way.
+
+```figure
+credits
+```
 - **Deadlines.** Pass a timeout down the call chain and drop work whose caller has already given
   up. It stops wasted work during overload.
 
@@ -36,6 +38,16 @@ For a known spike, like a product launch, an on-sale or registration opening, de
   short-lived **admission token** that the core checks.
 - Show **position and ETA**. People wait far more calmly when they can see progress.
 - Bound the line too. Past it, say "try later" rather than promising a wait you can't deliver.
+
+```figure
+waiting-room
+```
+
+> [!NUMBERS] Sizing a waiting room
+> 1 000 000 people arrive in the first minute of an on-sale. The core can serve 2 000 users/min.
+> The last person in a full-size line would wait 1 000 000 ÷ 2 000 = **500 min**, over 8 hours.
+> If tickets run out after 50 000 buyers, cap the line at about 50 000 (a 25 min ETA) and tell
+> everyone else straight away that it has sold out.
 
 In the trace below, 9 users arrive at a room that admits 2 per tick and holds 4. Each user gets an
 ETA when they join, users `u5` and `u8` are turned away, and the service behind it never sees more

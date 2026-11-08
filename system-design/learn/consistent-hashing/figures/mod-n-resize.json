@@ -1,0 +1,79 @@
+{
+ "kind": "sequence",
+ "title": "With hash % N, adding one server sends most keys to a different, empty server",
+ "caption": "Same key, same hash, new N: k1 now maps to a server that has never cached it, so the read falls through to the database.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "s2",
+   "label": "Cache S2",
+   "kind": "cache"
+  },
+  {
+   "id": "s1",
+   "label": "Cache S1",
+   "kind": "cache"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "s2",
+   "label": "GET k1 (17 % 3 = 2)",
+   "note": "3 servers: hash(k1) = 17, and 17 mod 3 = 2, so k1 lives on S2."
+  },
+  {
+   "from": "s2",
+   "to": "app",
+   "label": "hit",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "app",
+   "label": "scale out: N = 3 → 4",
+   "style": "self",
+   "note": "Capacity is added. Nothing about k1 changed except N."
+  },
+  {
+   "from": "app",
+   "to": "s1",
+   "label": "GET k1 (17 % 4 = 1)",
+   "note": "17 mod 4 = 1: the router now asks S1, which has never seen k1."
+  },
+  {
+   "from": "s1",
+   "to": "app",
+   "label": "miss",
+   "style": "error"
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "SELECT k1",
+   "style": "error",
+   "note": "The value is still on S2, but nobody looks there any more. Most keys do this at the same moment, so the database takes nearly the whole read load."
+  },
+  {
+   "from": "app",
+   "to": "s1",
+   "label": "GET k6 (25 % 3 = 1 → 25 % 4 = 1)",
+   "note": "A few keys are lucky: 25 mod 3 and 25 mod 4 are both 1, so k6 stays on S1. Count how many of 8 move in the trace below."
+  },
+  {
+   "from": "s1",
+   "to": "app",
+   "label": "hit (k6 didn't move)",
+   "style": "reply"
+  }
+ ]
+}

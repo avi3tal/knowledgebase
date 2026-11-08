@@ -1,0 +1,195 @@
+{
+ "kind": "flowchart",
+ "title": "Claim the key first; the database decides who does the work",
+ "caption": "One INSERT against a unique key replaces check-then-insert, so two concurrent retries can never both charge.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Request + key",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "claim",
+   "type": "step",
+   "label": "INSERT key",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "new",
+   "type": "decision",
+   "label": "Key was new?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "work",
+   "type": "step",
+   "label": "Do the work",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "save",
+   "type": "step",
+   "label": "Store response",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "Return result",
+   "col": 0,
+   "row": 5,
+   "tone": "good"
+  },
+  {
+   "id": "hash",
+   "type": "decision",
+   "label": "Same body hash?",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "reuse",
+   "type": "end",
+   "label": "422 key reused",
+   "col": 2,
+   "row": 2,
+   "tone": "bad"
+  },
+  {
+   "id": "done",
+   "type": "decision",
+   "label": "Status done?",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "replay",
+   "type": "end",
+   "label": "Replay response",
+   "col": 1,
+   "row": 4,
+   "tone": "good"
+  },
+  {
+   "id": "busy",
+   "type": "end",
+   "label": "409 retry later",
+   "col": 2,
+   "row": 3,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "claim"
+  },
+  {
+   "from": "claim",
+   "to": "new"
+  },
+  {
+   "from": "new",
+   "to": "work",
+   "label": "yes"
+  },
+  {
+   "from": "work",
+   "to": "save"
+  },
+  {
+   "from": "save",
+   "to": "ok"
+  },
+  {
+   "from": "new",
+   "to": "hash",
+   "label": "no"
+  },
+  {
+   "from": "hash",
+   "to": "reuse",
+   "label": "no"
+  },
+  {
+   "from": "hash",
+   "to": "done",
+   "label": "yes"
+  },
+  {
+   "from": "done",
+   "to": "replay",
+   "label": "yes"
+  },
+  {
+   "from": "done",
+   "to": "busy",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Insert (key, request_hash, status = in_progress). The unique constraint means exactly one attempt can win.",
+   "nodes": [
+    "in",
+    "claim",
+    "new"
+   ],
+   "edges": [
+    "in>claim",
+    "claim>new"
+   ]
+  },
+  {
+   "text": "Won the claim: do the side effect, then store status = done and the response. For a local write, do both in one transaction.",
+   "nodes": [
+    "work",
+    "save",
+    "ok"
+   ],
+   "edges": [
+    "new>work",
+    "work>save",
+    "save>ok"
+   ]
+  },
+  {
+   "text": "Lost the claim: first compare fingerprints. Same key with a different amount is a client bug, so refuse it instead of replaying the wrong answer.",
+   "nodes": [
+    "hash",
+    "reuse"
+   ],
+   "edges": [
+    "new>hash",
+    "hash>reuse"
+   ]
+  },
+  {
+   "text": "Same request and already done: replay the stored response.",
+   "nodes": [
+    "done",
+    "replay"
+   ],
+   "edges": [
+    "hash>done",
+    "done>replay"
+   ]
+  },
+  {
+   "text": "Same request still in progress (the first attempt is running): answer 409 so the client backs off and retries later.",
+   "nodes": [
+    "done",
+    "busy"
+   ],
+   "edges": [
+    "done>busy"
+   ]
+  }
+ ]
+}

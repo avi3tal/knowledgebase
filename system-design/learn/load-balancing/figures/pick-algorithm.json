@@ -1,0 +1,145 @@
+{
+ "kind": "flowchart",
+ "title": "Picking an algorithm: three questions cover most cases",
+ "caption": "Start from round robin and only move off it when a question says yes.",
+ "nodes": [
+  {
+   "id": "start",
+   "type": "start",
+   "label": "Choose a policy",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "aff",
+   "type": "decision",
+   "label": "Key → same server?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "hash",
+   "type": "end",
+   "label": "Consistent hash",
+   "col": 1,
+   "row": 1
+  },
+  {
+   "id": "vary",
+   "type": "decision",
+   "label": "Costs vary a lot?",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "lc",
+   "type": "end",
+   "label": "Least conns / P2C",
+   "col": 1,
+   "row": 2
+  },
+  {
+   "id": "size",
+   "type": "decision",
+   "label": "Servers differ?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "wrr",
+   "type": "end",
+   "label": "Weighted RR",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "rr",
+   "type": "end",
+   "label": "Round robin",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "start",
+   "to": "aff"
+  },
+  {
+   "from": "aff",
+   "to": "hash",
+   "label": "yes"
+  },
+  {
+   "from": "aff",
+   "to": "vary",
+   "label": "no"
+  },
+  {
+   "from": "vary",
+   "to": "lc",
+   "label": "yes"
+  },
+  {
+   "from": "vary",
+   "to": "size",
+   "label": "no"
+  },
+  {
+   "from": "size",
+   "to": "wrr",
+   "label": "yes"
+  },
+  {
+   "from": "size",
+   "to": "rr",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Must the same user or key reach the same server (a local cache, a WebSocket room)? Hash on it, with consistent hashing so adding a server moves few keys.",
+   "nodes": [
+    "start",
+    "aff",
+    "hash"
+   ],
+   "edges": [
+    "start>aff",
+    "aff>hash"
+   ]
+  },
+  {
+   "text": "Do request costs vary widely (uploads, long polls, LLM calls)? Route by load: least connections, or power of two choices.",
+   "nodes": [
+    "vary",
+    "lc"
+   ],
+   "edges": [
+    "aff>vary",
+    "vary>lc"
+   ]
+  },
+  {
+   "text": "Are some machines bigger than others? Give them more turns with weighted round robin.",
+   "nodes": [
+    "size",
+    "wrr"
+   ],
+   "edges": [
+    "vary>size",
+    "size>wrr"
+   ]
+  },
+  {
+   "text": "Otherwise, plain round robin is simple, stateless and good enough.",
+   "nodes": [
+    "rr"
+   ],
+   "edges": [
+    "size>rr"
+   ]
+  }
+ ]
+}

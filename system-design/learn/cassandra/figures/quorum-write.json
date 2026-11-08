@@ -1,0 +1,78 @@
+{
+ "kind": "sequence",
+ "title": "QUORUM write with N = 3: acknowledge after 2 replicas, even with one down",
+ "caption": "The third replica catches up later from a hint, read repair or anti-entropy repair.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "co",
+   "label": "Coordinator",
+   "kind": "coordinator"
+  },
+  {
+   "id": "r1",
+   "label": "Replica 1",
+   "kind": "nosql"
+  },
+  {
+   "id": "r2",
+   "label": "Replica 2",
+   "kind": "nosql"
+  },
+  {
+   "id": "r3",
+   "label": "Replica 3",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "co",
+   "label": "write c1 · ts = 105",
+   "note": "The client asks for consistency level QUORUM: W = 2 of N = 3."
+  },
+  {
+   "from": "co",
+   "to": "r1",
+   "label": "write ts=105",
+   "note": "The coordinator sends the write to all three replicas at once, not just two."
+  },
+  {
+   "from": "co",
+   "to": "r2",
+   "label": "write ts=105"
+  },
+  {
+   "from": "co",
+   "to": "r3",
+   "label": "write ts=105",
+   "style": "error",
+   "note": "Replica 3 is down. The write still succeeds as long as 2 replicas answer."
+  },
+  {
+   "from": "r1",
+   "to": "co",
+   "label": "ack",
+   "style": "reply"
+  },
+  {
+   "from": "r2",
+   "to": "co",
+   "label": "ack",
+   "style": "reply",
+   "note": "Second ack: W = 2 reached."
+  },
+  {
+   "from": "co",
+   "to": "c",
+   "label": "success",
+   "style": "reply",
+   "note": "The coordinator stores a hint for replica 3 and replays it when the node comes back."
+  }
+ ]
+}

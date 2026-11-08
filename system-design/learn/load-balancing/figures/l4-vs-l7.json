@@ -1,0 +1,96 @@
+{
+ "kind": "architecture",
+ "title": "L4 moves connections fast; L7 reads the request and routes it",
+ "caption": "A common stack: a network (L4) LB in front of a fleet of L7 proxies that terminate TLS and route by path.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Clients",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "l4",
+   "kind": "load-balancer",
+   "label": "L4 network LB",
+   "x": 280,
+   "y": 170
+  },
+  {
+   "id": "l7",
+   "kind": "api-gateway",
+   "label": "L7 proxy",
+   "x": 560,
+   "y": 170
+  },
+  {
+   "id": "api",
+   "kind": "service",
+   "label": "API service",
+   "x": 840,
+   "y": 30
+  },
+  {
+   "id": "img",
+   "kind": "service",
+   "label": "Image service",
+   "x": 840,
+   "y": 310
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "l4",
+   "label": "TCP :443"
+  },
+  {
+   "from": "l4",
+   "to": "l7",
+   "label": "same TCP stream"
+  },
+  {
+   "from": "l7",
+   "to": "api",
+   "label": "/api/*"
+  },
+  {
+   "from": "l7",
+   "to": "img",
+   "label": "/img/*"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The L4 LB sees only IPs and ports. It picks a proxy per connection and forwards packets without reading them: millions of connections, little CPU.",
+   "nodes": [
+    "client",
+    "l4",
+    "l7"
+   ],
+   "edges": [
+    "client>l4",
+    "l4>l7"
+   ]
+  },
+  {
+   "text": "The L7 proxy terminates TLS and reads the HTTP request: method, path, headers, cookies.",
+   "nodes": [
+    "l7"
+   ]
+  },
+  {
+   "text": "Now it can route by content (/api to one service, /img to another), retry a failed backend, and add auth or headers.",
+   "nodes": [
+    "l7",
+    "api",
+    "img"
+   ],
+   "edges": [
+    "l7>api",
+    "l7>img"
+   ]
+  }
+ ]
+}

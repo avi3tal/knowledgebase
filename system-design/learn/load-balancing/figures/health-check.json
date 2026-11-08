@@ -1,0 +1,79 @@
+{
+ "kind": "sequence",
+ "title": "Health checks: eject after several misses, re-admit after several passes",
+ "caption": "Requiring consecutive failures stops one slow response from flapping a server in and out of the pool.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "lb",
+   "label": "Load balancer",
+   "kind": "load-balancer"
+  },
+  {
+   "id": "a1",
+   "label": "App 1",
+   "kind": "service"
+  },
+  {
+   "id": "a2",
+   "label": "App 2",
+   "kind": "service"
+  }
+ ],
+ "messages": [
+  {
+   "from": "lb",
+   "to": "a2",
+   "label": "GET /healthz (every 5 s)",
+   "note": "Active check: the LB polls a cheap endpoint on every server."
+  },
+  {
+   "from": "a2",
+   "to": "lb",
+   "label": "200 OK",
+   "style": "reply"
+  },
+  {
+   "from": "lb",
+   "to": "a2",
+   "label": "GET /healthz → timeout ×3",
+   "style": "error",
+   "note": "App 2 hangs. One timeout could be a blip; three in a row mark it unhealthy."
+  },
+  {
+   "from": "lb",
+   "to": "lb",
+   "label": "eject App 2",
+   "style": "self",
+   "note": "App 2 leaves the rotation. Its open requests are lost or retried elsewhere."
+  },
+  {
+   "from": "c",
+   "to": "lb",
+   "label": "GET /feed"
+  },
+  {
+   "from": "lb",
+   "to": "a1",
+   "label": "forward",
+   "note": "New traffic only goes to healthy servers; the client never sees App 2's failure."
+  },
+  {
+   "from": "a1",
+   "to": "c",
+   "label": "200 OK",
+   "style": "reply"
+  },
+  {
+   "from": "a2",
+   "to": "lb",
+   "label": "200 OK ×2 (recovered)",
+   "style": "reply",
+   "note": "After consecutive passes App 2 rejoins, ideally with a slow ramp-up so a cold server isn't flooded."
+  }
+ ]
+}

@@ -1,0 +1,132 @@
+{
+ "kind": "architecture",
+ "title": "Scale out: identical stateless servers behind one address",
+ "caption": "Clients only know the load balancer. Servers can be added, removed or fail without clients noticing.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Users",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "lb",
+   "kind": "load-balancer",
+   "label": "Load balancer",
+   "x": 280,
+   "y": 170
+  },
+  {
+   "id": "app1",
+   "kind": "service",
+   "label": "App 1",
+   "x": 560,
+   "y": 30
+  },
+  {
+   "id": "app2",
+   "kind": "service",
+   "label": "App 2",
+   "x": 560,
+   "y": 170
+  },
+  {
+   "id": "app3",
+   "kind": "service",
+   "label": "App 3",
+   "x": 560,
+   "y": 310
+  },
+  {
+   "id": "db",
+   "kind": "sql",
+   "label": "Shared DB",
+   "x": 840,
+   "y": 170
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "lb",
+   "label": "public IP"
+  },
+  {
+   "from": "lb",
+   "to": "app1"
+  },
+  {
+   "from": "lb",
+   "to": "app2"
+  },
+  {
+   "from": "lb",
+   "to": "app3"
+  },
+  {
+   "from": "app1",
+   "to": "db"
+  },
+  {
+   "from": "app2",
+   "to": "db"
+  },
+  {
+   "from": "app3",
+   "to": "db"
+  }
+ ],
+ "steps": [
+  {
+   "text": "DNS now points at the load balancer. The app servers sit on private addresses that clients never see.",
+   "nodes": [
+    "client",
+    "lb"
+   ],
+   "edges": [
+    "client>lb"
+   ]
+  },
+  {
+   "text": "The LB spreads requests across the pool. Three servers give roughly three times the capacity, and you add a fourth when load grows.",
+   "nodes": [
+    "lb",
+    "app1",
+    "app2",
+    "app3"
+   ],
+   "edges": [
+    "lb>app1",
+    "lb>app2",
+    "lb>app3"
+   ]
+  },
+  {
+   "text": "Servers keep no session state of their own. Sessions and data live in shared stores, so any server can answer any request.",
+   "nodes": [
+    "app1",
+    "app2",
+    "app3",
+    "db"
+   ],
+   "edges": [
+    "app1>db",
+    "app2>db",
+    "app3>db"
+   ]
+  },
+  {
+   "text": "App 2 fails its health checks: the LB stops sending it traffic, and App 1 and App 3 absorb the load.",
+   "nodes": [
+    "lb",
+    "app1",
+    "app3"
+   ],
+   "edges": [
+    "lb>app1",
+    "lb>app3"
+   ]
+  }
+ ]
+}

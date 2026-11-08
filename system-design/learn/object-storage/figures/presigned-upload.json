@@ -1,0 +1,72 @@
+{
+ "kind": "sequence",
+ "title": "Presigned upload: the API grants permission, the bytes skip your servers",
+ "caption": "Your service handles one small JSON request; the 2 GB of video goes straight to object storage.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "api",
+   "label": "Upload API",
+   "kind": "service"
+  },
+  {
+   "id": "db",
+   "label": "Metadata DB",
+   "kind": "sql"
+  },
+  {
+   "id": "s",
+   "label": "Object store",
+   "kind": "blob"
+  },
+  {
+   "id": "q",
+   "label": "Event queue",
+   "kind": "queue"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "api",
+   "label": "POST /uploads {clip.mp4, 2 GB}",
+   "note": "Auth, quota and file-type checks happen here, on a tiny request."
+  },
+  {
+   "from": "api",
+   "to": "db",
+   "label": "insert video row (pending)",
+   "note": "The row owns the key videos/v_77/raw.mp4."
+  },
+  {
+   "from": "api",
+   "to": "c",
+   "label": "presigned PUT URL (15 min)",
+   "style": "reply",
+   "note": "Signed for one operation on one key, with an expiry and optionally a size cap."
+  },
+  {
+   "from": "c",
+   "to": "s",
+   "label": "PUT bytes (multipart, parallel)",
+   "note": "The store checks the signature, not your user session."
+  },
+  {
+   "from": "s",
+   "to": "c",
+   "label": "200 + ETag",
+   "style": "reply"
+  },
+  {
+   "from": "s",
+   "to": "q",
+   "label": "ObjectCreated v_77/raw.mp4",
+   "style": "async",
+   "note": "The store emits the event, so nobody polls for finished uploads."
+  }
+ ]
+}

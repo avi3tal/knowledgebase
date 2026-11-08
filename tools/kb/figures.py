@@ -10,8 +10,9 @@ and the spec lives in `<lesson>/figures/<name>.json`. `kb learn validate` checks
 studio API inlines the specs next to the markdown (`figures: {name: spec}`) and the studio renders
 them (DiagramCanvas for architecture, its own SVG for sequence and flowchart). Kinds:
 
-- architecture: `nodes [{id, kind, label, x, y}]`, `edges [{from, to, label?}]` — the design
-  console's shapes (`kind` from the system-design / ood palette), plus optional numbered `steps`.
+- architecture: `nodes [{id, kind, label, sub?, x, y}]`, `edges [{from, to, label?}]` — the design
+  console's shapes (`kind` from the system-design / ood palette; `sub` replaces the shape name under
+  the label), plus optional numbered `steps`.
 - sequence: `actors [{id, label, kind?}]`, `messages [{from, to, label, style?, note?}]`; every
   message is a numbered step (`style`: call | reply | error | async | self).
 - flowchart: `nodes [{id, type, label, col, row, tone?}]` (`type`: start | step | decision | end;

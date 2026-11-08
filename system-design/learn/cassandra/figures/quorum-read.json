@@ -1,0 +1,79 @@
+{
+ "kind": "sequence",
+ "title": "QUORUM read: R = 2 overlaps W = 2, so the newest write is always seen",
+ "caption": "R + W = 4 > N = 3, so at least one replica in every read set took the latest acknowledged write.",
+ "actors": [
+  {
+   "id": "c",
+   "label": "Client",
+   "kind": "client"
+  },
+  {
+   "id": "co",
+   "label": "Coordinator",
+   "kind": "coordinator"
+  },
+  {
+   "id": "r2",
+   "label": "Replica 2",
+   "kind": "nosql"
+  },
+  {
+   "id": "r3",
+   "label": "Replica 3",
+   "kind": "nosql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "c",
+   "to": "co",
+   "label": "read c1 (QUORUM)",
+   "note": "R = 2: the coordinator needs two answers."
+  },
+  {
+   "from": "co",
+   "to": "r2",
+   "label": "read"
+  },
+  {
+   "from": "co",
+   "to": "r3",
+   "label": "read"
+  },
+  {
+   "from": "r2",
+   "to": "co",
+   "label": "value · ts = 105",
+   "style": "reply",
+   "note": "Replica 2 took the latest write."
+  },
+  {
+   "from": "r3",
+   "to": "co",
+   "label": "value · ts = 98",
+   "style": "reply",
+   "note": "Replica 3 was down during the write and still has the older value."
+  },
+  {
+   "from": "co",
+   "to": "co",
+   "label": "newest ts wins → 105",
+   "style": "self",
+   "note": "Last write wins, by per-cell timestamp."
+  },
+  {
+   "from": "co",
+   "to": "c",
+   "label": "value (ts = 105)",
+   "style": "reply"
+  },
+  {
+   "from": "co",
+   "to": "r3",
+   "label": "read repair: ts = 105",
+   "style": "async",
+   "note": "The coordinator fixes the stale replica in the background, so the next read finds them in agreement."
+  }
+ ]
+}

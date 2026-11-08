@@ -1,0 +1,112 @@
+{
+ "kind": "architecture",
+ "title": "Rollup tiers: each built from the one below, each kept for longer",
+ "caption": "The query layer picks the coarsest tier that still gives ~1,000 points for the range.",
+ "nodes": [
+  {
+   "id": "raw",
+   "kind": "blob",
+   "label": "Raw events (7 d)",
+   "x": 0,
+   "y": 100
+  },
+  {
+   "id": "m",
+   "kind": "nosql",
+   "label": "1-minute (30 d)",
+   "x": 280,
+   "y": 100
+  },
+  {
+   "id": "h",
+   "kind": "nosql",
+   "label": "1-hour (1 y)",
+   "x": 560,
+   "y": 100
+  },
+  {
+   "id": "dd",
+   "kind": "nosql",
+   "label": "1-day (forever)",
+   "x": 840,
+   "y": 100
+  },
+  {
+   "id": "qs",
+   "kind": "service",
+   "label": "Query layer",
+   "x": 560,
+   "y": 330
+  }
+ ],
+ "edges": [
+  {
+   "from": "raw",
+   "to": "m",
+   "label": "stream job"
+  },
+  {
+   "from": "m",
+   "to": "h",
+   "label": "merge 60"
+  },
+  {
+   "from": "h",
+   "to": "dd",
+   "label": "merge 24"
+  },
+  {
+   "from": "qs",
+   "to": "m",
+   "label": "last day"
+  },
+  {
+   "from": "qs",
+   "to": "h",
+   "label": "last month"
+  },
+  {
+   "from": "qs",
+   "to": "dd",
+   "label": "beyond"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Minute buckets come from the raw stream. Raw events are kept only long enough to replay a week.",
+   "nodes": [
+    "raw",
+    "m"
+   ],
+   "edges": [
+    "raw>m"
+   ]
+  },
+  {
+   "text": "An hour row merges its 60 minute rows; a day row merges 24 hour rows. No tier goes back to raw events, which only works if the stored values are mergeable.",
+   "nodes": [
+    "m",
+    "h",
+    "dd"
+   ],
+   "edges": [
+    "m>h",
+    "h>dd"
+   ]
+  },
+  {
+   "text": "A \"last 24 h\" panel reads 1,440 minute rows; \"last 30 days\" reads 720 hour rows; \"last 2 years\" reads 730 day rows.",
+   "nodes": [
+    "qs",
+    "m",
+    "h",
+    "dd"
+   ],
+   "edges": [
+    "qs>m",
+    "qs>h",
+    "qs>dd"
+   ]
+  }
+ ]
+}

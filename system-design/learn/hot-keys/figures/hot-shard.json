@@ -1,0 +1,113 @@
+{
+ "kind": "architecture",
+ "title": "One viral key overloads its shard however many shards you add",
+ "caption": "hash(key) always picks the same shard, so the key's whole request rate lands on one node while the rest idle.",
+ "nodes": [
+  {
+   "id": "users",
+   "kind": "client",
+   "label": "1 M req/s",
+   "x": 0,
+   "y": 330
+  },
+  {
+   "id": "router",
+   "kind": "service",
+   "label": "Router: hash % 4",
+   "x": 280,
+   "y": 330
+  },
+  {
+   "id": "s0",
+   "kind": "cache",
+   "label": "Shard 0 · 95% CPU",
+   "x": 580,
+   "y": 0
+  },
+  {
+   "id": "s1",
+   "kind": "cache",
+   "label": "Shard 1 · 20%",
+   "x": 580,
+   "y": 220
+  },
+  {
+   "id": "s2",
+   "kind": "cache",
+   "label": "Shard 2 · 20%",
+   "x": 580,
+   "y": 440
+  },
+  {
+   "id": "s3",
+   "kind": "cache",
+   "label": "Shard 3 · 20%",
+   "x": 580,
+   "y": 660
+  }
+ ],
+ "edges": [
+  {
+   "from": "users",
+   "to": "router"
+  },
+  {
+   "from": "router",
+   "to": "s0",
+   "label": "video:42 + others"
+  },
+  {
+   "from": "router",
+   "to": "s1"
+  },
+  {
+   "from": "router",
+   "to": "s2"
+  },
+  {
+   "from": "router",
+   "to": "s3"
+  }
+ ],
+ "steps": [
+  {
+   "text": "A million requests a second arrive, and half of them are for one viral video.",
+   "nodes": [
+    "users",
+    "router"
+   ],
+   "edges": [
+    "users>router"
+   ]
+  },
+  {
+   "text": "Every request for video:42 hashes to shard 0, which needs ~500k ops/s from a node that does ~100k.",
+   "nodes": [
+    "router",
+    "s0"
+   ],
+   "edges": [
+    "router>s0"
+   ]
+  },
+  {
+   "text": "The other shards share the long tail and sit mostly idle: the average looks healthy, the maximum doesn't.",
+   "nodes": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "edges": [
+    "router>s1",
+    "router>s2",
+    "router>s3"
+   ]
+  },
+  {
+   "text": "Video:42's neighbours on shard 0 time out too. Going to 8 shards moves video:42 somewhere else, still to exactly one node.",
+   "nodes": [
+    "s0"
+   ]
+  }
+ ]
+}

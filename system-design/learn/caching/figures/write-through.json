@@ -1,0 +1,55 @@
+{
+ "kind": "sequence",
+ "title": "Write-through: the write isn't done until cache and database both have it",
+ "caption": "Reads of written keys are always fresh, but every write pays two round trips.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "cache",
+   "label": "Cache",
+   "kind": "cache"
+  },
+  {
+   "id": "db",
+   "label": "Database",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "SET price:7 = 19.99",
+   "note": "The write goes to the cache first (or a cache library writes both)."
+  },
+  {
+   "from": "app",
+   "to": "db",
+   "label": "UPDATE price = 19.99",
+   "note": "Then synchronously to the database, the source of truth."
+  },
+  {
+   "from": "db",
+   "to": "app",
+   "label": "committed",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "app",
+   "label": "ack to the caller",
+   "style": "self",
+   "note": "Only after both succeed. Write latency is roughly cache + database."
+  },
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "GET price:7 (later read)",
+   "note": "A read right after the write is a hit with the new value: no stale window for keys you wrote."
+  }
+ ]
+}

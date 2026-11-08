@@ -1,0 +1,120 @@
+{
+ "kind": "flowchart",
+ "title": "A lookup is one binary search over the sorted ring",
+ "caption": "Keep every virtual node's position in a sorted array next to its server; a lookup is O(log(N·V)).",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Key arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "hash",
+   "type": "step",
+   "label": "p = hash(key)",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "search",
+   "type": "step",
+   "label": "First point ≥ p",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "found",
+   "type": "decision",
+   "label": "Found one?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "wrap",
+   "type": "step",
+   "label": "Wrap to point 0",
+   "col": 1,
+   "row": 4
+  },
+  {
+   "id": "owner",
+   "type": "end",
+   "label": "Physical server",
+   "col": 0,
+   "row": 4,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "hash"
+  },
+  {
+   "from": "hash",
+   "to": "search"
+  },
+  {
+   "from": "search",
+   "to": "found"
+  },
+  {
+   "from": "found",
+   "to": "owner",
+   "label": "yes"
+  },
+  {
+   "from": "found",
+   "to": "wrap",
+   "label": "no"
+  },
+  {
+   "from": "wrap",
+   "to": "owner"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Hash the key with the same function used for the servers, so both live in one space.",
+   "nodes": [
+    "in",
+    "hash"
+   ],
+   "edges": [
+    "in>hash"
+   ]
+  },
+  {
+   "text": "Binary-search the sorted positions for the first one at or after p. With 10 servers × 150 vnodes that's about 11 comparisons.",
+   "nodes": [
+    "search",
+    "found"
+   ],
+   "edges": [
+    "hash>search",
+    "search>found"
+   ]
+  },
+  {
+   "text": "Past the last position? Wrap around to the first: that is the 'ring' part.",
+   "nodes": [
+    "wrap"
+   ],
+   "edges": [
+    "found>wrap"
+   ]
+  },
+  {
+   "text": "Map the virtual node to its physical server. For R replicas, keep walking until you have R distinct servers.",
+   "nodes": [
+    "owner"
+   ],
+   "edges": [
+    "found>owner",
+    "wrap>owner"
+   ]
+  }
+ ]
+}

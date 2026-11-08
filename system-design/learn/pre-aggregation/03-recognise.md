@@ -28,12 +28,19 @@
 - **[Time-series DBs](#/topic/system-design/time-series-db)** store metric samples and
   downsample them. Downsampling is pre-aggregation built into the store.
 
-**Interview pitfalls:**
-- Storing `avg` or `p99` per bucket and then averaging them across buckets.
-- No answer for late or duplicate events, or for what happens when a bucket is already "final".
-- Forgetting to keep the raw log, so you can't backfill a new dimension or fix a bug.
-- Too many dimensions in the key (ad × country × device × hour). The number of buckets explodes
-  and approaches the raw event count.
+> [!DIALOGUE] Scoping an analytics dashboard
+> **Candidate:** Which questions does the dashboard ask: fixed panels, or free exploration?
+> **Interviewer:** Fixed panels: clicks per ad per minute, and daily totals for billing.
+> **Candidate:** How fresh must the numbers be, and how far back do they go?
+> **Interviewer:** Under a minute behind, and two years of history.
+> **Candidate:** Then minute rollups on ingest with hour and day tiers, the raw log kept a week for reconciliation.
+
+> [!PITFALL] Interview pitfalls
+> - Storing `avg` or `p99` per bucket and then averaging them across buckets.
+> - No answer for late or duplicate events, or for what happens when a bucket is already "final".
+> - Forgetting to keep the raw log, so you can't backfill a new dimension or fix a bug.
+> - Too many dimensions in the key (ad × country × device × hour). The number of buckets explodes
+>   and approaches the raw event count.
 
 **In our problems:**
 - **url-shortener:** click analytics become daily counts per link instead of a scan of raw clicks.

@@ -1,0 +1,181 @@
+{
+ "kind": "flowchart",
+ "title": "Late and duplicate events: dedupe first, then decide if the bucket is still open",
+ "caption": "The watermark says when a bucket is final; allowed lateness says how long a final bucket may still be corrected.",
+ "nodes": [
+  {
+   "id": "in",
+   "type": "start",
+   "label": "Event arrives",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "seen",
+   "type": "decision",
+   "label": "Event id seen?",
+   "col": 0,
+   "row": 1
+  },
+  {
+   "id": "bucket",
+   "type": "step",
+   "label": "bucket = ts // 60",
+   "col": 0,
+   "row": 2
+  },
+  {
+   "id": "open",
+   "type": "decision",
+   "label": "Before watermark?",
+   "col": 0,
+   "row": 3
+  },
+  {
+   "id": "add",
+   "type": "step",
+   "label": "Add to bucket",
+   "col": 0,
+   "row": 4
+  },
+  {
+   "id": "ok",
+   "type": "end",
+   "label": "Counted",
+   "col": 0,
+   "row": 5,
+   "tone": "good"
+  },
+  {
+   "id": "dup",
+   "type": "end",
+   "label": "Drop duplicate",
+   "col": 1,
+   "row": 1,
+   "tone": "bad"
+  },
+  {
+   "id": "late",
+   "type": "decision",
+   "label": "Within lateness?",
+   "col": 1,
+   "row": 3
+  },
+  {
+   "id": "upd",
+   "type": "end",
+   "label": "Upsert final row",
+   "col": 1,
+   "row": 4,
+   "tone": "good"
+  },
+  {
+   "id": "side",
+   "type": "end",
+   "label": "Correction log",
+   "col": 2,
+   "row": 3,
+   "tone": "bad"
+  }
+ ],
+ "edges": [
+  {
+   "from": "in",
+   "to": "seen"
+  },
+  {
+   "from": "seen",
+   "to": "dup",
+   "label": "yes"
+  },
+  {
+   "from": "seen",
+   "to": "bucket",
+   "label": "no"
+  },
+  {
+   "from": "bucket",
+   "to": "open"
+  },
+  {
+   "from": "open",
+   "to": "add",
+   "label": "yes"
+  },
+  {
+   "from": "add",
+   "to": "ok"
+  },
+  {
+   "from": "open",
+   "to": "late",
+   "label": "no"
+  },
+  {
+   "from": "late",
+   "to": "upd",
+   "label": "yes"
+  },
+  {
+   "from": "late",
+   "to": "side",
+   "label": "no"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Brokers and clients retry, so check the event id against a short dedup window before counting (see idempotency).",
+   "nodes": [
+    "in",
+    "seen",
+    "dup"
+   ],
+   "edges": [
+    "in>seen",
+    "seen>dup"
+   ]
+  },
+  {
+   "text": "Bucket by event time, not arrival time: a click from 12:00:59 that arrives at 12:01:30 belongs to 12:00.",
+   "nodes": [
+    "bucket"
+   ],
+   "edges": [
+    "seen>bucket"
+   ]
+  },
+  {
+   "text": "The bucket's window hasn't been closed by the watermark yet (say end + 2 min): just add to it.",
+   "nodes": [
+    "open",
+    "add",
+    "ok"
+   ],
+   "edges": [
+    "bucket>open",
+    "open>add",
+    "add>ok"
+   ]
+  },
+  {
+   "text": "Already emitted but within the allowed lateness: upsert the row. The dashboard number changes slightly.",
+   "nodes": [
+    "late",
+    "upd"
+   ],
+   "edges": [
+    "open>late",
+    "late>upd"
+   ]
+  },
+  {
+   "text": "Too late: send it to a correction log, and let the nightly batch job rebuild that bucket from the raw events.",
+   "nodes": [
+    "side"
+   ],
+   "edges": [
+    "late>side"
+   ]
+  }
+ ]
+}

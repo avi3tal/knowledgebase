@@ -1,0 +1,185 @@
+{
+ "kind": "architecture",
+ "title": "Fan-out on write: pay N inserts when posting, one lookup when reading",
+ "caption": "Steps 1–4 are the publish flow (asynchronous, behind a queue); steps 5–6 are the read flow the user waits for.",
+ "nodes": [
+  {
+   "id": "author",
+   "kind": "client",
+   "label": "Author",
+   "x": 0,
+   "y": 150
+  },
+  {
+   "id": "post",
+   "kind": "service",
+   "label": "Post service",
+   "x": 280,
+   "y": 150
+  },
+  {
+   "id": "posts",
+   "kind": "nosql",
+   "label": "Posts",
+   "x": 280,
+   "y": 330
+  },
+  {
+   "id": "q",
+   "kind": "queue",
+   "label": "Fan-out queue",
+   "x": 560,
+   "y": 150
+  },
+  {
+   "id": "wk",
+   "kind": "worker",
+   "label": "Fan-out workers",
+   "x": 840,
+   "y": 150
+  },
+  {
+   "id": "graph",
+   "kind": "sql",
+   "label": "Follow graph",
+   "x": 840,
+   "y": 0
+  },
+  {
+   "id": "tl",
+   "kind": "cache",
+   "label": "Timelines",
+   "x": 840,
+   "y": 330
+  },
+  {
+   "id": "reader",
+   "kind": "client",
+   "label": "Reader",
+   "x": 0,
+   "y": 500
+  },
+  {
+   "id": "feed",
+   "kind": "service",
+   "label": "Feed service",
+   "x": 560,
+   "y": 500
+  }
+ ],
+ "edges": [
+  {
+   "from": "author",
+   "to": "post",
+   "label": "new post"
+  },
+  {
+   "from": "post",
+   "to": "posts",
+   "label": "store body"
+  },
+  {
+   "from": "post",
+   "to": "q",
+   "label": "post event"
+  },
+  {
+   "from": "wk",
+   "to": "q",
+   "label": "pull"
+  },
+  {
+   "from": "wk",
+   "to": "graph",
+   "label": "followers?"
+  },
+  {
+   "from": "wk",
+   "to": "tl",
+   "label": "add id × 300"
+  },
+  {
+   "from": "reader",
+   "to": "feed",
+   "label": "open feed"
+  },
+  {
+   "from": "feed",
+   "to": "tl",
+   "label": "1 key read"
+  },
+  {
+   "from": "feed",
+   "to": "posts",
+   "label": "hydrate 20"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The author posts. The post service stores the body once, keyed by post id.",
+   "nodes": [
+    "author",
+    "post",
+    "posts"
+   ],
+   "edges": [
+    "author>post",
+    "post>posts"
+   ]
+  },
+  {
+   "text": "It publishes a 'new post' event and returns to the author right away. The fan-out happens later.",
+   "nodes": [
+    "post",
+    "q"
+   ],
+   "edges": [
+    "post>q"
+   ]
+  },
+  {
+   "text": "Fan-out workers pull the event and page through the author's followers in the follow graph.",
+   "nodes": [
+    "wk",
+    "q",
+    "graph"
+   ],
+   "edges": [
+    "wk>q",
+    "wk>graph"
+   ]
+  },
+  {
+   "text": "They prepend the post id to every follower's timeline: 300 followers, 300 small writes, a few seconds behind the post.",
+   "nodes": [
+    "wk",
+    "tl"
+   ],
+   "edges": [
+    "wk>tl"
+   ]
+  },
+  {
+   "text": "A reader opens the feed. The feed service reads one key, the reader's timeline: a list of ids already in order.",
+   "nodes": [
+    "reader",
+    "feed",
+    "tl"
+   ],
+   "edges": [
+    "reader>feed",
+    "feed>tl"
+   ]
+  },
+  {
+   "text": "It fetches the 20 post bodies in one batch read and returns the page in a few ms.",
+   "nodes": [
+    "feed",
+    "posts"
+   ],
+   "edges": [
+    "feed>posts"
+   ]
+  }
+ ]
+}

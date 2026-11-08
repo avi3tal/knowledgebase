@@ -1,0 +1,67 @@
+{
+ "kind": "sequence",
+ "title": "Where the time goes: one cross-continent call costs ~300 in-DC round trips",
+ "caption": "Each rung is roughly 10–1 000× the one before. Count the slow hops on a request path, not the fast ones.",
+ "actors": [
+  {
+   "id": "app",
+   "label": "App server",
+   "kind": "service"
+  },
+  {
+   "id": "ssd",
+   "label": "Local SSD",
+   "kind": "sql"
+  },
+  {
+   "id": "cache",
+   "label": "Cache (same DC)",
+   "kind": "cache"
+  },
+  {
+   "id": "far",
+   "label": "Other continent",
+   "kind": "external"
+  }
+ ],
+ "messages": [
+  {
+   "from": "app",
+   "to": "app",
+   "label": "read RAM ≈ 100 ns",
+   "style": "self",
+   "note": "Main memory: about 10 million reads fit in one second."
+  },
+  {
+   "from": "app",
+   "to": "ssd",
+   "label": "random read ≈ 100 µs",
+   "note": "1 000× slower than RAM. A spinning disk seek would be another 100× on top (~10 ms)."
+  },
+  {
+   "from": "app",
+   "to": "cache",
+   "label": "GET ≈ 0.5 ms round trip",
+   "note": "A network hop inside one data center. A remote cache still beats reading the database."
+  },
+  {
+   "from": "cache",
+   "to": "app",
+   "label": "value",
+   "style": "reply"
+  },
+  {
+   "from": "app",
+   "to": "far",
+   "label": "call ≈ 150 ms round trip",
+   "note": "Speed of light plus routing. Two of these and a user-facing budget of 300 ms is gone."
+  },
+  {
+   "from": "far",
+   "to": "app",
+   "label": "response",
+   "style": "reply",
+   "note": "Hence: keep chatty calls inside one region, and put content near users (CDN, regional replicas)."
+  }
+ ]
+}

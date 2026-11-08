@@ -1,0 +1,104 @@
+{
+ "kind": "architecture",
+ "title": "No leader: any node coordinates, the partition key picks 3 replicas",
+ "caption": "hash(partition key) gives a token on the ring; the next RF = 3 nodes clockwise own that partition.",
+ "nodes": [
+  {
+   "id": "client",
+   "kind": "client",
+   "label": "Client",
+   "x": 0,
+   "y": 170
+  },
+  {
+   "id": "coord",
+   "kind": "coordinator",
+   "label": "Coordinator",
+   "x": 290,
+   "y": 170
+  },
+  {
+   "id": "r1",
+   "kind": "nosql",
+   "label": "Replica 1",
+   "x": 590,
+   "y": 20
+  },
+  {
+   "id": "r2",
+   "kind": "nosql",
+   "label": "Replica 2",
+   "x": 590,
+   "y": 170
+  },
+  {
+   "id": "r3",
+   "kind": "nosql",
+   "label": "Replica 3",
+   "x": 590,
+   "y": 320
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "coord",
+   "label": "conversation c1"
+  },
+  {
+   "from": "coord",
+   "to": "r1"
+  },
+  {
+   "from": "coord",
+   "to": "r2",
+   "label": "token(c1)"
+  },
+  {
+   "from": "coord",
+   "to": "r3"
+  }
+ ],
+ "steps": [
+  {
+   "text": "The client driver sends the request to any node; that node acts as coordinator for this request only. There is no primary to fail over.",
+   "nodes": [
+    "client",
+    "coord"
+   ],
+   "edges": [
+    "client>coord"
+   ]
+  },
+  {
+   "text": "The coordinator hashes the partition key (conversation_id = c1) to a token and finds the 3 nodes that own it on the ring.",
+   "nodes": [
+    "coord"
+   ],
+   "edges": []
+  },
+  {
+   "text": "It forwards to all 3 replicas in parallel and waits for as many as the consistency level asks for (1, 2 = QUORUM, or 3 = ALL).",
+   "nodes": [
+    "coord",
+    "r1",
+    "r2",
+    "r3"
+   ],
+   "edges": [
+    "coord>r1",
+    "coord>r2",
+    "coord>r3"
+   ]
+  },
+  {
+   "text": "Every row of partition c1 lives on exactly these 3 nodes. Adding nodes moves token ranges, not individual rows.",
+   "nodes": [
+    "r1",
+    "r2",
+    "r3"
+   ],
+   "edges": []
+  }
+ ]
+}

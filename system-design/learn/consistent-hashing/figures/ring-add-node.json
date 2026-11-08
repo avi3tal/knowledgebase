@@ -1,0 +1,133 @@
+{
+ "kind": "architecture",
+ "title": "Adding server D moves only the keys on D's new arc",
+ "caption": "D lands at 65 and takes over the arc (50, 65] from C. Every other key keeps its owner.",
+ "nodes": [
+  {
+   "id": "g1",
+   "kind": "blob",
+   "label": "k4 91·k3 8·k1 17",
+   "x": 340,
+   "y": 12,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "A",
+   "kind": "cache",
+   "label": "Server A @ 20",
+   "x": 573,
+   "y": 109,
+   "sub": "cache server"
+  },
+  {
+   "id": "g2",
+   "kind": "blob",
+   "label": "k6 25·k8 36",
+   "x": 670,
+   "y": 342,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "B",
+   "kind": "cache",
+   "label": "Server B @ 50",
+   "x": 573,
+   "y": 575,
+   "sub": "cache server"
+  },
+  {
+   "id": "g3",
+   "kind": "blob",
+   "label": "k2 58·k5 63",
+   "x": 340,
+   "y": 672,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "D",
+   "kind": "cache",
+   "label": "New D @ 65",
+   "x": 107,
+   "y": 575,
+   "sub": "cache server"
+  },
+  {
+   "id": "g4",
+   "kind": "blob",
+   "label": "k7 74",
+   "x": 10,
+   "y": 342,
+   "sub": "keys on this arc"
+  },
+  {
+   "id": "C",
+   "kind": "cache",
+   "label": "Server C @ 85",
+   "x": 107,
+   "y": 109,
+   "sub": "cache server"
+  }
+ ],
+ "edges": [
+  {
+   "from": "g1",
+   "to": "A"
+  },
+  {
+   "from": "g2",
+   "to": "B"
+  },
+  {
+   "from": "g3",
+   "to": "D",
+   "label": "moved from C"
+  },
+  {
+   "from": "g4",
+   "to": "C"
+  }
+ ],
+ "steps": [
+  {
+   "text": "D hashes to 65, between B (50) and C (85). Nothing else on the ring moves.",
+   "nodes": [
+    "D",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "text": "Keys at 58 and 63 now meet D before C. They are the only keys that change owner: copy or re-warm just these.",
+   "nodes": [
+    "g3",
+    "D"
+   ],
+   "edges": [
+    "g3>D"
+   ]
+  },
+  {
+   "text": "Key 74 is past D, so it still walks on to C.",
+   "nodes": [
+    "g4",
+    "C"
+   ],
+   "edges": [
+    "g4>C"
+   ]
+  },
+  {
+   "text": "A and B, and the keys they own, are untouched: 2 of 8 keys moved, against 5 of 8 with hash % N.",
+   "nodes": [
+    "g1",
+    "A",
+    "g2",
+    "B"
+   ],
+   "edges": [
+    "g1>A",
+    "g2>B"
+   ]
+  }
+ ]
+}

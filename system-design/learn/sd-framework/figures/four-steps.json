@@ -1,0 +1,85 @@
+{
+ "kind": "flowchart",
+ "title": "Four steps, in order: the clock is part of the problem",
+ "caption": "Roughly 8 + 15 + 17 + 5 minutes of a 45-minute slot. Each step feeds the next one.",
+ "nodes": [
+  {
+   "id": "scope",
+   "type": "start",
+   "label": "1 Scope",
+   "col": 0,
+   "row": 0
+  },
+  {
+   "id": "hld",
+   "type": "step",
+   "label": "2 High-level",
+   "col": 1,
+   "row": 0
+  },
+  {
+   "id": "deep",
+   "type": "step",
+   "label": "3 Deep dives",
+   "col": 2,
+   "row": 0
+  },
+  {
+   "id": "wrap",
+   "type": "end",
+   "label": "4 Wrap-up",
+   "col": 3,
+   "row": 0,
+   "tone": "good"
+  }
+ ],
+ "edges": [
+  {
+   "from": "scope",
+   "to": "hld"
+  },
+  {
+   "from": "hld",
+   "to": "deep"
+  },
+  {
+   "from": "deep",
+   "to": "wrap"
+  }
+ ],
+ "steps": [
+  {
+   "text": "Scope (5–8 min): features in and out, the non-functional targets, and a quick estimate. Finish with a one-line summary the interviewer agrees with.",
+   "nodes": [
+    "scope"
+   ]
+  },
+  {
+   "text": "High level (10–15 min): API and data model, then decompose into parts, solve each small, and merge them by node id into one diagram that evolves v1 → v2.",
+   "nodes": [
+    "hld"
+   ],
+   "edges": [
+    "scope>hld"
+   ]
+  },
+  {
+   "text": "Deep dives (15–20 min): two or three hard parts, each with options, a choice and the reason. This is where the hiring signal is.",
+   "nodes": [
+    "deep"
+   ],
+   "edges": [
+    "hld>deep"
+   ]
+  },
+  {
+   "text": "Wrap-up (3–5 min): first bottleneck at 10×, failure modes, metrics you would alert on, what you would do next.",
+   "nodes": [
+    "wrap"
+   ],
+   "edges": [
+    "deep>wrap"
+   ]
+  }
+ ]
+}

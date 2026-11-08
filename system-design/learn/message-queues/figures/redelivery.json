@@ -1,0 +1,72 @@
+{
+ "kind": "sequence",
+ "title": "At-least-once: a crash before the ack means the message comes back",
+ "caption": "The broker can't tell 'crashed before the work' from 'crashed after it', so it redelivers. Only an idempotent consumer makes the duplicate harmless.",
+ "actors": [
+  {
+   "id": "b",
+   "label": "Broker",
+   "kind": "queue"
+  },
+  {
+   "id": "c1",
+   "label": "Consumer 1",
+   "kind": "worker"
+  },
+  {
+   "id": "c2",
+   "label": "Consumer 2",
+   "kind": "worker"
+  },
+  {
+   "id": "db",
+   "label": "Orders DB",
+   "kind": "sql"
+  }
+ ],
+ "messages": [
+  {
+   "from": "b",
+   "to": "c1",
+   "label": "deliver m7 (charge order 42)",
+   "note": "The broker hides m7 from other consumers for a visibility timeout, say 30 s."
+  },
+  {
+   "from": "c1",
+   "to": "db",
+   "label": "INSERT payment for order 42"
+  },
+  {
+   "from": "c1",
+   "to": "c1",
+   "label": "crash before ack",
+   "style": "error",
+   "note": "The work is done, but the ack never reaches the broker."
+  },
+  {
+   "from": "b",
+   "to": "b",
+   "label": "timeout expires, m7 visible again",
+   "style": "self"
+  },
+  {
+   "from": "b",
+   "to": "c2",
+   "label": "redeliver m7",
+   "note": "Same message, same id, second delivery."
+  },
+  {
+   "from": "c2",
+   "to": "db",
+   "label": "INSERT, ON CONFLICT DO NOTHING",
+   "note": "msg_id is the unique key, which turns the second charge into a no-op."
+  },
+  {
+   "from": "c2",
+   "to": "b",
+   "label": "ack m7",
+   "style": "reply",
+   "note": "Now the broker deletes it. One message, two deliveries, one effect."
+  }
+ ]
+}
