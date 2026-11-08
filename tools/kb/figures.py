@@ -26,7 +26,8 @@ break in that step (red, ✕). Sequence `style: lost` is a message that never ar
 `scenarios [{name, tone, summary?, steps?, caption?, nodes?/edges?/actors?/messages?}]` are tabs that
 replay the figure for a failure, edge case, alternative design, risk or scaling stage (`tone`:
 happy | failure | edge | alternative | risk | scale). A scenario's fields replace the base
-figure's; the merged figure must be valid on its own. The base figure is the first tab (`base_name`, default "How it works").
+figure's; the merged figure must be valid on its own. The base figure is the first tab
+(`base_name`, default "How it works").
 """
 
 from __future__ import annotations
