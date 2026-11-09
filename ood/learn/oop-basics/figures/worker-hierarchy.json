@@ -1,0 +1,95 @@
+{
+  "kind": "uml",
+  "title": "Each worker class carries its own pay() rule",
+  "caption": "The loop calls w.pay() and dispatch picks the right one, so a new kind of worker never edits the loop.",
+  "classes": [
+    {
+      "id": "worker",
+      "name": "Worker",
+      "stereotype": "abstract",
+      "fields": [
+        "+ name: str"
+      ],
+      "methods": [
+        "+ pay(): int"
+      ],
+      "x": 200,
+      "y": 0
+    },
+    {
+      "id": "salaried",
+      "name": "Salaried",
+      "fields": [
+        "- _monthly: int"
+      ],
+      "methods": [
+        "+ pay(): int"
+      ],
+      "x": 0,
+      "y": 170
+    },
+    {
+      "id": "hourly",
+      "name": "Hourly",
+      "fields": [
+        "- _hours: int",
+        "- _rate: int"
+      ],
+      "methods": [
+        "+ pay(): int"
+      ],
+      "x": 200,
+      "y": 170
+    },
+    {
+      "id": "contractor",
+      "name": "Contractor",
+      "fields": [
+        "- _invoice: int"
+      ],
+      "methods": [
+        "+ pay(): int"
+      ],
+      "x": 400,
+      "y": 170
+    }
+  ],
+  "relations": [
+    {
+      "from": "salaried",
+      "to": "worker",
+      "type": "inherits"
+    },
+    {
+      "from": "hourly",
+      "to": "worker",
+      "type": "inherits"
+    },
+    {
+      "from": "contractor",
+      "to": "worker",
+      "type": "inherits"
+    }
+  ],
+  "steps": [
+    {
+      "text": "Worker declares pay() as abstract: every worker must say how it is paid.",
+      "nodes": [
+        "worker"
+      ]
+    },
+    {
+      "text": "Salaried returns _monthly, Hourly returns _hours * _rate, Contractor returns _invoice.",
+      "nodes": [
+        "salaried",
+        "hourly",
+        "contractor"
+      ],
+      "edges": [
+        "salaried>worker",
+        "hourly>worker",
+        "contractor>worker"
+      ]
+    }
+  ]
+}

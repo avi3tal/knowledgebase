@@ -14,7 +14,7 @@ and, if you want AI help, your own Claude Code and API keys.
 The top level is organised by **subject**: `algo/` (coding patterns and problems), `system-design/` and
 `ood/` (lessons + design-console case studies); `k8s` later.
 
-```
+```text
 resources/            sources.json (registry + verdicts), refs/ (curated references), README.md, ROADMAP.md
 _workspace/           YOUR private data (git-ignored): attempts/, progress/*.jsonl, sessions/
 studio/               React + TS learning studio (served by `kb studio`)

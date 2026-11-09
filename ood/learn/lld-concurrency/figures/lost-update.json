@@ -1,0 +1,104 @@
+{
+  "kind": "sequence",
+  "title": "Two unlocked increments interleave and one is lost",
+  "caption": "count += 1 is read, add, write. Schedule A, B, A, B: both threads read 0, so counter = 1 instead of 2.",
+  "base_name": "No lock",
+  "actors": [
+    {
+      "id": "a",
+      "label": "Thread A"
+    },
+    {
+      "id": "c",
+      "label": "counter (shared)"
+    },
+    {
+      "id": "b",
+      "label": "Thread B"
+    }
+  ],
+  "messages": [
+    {
+      "from": "a",
+      "to": "c",
+      "label": "read",
+      "note": "A reads the counter into its private copy."
+    },
+    {
+      "from": "c",
+      "to": "a",
+      "label": "0",
+      "style": "reply"
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "label": "read",
+      "note": "B reads before A has written back."
+    },
+    {
+      "from": "c",
+      "to": "b",
+      "label": "0",
+      "style": "reply",
+      "note": "Both private copies now hold 0."
+    },
+    {
+      "from": "a",
+      "to": "c",
+      "label": "write 1",
+      "note": "A writes 0 + 1: counter = 1."
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "label": "write 1",
+      "style": "error",
+      "note": "B writes its stale 0 + 1 over A's result. counter = 1, expected 2: A's increment is lost."
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "With a lock",
+      "tone": "alternative",
+      "summary": "The lock makes read-add-write one critical section: B waits at acquire until A releases, and the result is 2.",
+      "messages": [
+        {
+          "from": "a",
+          "to": "c",
+          "label": "acquire",
+          "note": "A takes the lock."
+        },
+        {
+          "from": "a",
+          "to": "c",
+          "label": "read 0, write 1",
+          "note": "A's whole read-add-write runs inside the lock."
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "acquire (blocks)",
+          "note": "B wants the lock and blocks until A releases it."
+        },
+        {
+          "from": "a",
+          "to": "c",
+          "label": "release"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "read 1, write 2",
+          "note": "B now reads A's result."
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "release",
+          "note": "counter = 2, as expected."
+        }
+      ]
+    }
+  ]
+}

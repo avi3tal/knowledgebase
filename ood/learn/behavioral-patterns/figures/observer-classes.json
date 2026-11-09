@@ -1,0 +1,93 @@
+{
+  "kind": "uml",
+  "title": "Observer: the feed knows only the Watcher interface",
+  "caption": "One PriceFeed holds many watchers per ticker. Adding SMS means adding a class, not editing the feed.",
+  "classes": [
+    {
+      "id": "feed",
+      "name": "PriceFeed",
+      "fields": [
+        "- subscribers: dict[str, list[Watcher]]"
+      ],
+      "methods": [
+        "+ subscribe(t: str, w: Watcher): None",
+        "+ unsubscribe(t: str, w: Watcher): None",
+        "+ publish(t: str, price: int): None"
+      ],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "watcher",
+      "name": "Watcher",
+      "stereotype": "interface",
+      "methods": [
+        "+ notify(ticker: str, price: int): None"
+      ],
+      "x": 420,
+      "y": 0
+    },
+    {
+      "id": "push",
+      "name": "PushWatcher",
+      "methods": [
+        "+ notify(ticker, price): None"
+      ],
+      "x": 340,
+      "y": 190
+    },
+    {
+      "id": "email",
+      "name": "EmailWatcher",
+      "methods": [
+        "+ notify(ticker, price): None"
+      ],
+      "x": 620,
+      "y": 190
+    }
+  ],
+  "relations": [
+    {
+      "from": "feed",
+      "to": "watcher",
+      "type": "aggregation",
+      "from_mult": "1",
+      "to_mult": "*",
+      "label": "subscribers"
+    },
+    {
+      "from": "push",
+      "to": "watcher",
+      "type": "implements"
+    },
+    {
+      "from": "email",
+      "to": "watcher",
+      "type": "implements"
+    }
+  ],
+  "steps": [
+    {
+      "text": "subscribe / unsubscribe add and remove watchers in the subject's map, per ticker.",
+      "nodes": [
+        "feed",
+        "watcher"
+      ],
+      "edges": [
+        "feed>watcher"
+      ]
+    },
+    {
+      "text": "publish loops over the ticker's subscribers and calls notify on each. It never names push or email.",
+      "nodes": [
+        "feed",
+        "push",
+        "email"
+      ],
+      "edges": [
+        "push>watcher",
+        "email>watcher"
+      ]
+    }
+  ]
+}

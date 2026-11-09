@@ -21,15 +21,8 @@ devices, shared across desks).
 
 ## 3. Class diagram
 
-```
- «actor» Staff ──uses──▶ Desk ───────────▶ Inventory 1 ◆──── * Device ──▶ «enum» DeviceStatus
-                          │                   │
-                          │ creates           │ try_checkout(id) / check_in(id)   (locked)
-                          ▼                   │
-                       Rental * ─────── 1 Visitor ──▶ «enum» VisitorType
-                          │
-                          └──▶ «interface» PricingPolicy ◁┄┄ StandardPricing
-                                                          ◁┄┄ MemberPricing
+```figure
+rental-desk-classes
 ```
 
 ## 4. Patterns

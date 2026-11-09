@@ -1,0 +1,131 @@
+{
+  "kind": "flowchart",
+  "title": "Chain of responsibility: each handler rejects or passes the request on",
+  "caption": "The sender only talks to the first link. Which handler answers depends on the request.",
+  "nodes": [
+    {
+      "id": "req",
+      "type": "start",
+      "label": "request",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "auth",
+      "type": "decision",
+      "label": "AuthCheck: user?",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "rate",
+      "type": "decision",
+      "label": "RateLimit: ok?",
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "valid",
+      "type": "decision",
+      "label": "Validate: ok?",
+      "col": 0,
+      "row": 3
+    },
+    {
+      "id": "handler",
+      "type": "end",
+      "label": "Handler",
+      "col": 0,
+      "row": 4,
+      "tone": "good"
+    },
+    {
+      "id": "r401",
+      "type": "end",
+      "label": "reject 401",
+      "col": 1,
+      "row": 1,
+      "tone": "bad"
+    },
+    {
+      "id": "r429",
+      "type": "end",
+      "label": "reject 429",
+      "col": 1,
+      "row": 2,
+      "tone": "bad"
+    },
+    {
+      "id": "r400",
+      "type": "end",
+      "label": "reject 400",
+      "col": 1,
+      "row": 3,
+      "tone": "bad"
+    }
+  ],
+  "edges": [
+    {
+      "from": "req",
+      "to": "auth"
+    },
+    {
+      "from": "auth",
+      "to": "rate",
+      "label": "yes"
+    },
+    {
+      "from": "auth",
+      "to": "r401",
+      "label": "no"
+    },
+    {
+      "from": "rate",
+      "to": "valid",
+      "label": "yes"
+    },
+    {
+      "from": "rate",
+      "to": "r429",
+      "label": "no"
+    },
+    {
+      "from": "valid",
+      "to": "handler",
+      "label": "yes"
+    },
+    {
+      "from": "valid",
+      "to": "r400",
+      "label": "no"
+    }
+  ],
+  "steps": [
+    {
+      "text": "A request without a user stops at the first link: AuthCheck answers 401.",
+      "nodes": [
+        "req",
+        "auth",
+        "r401"
+      ],
+      "edges": [
+        "req>auth",
+        "auth>r401"
+      ]
+    },
+    {
+      "text": "A good request is passed along by every link (super().handle(req)) until the Handler answers.",
+      "nodes": [
+        "auth",
+        "rate",
+        "valid",
+        "handler"
+      ],
+      "edges": [
+        "auth>rate",
+        "rate>valid",
+        "valid>handler"
+      ]
+    }
+  ]
+}

@@ -35,7 +35,7 @@ a `unit`. Rows are evaluated top to bottom, and a formula may use earlier row na
 constants `thousand`, `million`, `billion`, and `day`, `hour`, `month` (in seconds). The photo
 app as rows:
 
-```
+```text
 uploads_per_day   10 * million / 5                                 (count)
 write_qps         uploads_per_day / day                            /s
 read_qps          10 * million * 50 / day                          /s

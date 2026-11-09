@@ -1,0 +1,105 @@
+{
+  "kind": "flowchart",
+  "title": "The transitions those state classes encode",
+  "caption": "Events a state doesn't accept are ignored: approve on a draft leaves it a draft.",
+  "nodes": [
+    {
+      "id": "draft",
+      "type": "start",
+      "label": "draft",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "review",
+      "type": "step",
+      "label": "review",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "decide",
+      "type": "decision",
+      "label": "approve / reject?",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "published",
+      "type": "step",
+      "label": "published",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "archived",
+      "type": "end",
+      "label": "archived",
+      "col": 3,
+      "row": 1,
+      "tone": "good"
+    }
+  ],
+  "edges": [
+    {
+      "from": "draft",
+      "to": "review",
+      "label": "submit"
+    },
+    {
+      "from": "review",
+      "to": "decide"
+    },
+    {
+      "from": "decide",
+      "to": "published",
+      "label": "approve"
+    },
+    {
+      "from": "decide",
+      "to": "draft",
+      "label": "reject"
+    },
+    {
+      "from": "published",
+      "to": "archived",
+      "label": "archive"
+    }
+  ],
+  "steps": [
+    {
+      "text": "Draft.handle('submit') returns Review.",
+      "nodes": [
+        "draft",
+        "review"
+      ],
+      "edges": [
+        "draft>review"
+      ]
+    },
+    {
+      "text": "Review accepts two events: approve returns Published, reject sends it back to Draft.",
+      "nodes": [
+        "review",
+        "decide",
+        "published",
+        "draft"
+      ],
+      "edges": [
+        "review>decide",
+        "decide>published",
+        "decide>draft"
+      ]
+    },
+    {
+      "text": "Published.handle('archive') returns Archived.",
+      "nodes": [
+        "published",
+        "archived"
+      ],
+      "edges": [
+        "published>archived"
+      ]
+    }
+  ]
+}

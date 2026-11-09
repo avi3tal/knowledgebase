@@ -20,10 +20,8 @@ You own an interface (`PaymentGateway.charge(amount_cents)`). A vendor SDK offer
 `make_payment(amount: Decimal, currency: str)`. Don't spread vendor calls through your code.
 Write one adapter.
 
-```
- Checkout ──▶ «interface» PaymentGateway ◁── VendorPayAdapter ──▶ VendorSDK
-                charge(cents)                 charge(cents):
-                                                sdk.make_payment(cents / 100, "EUR")
+```figure
+adapter
 ```
 
 ```python

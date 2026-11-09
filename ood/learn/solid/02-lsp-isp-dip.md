@@ -76,11 +76,8 @@ service = OrderService(SmtpMailer("smtp.example.com"))   # composition root
 test_service = OrderService(FakeMailer())                # tests
 ```
 
-```
- before:  OrderService ───▶ SmtpMailer
-
- after:   OrderService ───▶ «interface» Mailer ◁┄┄┄ SmtpMailer
-                                                ◁┄┄┄ FakeMailer
+```figure
+dependency-inversion
 ```
 
 The arrow from the detail now points *up* to the abstraction. That's the "inversion".

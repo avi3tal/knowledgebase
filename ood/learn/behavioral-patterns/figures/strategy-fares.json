@@ -1,0 +1,111 @@
+{
+  "kind": "uml",
+  "title": "Strategy: Trip holds a FarePolicy and never asks which one",
+  "caption": "Each fare rule is its own class behind one interface. Adding a rule adds a class; Trip doesn't change.",
+  "classes": [
+    {
+      "id": "trip",
+      "name": "Trip",
+      "fields": [
+        "- policy: FarePolicy"
+      ],
+      "methods": [
+        "+ fare(km: int): int"
+      ],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "policy",
+      "name": "FarePolicy",
+      "stereotype": "interface",
+      "methods": [
+        "+ price(km: int): int"
+      ],
+      "x": 300,
+      "y": 0
+    },
+    {
+      "id": "standard",
+      "name": "StandardFare",
+      "methods": [
+        "+ price(km: int): int"
+      ],
+      "x": 80,
+      "y": 170
+    },
+    {
+      "id": "surge",
+      "name": "SurgeFare",
+      "fields": [
+        "- pct: int"
+      ],
+      "methods": [
+        "+ price(km: int): int"
+      ],
+      "x": 300,
+      "y": 170
+    },
+    {
+      "id": "airport",
+      "name": "FlatAirportFare",
+      "fields": [
+        "- amount: int"
+      ],
+      "methods": [
+        "+ price(km: int): int"
+      ],
+      "x": 520,
+      "y": 170
+    }
+  ],
+  "relations": [
+    {
+      "from": "trip",
+      "to": "policy",
+      "type": "association",
+      "navigable": true,
+      "label": "uses"
+    },
+    {
+      "from": "standard",
+      "to": "policy",
+      "type": "implements"
+    },
+    {
+      "from": "surge",
+      "to": "policy",
+      "type": "implements"
+    },
+    {
+      "from": "airport",
+      "to": "policy",
+      "type": "implements"
+    }
+  ],
+  "steps": [
+    {
+      "text": "Trip keeps a FarePolicy in a field (injected) and fare(km) just returns policy.price(km).",
+      "nodes": [
+        "trip",
+        "policy"
+      ],
+      "edges": [
+        "trip>policy"
+      ]
+    },
+    {
+      "text": "Every rule implements the same price(km). Swap the object and the fare changes, at runtime if you like.",
+      "nodes": [
+        "standard",
+        "surge",
+        "airport"
+      ],
+      "edges": [
+        "standard>policy",
+        "surge>policy",
+        "airport>policy"
+      ]
+    }
+  ]
+}

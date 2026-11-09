@@ -18,7 +18,7 @@ expensive for a rule like "10 000 per hour".
 windows, and estimate how many requests are in the sliding window by weighting the previous
 count by how much of it still overlaps:
 
-```
+```text
 estimate = prev_count × (window − elapsed) / window + cur_count
 ```
 

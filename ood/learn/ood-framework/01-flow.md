@@ -7,10 +7,8 @@ no single right answer. Interviewers grade **the process**: did you pin down sco
 right objects, put behaviour in sensible places, and show that the design can grow? A fixed
 flow keeps you from drawing classes for a problem you haven't defined yet.
 
-```
- 1 clarify ─▶ 2 core objects ─▶ 3 class diagram ─▶ 4 patterns ─▶ 5 signatures ─▶ 6 concurrency
-   ~5 min       ~5 min            ~10 min            ~5 min        ~10 min         & extensibility
-                                                                                   ~5–10 min
+```figure
+interview-flow
 ```
 
 ## 1. Clarify requirements (≈5 min)

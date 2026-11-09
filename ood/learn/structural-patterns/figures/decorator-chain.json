@@ -1,0 +1,78 @@
+{
+  "kind": "sequence",
+  "title": "Exclaim(Upper(Trim(Plain))).render(\"  hello  \") returns \"HELLO!\"",
+  "caption": "Calls go in through every layer and results come back out. Trim works on the way in, Upper and Exclaim on the way out.",
+  "actors": [
+    {
+      "id": "client",
+      "label": "caller"
+    },
+    {
+      "id": "exclaim",
+      "label": "Exclaim"
+    },
+    {
+      "id": "upper",
+      "label": "Upper"
+    },
+    {
+      "id": "trim",
+      "label": "Trim"
+    },
+    {
+      "id": "plain",
+      "label": "Plain"
+    }
+  ],
+  "messages": [
+    {
+      "from": "client",
+      "to": "exclaim",
+      "label": "render(\"  hello  \")"
+    },
+    {
+      "from": "exclaim",
+      "to": "upper",
+      "label": "render(\"  hello  \")",
+      "note": "Exclaim forwards first; its work happens after."
+    },
+    {
+      "from": "upper",
+      "to": "trim",
+      "label": "render(\"  hello  \")",
+      "note": "So does Upper."
+    },
+    {
+      "from": "trim",
+      "to": "plain",
+      "label": "render(\"hello\")",
+      "note": "Trim strips the text before delegating."
+    },
+    {
+      "from": "plain",
+      "to": "trim",
+      "label": "\"hello\"",
+      "style": "reply"
+    },
+    {
+      "from": "trim",
+      "to": "upper",
+      "label": "\"hello\"",
+      "style": "reply"
+    },
+    {
+      "from": "upper",
+      "to": "exclaim",
+      "label": "\"HELLO\"",
+      "style": "reply",
+      "note": "Upper upper-cases the result on the way out."
+    },
+    {
+      "from": "exclaim",
+      "to": "client",
+      "label": "\"HELLO!\"",
+      "style": "reply",
+      "note": "Exclaim appends ! last."
+    }
+  ]
+}

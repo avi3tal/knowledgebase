@@ -17,16 +17,8 @@ for w in team:
 
 After: each class carries its own rule, and the loop makes one call.
 
-```
-            ┌────────────────────┐
-            │ «abstract» Worker  │
-            │ name               │
-            │ pay() → int        │
-            └─────────▲──────────┘
-        ┌─────────────┼──────────────┐
-   Salaried        Hourly        Contractor
-   _monthly        _hours,_rate  _invoice
-   pay()           pay()         pay()
+```figure
+worker-hierarchy
 ```
 
 ```python

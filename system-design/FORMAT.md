@@ -74,8 +74,8 @@ The H2 sections must appear in this order. Numbering is allowed: `## 4. Decompos
 | 11 | `Learn more` | links to lessons `(#/learn/system-design/<id>)` and topics `(#/topic/system-design/<id>)`; every link must be a real catalog id |
 
 Diagram fences are rendered from the `reference/` attempt:
-- ```` ```diagram ```` + `v2` shows that diagram version;
-- ```` ```diagram ```` + `part:P1` shows that part's sub-diagram.
+- a `diagram` fence whose body is `v2` shows that diagram version;
+- a `diagram` fence whose body is `part:P1` shows that part's sub-diagram.
 
 Each fence must name something that exists. Write everything in our own words: other sites are layout
 inspiration only.
@@ -138,7 +138,7 @@ Exemptions: a client → blob edge whose label says "presigned" or "signed URL" 
 and `external` nodes count as entry points for `unreachable` (webhooks, partner feeds).
 
 ## Check result (`DesignCheck` in `studio/src/api.ts`)
-```
+```text
 { version, subject, slug, attempt,
   checks: [{id, type, stage, label, passed, detail}],
   stages: {scope|estimates|api|parts|high-level|deep-dives|wrap-up|signatures: {passed, total}},

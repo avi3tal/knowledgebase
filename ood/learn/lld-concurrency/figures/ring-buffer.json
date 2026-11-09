@@ -1,0 +1,85 @@
+{
+  "kind": "structure",
+  "title": "A ring buffer: write at tail, read at head, both wrap around",
+  "caption": "Capacity 3. When head == tail the buffer is either empty or full; count tells which.",
+  "views": [
+    {
+      "type": "array",
+      "var": "ring",
+      "label": "ring (capacity 3)",
+      "pointers": {
+        "head": "head",
+        "tail": "tail"
+      }
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "count"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Empty: head = tail = 0 and count = 0. A consumer calling take() would wait on not_empty.",
+      "vars": {
+        "ring": [
+          "_",
+          "_",
+          "_"
+        ],
+        "head": 0,
+        "tail": 0,
+        "count": 0
+      }
+    },
+    {
+      "text": "Producers put a and b: each write lands at tail, then tail moves one slot on.",
+      "vars": {
+        "ring": [
+          "a",
+          "b",
+          "_"
+        ],
+        "tail": 2,
+        "count": 2
+      }
+    },
+    {
+      "text": "put c fills the last slot and tail wraps to 0. head == tail again, but count = 3 says full: the next put() waits on not_full.",
+      "vars": {
+        "ring": [
+          "a",
+          "b",
+          "c"
+        ],
+        "tail": 0,
+        "count": 3
+      }
+    },
+    {
+      "text": "A consumer takes a from head, frees the slot and moves head to 1. count = 2, so a waiting producer is woken.",
+      "vars": {
+        "ring": [
+          "_",
+          "b",
+          "c"
+        ],
+        "head": 1,
+        "count": 2
+      }
+    },
+    {
+      "text": "put d reuses slot 0 (tail wrapped), and tail moves to 1. The buffer is full again with no copying.",
+      "vars": {
+        "ring": [
+          "d",
+          "b",
+          "c"
+        ],
+        "tail": 1,
+        "count": 3
+      }
+    }
+  ]
+}

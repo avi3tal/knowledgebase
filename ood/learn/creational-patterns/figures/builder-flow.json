@@ -1,0 +1,111 @@
+{
+  "kind": "flowchart",
+  "title": "Builder: collect parts, validate once in build(), get an immutable Email",
+  "caption": "No Email exists until build() succeeds, so a half-built one can never escape.",
+  "nodes": [
+    {
+      "id": "client",
+      "type": "start",
+      "label": "Client",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "builder",
+      "type": "step",
+      "label": "EmailBuilder",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "build",
+      "type": "decision",
+      "label": "build(): valid?",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "email",
+      "type": "end",
+      "label": "Email (immutable)",
+      "col": 2,
+      "row": 1,
+      "tone": "good"
+    },
+    {
+      "id": "error",
+      "type": "end",
+      "label": "raise ValueError",
+      "col": 1,
+      "row": 1,
+      "tone": "bad"
+    }
+  ],
+  "edges": [
+    {
+      "from": "client",
+      "to": "builder",
+      "label": "to() cc() subject()"
+    },
+    {
+      "from": "builder",
+      "to": "build",
+      "label": "build()"
+    },
+    {
+      "from": "build",
+      "to": "email",
+      "label": "yes"
+    },
+    {
+      "from": "build",
+      "to": "error",
+      "label": "no"
+    }
+  ],
+  "steps": [
+    {
+      "text": "The client chains to(), cc(), subject(), body(). Each call stores one part and returns the builder.",
+      "nodes": [
+        "client",
+        "builder"
+      ],
+      "edges": [
+        "client>builder"
+      ]
+    },
+    {
+      "text": "build() checks every rule in one place (for example: a recipient is required).",
+      "nodes": [
+        "builder",
+        "build"
+      ],
+      "edges": [
+        "builder>build"
+      ]
+    },
+    {
+      "text": "Valid: it returns a frozen Email that is always complete.",
+      "nodes": [
+        "build",
+        "email"
+      ],
+      "edges": [
+        "build>email"
+      ]
+    },
+    {
+      "text": "Missing parts: it raises instead of returning a broken object.",
+      "nodes": [
+        "build",
+        "error"
+      ],
+      "edges": [
+        "build>error"
+      ],
+      "fail": [
+        "error"
+      ]
+    }
+  ]
+}

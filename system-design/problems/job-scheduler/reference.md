@@ -84,7 +84,7 @@ part:P1
 **Choice:** each scheduler holds leases on some partitions in etcd. Every second, for each leased
 partition, it runs:
 
-```
+```sql
 BEGIN;
 SELECT … FROM jobs WHERE next_run_at <= now() + interval '5 s' AND status = 'active'
   ORDER BY next_run_at LIMIT 1000 FOR UPDATE SKIP LOCKED;

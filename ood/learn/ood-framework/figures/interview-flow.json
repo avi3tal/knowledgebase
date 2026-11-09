@@ -1,0 +1,125 @@
+{
+  "kind": "flowchart",
+  "title": "Six steps in about 45 minutes, in this order",
+  "caption": "≈ 5 + 5 + 10 + 5 + 10 + 5–10 minutes. Never draw classes before the problem is defined.",
+  "nodes": [
+    {
+      "id": "clarify",
+      "type": "start",
+      "label": "1. Clarify",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "objects",
+      "type": "step",
+      "label": "2. Core objects",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "diagram",
+      "type": "step",
+      "label": "3. Class diagram",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "patterns",
+      "type": "step",
+      "label": "4. Patterns",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "sigs",
+      "type": "step",
+      "label": "5. Signatures",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "conc",
+      "type": "end",
+      "label": "6. Concurrency+ext",
+      "col": 0,
+      "row": 1,
+      "tone": "good"
+    }
+  ],
+  "edges": [
+    {
+      "from": "clarify",
+      "to": "objects"
+    },
+    {
+      "from": "objects",
+      "to": "diagram"
+    },
+    {
+      "from": "diagram",
+      "to": "patterns"
+    },
+    {
+      "from": "patterns",
+      "to": "sigs"
+    },
+    {
+      "from": "sigs",
+      "to": "conc"
+    }
+  ],
+  "steps": [
+    {
+      "text": "1. Clarify requirements (~5 min): actors, functional and non-functional bullets, what's out of scope.",
+      "nodes": [
+        "clarify"
+      ]
+    },
+    {
+      "text": "2. Core objects (~5 min): nouns become entities, value objects and enums.",
+      "nodes": [
+        "objects"
+      ],
+      "edges": [
+        "clarify>objects"
+      ]
+    },
+    {
+      "text": "3. Class diagram (~10 min): relationships and where each behaviour lives.",
+      "nodes": [
+        "diagram"
+      ],
+      "edges": [
+        "objects>diagram"
+      ]
+    },
+    {
+      "text": "4. Patterns (~5 min): only where something varies.",
+      "nodes": [
+        "patterns"
+      ],
+      "edges": [
+        "diagram>patterns"
+      ]
+    },
+    {
+      "text": "5. Code signatures (~10 min): the key classes and methods, with types.",
+      "nodes": [
+        "sigs"
+      ],
+      "edges": [
+        "patterns>sigs"
+      ]
+    },
+    {
+      "text": "6. Concurrency and extensibility (~5–10 min): shared state, invariants, and how the design grows.",
+      "nodes": [
+        "conc"
+      ],
+      "edges": [
+        "sigs>conc"
+      ]
+    }
+  ]
+}
