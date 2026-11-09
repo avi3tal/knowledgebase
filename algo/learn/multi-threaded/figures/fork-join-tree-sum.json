@@ -1,0 +1,67 @@
+{
+  "kind": "sequence",
+  "title": "Fork the two independent subtrees, join once, then combine",
+  "caption": "tree_sum on [5, 3, 8, 1, 4, null, 9]: the left subtree sums to 8, the right to 17, the total is 30.",
+  "actors": [
+    {
+      "id": "main",
+      "label": "tree_sum(5)"
+    },
+    {
+      "id": "left",
+      "label": "worker: tree_sum(3)"
+    },
+    {
+      "id": "right",
+      "label": "worker: tree_sum(8)"
+    }
+  ],
+  "messages": [
+    {
+      "from": "main",
+      "to": "left",
+      "label": "submit left subtree",
+      "style": "async",
+      "note": "Fork: hand the left subtree to a worker and don't wait."
+    },
+    {
+      "from": "main",
+      "to": "right",
+      "label": "submit right subtree",
+      "style": "async",
+      "note": "Fork again. The two subtrees share no writes, so they can run at the same time."
+    },
+    {
+      "from": "left",
+      "to": "left",
+      "label": "3 + sum(1) + sum(4)",
+      "style": "self"
+    },
+    {
+      "from": "right",
+      "to": "right",
+      "label": "8 + sum(9)",
+      "style": "self"
+    },
+    {
+      "from": "left",
+      "to": "main",
+      "label": "8",
+      "style": "reply",
+      "note": "Join: main blocks on both futures; this one finishes first."
+    },
+    {
+      "from": "right",
+      "to": "main",
+      "label": "17",
+      "style": "reply"
+    },
+    {
+      "from": "main",
+      "to": "main",
+      "label": "5 + 8 + 17 = 30",
+      "style": "self",
+      "note": "Combine only after both results are in: the single synchronisation point."
+    }
+  ]
+}

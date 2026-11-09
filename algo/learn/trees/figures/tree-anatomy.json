@@ -1,0 +1,61 @@
+{
+  "kind": "structure",
+  "title": "A rooted binary tree: depth counts edges down from the root, leaves have no children",
+  "caption": "The tree serialised as [10, 5, 15, 3, 7, 13, 18, 1, null, 6].",
+  "views": [
+    {
+      "type": "tree",
+      "var": "root",
+      "label": "tree",
+      "pointers": {
+        "root": "r"
+      },
+      "groups": {
+        "marked": "g"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "The root 10 is at depth 0. Every node has at most two children, left and right.",
+      "vars": {
+        "root": [
+          10,
+          5,
+          15,
+          3,
+          7,
+          13,
+          18,
+          1,
+          null,
+          6
+        ],
+        "r": 0,
+        "g": [
+          0
+        ]
+      }
+    },
+    {
+      "text": "Depth 1: 5 and 15. Depth 2: 3, 7, 13, 18. Depth 3: 1 and 6. The height of the tree is 4 nodes.",
+      "vars": {
+        "g": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "text": "The leaves have no children: 1, 6, 13 and 18. Each recursive call bottoms out at one of them.",
+      "vars": {
+        "g": [
+          7,
+          9,
+          5,
+          6
+        ]
+      }
+    }
+  ]
+}

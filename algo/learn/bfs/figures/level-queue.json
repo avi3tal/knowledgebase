@@ -1,0 +1,83 @@
+{
+  "kind": "structure",
+  "title": "The queue holds exactly one level at a time",
+  "caption": "Level-order BFS on [4, 9, 2, 3, null, 5, 7]. The highlighted nodes are the queue, front to back.",
+  "views": [
+    {
+      "type": "tree",
+      "var": "root",
+      "label": "tree",
+      "groups": {
+        "queue": "q"
+      }
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "level",
+        "queue"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Level 0: the queue starts with the root.",
+      "vars": {
+        "root": [
+          4,
+          9,
+          2,
+          3,
+          null,
+          5,
+          7
+        ],
+        "q": [
+          0
+        ],
+        "level": 0,
+        "queue": [
+          4
+        ]
+      }
+    },
+    {
+      "text": "Popping 4 pushed its children at the back. The queue is now exactly level 1.",
+      "vars": {
+        "q": [
+          1,
+          2
+        ],
+        "level": 1,
+        "queue": [
+          9,
+          2
+        ]
+      }
+    },
+    {
+      "text": "Popping 9 and 2 pushed 3, then 5 and 7. Level 2, and no level-1 node is left to mix in.",
+      "vars": {
+        "q": [
+          3,
+          5,
+          6
+        ],
+        "level": 2,
+        "queue": [
+          3,
+          5,
+          7
+        ]
+      }
+    },
+    {
+      "text": "The leaves push nothing, so the queue empties and BFS is done.",
+      "vars": {
+        "q": [],
+        "level": "done",
+        "queue": []
+      }
+    }
+  ]
+}

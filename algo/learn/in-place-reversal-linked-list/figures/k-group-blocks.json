@@ -1,0 +1,69 @@
+{
+  "kind": "structure",
+  "title": "Reverse each full block of k, then move group_prev to the block's new last node",
+  "caption": "k = 3 on dummy → a … g. Blocks [a b c] and [d e f] are reversed; the short tail [g] stays as it is.",
+  "views": [
+    {
+      "type": "linkedlist",
+      "var": "head",
+      "label": "list (k = 3)",
+      "pointers": {
+        "group_prev": "gp"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "group_prev starts at the dummy, the node before block 1. Look 3 nodes ahead: a, b, c exist, so the block is full.",
+      "vars": {
+        "head": [
+          "dummy",
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g"
+        ],
+        "gp": 0
+      }
+    },
+    {
+      "text": "Block 1 reversed (prev started at d, so c b a already points on to d). dummy.next = c, the new front; group_prev = a, the block's new last node.",
+      "vars": {
+        "head": [
+          "dummy",
+          "c",
+          "b",
+          "a",
+          "d",
+          "e",
+          "f",
+          "g"
+        ],
+        "gp": 3
+      }
+    },
+    {
+      "text": "Block 2 [d e f] is full too: reversed to f e d, a.next = f, and group_prev moves to d.",
+      "vars": {
+        "head": [
+          "dummy",
+          "c",
+          "b",
+          "a",
+          "f",
+          "e",
+          "d",
+          "g"
+        ],
+        "gp": 6
+      }
+    },
+    {
+      "text": "Only g is left after group_prev: fewer than k nodes, so stop and leave it unchanged. The answer is dummy.next = c.",
+      "vars": {}
+    }
+  ]
+}

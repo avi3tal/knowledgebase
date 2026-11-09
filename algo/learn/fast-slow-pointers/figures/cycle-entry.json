@@ -1,0 +1,436 @@
+{
+  "kind": "structure",
+  "title": "From head and from the meeting point, one step at a time, both pointers reach the entry together",
+  "caption": "Tail length a = 2 (1 → 2 → 3), cycle length c = 4 (3 → 4 → 5 → 6 → 3), entry = node 3.",
+  "views": [
+    {
+      "type": "graph",
+      "var": "g",
+      "label": "list with a cycle (6 → 3)"
+    }
+  ],
+  "frames": [
+    {
+      "text": "The tail before the cycle is a = 2 steps long and ends at the entry, node 3.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 260,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 260,
+              "y": 100
+            },
+            {
+              "id": "6",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "1",
+              "3"
+            ],
+            "edges": [
+              "1>2",
+              "2>3"
+            ]
+          },
+          "labels": {
+            "1": "head",
+            "3": "entry"
+          }
+        }
+      }
+    },
+    {
+      "text": "Phase 1 (Floyd) ends with slow and fast meeting at node 5, b = 2 steps past the entry. slow walked a + b = 4, fast walked 8: the extra 4 is one lap (k·c with k = 1).",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 260,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 260,
+              "y": 100
+            },
+            {
+              "id": "6",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "3",
+              "5"
+            ],
+            "edges": [
+              "3>4",
+              "4>5"
+            ]
+          },
+          "labels": {
+            "3": "entry",
+            "5": "meet"
+          }
+        }
+      }
+    },
+    {
+      "text": "Phase 2: reset slow to head; fast stays at the meeting point. From now on both move 1 step per round.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 260,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 260,
+              "y": 100
+            },
+            {
+              "id": "6",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "1",
+              "5"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "1": "slow",
+            "5": "fast",
+            "3": "entry"
+          }
+        }
+      }
+    },
+    {
+      "text": "After one step: slow = 2, fast = 6. fast still has c − b = 2 steps to the entry, exactly as many as slow (a = 2).",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 260,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 260,
+              "y": 100
+            },
+            {
+              "id": "6",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "2",
+              "6"
+            ],
+            "edges": [
+              "1>2",
+              "5>6"
+            ]
+          },
+          "labels": {
+            "2": "slow",
+            "6": "fast",
+            "3": "entry"
+          }
+        }
+      }
+    },
+    {
+      "text": "After a = 2 steps both stand on node 3, the entry. a = k·c − b, so this works for any tail and cycle length.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 260,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 260,
+              "y": 100
+            },
+            {
+              "id": "6",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "3"
+            ],
+            "edges": [
+              "2>3",
+              "6>3"
+            ]
+          },
+          "labels": {
+            "3": "slow · fast = entry"
+          }
+        }
+      }
+    }
+  ]
+}

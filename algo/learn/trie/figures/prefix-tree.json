@@ -1,0 +1,374 @@
+{
+  "kind": "structure",
+  "title": "Every prefix is one node; words that share a prefix share its nodes",
+  "caption": "Inserting car, cat, cart, dog. Edge letters spell the path; each node is named by the prefix it stands for; $ end = a word ends here.",
+  "views": [
+    {
+      "type": "graph",
+      "var": "g",
+      "label": "trie"
+    }
+  ],
+  "frames": [
+    {
+      "text": "insert car: no child exists, so three nodes are created, c → ca → car, and car is marked as a word end.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 150,
+              "y": 0
+            },
+            {
+              "id": "c",
+              "x": 80,
+              "y": 70
+            },
+            {
+              "id": "ca",
+              "x": 80,
+              "y": 140
+            },
+            {
+              "id": "car",
+              "x": 30,
+              "y": 210
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "c",
+              "w": "c",
+              "directed": true
+            },
+            {
+              "from": "c",
+              "to": "ca",
+              "w": "a",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "car",
+              "w": "r",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "·",
+              "c",
+              "ca",
+              "car"
+            ],
+            "edges": [
+              "·>c",
+              "c>ca",
+              "ca>car"
+            ]
+          },
+          "labels": {
+            "·": "root",
+            "car": "$ end"
+          }
+        }
+      }
+    },
+    {
+      "text": "insert cat: c and ca already exist and are reused. Only the t child is new.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 150,
+              "y": 0
+            },
+            {
+              "id": "c",
+              "x": 80,
+              "y": 70
+            },
+            {
+              "id": "ca",
+              "x": 80,
+              "y": 140
+            },
+            {
+              "id": "car",
+              "x": 30,
+              "y": 210
+            },
+            {
+              "id": "cat",
+              "x": 130,
+              "y": 210
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "c",
+              "w": "c",
+              "directed": true
+            },
+            {
+              "from": "c",
+              "to": "ca",
+              "w": "a",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "car",
+              "w": "r",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "cat",
+              "w": "t",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "·",
+              "c",
+              "ca",
+              "cat"
+            ],
+            "edges": [
+              "·>c",
+              "c>ca",
+              "ca>cat"
+            ]
+          },
+          "labels": {
+            "·": "root",
+            "car": "$ end",
+            "cat": "$ end"
+          }
+        }
+      }
+    },
+    {
+      "text": "insert cart: walk c, a, r (car stays a word), then add t. A node can be a word end and still have children.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 150,
+              "y": 0
+            },
+            {
+              "id": "c",
+              "x": 80,
+              "y": 70
+            },
+            {
+              "id": "ca",
+              "x": 80,
+              "y": 140
+            },
+            {
+              "id": "car",
+              "x": 30,
+              "y": 210
+            },
+            {
+              "id": "cat",
+              "x": 130,
+              "y": 210
+            },
+            {
+              "id": "cart",
+              "x": 30,
+              "y": 280
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "c",
+              "w": "c",
+              "directed": true
+            },
+            {
+              "from": "c",
+              "to": "ca",
+              "w": "a",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "car",
+              "w": "r",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "cat",
+              "w": "t",
+              "directed": true
+            },
+            {
+              "from": "car",
+              "to": "cart",
+              "w": "t",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "·",
+              "c",
+              "ca",
+              "car",
+              "cart"
+            ],
+            "edges": [
+              "·>c",
+              "c>ca",
+              "ca>car",
+              "car>cart"
+            ]
+          },
+          "labels": {
+            "·": "root",
+            "car": "$ end",
+            "cat": "$ end",
+            "cart": "$ end"
+          }
+        }
+      }
+    },
+    {
+      "text": "insert dog: a new branch from the root. Everything below ca is exactly the words starting with ca.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 150,
+              "y": 0
+            },
+            {
+              "id": "c",
+              "x": 80,
+              "y": 70
+            },
+            {
+              "id": "ca",
+              "x": 80,
+              "y": 140
+            },
+            {
+              "id": "car",
+              "x": 30,
+              "y": 210
+            },
+            {
+              "id": "cat",
+              "x": 130,
+              "y": 210
+            },
+            {
+              "id": "cart",
+              "x": 30,
+              "y": 280
+            },
+            {
+              "id": "d",
+              "x": 240,
+              "y": 70
+            },
+            {
+              "id": "do",
+              "x": 240,
+              "y": 140
+            },
+            {
+              "id": "dog",
+              "x": 240,
+              "y": 210
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "c",
+              "w": "c",
+              "directed": true
+            },
+            {
+              "from": "c",
+              "to": "ca",
+              "w": "a",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "car",
+              "w": "r",
+              "directed": true
+            },
+            {
+              "from": "ca",
+              "to": "cat",
+              "w": "t",
+              "directed": true
+            },
+            {
+              "from": "car",
+              "to": "cart",
+              "w": "t",
+              "directed": true
+            },
+            {
+              "from": "·",
+              "to": "d",
+              "w": "d",
+              "directed": true
+            },
+            {
+              "from": "d",
+              "to": "do",
+              "w": "o",
+              "directed": true
+            },
+            {
+              "from": "do",
+              "to": "dog",
+              "w": "g",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "·",
+              "d",
+              "do",
+              "dog"
+            ],
+            "edges": [
+              "·>d",
+              "d>do",
+              "do>dog"
+            ]
+          },
+          "labels": {
+            "·": "root",
+            "car": "$ end",
+            "cat": "$ end",
+            "cart": "$ end",
+            "dog": "$ end"
+          }
+        }
+      }
+    }
+  ]
+}

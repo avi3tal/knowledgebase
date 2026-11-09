@@ -14,14 +14,8 @@ on each other** while they run, and when each piece is big enough to pay for the
 coordination. Find the independent parts (the *fork*), run them concurrently, and combine the
 results at a single synchronisation point (the *join*).
 
-```
-                 tree_sum(5)                       fork:  submit left and right
-               /             \
-       tree_sum(3)         tree_sum(8)             ← independent: no shared writes
-        /     \               \
-   sum(1)   sum(4)          sum(9)
-               \             /
-                 5 + 8 + 17 = 30                   join:  wait for both, then combine
+```figure
+fork-join-tree-sum
 ```
 
 ## Threads vs processes, and the GIL

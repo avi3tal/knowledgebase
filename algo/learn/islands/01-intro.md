@@ -16,12 +16,8 @@ haven't seen yet, you've found a **new component**. Immediately **flood** it: vi
 reachable from it and mark them all as seen. The scan then skips the rest of that component, so
 each component is counted exactly once, and each cell is touched a constant number of times.
 
-```
-grid                 scan hits (0,0): new island #1, flood it
-1 1 0 0 0            ■ ■ . . .
-1 1 0 1 0     →      ■ ■ . 1 .      scan continues; (1,3) is land and unseen → island #2
-0 0 1 0 0            . . 1 . .      then (2,2) → #3, then (3,3) → #4 (flood takes (3,4) too)
-0 0 0 1 1            . . . 1 1
+```figure
+scan-and-flood
 ```
 
 The flood itself is just a graph traversal: **DFS** (recursion or a stack) or **BFS** (a queue).

@@ -1,0 +1,80 @@
+{
+  "kind": "sequence",
+  "title": "Each call pauses at the recursive call; the answer is built on the way back up",
+  "caption": "digit_sum(n) = n % 10 + digit_sum(n // 10), with digit_sum(n) = n for a single digit.",
+  "actors": [
+    {
+      "id": "caller",
+      "label": "caller"
+    },
+    {
+      "id": "d4987",
+      "label": "digit_sum(4987)"
+    },
+    {
+      "id": "d498",
+      "label": "digit_sum(498)"
+    },
+    {
+      "id": "d49",
+      "label": "digit_sum(49)"
+    },
+    {
+      "id": "d4",
+      "label": "digit_sum(4)"
+    }
+  ],
+  "messages": [
+    {
+      "from": "caller",
+      "to": "d4987",
+      "label": "digit_sum(4987)",
+      "note": "A new frame is pushed with its own n."
+    },
+    {
+      "from": "d4987",
+      "to": "d498",
+      "label": "digit_sum(498)",
+      "note": "last = 7 is kept in this frame, which now waits."
+    },
+    {
+      "from": "d498",
+      "to": "d49",
+      "label": "digit_sum(49)",
+      "note": "last = 8, waiting…"
+    },
+    {
+      "from": "d49",
+      "to": "d4",
+      "label": "digit_sum(4)",
+      "note": "last = 9, waiting… Four frames are on the stack now."
+    },
+    {
+      "from": "d4",
+      "to": "d49",
+      "label": "4",
+      "style": "reply",
+      "note": "Base case: a single digit returns itself. Nothing was combined on the way down."
+    },
+    {
+      "from": "d49",
+      "to": "d498",
+      "label": "9 + 4 = 13",
+      "style": "reply",
+      "note": "The paused frame resumes and combines its own digit with the result."
+    },
+    {
+      "from": "d498",
+      "to": "d4987",
+      "label": "8 + 13 = 21",
+      "style": "reply"
+    },
+    {
+      "from": "d4987",
+      "to": "caller",
+      "label": "7 + 21 = 28",
+      "style": "reply",
+      "note": "The last frame pops; the stack is empty again."
+    }
+  ]
+}

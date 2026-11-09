@@ -6,18 +6,8 @@ A hash set answers "is this exact word stored?" in O(L). It can't answer "does a
 **start with** `ca`?" without scanning everything. A **trie** stores strings so that every
 **prefix** is a node: walk one character per level from the root, and the path spells the prefix.
 
-```
-insert: car, cat, cart, dog            ($ = a word ends here)
-
-          (root)
-         /      \
-        c        d
-        |        |
-        a        o
-       / \       |
-      r$  t$     g$
-      |
-      t$
+```figure
+prefix-tree
 ```
 
 `car` and `cat` share the nodes for `c` and `ca`. That sharing is what makes prefix questions

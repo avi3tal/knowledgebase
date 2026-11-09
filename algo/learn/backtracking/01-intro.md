@@ -12,17 +12,8 @@ choice**. The moment a partial candidate breaks a rule (or can't possibly lead t
 **abandon it and undo the last choice**: that's *backtracking*. Everything that would have
 been built on top of the bad prefix is skipped in one go.
 
-```
-k = 2 digits from 1..9 that add up to 5            path        remaining
-                         ┌── choose 1 ──────────── [1]          4
-                         │     ├── choose 2        [1,2]        2 → full, ≠ 0, back up
-                         │     ├── choose 3        [1,3]        1 → full, ≠ 0, back up
-                         │     ├── choose 4        [1,4]        0 → record [1,4]
-                         │     └── 5 > 4: prune, stop the loop
-start ── backtrack(1, 5) ┼── choose 2 ──────────── [2]          3
-                         │     ├── choose 3        [2,3]        0 → record [2,3]
-                         │     └── 4 > 3: prune, stop the loop
-                         └── 3 + 4 > 5: prune — no two digits ≥ 3 fit, stop
+```figure
+decision-tree
 ```
 
 ## Choose / explore / un-choose: the template

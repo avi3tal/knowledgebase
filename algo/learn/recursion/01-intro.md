@@ -27,14 +27,8 @@ This is the same reasoning as a proof by induction.
 Each call gets its own **frame** with its own local variables, pushed on the call stack. A frame
 pauses at the recursive call and resumes when the deeper call returns:
 
-```
-digit_sum(4987)                  last = 7, waiting…
-  digit_sum(498)                 last = 8, waiting…
-    digit_sum(49)                last = 9, waiting…
-      digit_sum(4)  → 4          base case
-    ← 9 + 4  = 13
-  ← 8 + 13 = 21
-← 7 + 21 = 28
+```figure
+digit-sum-calls
 ```
 
 Work happens in two phases: **on the way down** (before the call: splitting the input) and **on

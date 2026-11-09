@@ -1,0 +1,443 @@
+{
+  "kind": "structure",
+  "title": "Choose, explore, un-choose: a dead prefix is abandoned with everything under it",
+  "caption": "k = 2 digits from 1..9 that add up to 5. Each node is the path so far; rem = how much is still missing.",
+  "views": [
+    {
+      "type": "graph",
+      "var": "g",
+      "label": "decision tree of backtrack(start, remaining)"
+    }
+  ],
+  "frames": [
+    {
+      "text": "backtrack(1, 5) chooses 1: path [1], 4 still missing.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 225,
+              "y": 0
+            },
+            {
+              "id": "1",
+              "x": 112,
+              "y": 90
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "1",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "·",
+              "1"
+            ],
+            "edges": [
+              "·>1"
+            ]
+          },
+          "labels": {
+            "·": "rem 5",
+            "1": "rem 4"
+          }
+        }
+      }
+    },
+    {
+      "text": "Choose 2, then 3: the path is full (k = 2) but the remainder isn't 0. Un-choose and try the next digit.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 225,
+              "y": 0
+            },
+            {
+              "id": "1",
+              "x": 112,
+              "y": 90
+            },
+            {
+              "id": "1,2",
+              "x": 0,
+              "y": 190
+            },
+            {
+              "id": "1,3",
+              "x": 75,
+              "y": 190
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "1",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,2",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "1",
+              "1,2",
+              "1,3"
+            ],
+            "edges": [
+              "1>1,2",
+              "1>1,3"
+            ]
+          },
+          "labels": {
+            "·": "rem 5",
+            "1": "rem 4",
+            "1,2": "rem 2 ✗",
+            "1,3": "rem 1 ✗"
+          }
+        }
+      }
+    },
+    {
+      "text": "Choose 4: remainder 0 with 2 digits, so record [1, 4]. Digit 5 is already larger than the 4 missing, and so is every later digit: prune and stop the loop.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 225,
+              "y": 0
+            },
+            {
+              "id": "1",
+              "x": 112,
+              "y": 90
+            },
+            {
+              "id": "1,2",
+              "x": 0,
+              "y": 190
+            },
+            {
+              "id": "1,3",
+              "x": 75,
+              "y": 190
+            },
+            {
+              "id": "1,4",
+              "x": 150,
+              "y": 190
+            },
+            {
+              "id": "1,5",
+              "x": 225,
+              "y": 190
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "1",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,2",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,3",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,4",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,5",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "1",
+              "1,4"
+            ],
+            "edges": [
+              "1>1,4"
+            ]
+          },
+          "labels": {
+            "·": "rem 5",
+            "1": "rem 4",
+            "1,2": "rem 2 ✗",
+            "1,3": "rem 1 ✗",
+            "1,4": "✓ record",
+            "1,5": "✂ 5 > 4"
+          }
+        }
+      }
+    },
+    {
+      "text": "Back at the root, un-choose 1 and choose 2: [2, 3] hits 0, record it. 4 > 3 prunes the rest.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 225,
+              "y": 0
+            },
+            {
+              "id": "1",
+              "x": 112,
+              "y": 90
+            },
+            {
+              "id": "2",
+              "x": 337,
+              "y": 90
+            },
+            {
+              "id": "1,2",
+              "x": 0,
+              "y": 190
+            },
+            {
+              "id": "1,3",
+              "x": 75,
+              "y": 190
+            },
+            {
+              "id": "1,4",
+              "x": 150,
+              "y": 190
+            },
+            {
+              "id": "1,5",
+              "x": 225,
+              "y": 190
+            },
+            {
+              "id": "2,3",
+              "x": 300,
+              "y": 190
+            },
+            {
+              "id": "2,4",
+              "x": 375,
+              "y": 190
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "1",
+              "directed": true
+            },
+            {
+              "from": "·",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,2",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,3",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,4",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,5",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "2,3",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "2,4",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "·",
+              "2",
+              "2,3"
+            ],
+            "edges": [
+              "·>2",
+              "2>2,3"
+            ]
+          },
+          "labels": {
+            "·": "rem 5",
+            "1": "rem 4",
+            "1,2": "rem 2 ✗",
+            "1,3": "rem 1 ✗",
+            "1,4": "✓ record",
+            "1,5": "✂ 5 > 4",
+            "2": "rem 3",
+            "2,3": "✓ record",
+            "2,4": "✂ 4 > 3"
+          }
+        }
+      }
+    },
+    {
+      "text": "Choosing 3 can't work: the smallest pair starting at 3 is 3 + 4 = 7 > 5. Prune at the root. Answers: [1, 4] and [2, 3].",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "·",
+              "x": 225,
+              "y": 0
+            },
+            {
+              "id": "1",
+              "x": 112,
+              "y": 90
+            },
+            {
+              "id": "2",
+              "x": 337,
+              "y": 90
+            },
+            {
+              "id": "3",
+              "x": 450,
+              "y": 90
+            },
+            {
+              "id": "1,2",
+              "x": 0,
+              "y": 190
+            },
+            {
+              "id": "1,3",
+              "x": 75,
+              "y": 190
+            },
+            {
+              "id": "1,4",
+              "x": 150,
+              "y": 190
+            },
+            {
+              "id": "1,5",
+              "x": 225,
+              "y": 190
+            },
+            {
+              "id": "2,3",
+              "x": 300,
+              "y": 190
+            },
+            {
+              "id": "2,4",
+              "x": 375,
+              "y": 190
+            }
+          ],
+          "edges": [
+            {
+              "from": "·",
+              "to": "1",
+              "directed": true
+            },
+            {
+              "from": "·",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "·",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,2",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,3",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,4",
+              "directed": true
+            },
+            {
+              "from": "1",
+              "to": "1,5",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "2,3",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "2,4",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "3"
+            ],
+            "edges": [
+              "·>3"
+            ]
+          },
+          "labels": {
+            "·": "rem 5",
+            "1": "rem 4",
+            "1,2": "rem 2 ✗",
+            "1,3": "rem 1 ✗",
+            "1,4": "✓ record",
+            "1,5": "✂ 5 > 4",
+            "2": "rem 3",
+            "2,3": "✓ record",
+            "2,4": "✂ 4 > 3",
+            "3": "✂ 3+4 > 5"
+          }
+        }
+      }
+    }
+  ]
+}
