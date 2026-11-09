@@ -5,17 +5,12 @@
 A decorator implements the same interface as the object it wraps, holds a reference to it,
 and adds something before or after forwarding. Because the interface is the same, layers stack:
 
+```figure
+decorator-classes
 ```
-           ┌──────────────────────┐
-           │ «interface» Formatter│◁─────────────┐
-           │ render(text) → str   │              │ inner
-           └──────────▲───────────┘              │
-            ┌─────────┴──────────┐               │
-        PlainFormatter        Layer ◇────────────┘
-                     ┌──────────┼──────────┐
-                   Trim       Upper     Exclaim
 
- Exclaim( Upper( Trim( Plain ) ) ).render("  hello  ")   →   "HELLO!"
+```figure
+decorator-chain
 ```
 
 Before: one subclass per combination (`TrimmedUpperFormatter`, `UpperExclaimFormatter`, …)
@@ -32,12 +27,8 @@ answer, draw the class version.
 
 Leaves and groups implement one interface, and a group's method loops over its children.
 
-```
- «interface» Node: size() → int
-      ▲
-  ┌───┴──────┐
- File      Folder ◇──── children: list[Node]
-            size() = sum(child.size() for child in children)
+```figure
+composite
 ```
 
 ```python

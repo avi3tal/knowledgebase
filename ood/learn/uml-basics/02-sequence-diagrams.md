@@ -4,23 +4,8 @@ A class diagram shows **structure**. A sequence diagram shows **one scenario in 
 who calls whom, in which order, and what comes back. Use it for the one or two flows that
 matter most (checkout, booking, a failure path).
 
-```
-  User        Checkout        Inventory      Payment       Mailer
-   │ place(mug)  │                │              │             │
-   │────────────▶│ reserve(mug)   │              │             │
-   │             │───────────────▶│              │             │
-   │             │◀ ─ ─ ─ true ─ ─│              │             │
-   │             │ charge(mug)                   │             │
-   │             │──────────────────────────────▶│             │
-   │             │◀ ─ ─ ─ ─ ─ ─ ─ false ─ ─ ─ ─ ─│             │
-   │      ┌──────┴─ alt [declined] ──────────────────────┐     │
-   │      │      │ release(mug)   │                      │     │
-   │      │      │───────────────▶│                      │     │
-   │      ├──────┼─ [ok] ─────────┼──────────────────────┤     │
-   │      │      │ confirm(mug)                          │     │
-   │      │      │────────────────────────────────────────────▶│
-   │      └──────┴───────────────────────────────────────┘     │
-   │◀─ ─declined─│
+```figure
+checkout-sequence
 ```
 
 Notation:

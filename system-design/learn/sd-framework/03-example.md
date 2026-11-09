@@ -6,7 +6,7 @@
 friends-only boards and anti-cheat. Non-functional: ranks update within seconds, reads under
 100 ms. Numbers:
 
-```
+```text
 writes  = 5 M DAU × 10 games / 86 400 s ≈ 600 /s
 reads   ≈ 3 × writes                    ≈ 1 800 /s
 storage = 5 M players × ~50 B           ≈ 250 MB   (fits in memory on one node)

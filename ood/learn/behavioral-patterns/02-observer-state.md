@@ -6,14 +6,8 @@ A **subject** keeps a list of **observers** and calls the same method on each of
 something happens. The subject only knows the observer *interface*. It does not know about
 email, push or audit logs.
 
-```
- ┌────────────────────────┐ 1     * ┌──────────────────────┐
- │ PriceFeed (subject)    │◇───────▶│ «interface» Watcher  │
- │────────────────────────│         │ notify(ticker, price)│
- │ subscribe(t, w)        │         └──────────▲───────────┘
- │ unsubscribe(t, w)      │             ┌──────┴──────┐
- │ publish(t, price)      │        PushWatcher   EmailWatcher
- └────────────────────────┘
+```figure
+observer-classes
 ```
 
 Before:
@@ -45,17 +39,12 @@ When every method begins with `if self.status == "draft": … elif self.status =
 the rules for one status end up spread across many methods. State turns each status into a
 class. The **context** (`Document`) holds the current state object and delegates to it.
 
+```figure
+state-classes
 ```
- ┌───────────────┐  current  ┌────────────────────────┐
- │ Document      │──────────▶│ «abstract» State       │
- │ apply(event)  │           │ handle(event) → State  │
- └───────────────┘           └───────────▲────────────┘
-                     ┌──────────┬────────┴──┬────────────┐
-                   Draft      Review    Published    Archived
 
-   draft ──submit──▶ review ──approve──▶ published ──archive──▶ archived
-     ▲                  │
-     └─────reject───────┘
+```figure
+state-transitions
 ```
 
 Each state returns the next state, so the transition table lives in the states. In the trace,

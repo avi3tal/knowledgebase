@@ -1,0 +1,165 @@
+{
+  "kind": "uml",
+  "title": "Composition: Shipper has a policy you can swap; inheritance fixes it per subclass",
+  "caption": "Composed parts add up (one class per rule); subclasses multiply when a second axis appears.",
+  "base_name": "Composition (swappable)",
+  "classes": [
+    {
+      "id": "shipper",
+      "name": "Shipper",
+      "fields": [
+        "- policy: ShippingPolicy"
+      ],
+      "methods": [
+        "+ quote(kg: int): int"
+      ],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "policy",
+      "name": "ShippingPolicy",
+      "stereotype": "interface",
+      "methods": [
+        "+ cost(kg: int): int"
+      ],
+      "x": 340,
+      "y": 0
+    },
+    {
+      "id": "weight",
+      "name": "ByWeight",
+      "x": 180,
+      "y": 170
+    },
+    {
+      "id": "flat",
+      "name": "Flat",
+      "x": 340,
+      "y": 170
+    },
+    {
+      "id": "free",
+      "name": "FreeOverFive",
+      "x": 500,
+      "y": 170
+    }
+  ],
+  "relations": [
+    {
+      "from": "shipper",
+      "to": "policy",
+      "type": "aggregation",
+      "label": "policy"
+    },
+    {
+      "from": "weight",
+      "to": "policy",
+      "type": "implements"
+    },
+    {
+      "from": "flat",
+      "to": "policy",
+      "type": "implements"
+    },
+    {
+      "from": "free",
+      "to": "policy",
+      "type": "implements"
+    }
+  ],
+  "steps": [
+    {
+      "text": "Shipper HAS-A ShippingPolicy and quote(kg) delegates to policy.cost(kg).",
+      "nodes": [
+        "shipper",
+        "policy"
+      ],
+      "edges": [
+        "shipper>policy"
+      ]
+    },
+    {
+      "text": "Change the rule by handing the same Shipper another policy object, even mid-session.",
+      "nodes": [
+        "weight",
+        "flat",
+        "free"
+      ],
+      "edges": [
+        "weight>policy",
+        "flat>policy",
+        "free>policy"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "Inheritance (fixed)",
+      "tone": "alternative",
+      "summary": "One subclass per rule: the rule is chosen when the object is built, and a second axis (urgency, region) multiplies the subclasses.",
+      "classes": [
+        {
+          "id": "shipper",
+          "name": "Shipper",
+          "stereotype": "abstract",
+          "methods": [
+            "+ quote(kg: int): int"
+          ],
+          "x": 200,
+          "y": 0
+        },
+        {
+          "id": "weight",
+          "name": "WeightShipper",
+          "x": 0,
+          "y": 160
+        },
+        {
+          "id": "flat",
+          "name": "FlatShipper",
+          "x": 200,
+          "y": 160
+        },
+        {
+          "id": "free",
+          "name": "FreeOverFiveShipper",
+          "x": 380,
+          "y": 160
+        }
+      ],
+      "relations": [
+        {
+          "from": "weight",
+          "to": "shipper",
+          "type": "inherits"
+        },
+        {
+          "from": "flat",
+          "to": "shipper",
+          "type": "inherits"
+        },
+        {
+          "from": "free",
+          "to": "shipper",
+          "type": "inherits"
+        }
+      ],
+      "steps": [
+        {
+          "text": "Each rule is a Shipper subclass. To change the rule you must replace the whole shipper object.",
+          "nodes": [
+            "weight",
+            "flat",
+            "free"
+          ],
+          "edges": [
+            "weight>shipper",
+            "flat>shipper",
+            "free>shipper"
+          ]
+        }
+      ]
+    }
+  ]
+}

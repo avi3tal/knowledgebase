@@ -6,9 +6,8 @@ between them gives you two kinds of back-pressure:
 - buffer **full** → producers **wait** on a condition `not_full`
 - buffer **empty** → consumers **wait** on a condition `not_empty`
 
-```
- producers ─▶ [ a | b | c ] ─▶ consumers        ring buffer, capacity 3
-                ▲head   ▲tail                   count tells full from empty
+```figure
+ring-buffer
 ```
 
 The real thing in Python:

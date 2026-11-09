@@ -18,9 +18,8 @@ email = (EmailBuilder()
          .build())
 ```
 
-```
- Client ──▶ EmailBuilder ──build()──▶ Email (immutable)
-            to() cc() subject() body()
+```figure
+builder-flow
 ```
 
 In the trace, the map shows `builder.parts` filling up. No `Email` exists until `build()`. The

@@ -33,7 +33,7 @@ What you gain:
 ## How big does the buffer get?
 The queue absorbs the difference between the arrival rate and the processing rate:
 
-```
+```text
 backlog growth   = arrival rate − processing rate
 time to drain    = backlog ÷ (processing rate − arrival rate after the burst)
 wait at the back = backlog ÷ processing rate          (Little's law)

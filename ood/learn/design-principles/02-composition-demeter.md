@@ -10,13 +10,8 @@ and can change at runtime. Prefer composition when:
 - the behaviour must **change at runtime** (switch pricing rule mid-session);
 - you want to reuse code from a class whose *interface* you don't want to expose.
 
-```
- inheritance (fixed, explodes)          composition (swappable)
-
-        Shipper                         Shipper ◇──── policy: ShippingPolicy
-   ┌──────┼────────┐                                       ▲
- Weight  Flat  FreeOver5              ByWeight   Flat   FreeOverFive
- Shipper Shipper Shipper
+```figure
+composition-vs-inheritance
 ```
 
 ```python

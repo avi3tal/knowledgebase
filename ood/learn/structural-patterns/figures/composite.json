@@ -1,0 +1,75 @@
+{
+  "kind": "uml",
+  "title": "Composite: File and Folder answer size() the same way",
+  "caption": "A Folder holds children: list[Node] and sums their sizes, so callers never ask whether a node is a leaf.",
+  "classes": [
+    {
+      "id": "node",
+      "name": "Node",
+      "stereotype": "interface",
+      "methods": [
+        "+ size(): int"
+      ],
+      "x": 130,
+      "y": 0
+    },
+    {
+      "id": "file",
+      "name": "File",
+      "fields": [
+        "- n: int"
+      ],
+      "methods": [
+        "+ size(): int"
+      ],
+      "x": 0,
+      "y": 150
+    },
+    {
+      "id": "folder",
+      "name": "Folder",
+      "fields": [
+        "- children: list[Node]"
+      ],
+      "methods": [
+        "+ size(): int"
+      ],
+      "x": 220,
+      "y": 150
+    }
+  ],
+  "relations": [
+    {
+      "from": "file",
+      "to": "node",
+      "type": "implements"
+    },
+    {
+      "from": "folder",
+      "to": "node",
+      "type": "implements"
+    }
+  ],
+  "steps": [
+    {
+      "text": "A File is a leaf: size() returns its own n.",
+      "nodes": [
+        "file",
+        "node"
+      ],
+      "edges": [
+        "file>node"
+      ]
+    },
+    {
+      "text": "A Folder is a group of Nodes (files or folders): size() = sum(child.size() for child in children), recursing through the tree.",
+      "nodes": [
+        "folder",
+        "node"
+      ],
+      "edges": [
+        "folder>node"
+      ]
+    }
+  ]
+}

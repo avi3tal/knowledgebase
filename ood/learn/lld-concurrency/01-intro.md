@@ -15,14 +15,14 @@ same time. What breaks?"** You aren't expected to write a lock-free queue. You a
 `count += 1` looks like one step, but it's three: **read** the value, **add**, **write** it back.
 If two threads interleave between the read and the write, one increment disappears.
 
-```
-time →   A: read 0          A: write 1
-         B:       read 0               B: write 1      counter = 1, expected 2
+```figure
+lost-update
 ```
 
 The trace below replays exactly that schedule (`A, B, A, B`). Watch both private copies hold
 `0` and the second write overwrite the first. The lesson's checks also run the same schedule
 with `use_lock: true`: B blocks at `acquire` until A releases, and the result is 2.
 
-**Visual note:** the studio has no multi-thread timeline view yet, so the threads appear as
-two entries in the `seen` and `pc` maps.
+**Visual note:** the figure above is the timeline (its "With a lock" tab shows B blocking). The
+trace has no per-thread lanes, so there the threads appear as two entries in the `seen` and `pc`
+maps.

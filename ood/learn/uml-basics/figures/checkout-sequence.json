@@ -1,0 +1,128 @@
+{
+  "kind": "sequence",
+  "title": "One scenario in time: reserve, charge, then branch on the result",
+  "caption": "The two tabs are the two branches of the alt [declined] / [ok] fragment after charge(mug).",
+  "base_name": "alt [declined]",
+  "actors": [
+    {
+      "id": "user",
+      "label": "User",
+      "kind": "actor"
+    },
+    {
+      "id": "checkout",
+      "label": "Checkout",
+      "kind": "class"
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory",
+      "kind": "class"
+    },
+    {
+      "id": "payment",
+      "label": "Payment",
+      "kind": "class"
+    },
+    {
+      "id": "mailer",
+      "label": "Mailer",
+      "kind": "class"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "checkout",
+      "label": "place(mug)",
+      "note": "Solid arrow: a synchronous call."
+    },
+    {
+      "from": "checkout",
+      "to": "inventory",
+      "label": "reserve(mug)"
+    },
+    {
+      "from": "inventory",
+      "to": "checkout",
+      "label": "true",
+      "style": "reply",
+      "note": "Dashed arrow: the return value."
+    },
+    {
+      "from": "checkout",
+      "to": "payment",
+      "label": "charge(mug)"
+    },
+    {
+      "from": "payment",
+      "to": "checkout",
+      "label": "false",
+      "style": "reply",
+      "note": "The card is declined."
+    },
+    {
+      "from": "checkout",
+      "to": "inventory",
+      "label": "release(mug)",
+      "note": "alt [declined]: compensate by releasing the reservation."
+    },
+    {
+      "from": "checkout",
+      "to": "user",
+      "label": "declined",
+      "style": "reply"
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "alt [ok]",
+      "tone": "happy",
+      "summary": "The charge succeeds, so Checkout confirms by queueing an email (async) and returns ok.",
+      "messages": [
+        {
+          "from": "user",
+          "to": "checkout",
+          "label": "place(mug)",
+          "note": "Solid arrow: a synchronous call."
+        },
+        {
+          "from": "checkout",
+          "to": "inventory",
+          "label": "reserve(mug)"
+        },
+        {
+          "from": "inventory",
+          "to": "checkout",
+          "label": "true",
+          "style": "reply",
+          "note": "Dashed arrow: the return value."
+        },
+        {
+          "from": "checkout",
+          "to": "payment",
+          "label": "charge(mug)"
+        },
+        {
+          "from": "payment",
+          "to": "checkout",
+          "label": "true",
+          "style": "reply"
+        },
+        {
+          "from": "checkout",
+          "to": "mailer",
+          "label": "confirm(mug)",
+          "style": "async",
+          "note": "alt [ok]: an async message (open arrowhead); the email is queued."
+        },
+        {
+          "from": "checkout",
+          "to": "user",
+          "label": "ok",
+          "style": "reply"
+        }
+      ]
+    }
+  ]
+}

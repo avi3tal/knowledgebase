@@ -1,0 +1,109 @@
+{
+  "kind": "uml",
+  "title": "State: Document delegates to its current State object",
+  "caption": "One class per status. Each handle(event) returns the next state, so the transition rules live in the states.",
+  "classes": [
+    {
+      "id": "doc",
+      "name": "Document",
+      "fields": [
+        "- state: State"
+      ],
+      "methods": [
+        "+ apply(event: str): None"
+      ],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "state",
+      "name": "State",
+      "stereotype": "abstract",
+      "methods": [
+        "+ handle(event: str): State"
+      ],
+      "x": 330,
+      "y": 0
+    },
+    {
+      "id": "draft",
+      "name": "Draft",
+      "x": 160,
+      "y": 170
+    },
+    {
+      "id": "review",
+      "name": "Review",
+      "x": 310,
+      "y": 170
+    },
+    {
+      "id": "published",
+      "name": "Published",
+      "x": 460,
+      "y": 170
+    },
+    {
+      "id": "archived",
+      "name": "Archived",
+      "x": 610,
+      "y": 170
+    }
+  ],
+  "relations": [
+    {
+      "from": "doc",
+      "to": "state",
+      "type": "association",
+      "navigable": true,
+      "label": "current"
+    },
+    {
+      "from": "draft",
+      "to": "state",
+      "type": "inherits"
+    },
+    {
+      "from": "review",
+      "to": "state",
+      "type": "inherits"
+    },
+    {
+      "from": "published",
+      "to": "state",
+      "type": "inherits"
+    },
+    {
+      "from": "archived",
+      "to": "state",
+      "type": "inherits"
+    }
+  ],
+  "steps": [
+    {
+      "text": "apply(event) does one thing: state = state.handle(event). No if/elif on a status string.",
+      "nodes": [
+        "doc",
+        "state"
+      ],
+      "edges": [
+        "doc>state"
+      ]
+    },
+    {
+      "text": "Each status is a subclass that knows which events it accepts and which state comes next.",
+      "nodes": [
+        "draft",
+        "review",
+        "published",
+        "archived"
+      ],
+      "edges": [
+        "draft>state",
+        "review>state",
+        "published>state",
+        "archived>state"
+      ]
+    }
+  ]
+}

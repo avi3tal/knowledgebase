@@ -73,10 +73,8 @@ class FinanceReport(Report):
 A UI theme needs a `Button`, a `Checkbox` and a `Dialog` that all come from the *same* theme.
 Mixing a dark button with a light dialog is a bug. One factory object returns the whole family:
 
-```
- «interface» WidgetFactory          DarkFactory          LightFactory
-   make_button() → Button             DarkButton           LightButton
-   make_checkbox() → Checkbox         DarkCheckbox         LightCheckbox
+```figure
+abstract-factory
 ```
 
 The client receives one `WidgetFactory`, so it can't mix families by accident.

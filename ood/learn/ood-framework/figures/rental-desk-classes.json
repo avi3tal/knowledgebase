@@ -1,0 +1,230 @@
+{
+  "kind": "uml",
+  "title": "The rental desk: Inventory owns the devices, Rental ties a visitor to a device",
+  "caption": "Staff is the actor using the Desk. Pricing varies by visitor type, so it sits behind an interface.",
+  "classes": [
+    {
+      "id": "staff",
+      "name": "Staff",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "desk",
+      "name": "Desk",
+      "methods": [
+        "+ rent(visitor, device_id): Rental",
+        "+ give_back(device_id): Money"
+      ],
+      "x": 170,
+      "y": 0
+    },
+    {
+      "id": "inventory",
+      "name": "Inventory",
+      "fields": [
+        "- _lock: Lock"
+      ],
+      "methods": [
+        "+ try_checkout(id: str): Device | None",
+        "+ check_in(id: str): None",
+        "+ out(): list[Device]"
+      ],
+      "x": 540,
+      "y": 0
+    },
+    {
+      "id": "rental",
+      "name": "Rental",
+      "fields": [
+        "- device: Device",
+        "- visitor: Visitor",
+        "- start: datetime",
+        "- deposit: Money"
+      ],
+      "x": 170,
+      "y": 200
+    },
+    {
+      "id": "device",
+      "name": "Device",
+      "fields": [
+        "- id: str",
+        "- status: DeviceStatus"
+      ],
+      "x": 560,
+      "y": 200
+    },
+    {
+      "id": "devstatus",
+      "name": "DeviceStatus",
+      "stereotype": "enum",
+      "fields": [
+        "AVAILABLE",
+        "RENTED",
+        "LOST"
+      ],
+      "x": 800,
+      "y": 200
+    },
+    {
+      "id": "visitor",
+      "name": "Visitor",
+      "fields": [
+        "- type: VisitorType"
+      ],
+      "x": 0,
+      "y": 420
+    },
+    {
+      "id": "vtype",
+      "name": "VisitorType",
+      "stereotype": "enum",
+      "fields": [
+        "ADULT",
+        "CHILD",
+        "MEMBER"
+      ],
+      "x": 0,
+      "y": 560
+    },
+    {
+      "id": "pricing",
+      "name": "PricingPolicy",
+      "stereotype": "interface",
+      "methods": [
+        "+ charge(visitor: Visitor): Money"
+      ],
+      "x": 300,
+      "y": 420
+    },
+    {
+      "id": "standard",
+      "name": "StandardPricing",
+      "x": 230,
+      "y": 580
+    },
+    {
+      "id": "member",
+      "name": "MemberPricing",
+      "x": 430,
+      "y": 580
+    }
+  ],
+  "relations": [
+    {
+      "from": "staff",
+      "to": "desk",
+      "type": "association",
+      "navigable": true,
+      "label": "uses"
+    },
+    {
+      "from": "desk",
+      "to": "inventory",
+      "type": "association",
+      "navigable": true
+    },
+    {
+      "from": "desk",
+      "to": "rental",
+      "type": "dependency",
+      "label": "«create»"
+    },
+    {
+      "from": "inventory",
+      "to": "device",
+      "type": "composition",
+      "from_mult": "1",
+      "to_mult": "*"
+    },
+    {
+      "from": "device",
+      "to": "devstatus",
+      "type": "association",
+      "navigable": true
+    },
+    {
+      "from": "rental",
+      "to": "visitor",
+      "type": "association",
+      "from_mult": "*",
+      "to_mult": "1"
+    },
+    {
+      "from": "visitor",
+      "to": "vtype",
+      "type": "association",
+      "navigable": true
+    },
+    {
+      "from": "rental",
+      "to": "pricing",
+      "type": "association",
+      "navigable": true
+    },
+    {
+      "from": "standard",
+      "to": "pricing",
+      "type": "implements"
+    },
+    {
+      "from": "member",
+      "to": "pricing",
+      "type": "implements"
+    }
+  ],
+  "steps": [
+    {
+      "text": "Staff use a Desk; every Desk shares one Inventory.",
+      "nodes": [
+        "staff",
+        "desk",
+        "inventory"
+      ],
+      "edges": [
+        "staff>desk",
+        "desk>inventory"
+      ]
+    },
+    {
+      "text": "Inventory owns the Devices (composition). try_checkout / check_in flip a device's status under one lock.",
+      "nodes": [
+        "inventory",
+        "device",
+        "devstatus"
+      ],
+      "edges": [
+        "inventory>device",
+        "device>devstatus"
+      ]
+    },
+    {
+      "text": "The Desk creates a Rental per hand-out; many rentals can belong to one Visitor over time.",
+      "nodes": [
+        "desk",
+        "rental",
+        "visitor"
+      ],
+      "edges": [
+        "desk>rental",
+        "rental>visitor"
+      ]
+    },
+    {
+      "text": "The charge comes from a PricingPolicy picked by VisitorType: a new tier is one new class.",
+      "nodes": [
+        "pricing",
+        "standard",
+        "member",
+        "vtype"
+      ],
+      "edges": [
+        "rental>pricing",
+        "standard>pricing",
+        "member>pricing",
+        "visitor>vtype"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "kind": "uml",
+  "title": "Decorator: every layer is a Formatter that wraps another Formatter",
+  "caption": "Layer implements Formatter and holds one in inner, so layers stack: n small classes instead of 2ⁿ subclasses.",
+  "classes": [
+    {
+      "id": "formatter",
+      "name": "Formatter",
+      "stereotype": "interface",
+      "methods": [
+        "+ render(text: str): str"
+      ],
+      "x": 200,
+      "y": 0
+    },
+    {
+      "id": "plain",
+      "name": "PlainFormatter",
+      "methods": [
+        "+ render(text: str): str"
+      ],
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "layer",
+      "name": "Layer",
+      "stereotype": "abstract",
+      "fields": [
+        "- inner: Formatter"
+      ],
+      "methods": [
+        "+ render(text: str): str"
+      ],
+      "x": 400,
+      "y": 160
+    },
+    {
+      "id": "trim",
+      "name": "Trim",
+      "x": 250,
+      "y": 330
+    },
+    {
+      "id": "upper",
+      "name": "Upper",
+      "x": 400,
+      "y": 330
+    },
+    {
+      "id": "exclaim",
+      "name": "Exclaim",
+      "x": 550,
+      "y": 330
+    }
+  ],
+  "relations": [
+    {
+      "from": "plain",
+      "to": "formatter",
+      "type": "implements"
+    },
+    {
+      "from": "layer",
+      "to": "formatter",
+      "type": "implements"
+    },
+    {
+      "from": "trim",
+      "to": "layer",
+      "type": "inherits"
+    },
+    {
+      "from": "upper",
+      "to": "layer",
+      "type": "inherits"
+    },
+    {
+      "from": "exclaim",
+      "to": "layer",
+      "type": "inherits"
+    }
+  ],
+  "steps": [
+    {
+      "text": "PlainFormatter is the real object at the core.",
+      "nodes": [
+        "plain",
+        "formatter"
+      ],
+      "edges": [
+        "plain>formatter"
+      ]
+    },
+    {
+      "text": "Layer has the same interface and keeps the wrapped Formatter in inner: render does its part and forwards to inner.render.",
+      "nodes": [
+        "layer",
+        "formatter"
+      ],
+      "edges": [
+        "layer>formatter"
+      ]
+    },
+    {
+      "text": "Trim, Upper and Exclaim each add one behaviour, before or after forwarding.",
+      "nodes": [
+        "trim",
+        "upper",
+        "exclaim"
+      ],
+      "edges": [
+        "trim>layer",
+        "upper>layer",
+        "exclaim>layer"
+      ]
+    }
+  ]
+}

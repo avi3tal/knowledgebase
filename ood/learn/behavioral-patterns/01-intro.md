@@ -21,46 +21,40 @@ All six patterns below do the same basic thing. They take behaviour that would s
 
 ## Strategy in one picture
 
-```
- ┌──────────────┐  uses   ┌────────────────────┐
- │ Checkout     │────────▶│ «interface»        │
- │──────────────│         │ DiscountPolicy     │
- │ policy       │         │ apply(total) → int │
- │ total()      │         └─────────▲──────────┘
- └──────────────┘          ┌────────┼─────────┐
-                     NoDiscount  PercentOff  BuyTwoGetOne
+```figure
+strategy-fares
 ```
 
 Before: the algorithm and the decision about which one to use are tangled together.
 
 ```python
-class Checkout:
-    def total(self, items, mode):
-        subtotal = sum(i.price for i in items)
-        if mode == "percent":
-            return subtotal * 90 // 100
-        elif mode == "b2g1":
-            ...  # every new promotion edits this method
-        return subtotal
+class Trip:
+    def fare(self, km, mode):
+        base = 300 + 120 * km
+        if mode == "surge":
+            return base * 150 // 100
+        elif mode == "airport":
+            ...  # every new fare rule edits this method
+        return base
 ```
 
 After: each algorithm sits in its own class, and the caller picks one.
 
 ```python
-class DiscountPolicy(Protocol):
-    def apply(self, subtotal: int) -> int: ...
+class FarePolicy(Protocol):
+    def price(self, km: int) -> int: ...
 
-class PercentOff:
+class SurgeFare:
     def __init__(self, pct: int) -> None:
         self.pct = pct
-    def apply(self, subtotal: int) -> int:
-        return subtotal * (100 - self.pct) // 100
+    def price(self, km: int) -> int:
+        return (300 + 120 * km) * self.pct // 100
 
-class Checkout:
-    def __init__(self, policy: DiscountPolicy) -> None:
+class Trip:
+    def __init__(self, policy: FarePolicy) -> None:
         self.policy = policy             # injected, swappable at runtime
-    def total(self, items) -> int:
-        return self.policy.apply(sum(i.price for i in items))
+    def fare(self, km: int) -> int:
+        return self.policy.price(km)
 ```
 
 The *Design principles* lesson animates a strategy being swapped at runtime.

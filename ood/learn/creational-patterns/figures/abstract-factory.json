@@ -1,0 +1,175 @@
+{
+  "kind": "uml",
+  "title": "Abstract factory: one factory object returns a whole matching family",
+  "caption": "The client only sees WidgetFactory, Button and Checkbox, so it can't mix a dark button with a light checkbox.",
+  "classes": [
+    {
+      "id": "factory",
+      "name": "WidgetFactory",
+      "stereotype": "interface",
+      "methods": [
+        "+ make_button(): Button",
+        "+ make_checkbox(): Checkbox"
+      ],
+      "x": 230,
+      "y": 0
+    },
+    {
+      "id": "dark",
+      "name": "DarkFactory",
+      "x": 40,
+      "y": 150
+    },
+    {
+      "id": "light",
+      "name": "LightFactory",
+      "x": 470,
+      "y": 150
+    },
+    {
+      "id": "darkbtn",
+      "name": "DarkButton",
+      "x": 0,
+      "y": 290
+    },
+    {
+      "id": "lightbtn",
+      "name": "LightButton",
+      "x": 160,
+      "y": 290
+    },
+    {
+      "id": "darkchk",
+      "name": "DarkCheckbox",
+      "x": 400,
+      "y": 290
+    },
+    {
+      "id": "lightchk",
+      "name": "LightCheckbox",
+      "x": 570,
+      "y": 290
+    },
+    {
+      "id": "button",
+      "name": "Button",
+      "stereotype": "interface",
+      "x": 80,
+      "y": 430
+    },
+    {
+      "id": "checkbox",
+      "name": "Checkbox",
+      "stereotype": "interface",
+      "x": 490,
+      "y": 430
+    }
+  ],
+  "relations": [
+    {
+      "from": "dark",
+      "to": "factory",
+      "type": "implements"
+    },
+    {
+      "from": "light",
+      "to": "factory",
+      "type": "implements"
+    },
+    {
+      "from": "dark",
+      "to": "darkbtn",
+      "type": "dependency",
+      "label": "«create»"
+    },
+    {
+      "from": "dark",
+      "to": "darkchk",
+      "type": "dependency",
+      "label": "«create»"
+    },
+    {
+      "from": "light",
+      "to": "lightbtn",
+      "type": "dependency",
+      "label": "«create»"
+    },
+    {
+      "from": "light",
+      "to": "lightchk",
+      "type": "dependency",
+      "label": "«create»"
+    },
+    {
+      "from": "darkbtn",
+      "to": "button",
+      "type": "implements"
+    },
+    {
+      "from": "lightbtn",
+      "to": "button",
+      "type": "implements"
+    },
+    {
+      "from": "darkchk",
+      "to": "checkbox",
+      "type": "implements"
+    },
+    {
+      "from": "lightchk",
+      "to": "checkbox",
+      "type": "implements"
+    }
+  ],
+  "steps": [
+    {
+      "text": "WidgetFactory declares one make_… method per product in the family.",
+      "nodes": [
+        "factory",
+        "dark",
+        "light"
+      ],
+      "edges": [
+        "dark>factory",
+        "light>factory"
+      ]
+    },
+    {
+      "text": "DarkFactory only ever creates dark widgets…",
+      "nodes": [
+        "dark",
+        "darkbtn",
+        "darkchk"
+      ],
+      "edges": [
+        "dark>darkbtn",
+        "dark>darkchk"
+      ]
+    },
+    {
+      "text": "…and LightFactory only light ones.",
+      "nodes": [
+        "light",
+        "lightbtn",
+        "lightchk"
+      ],
+      "edges": [
+        "light>lightbtn",
+        "light>lightchk"
+      ]
+    },
+    {
+      "text": "The client works against the Button and Checkbox interfaces, so swapping the factory swaps the whole theme.",
+      "nodes": [
+        "button",
+        "checkbox"
+      ],
+      "edges": [
+        "darkbtn>button",
+        "lightbtn>button",
+        "darkchk>checkbox",
+        "lightchk>checkbox"
+      ]
+    }
+  ]
+}

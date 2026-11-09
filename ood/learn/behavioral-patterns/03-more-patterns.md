@@ -37,9 +37,8 @@ with buttons you can assign*.
 Handlers are linked together. Each one either handles the request or passes it to the next.
 The sender doesn't know which handler will answer.
 
-```
- request ─▶ [AuthCheck] ─▶ [RateLimit] ─▶ [Validate] ─▶ [Handler]
-              │ reject        │ reject       │ reject
+```figure
+chain-of-responsibility
 ```
 
 ```python

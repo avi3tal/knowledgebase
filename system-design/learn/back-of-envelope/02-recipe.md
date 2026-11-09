@@ -18,7 +18,7 @@ estimate-recipe
 
 The formulas, written once:
 
-```
+```text
 avg_qps     = daily_volume / 86 400            (≈ / 1e5)
 peak_qps    = avg_qps × peak_factor
 storage     = writes_per_day × object_size × days × replicas

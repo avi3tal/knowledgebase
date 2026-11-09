@@ -72,7 +72,7 @@ v3
 ## 4. The rules, precisely
 **Buy N, get M free** (N = buy, M = free), for quantity q:
 
-```
+```text
 group      = N + M
 free_units = (q // group) * M + max(0, q % group - N)
 discount   = free_units * unit_price
@@ -95,8 +95,8 @@ once to the sum, and the total never goes below zero.
 Each `CartLine` caches `subtotal_cents` and `discount_cents`. The cart keeps two running sums. Every
 change goes through one private method:
 
-```
-_reprice(line, new_qty):
+```python
+def _reprice(line, new_qty):
     subtotal       -= line.subtotal;  item_discount -= line.discount
     line.set_quantity(new_qty)        # re-prices only this line: best of its k promotions
     subtotal       += line.subtotal;  item_discount += line.discount

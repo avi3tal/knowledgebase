@@ -1,0 +1,134 @@
+{
+  "kind": "uml",
+  "title": "Dependency inversion: the detail's arrow ends up pointing at the abstraction",
+  "caption": "Before, the policy depends on SMTP. After, both depend on Mailer, which the policy side owns.",
+  "base_name": "Before",
+  "classes": [
+    {
+      "id": "service",
+      "name": "OrderService",
+      "fields": [
+        "- mailer: SmtpMailer"
+      ],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "smtp",
+      "name": "SmtpMailer",
+      "fields": [
+        "- host: str"
+      ],
+      "methods": [
+        "+ send(to: str, body: str): None"
+      ],
+      "x": 320,
+      "y": 0
+    }
+  ],
+  "relations": [
+    {
+      "from": "service",
+      "to": "smtp",
+      "type": "association",
+      "navigable": true,
+      "label": "builds its own"
+    }
+  ],
+  "steps": [
+    {
+      "text": "OrderService constructs SmtpMailer itself: high-level policy depends on a low-level detail, and tests need real email.",
+      "nodes": [
+        "service",
+        "smtp"
+      ],
+      "edges": [
+        "service>smtp"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "After",
+      "tone": "alternative",
+      "summary": "OrderService depends on the Mailer interface it declares; SmtpMailer and FakeMailer are injected from outside.",
+      "classes": [
+        {
+          "id": "service",
+          "name": "OrderService",
+          "fields": [
+            "- mailer: Mailer"
+          ],
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "mailer",
+          "name": "Mailer",
+          "stereotype": "interface",
+          "methods": [
+            "+ send(to: str, body: str): None"
+          ],
+          "x": 300,
+          "y": 0
+        },
+        {
+          "id": "smtp",
+          "name": "SmtpMailer",
+          "fields": [
+            "- host: str"
+          ],
+          "x": 220,
+          "y": 160
+        },
+        {
+          "id": "fake",
+          "name": "FakeMailer",
+          "x": 440,
+          "y": 160
+        }
+      ],
+      "relations": [
+        {
+          "from": "service",
+          "to": "mailer",
+          "type": "association",
+          "navigable": true
+        },
+        {
+          "from": "smtp",
+          "to": "mailer",
+          "type": "implements"
+        },
+        {
+          "from": "fake",
+          "to": "mailer",
+          "type": "implements"
+        }
+      ],
+      "steps": [
+        {
+          "text": "OrderService only knows Mailer, an abstraction declared on the policy side.",
+          "nodes": [
+            "service",
+            "mailer"
+          ],
+          "edges": [
+            "service>mailer"
+          ]
+        },
+        {
+          "text": "The details implement it: SmtpMailer in production, FakeMailer in tests. Their arrows now point up.",
+          "nodes": [
+            "smtp",
+            "fake"
+          ],
+          "edges": [
+            "smtp>mailer",
+            "fake>mailer"
+          ]
+        }
+      ]
+    }
+  ]
+}

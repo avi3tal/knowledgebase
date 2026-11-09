@@ -1,0 +1,89 @@
+{
+  "kind": "uml",
+  "title": "Adapter: your code calls your interface; one class translates to the vendor",
+  "caption": "Only VendorPayAdapter knows the vendor SDK. Swap vendors by writing another adapter.",
+  "classes": [
+    {
+      "id": "checkout",
+      "name": "Checkout",
+      "fields": [
+        "- gateway: PaymentGateway"
+      ],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "gateway",
+      "name": "PaymentGateway",
+      "stereotype": "interface",
+      "methods": [
+        "+ charge(cents: int): None"
+      ],
+      "x": 320,
+      "y": 0
+    },
+    {
+      "id": "adapter",
+      "name": "VendorPayAdapter",
+      "fields": [
+        "- _sdk: VendorSDK"
+      ],
+      "methods": [
+        "+ charge(cents: int): None"
+      ],
+      "x": 320,
+      "y": 150
+    },
+    {
+      "id": "sdk",
+      "name": "VendorSDK",
+      "methods": [
+        "+ make_payment(amount: Decimal, currency: str)"
+      ],
+      "x": 320,
+      "y": 320
+    }
+  ],
+  "relations": [
+    {
+      "from": "checkout",
+      "to": "gateway",
+      "type": "association",
+      "navigable": true
+    },
+    {
+      "from": "adapter",
+      "to": "gateway",
+      "type": "implements"
+    },
+    {
+      "from": "adapter",
+      "to": "sdk",
+      "type": "association",
+      "navigable": true
+    }
+  ],
+  "steps": [
+    {
+      "text": "Checkout calls PaymentGateway.charge(cents), an interface you own.",
+      "nodes": [
+        "checkout",
+        "gateway"
+      ],
+      "edges": [
+        "checkout>gateway"
+      ]
+    },
+    {
+      "text": "VendorPayAdapter implements it: charge(cents) calls sdk.make_payment(cents / 100, \"EUR\").",
+      "nodes": [
+        "adapter",
+        "sdk"
+      ],
+      "edges": [
+        "adapter>gateway",
+        "adapter>sdk"
+      ]
+    }
+  ]
+}

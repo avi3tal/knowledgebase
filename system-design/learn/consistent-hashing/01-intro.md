@@ -6,7 +6,7 @@ You have N cache or storage servers and want every key to land on exactly one of
 want any client to work out which one by itself, without asking a central directory. The
 obvious rule is
 
-```
+```text
 server = hash(key) % N
 ```
 
@@ -23,7 +23,7 @@ mod-n-resize
 A key stays put only when `hash % N` and `hash % (N+1)` happen to agree. For a uniform hash that
 happens for about 1 key in N+1, so going from N to N+1 servers moves
 
-```
+```text
 moved fraction ≈ N / (N + 1)
 ```
 

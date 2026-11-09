@@ -30,7 +30,7 @@ deep dive about 15, wrap-up about 5.
 
 ## 2. Files (deterministic, diffable, in git)
 
-```
+```text
 system-design/problems/<slug>/
   README.md          prompt + context (no solution)
   meta.json          title, difficulty, topics (catalog ids), sources
