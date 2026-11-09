@@ -7,7 +7,26 @@ import { FOCUS_INFO, STATUS_LABEL, groupByStatus, scoreBand } from "../sessions"
 import { NavList } from "./panes";
 import { PlanWithClaude, sessionNavGroups, useSessions } from "./PracticeBench";
 import { Ring } from "./Ring";
-import { Workbench } from "./Workbench";
+import { Workbench, WorkbenchTab } from "./Workbench";
+import { Button, Card, Grow, Muted, MutedP, Tinted } from "../theme/primitives";
+import { t } from "../theme/theme";
+import {
+  ActionButton,
+  Center,
+  Empty,
+  EmptyIcon,
+  FooterRow,
+  GroupTitle,
+  PracticeStats,
+  ProgressFill,
+  ProgressTrack,
+  ScoreCard,
+  ScoreChip,
+  ScoreRing,
+  Side,
+  StatusDot,
+} from "./PracticeBench.style";
+import * as S from "./SessionsPage.style";
 import { PageHeader } from "./PageHeader";
 
 /** All study sessions on the Workbench: the list left, cards or the builder center, totals right. */
@@ -23,77 +42,71 @@ export function SessionsPage({ sessions, subjects }: { sessions: Session[]; subj
       title="Study sessions"
       meta={[
         <span>{sum.total} sessions</span>,
-        sum.active > 0 && <span className="status started">{sum.active} in progress</span>,
-        <span className="status solved">{sum.done} done</span>,
+        sum.active > 0 && <Tinted $tone="warn">{sum.active} in progress</Tinted>,
+        <Tinted $tone="ok">{sum.done} done</Tinted>,
         <span>avg score {sum.average ?? "—"}</span>,
       ]}
       actions={
-        <button className="btn primary" onClick={() => setBuilding((b) => !b)}>
+        <Button $variant="primary" onClick={() => setBuilding((b) => !b)}>
           {building ? "Close builder" : "New session"}
-        </button>
+        </Button>
       }
     />
   );
 
   const tabs = (
     <>
-      <button
-        className={`wb-tab pb-tab-list ${building ? "" : "on"}`}
-        onClick={() => setBuilding(false)}
-      >
-        Sessions <span className="wb-tab-badge">{sessions.length}</span>
-      </button>
-      <button
-        className={`wb-tab pb-tab-new ${building ? "on" : ""}`}
-        onClick={() => setBuilding(true)}
-      >
+      <WorkbenchTab on={!building} onClick={() => setBuilding(false)} badge={sessions.length}>
+        Sessions
+      </WorkbenchTab>
+      <WorkbenchTab on={building} onClick={() => setBuilding(true)} color={t.pattern}>
         New session
-      </button>
+      </WorkbenchTab>
     </>
   );
 
   const right = (
-    <div className="pb-side">
-      <section className="rd-card pb-score-card">
+    <Side>
+      <ScoreCard>
         <h4>Average score</h4>
-        <div className="pb-score-ring">
+        <ScoreRing>
           <Ring
             solved={sum.average ?? 0}
             total={100}
             size={96}
             label={sum.average === null ? "–" : `${sum.average}`}
           />
-        </div>
-        <div className="progress-bar" title={`${Math.round(sum.completion * 100)}% attempted`}>
-          <span style={{ width: `${sum.completion * 100}%` }} />
-        </div>
-        <div className="muted small">
+        </ScoreRing>
+        <ProgressTrack title={`${Math.round(sum.completion * 100)}% attempted`}>
+          <ProgressFill $fraction={sum.completion} />
+        </ProgressTrack>
+        <Muted as="div" $small>
           {Math.round(sum.completion * 100)}% of live sessions attempted
-        </div>
-      </section>
-      <section className="rd-card">
+        </Muted>
+      </ScoreCard>
+      <Card>
         <h4>Planned by</h4>
-        <div className="rd-practice-stats">
+        <PracticeStats>
           <span>
             <b>{claude}</b> 🤖 Claude
           </span>
           <span>
             <b>{sessions.length - claude}</b> ⚙️ kb
           </span>
-        </div>
-      </section>
+        </PracticeStats>
+      </Card>
       <PlanWithClaude />
-    </div>
+    </Side>
   );
 
   const footer = (
-    <div className="pb-footer">
+    <FooterRow>
       <span>
         <b>{sum.total}</b> sessions · <b>{sum.active}</b> in progress · <b>{sum.done}</b> done
       </span>
-      <span className="grow" />
-      <span className="muted">scores come from your kb runs, never stored</span>
-    </div>
+      <Grow />
+      <Muted>scores come from your kb runs, never stored</Muted>
+    </FooterRow>
   );
 
   return (
@@ -111,61 +124,53 @@ export function SessionsPage({ sessions, subjects }: { sessions: Session[]; subj
       right={{ title: "Overview", icon: "📊", content: right }}
       footer={footer}
     >
-      <div className="pb-center sessions pb-sessions">
+      <Center>
         {building && <SessionBuilder subjects={subjects} />}
         {!building && sessions.length === 0 && (
-          <div className="pb-empty">
-            <div className="pb-empty-icon">🎯</div>
+          <Empty>
+            <EmptyIcon>🎯</EmptyIcon>
             <p>No sessions yet.</p>
-            <button className="rd-btn primary" onClick={() => setBuilding(true)}>
+            <ActionButton $variant="primary" onClick={() => setBuilding(true)}>
               ✨ Build your first session
-            </button>
-          </div>
+            </ActionButton>
+          </Empty>
         )}
         {!building &&
           groupByStatus(sessions).map((g) => (
             <section key={g.status}>
-              <h2 className="group-title">
-                <span className={`status-dot ${g.status}`} /> {STATUS_LABEL[g.status]}
-                <span className="muted small"> {g.sessions.length}</span>
-              </h2>
-              <div className="cards">
+              <GroupTitle>
+                <StatusDot $status={g.status} /> {STATUS_LABEL[g.status]}
+                <Muted $small> {g.sessions.length}</Muted>
+              </GroupTitle>
+              <S.Cards>
                 {g.sessions.map((s, i) => (
-                  <a
-                    key={s.id}
-                    href={`#/session/${s.id}`}
-                    className={`session-card ${s.status}`}
-                    style={{ ["--i" as string]: i }}
-                  >
-                    <div className="tc-head">
-                      <span className="tc-icon">{FOCUS_INFO[s.target.focus].icon}</span>
-                      <span className="grow" />
-                      <span className={`score-chip ${scoreBand(s.score)}`}>
+                  <S.SessionCard key={s.id} href={`#/session/${s.id}`} $status={s.status} $i={i}>
+                    <S.CardHead>
+                      <S.CardIcon>{FOCUS_INFO[s.target.focus].icon}</S.CardIcon>
+                      <Grow />
+                      <ScoreChip $band={scoreBand(s.score)}>
                         {s.score === null ? "no score yet" : `${s.score}/100`}
-                      </span>
-                    </div>
-                    <div className="tc-name">{s.title}</div>
-                    {s.target.goal && <div className="tc-usage">🎯 {s.target.goal}</div>}
-                    <div
-                      className="progress-bar"
-                      title={`${Math.round(s.completion * 100)}% attempted`}
-                    >
-                      <span style={{ width: `${s.completion * 100}%` }} />
-                    </div>
-                    <div className="tc-foot">
-                      <span className="tc-pill">{s.items.length} problems</span>
-                      <span className="tc-pill">{s.materials.length} lessons</span>
-                      <span className="tc-pill">
+                      </ScoreChip>
+                    </S.CardHead>
+                    <S.CardName>{s.title}</S.CardName>
+                    {s.target.goal && <S.CardGoal>🎯 {s.target.goal}</S.CardGoal>}
+                    <ProgressTrack title={`${Math.round(s.completion * 100)}% attempted`}>
+                      <ProgressFill $fraction={s.completion} />
+                    </ProgressTrack>
+                    <S.CardFoot>
+                      <S.FootPill>{s.items.length} problems</S.FootPill>
+                      <S.FootPill>{s.materials.length} lessons</S.FootPill>
+                      <S.FootPill>
                         {s.generator === "claude" ? "🤖 Claude plan" : "⚙️ kb"}
-                      </span>
-                      <span className="tc-pill">{s.created.slice(0, 10)}</span>
-                    </div>
-                  </a>
+                      </S.FootPill>
+                      <S.FootPill>{s.created.slice(0, 10)}</S.FootPill>
+                    </S.CardFoot>
+                  </S.SessionCard>
                 ))}
-              </div>
+              </S.Cards>
             </section>
           ))}
-      </div>
+      </Center>
     </Workbench>
   );
 }
@@ -204,33 +209,33 @@ function SessionBuilder({ subjects }: { subjects: Subject[] }) {
   };
 
   return (
-    <section className="builder">
+    <S.Builder>
       <h2>New session</h2>
-      <p className="muted">
+      <MutedP>
         kb picks the problems deterministically from your history (same choices → same session). For
         a plan that reasons about your strengths and weaknesses, ask Claude Code:{" "}
         <code>/session</code>.
-      </p>
+      </MutedP>
 
-      <div className="field">
+      <S.Field>
         <label>Focus</label>
-        <div className="focus-grid">
+        <S.FocusGrid>
           {(Object.keys(FOCUS_INFO) as Focus[]).map((f) => (
-            <button
+            <S.FocusOption
               key={f}
-              className={`focus-opt ${spec.focus === f ? "on" : ""}`}
+              $on={spec.focus === f}
               onClick={() => setSpec((prev) => ({ ...prev, focus: f }))}
             >
-              <span className="focus-icon">{FOCUS_INFO[f].icon}</span>
+              <S.FocusIcon>{FOCUS_INFO[f].icon}</S.FocusIcon>
               <b>{FOCUS_INFO[f].label}</b>
-              <span className="muted small">{FOCUS_INFO[f].hint}</span>
-            </button>
+              <Muted $small>{FOCUS_INFO[f].hint}</Muted>
+            </S.FocusOption>
           ))}
-        </div>
-      </div>
+        </S.FocusGrid>
+      </S.Field>
 
-      <div className="field-row">
-        <div className="field">
+      <S.FieldRow>
+        <S.Field>
           <label>Subject</label>
           <select
             value={spec.subject}
@@ -243,8 +248,8 @@ function SessionBuilder({ subjects }: { subjects: Subject[] }) {
               </option>
             ))}
           </select>
-        </div>
-        <div className="field">
+        </S.Field>
+        <S.Field>
           <label>Problems: {spec.count}</label>
           <input
             type="range"
@@ -253,22 +258,23 @@ function SessionBuilder({ subjects }: { subjects: Subject[] }) {
             value={spec.count}
             onChange={(e) => setSpec((prev) => ({ ...prev, count: Number(e.target.value) }))}
           />
-        </div>
-        <div className="field">
+        </S.Field>
+        <S.Field>
           <label>Difficulty</label>
-          <div className="pills">
+          <S.Pills>
             {["easy", "medium", "hard"].map((d) => (
-              <button
+              <S.PillButton
                 key={d}
-                className={`pill diff-${d} ${spec.difficulty.includes(d) ? "on" : ""}`}
+                $on={spec.difficulty.includes(d)}
+                $difficulty={d}
                 onClick={() => toggle("difficulty", d)}
               >
                 {d}
-              </button>
+              </S.PillButton>
             ))}
-          </div>
-        </div>
-        <div className="field">
+          </S.Pills>
+        </S.Field>
+        <S.Field>
           <label>Time budget (min)</label>
           <input
             type="number"
@@ -283,54 +289,55 @@ function SessionBuilder({ subjects }: { subjects: Subject[] }) {
               }))
             }
           />
-        </div>
-      </div>
+        </S.Field>
+      </S.FieldRow>
 
-      <div className="field">
+      <S.Field>
         <label>
           Topics{" "}
-          <span className="muted small">
+          <Muted $small>
             {spec.topics.length ? `${spec.topics.length} selected` : "none selected = everything"}
-          </span>
+          </Muted>
         </label>
         {subject &&
           groupTopics(subject.topics).map((g) => (
-            <div key={g.group} className="pills topic-pills" style={{ ["--c" as string]: g.color }}>
+            <S.Pills key={g.group} $spaced>
               {g.topics.map((t) => (
-                <button
+                <S.PillButton
                   key={t.id}
-                  className={`pill ${spec.topics.includes(t.id) ? "on" : ""}`}
+                  $on={spec.topics.includes(t.id)}
+                  $color={g.color}
                   onClick={() => toggle("topics", t.id)}
                 >
                   {topicIcon(t)} {t.name}
-                </button>
+                </S.PillButton>
               ))}
-            </div>
+            </S.Pills>
           ))}
-      </div>
+      </S.Field>
 
-      <div className="field-row">
-        <div className="field grow">
+      <S.FieldRow>
+        <S.Field $grow>
           <label>Goal</label>
           <input
             placeholder="e.g. onsite at a big tech company in 2 weeks"
             value={spec.goal}
             onChange={(e) => setSpec((prev) => ({ ...prev, goal: e.target.value }))}
           />
-        </div>
-        <div className="field grow">
+        </S.Field>
+        <S.Field $grow>
           <label>Title</label>
           <input
             placeholder="optional — generated from the topics"
             value={spec.title}
             onChange={(e) => setSpec((prev) => ({ ...prev, title: e.target.value }))}
           />
-        </div>
-      </div>
-      {error && <div className="callout">{error}</div>}
-      <button className="primary big" disabled={busy} onClick={create}>
+        </S.Field>
+      </S.FieldRow>
+      {error && <S.Callout>{error}</S.Callout>}
+      <S.GenerateButton disabled={busy} onClick={create}>
         {busy ? "Generating…" : "✨ Generate session"}
-      </button>
-    </section>
+      </S.GenerateButton>
+    </S.Builder>
   );
 }

@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 import type { DesignPart, DesignReference, Diagram } from "../api";
 import { addedInVersion, fencedVersions, parseDiagramFence, partDiagram } from "../reader";
+import { MutedP } from "../theme/primitives";
+import { Article } from "./DesignReaderPanes.style";
 import { Chips } from "./DesignReaderPanes";
+import { ActionButton } from "./PracticeBench.style";
+import * as S from "./SolutionArticle.style";
 import { DiagramCanvas } from "./DiagramCanvas";
 import { Markdown } from "./Markdown";
 
@@ -20,45 +24,43 @@ export function RevealGate({
   practiseLabel: string;
 }) {
   return (
-    <section className="rd-gate">
-      <div className="rd-gate-icon">🔒</div>
+    <S.Gate>
+      <S.GateIcon>🔒</S.GateIcon>
       <h2>Practise first?</h2>
       <p>
         The worked solution is always here, but reading it <b>before your first attempt</b> removes
         this problem's <b>first-try bonus</b>. Have a go in the console first if you can.
       </p>
-      <p className="muted small">
+      <MutedP $small>
         Revealing is remembered on this device, so you won't be asked again for this problem.
-      </p>
-      <div className="rd-gate-actions">
-        <button className="rd-btn ghost" onClick={onReveal} disabled={busy}>
+      </MutedP>
+      <S.GateActions>
+        <ActionButton $variant="ghost" onClick={onReveal} disabled={busy}>
           📖 Reveal solution
-        </button>
-        <button className="rd-btn primary" onClick={onPractise} disabled={busy}>
+        </ActionButton>
+        <ActionButton $variant="primary" onClick={onPractise} disabled={busy}>
           {practiseLabel}
-        </button>
-      </div>
-    </section>
+        </ActionButton>
+      </S.GateActions>
+    </S.Gate>
   );
 }
 
 function VersionFigure({ diagrams, d }: { diagrams: Diagram[]; d: Diagram }) {
   const added = addedInVersion(diagrams, d.version);
   return (
-    <figure className="rd-fig">
-      <div className="rd-fig-canvas">
+    <S.Fig>
+      <S.FigCanvas>
         <DiagramCanvas diagram={d} highlight={added} height={380} />
-      </div>
+      </S.FigCanvas>
       <figcaption>
-        <span className="rd-vtag">v{d.version}</span>
-        <span className="rd-why">{d.why || "—"}</span>
+        <S.VTag>v{d.version}</S.VTag>
+        <S.Why>{d.why || "—"}</S.Why>
         {added.nodes.size > 0 && (
-          <span className="rd-new" title={[...added.nodes].join(", ")}>
-            +{added.nodes.size} new
-          </span>
+          <S.NewTag title={[...added.nodes].join(", ")}>+{added.nodes.size} new</S.NewTag>
         )}
       </figcaption>
-    </figure>
+    </S.Fig>
   );
 }
 
@@ -72,35 +74,35 @@ function PartCard({
   names: Record<string, string>;
 }) {
   return (
-    <figure className="rd-part">
-      <header>
-        <span className="rd-part-id">{part.id}</span>
-        <span className="rd-part-title">{part.title}</span>
+    <S.Part>
+      <S.PartHeader>
+        <S.PartId>{part.id}</S.PartId>
+        <S.PartTitle>{part.title}</S.PartTitle>
         {part.covers.length > 0 && (
           <Chips ids={part.covers} subject={subject} names={names} kind="covers" />
         )}
-      </header>
+      </S.PartHeader>
       {part.choice && (
-        <p className="rd-part-choice">
-          <span className="rd-label">Choice</span> {part.choice}
-        </p>
+        <S.PartChoice>
+          <S.Label $inline>Choice</S.Label> {part.choice}
+        </S.PartChoice>
       )}
       {(part.technologies.length > 0 || part.patterns.length > 0) && (
-        <div className="rd-part-chips">
+        <S.PartChips>
           {part.technologies.length > 0 && (
             <Chips ids={part.technologies} subject={subject} names={names} kind="tech" />
           )}
           {part.patterns.length > 0 && (
             <Chips ids={part.patterns} subject={subject} names={names} kind="pattern" />
           )}
-        </div>
+        </S.PartChips>
       )}
       {part.diagram.nodes.length > 0 && (
-        <div className="rd-fig-canvas">
+        <S.FigCanvas>
           <DiagramCanvas diagram={partDiagram(part)} height={300} />
-        </div>
+        </S.FigCanvas>
       )}
-    </figure>
+    </S.Part>
   );
 }
 
@@ -137,41 +139,41 @@ export function SolutionArticle({
     solution.technologies.length > 0 || solution.patterns.length > 0 || Boolean(solution.pattern);
 
   return (
-    <div className="rd-solution">
+    <div>
       {hasBand && (
-        <section className="rd-band">
+        <S.Band>
           {solution.technologies.length > 0 && (
             <div>
-              <span className="rd-label">Technologies</span>
+              <S.Label>Technologies</S.Label>
               <Chips ids={solution.technologies} subject={subject} names={names} kind="tech" />
             </div>
           )}
           {solution.patterns.length > 0 && (
             <div>
-              <span className="rd-label">Patterns</span>
+              <S.Label>Patterns</S.Label>
               <Chips ids={solution.patterns} subject={subject} names={names} kind="pattern" />
             </div>
           )}
           {solution.pattern && (
-            <div className="rd-band-pattern">
-              <span className="rd-label">Transferable pattern</span>
+            <S.BandPattern>
+              <S.Label>Transferable pattern</S.Label>
               <p>{solution.pattern}</p>
-            </div>
+            </S.BandPattern>
           )}
-        </section>
+        </S.Band>
       )}
-      <article className="rd-article">
+      <Article>
         <Markdown text={solution.walkthrough} path={path} fence={fence} anchors />
-      </article>
+      </Article>
       {gallery && (
-        <section className="rd-article rd-gallery">
+        <Article as="section">
           <h2 id={VERSIONS_ID}>Design versions</h2>
           {[...diagrams]
             .sort((a, b) => a.version - b.version)
             .map((d) => (
               <VersionFigure key={d.version} diagrams={diagrams} d={d} />
             ))}
-        </section>
+        </Article>
       )}
     </div>
   );

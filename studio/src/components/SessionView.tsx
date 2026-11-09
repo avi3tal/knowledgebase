@@ -16,7 +16,29 @@ import {
 import { NavList } from "./panes";
 import { PlanWithClaude, sessionNavGroups, useSessions } from "./PracticeBench";
 import { Ring } from "./Ring";
-import { Workbench } from "./Workbench";
+import { Workbench, WorkbenchTab } from "./Workbench";
+import { Card, Grow, InlineError, Loader, Muted, MutedP, Tinted } from "../theme/primitives";
+import { t } from "../theme/theme";
+import {
+  ActionButton,
+  Badge,
+  Center,
+  Empty,
+  EmptyIcon,
+  FooterRow,
+  GroupTitle,
+  ProgressFill,
+  ProgressTrack,
+  ScoreCard,
+  ScoreChip,
+  ScoreRing,
+  Side,
+  State,
+  StatusBadge,
+  StatusDot,
+} from "./PracticeBench.style";
+import { Row, Table, TableWrap } from "./ProblemsPage.style";
+import * as S from "./SessionView.style";
 import { PageHeader } from "./PageHeader";
 
 const STATE_LABEL: Record<SessionItem["state"], string> = {
@@ -53,15 +75,15 @@ export function SessionView({ initial }: { initial: Session }) {
     <PageHeader
       title={s.title}
       meta={[
-        <span className={`status-badge ${s.status}`}>{STATUS_LABEL[s.status]}</span>,
+        <StatusBadge>{STATUS_LABEL[s.status]}</StatusBadge>,
         <span>
           {FOCUS_INFO[s.target.focus].icon} {FOCUS_INFO[s.target.focus].label}
         </span>,
         s.target.goal && <span>{s.target.goal}</span>,
         <span>{Math.round(s.completion * 100)}% attempted</span>,
-        <span className="status solved">
+        <Tinted $tone="ok">
           {solved}/{s.items.length} solved
-        </span>,
+        </Tinted>,
         <span>overall {s.overall}/100</span>,
         s.scope.minutes ? <span>{s.scope.minutes} min</span> : null,
         <span>
@@ -80,16 +102,22 @@ export function SessionView({ initial }: { initial: Session }) {
     />
   );
 
-  const tabBtn = (t: SessionTab, label: string, badge: number, done = false) => (
-    <button
-      key={t}
-      className={`wb-tab pb-tab-${t} ${tab === t ? "on" : ""} ${done ? "done" : ""}`}
-      onClick={() => setTab(t)}
-      aria-pressed={tab === t}
+  const tabColor: Record<SessionTab, string | undefined> = {
+    items: undefined,
+    materials: t.warn,
+    results: t.ok,
+  };
+  const tabBtn = (id: SessionTab, label: string, badge: number, done = false) => (
+    <WorkbenchTab
+      key={id}
+      on={tab === id}
+      onClick={() => setTab(id)}
+      color={tabColor[id]}
+      badge={badge}
+      done={done}
     >
       {label}
-      <span className="wb-tab-badge">{badge}</span>
-    </button>
+    </WorkbenchTab>
   );
   const tabs = (
     <>
@@ -100,62 +128,63 @@ export function SessionView({ initial }: { initial: Session }) {
   );
 
   const right = (
-    <div className="pb-side">
-      <section className="rd-card pb-score-card">
+    <Side>
+      <ScoreCard>
         <h4>Session score</h4>
-        <div className="pb-score-ring">
+        <ScoreRing>
           <Ring
             solved={s.score ?? 0}
             total={100}
             size={96}
             label={s.score === null ? "–" : `${s.score}`}
           />
-        </div>
-        <div className="progress-bar" title={`${Math.round(s.completion * 100)}% attempted`}>
-          <span style={{ width: `${s.completion * 100}%` }} />
-        </div>
-        <div className="muted small">
+        </ScoreRing>
+        <ProgressTrack title={`${Math.round(s.completion * 100)}% attempted`}>
+          <ProgressFill $fraction={s.completion} />
+        </ProgressTrack>
+        <Muted as="div" $small>
           {attempted}/{s.items.length} attempted · {solved} solved
-        </div>
-      </section>
+        </Muted>
+      </ScoreCard>
       {s.materials.length > 0 && (
-        <section className="rd-card">
+        <Card>
           <h4>📖 Learn first</h4>
-          <ul className="pb-recent">
+          <S.Recent>
             {s.materials.map((m) => (
               <li key={`${m.subject}/${m.topic}`}>
                 <a href={materialHref(m)}>{m.name}</a>
-                <span className="muted small">{m.has_lesson ? "lesson" : "topic"}</span>
+                <Muted $small>{m.has_lesson ? "lesson" : "topic"}</Muted>
               </li>
             ))}
-          </ul>
-        </section>
+          </S.Recent>
+        </Card>
       )}
       <PlanWithClaude />
-    </div>
+    </Side>
   );
 
   const footer = (
-    <div className="pb-footer">
-      <span className={`status-badge ${s.status}`}>{STATUS_LABEL[s.status]}</span>
+    <FooterRow>
+      <StatusBadge>{STATUS_LABEL[s.status]}</StatusBadge>
       {actionsFor(s.status).map((a) => (
-        <button
+        <ActionButton
           key={a.to}
-          className={`rd-btn ${a.to === "abandoned" ? "" : "primary"} pb-action`}
+          $compact
+          $variant={a.to === "abandoned" ? "default" : "primary"}
           onClick={() => setStatus(a.to)}
         >
           {a.label}
-        </button>
+        </ActionButton>
       ))}
-      {error && <span className="inline-error">⚠ {error}</span>}
-      <span className="grow" />
+      {error && <InlineError as="span">⚠ {error}</InlineError>}
+      <Grow />
       {at >= 0 && ordered.length > 1 && (
-        <span className="muted">
+        <Muted>
           session {at + 1} / {ordered.length}
-        </span>
+        </Muted>
       )}
       <a href="#/sessions">all sessions →</a>
-    </div>
+    </FooterRow>
   );
 
   let center;
@@ -163,15 +192,15 @@ export function SessionView({ initial }: { initial: Session }) {
     center = (
       <>
         {s.rationale.length > 0 && (
-          <ul className="rationale">
+          <S.Rationale>
             {s.rationale.map((r) => (
               <li key={r}>{r}</li>
             ))}
-          </ul>
+          </S.Rationale>
         )}
         <section>
-          <h2 className="group-title">🧪 Problem set</h2>
-          <div className="items">
+          <GroupTitle>🧪 Problem set</GroupTitle>
+          <S.Items>
             {s.items.map((it, i) => (
               <ItemRow
                 key={it.id}
@@ -192,38 +221,36 @@ export function SessionView({ initial }: { initial: Session }) {
                 }}
               />
             ))}
-          </div>
+          </S.Items>
         </section>
       </>
     );
   } else if (tab === "materials") {
     center =
       s.materials.length === 0 ? (
-        <div className="pb-empty">
-          <div className="pb-empty-icon">📖</div>
+        <Empty>
+          <EmptyIcon>📖</EmptyIcon>
           <p>This session has no lessons to read first. Straight to the problems.</p>
-        </div>
+        </Empty>
       ) : (
         <section>
-          <h2 className="group-title">📖 Learn first</h2>
-          <div className="materials">
+          <GroupTitle>📖 Learn first</GroupTitle>
+          <S.Materials>
             {s.materials.map((m) => (
-              <a key={`${m.subject}/${m.topic}`} className="material" href={materialHref(m)}>
+              <S.Material key={`${m.subject}/${m.topic}`} href={materialHref(m)}>
                 <b>{m.name}</b>
-                <span className="muted small">
-                  {m.why ?? (m.has_lesson ? "lesson + quiz" : "topic page")}
-                </span>
-              </a>
+                <Muted $small>{m.why ?? (m.has_lesson ? "lesson + quiz" : "topic page")}</Muted>
+              </S.Material>
             ))}
-          </div>
+          </S.Materials>
         </section>
       );
   } else {
     center = (
-      <section className="pb-results">
-        <h2 className="group-title">🏁 Results</h2>
-        <div className="pb-table-wrap">
-          <table className="problems-table pb-table">
+      <S.Results>
+        <GroupTitle>🏁 Results</GroupTitle>
+        <TableWrap>
+          <Table>
             <thead>
               <tr>
                 <th>#</th>
@@ -235,49 +262,49 @@ export function SessionView({ initial }: { initial: Session }) {
             </thead>
             <tbody>
               {s.items.map((it, i) => (
-                <tr key={it.id} style={{ ["--i" as string]: i }}>
-                  <td className="muted">{i + 1}</td>
+                <Row key={it.id} $status="" $i={i}>
+                  <S.MutedCell>{i + 1}</S.MutedCell>
                   <td>
                     <a href={problemHref(it.subject, it.slug)}>{it.title ?? it.slug}</a>
                   </td>
                   <td>
-                    <span className={`state ${it.state}`}>{STATE_LABEL[it.state]}</span>
+                    <State $state={it.state}>{STATE_LABEL[it.state]}</State>
                   </td>
-                  <td className="muted small">
+                  <S.MutedCell $small>
                     {it.last_run
                       ? `${it.last_run.passed}/${it.last_run.total} · ${it.last_run.ts.slice(0, 16).replace("T", " ")}`
                       : "—"}
-                  </td>
+                  </S.MutedCell>
                   <td>
-                    <span className={`score-chip ${scoreBand(it.score)}`}>
+                    <ScoreChip $band={scoreBand(it.score)}>
                       {it.score === null ? "–" : `${it.score}/100`}
-                    </span>
+                    </ScoreChip>
                   </td>
-                </tr>
+                </Row>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </TableWrap>
         {s.history.length > 0 && (
           <>
             <h3>History</h3>
-            <ol className="pb-history">
+            <S.History>
               {s.history.map((h) => (
                 <li key={`${h.ts}-${h.status}`}>
-                  <span className={`status-dot ${h.status}`} /> {STATUS_LABEL[h.status]}
-                  <span className="muted small"> {h.ts.slice(0, 16).replace("T", " ")}</span>
+                  <StatusDot $status={h.status} /> {STATUS_LABEL[h.status]}
+                  <Muted $small> {h.ts.slice(0, 16).replace("T", " ")}</Muted>
                 </li>
               ))}
-            </ol>
+            </S.History>
           </>
         )}
-        <p className="muted small">
+        <MutedP $small>
           Scores come from your <code>kb run</code> results: 70 for passing cases, 20 for hitting
           the target complexity, 10 for passing on your first real try (running the empty stub
           doesn't count). Re-run an attempt and the score updates. Need a review? In Claude Code:{" "}
           <code>/review</code>.
-        </p>
-      </section>
+        </MutedP>
+      </S.Results>
     );
   }
 
@@ -292,13 +319,13 @@ export function SessionView({ initial }: { initial: Session }) {
         content: list ? (
           <NavList groups={nav} placeholder="Filter sessions…" />
         ) : (
-          <div className="loader small-loader" aria-label="loading" />
+          <Loader $small aria-label="loading" />
         ),
       }}
       right={{ title: "Score", icon: "🏁", content: right }}
       footer={footer}
     >
-      <div className="pb-center session pb-session">{center}</div>
+      <Center>{center}</Center>
     </Workbench>
   );
 }
@@ -328,37 +355,33 @@ function ItemRow({
   };
   const latest = item.attempt_paths[item.attempt_paths.length - 1];
   return (
-    <div className={`item ${item.state}`} style={{ ["--i" as string]: index }}>
-      <div className="item-num">{index + 1}</div>
-      <div className="item-main">
-        <div className="item-title">
+    <S.Item $state={item.state} $i={index}>
+      <S.ItemNum $solved={item.state === "solved"}>{index + 1}</S.ItemNum>
+      <div>
+        <S.ItemTitle>
           <a href={problemHref(item.subject, item.slug)}>{item.title ?? item.slug}</a>
-          {item.difficulty && <span className={`badge ${item.difficulty}`}>{item.difficulty}</span>}
-          <span className={`state ${item.state}`}>{STATE_LABEL[item.state]}</span>
-        </div>
-        {item.why && <div className="muted small">💡 {item.why}</div>}
-        <div className="item-actions">
+          {item.difficulty && <Badge $difficulty={item.difficulty}>{item.difficulty}</Badge>}
+          <State $state={item.state}>{STATE_LABEL[item.state]}</State>
+        </S.ItemTitle>
+        {item.why && (
+          <Muted as="div" $small>
+            💡 {item.why}
+          </Muted>
+        )}
+        <S.ItemActions>
           {item.attempt_paths.map((p, k) => (
-            <a key={p} className="attempt" href={`vscode://file${p}`} title="open in VS Code">
+            <S.AttemptLink key={p} href={`vscode://file${p}`} title="open in VS Code">
               ⧉ {item.attempts[k]}
-            </a>
+            </S.AttemptLink>
           ))}
           {latest && (
-            <code
-              className="cmd"
-              onClick={() => copy(runCommand(latest, root))}
-              title="click to copy"
-            >
+            <S.CopyCmd onClick={() => copy(runCommand(latest, root))} title="click to copy">
               {copied === runCommand(latest, root) ? "copied ✓" : runCommand(latest, root)}
-            </code>
+            </S.CopyCmd>
           )}
           {design ? (
             <>
-              {consoleHref && (
-                <a className="button-link primary" href={consoleHref}>
-                  ▶ Open console
-                </a>
-              )}
+              {consoleHref && <a href={consoleHref}>▶ Open console</a>}
               <button onClick={onStartDesign}>＋ New design attempt</button>
             </>
           ) : (
@@ -367,12 +390,12 @@ function ItemRow({
               <button onClick={() => onStart("go")}>＋ Go attempt</button>
             </>
           )}
-        </div>
+        </S.ItemActions>
       </div>
-      <div className={`item-score ${scoreBand(item.score)}`}>
+      <S.ItemScore $band={scoreBand(item.score)}>
         {item.score === null ? "–" : item.score}
         <span>/100</span>
-      </div>
-    </div>
+      </S.ItemScore>
+    </S.Item>
   );
 }

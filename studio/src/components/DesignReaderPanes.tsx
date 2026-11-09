@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { ProblemRow } from "../api";
+import { InlineError, Loader, MutedP } from "../theme/primitives";
 import type { DesignView } from "../route";
 import { designViewHref } from "../route";
 import type { TocEntry } from "../toc";
+import * as S from "./DesignReaderPanes.style";
 import {
   STATUS_ICON,
   activeHeading,
@@ -40,9 +42,8 @@ export function ProblemList({
   }, [rows]);
 
   return (
-    <div className="rd-list" ref={listRef}>
-      <input
-        className="rd-filter"
+    <S.List ref={listRef}>
+      <S.Filter
         type="search"
         value={query}
         placeholder="Filter problems…"
@@ -50,39 +51,37 @@ export function ProblemList({
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === "Escape" && setQuery("")}
       />
-      {error && <div className="inline-error">⚠ {error}</div>}
-      {!rows && !error && <div className="loader small-loader" aria-label="loading" />}
-      {rows && groups.length === 0 && <p className="muted small">No problem matches “{query}”.</p>}
+      {error && <InlineError>⚠ {error}</InlineError>}
+      {!rows && !error && <Loader $small aria-label="loading" />}
+      {rows && groups.length === 0 && <MutedP $small>No problem matches “{query}”.</MutedP>}
       {groups.map((g) => (
-        <section key={g.difficulty} className={`rd-group ${g.difficulty}`}>
+        <S.Group key={g.difficulty} $difficulty={g.difficulty}>
           <h4>
-            <span className="rd-dot" />
+            <S.Dot />
             {g.difficulty}
-            <span className="rd-count">
-              {g.rows.length === g.total ? g.total : `${g.rows.length}/${g.total}`}
-            </span>
+            <S.Count>{g.rows.length === g.total ? g.total : `${g.rows.length}/${g.total}`}</S.Count>
           </h4>
           <ul>
             {g.rows.map((r, i) => (
-              <li key={r.slug} style={{ ["--i" as string]: i }}>
-                <a
-                  className={`rd-prob ${r.slug === slug ? "current" : ""}`}
+              <S.Item key={r.slug} $i={i}>
+                <S.Prob
+                  $current={r.slug === slug}
                   href={designViewHref(subject, r.slug, view)}
                   aria-current={r.slug === slug ? "page" : undefined}
                   title={r.title}
                 >
-                  <span className={`rd-status ${r.status}`} title={r.status}>
+                  <S.ProbStatus $status={r.status} title={r.status}>
                     {STATUS_ICON[r.status]}
-                  </span>
-                  <span className="rd-prob-title">{shortTitle(r.title)}</span>
-                  {r.attempts > 0 && <span className="rd-prob-n">{r.attempts}</span>}
-                </a>
-              </li>
+                  </S.ProbStatus>
+                  <S.ProbTitle>{shortTitle(r.title)}</S.ProbTitle>
+                  {r.attempts > 0 && <S.ProbCount>{r.attempts}</S.ProbCount>}
+                </S.Prob>
+              </S.Item>
             ))}
           </ul>
-        </section>
+        </S.Group>
       ))}
-    </div>
+    </S.List>
   );
 }
 
@@ -100,21 +99,21 @@ export function Chips({
   kind: "topic" | "tech" | "pattern" | "covers";
 }) {
   return (
-    <div className="chips">
+    <S.ChipRow>
       {ids.map((id) => {
         const href = kind === "covers" ? null : topicHref(subject, id, names);
         const label = kind === "covers" ? id : chipLabel(id, names);
         return href ? (
-          <a key={id} className={`rd-chip ${kind}`} href={href}>
+          <S.Chip as="a" key={id} $kind={kind} href={href}>
             {label}
-          </a>
+          </S.Chip>
         ) : (
-          <span key={id} className={`rd-chip ${kind} plain`}>
+          <S.Chip key={id} $kind={kind} $plain>
             {label}
-          </span>
+          </S.Chip>
         );
       })}
-    </div>
+    </S.ChipRow>
   );
 }
 
@@ -174,24 +173,30 @@ export function OnThisPage({
 
   const pct = Math.round(progress * 100);
   return (
-    <div className="rd-otp">
+    <S.Otp>
       {toc.length > 0 && (
-        <div className="rd-progress" aria-label={`${pct}% read`} title={`${pct}% read`}>
-          <div className="rd-progress-bar" style={{ transform: `scaleX(${progress})` }} />
-        </div>
+        <S.Progress aria-label={`${pct}% read`} title={`${pct}% read`}>
+          <S.ProgressBar $progress={progress} />
+        </S.Progress>
       )}
       {toc.length === 0 ? null : (
-        <ol className="rd-toc">
+        <S.Toc>
           {toc.map((t, i) => (
-            <li key={t.id} className={`l${t.level} ${i === active ? "on" : ""}`}>
-              <button type="button" onClick={() => go(t.id, i)} title={t.text}>
+            <S.TocItem key={t.id} $on={i === active}>
+              <S.TocButton
+                type="button"
+                $level={t.level}
+                $on={i === active}
+                onClick={() => go(t.id, i)}
+                title={t.text}
+              >
                 {t.text}
-              </button>
-            </li>
+              </S.TocButton>
+            </S.TocItem>
           ))}
-        </ol>
+        </S.Toc>
       )}
       {children}
-    </div>
+    </S.Otp>
   );
 }

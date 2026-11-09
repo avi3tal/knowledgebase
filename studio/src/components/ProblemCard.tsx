@@ -15,13 +15,19 @@ import { STATUS_ICON, groupProblems, neighbours, orderProblems } from "../reader
 import { parseRoute } from "../route";
 import { runCommand } from "../sessions";
 import { extractToc } from "../toc";
+import { Button, Grow, Loader, Muted, MutedP, Pill, difficultyColor } from "../theme/primitives";
+import { t } from "../theme/theme";
 import { OnThisPage } from "./DesignReaderPanes";
+import * as R from "./DesignReaderPanes.style";
+import * as S from "./ProblemCard.style";
+import { Attempts, PracticeCard, SmallLink } from "./DesignProblemPage.style";
+import { Badge, Center, CmdStack, PracticeStats } from "./PracticeBench.style";
 import { Markdown } from "./Markdown";
 import type { NavGroup } from "./panes";
 import { NavList, useCenterScroller } from "./panes";
 import { Copy } from "./PracticeBench";
 import { ResourceList } from "./Resources";
-import { Workbench } from "./Workbench";
+import { Workbench, WorkbenchTab } from "./Workbench";
 import { Icon } from "./Icon";
 import { MetaTags, PageHeader, PrevNextFooter, StatusLabel, usePrevNextKeys } from "./PageHeader";
 import { SimilarProblemsCard } from "./PracticeLinks";
@@ -48,58 +54,54 @@ function ProblemCardCompact({ p, pattern }: { p: ProblemCardData; pattern?: stri
   const root = useContext(RootContext);
   const dir = `${root}/${p.readme_path.replace(/\/README\.md$/, "")}`;
   return (
-    <div className="card">
-      <div className="card-head" onClick={() => setOpen((o) => !o)}>
-        <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
+    <S.CompactCard>
+      <S.CardHead onClick={() => setOpen((o) => !o)}>
+        <Badge $difficulty={p.difficulty}>{p.difficulty}</Badge>
         <b>{p.title}</b>
-        <span className="muted">
+        <Muted>
           {p.expected_complexity.time} · {p.patterns.join(", ")}
-        </span>
-        <span className="grow" />
-        <span className="muted">{open ? "▾" : "▸"}</span>
-      </div>
-      <div className="attempts">
-        {p.attempts.length === 0 && <span className="muted">no attempts yet</span>}
+        </Muted>
+        <Grow />
+        <Muted>{open ? "▾" : "▸"}</Muted>
+      </S.CardHead>
+      <S.Row>
+        {p.attempts.length === 0 && <Muted>no attempts yet</Muted>}
         {p.attempts.map((a) => {
           const r = a.last_run;
           const state = runState(r);
           return (
-            <a
+            <S.Attempt
               key={a.name}
-              className={`attempt ${state === "none" ? "" : state}`}
+              $state={state}
               href={`vscode://file${a.path}`}
               title={`open in VS Code${r ? ` · last run ${r.ts}${r.fit ? " · ≈" + r.fit : ""}` : " · not run"}`}
             >
               {a.name} {r ? `${r.passed}/${r.total}` : ""}
-            </a>
+            </S.Attempt>
           );
         })}
-      </div>
-      <div className="cmds">
+      </S.Row>
+      <S.Row>
         <Copy text={`./kb attempt ${p.slug} --lang go${pattern ? ` --pattern ${pattern}` : ""}`} />
         <Copy
           text={`./kb attempt ${p.slug} --lang python${pattern ? ` --pattern ${pattern}` : ""}`}
         />
         <Copy text={`./kb run ${p.slug}`} />
-        <a className="open-editor" href={`vscode://file${dir}`}>
-          ⧉ open in VS Code
-        </a>
-        {practice.length > 0 && (
-          <span className="muted">{practice.length} practice attempt(s)</span>
-        )}
-      </div>
+        <S.OpenEditor href={`vscode://file${dir}`}>⧉ open in VS Code</S.OpenEditor>
+        {practice.length > 0 && <Muted>{practice.length} practice attempt(s)</Muted>}
+      </S.Row>
       {open &&
         p.attempts
           .filter((a) => a.review)
           .map((a) => (
-            <details key={`review-${a.name}`} className="review">
+            <R.Review key={`review-${a.name}`}>
               <summary>📝 Tutor review of {a.name}</summary>
               <Markdown text={a.review ?? ""} path={p.readme_path} />
-            </details>
+            </R.Review>
           ))}
       {open && <Markdown text={p.readme} path={p.readme_path} />}
       {open && p.refs && <ResourceList items={p.refs} title="Explanations elsewhere" />}
-    </div>
+    </S.CompactCard>
   );
 }
 
@@ -107,6 +109,13 @@ function ProblemCardCompact({ p, pattern }: { p: ProblemCardData; pattern?: stri
 
 // The page remounts on every hash change (App keys it): keep the problem list across problems.
 const rowsCache = new Map<string, ProblemRow[]>();
+
+const TAB_COLOR: Record<ProblemTab, string | undefined> = {
+  problem: undefined,
+  learn: t.warn,
+  attempts: t.ok,
+  resources: t.pattern,
+};
 
 const TAB_LABEL: Record<ProblemTab, string> = {
   problem: "Description",
@@ -166,7 +175,7 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
       groupProblems(rows ?? [], "").map((g) => ({
         key: g.difficulty,
         label: g.difficulty,
-        color: `var(--rd-${g.difficulty})`,
+        color: difficultyColor(g.difficulty),
         items: g.rows.map((r) => ({
           id: r.slug,
           title: r.title,
@@ -199,7 +208,7 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
     <PageHeader
       title={p.title}
       meta={[
-        <span className={`pill ${p.difficulty}`}>{p.difficulty}</span>,
+        <Pill $difficulty={p.difficulty}>{p.difficulty}</Pill>,
         <StatusLabel status={status} />,
         <span title="expected time · space complexity">
           {p.expected_complexity.time} · {p.expected_complexity.space}
@@ -225,17 +234,22 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
       ]}
       actions={
         latest ? (
-          <a className="btn primary" href={`vscode://file${latest.path}`} title={latest.name}>
+          <Button
+            as="a"
+            $variant="primary"
+            href={`vscode://file${latest.path}`}
+            title={latest.name}
+          >
             <Icon name="code" size={15} /> Continue in VS Code
-          </a>
+          </Button>
         ) : (
-          <button
-            className="btn primary"
+          <Button
+            $variant="primary"
             onClick={() => void navigator.clipboard.writeText(startCmd)}
             title={`copies: ${startCmd}`}
           >
             <Icon name="play" size={13} /> Start an attempt
-          </button>
+          </Button>
         )
       }
     />
@@ -245,23 +259,24 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
     const badge =
       t === "attempts" ? p.attempts.length : t === "resources" ? p.refs?.length : undefined;
     return (
-      <a
+      <WorkbenchTab
         key={t}
-        className={`wb-tab pb-tab-${t} ${tab === t ? "on" : ""} ${t === "attempts" && passing ? "done" : ""}`}
+        on={tab === t}
         href={problemTabHref(subject, p.slug, t)}
-        aria-current={tab === t ? "page" : undefined}
+        color={TAB_COLOR[t]}
+        badge={badge}
+        done={t === "attempts" && passing > 0}
       >
         {TAB_LABEL[t]}
-        {badge !== undefined && <span className="wb-tab-badge">{badge}</span>}
-      </a>
+      </WorkbenchTab>
     );
   });
 
   const right = (
     <OnThisPage toc={toc} scroller={scroller}>
-      <section className="rd-card rd-practice pb-practice">
+      <PracticeCard>
         <h4>Practice</h4>
-        <div className="rd-practice-stats">
+        <PracticeStats>
           <span>
             <b>{p.attempts.length}</b> attempt{p.attempts.length === 1 ? "" : "s"}
           </span>
@@ -271,16 +286,14 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
           <span>
             <b>{reviews}</b> review{reviews === 1 ? "" : "s"}
           </span>
-        </div>
-        <div className="pb-cmds">
+        </PracticeStats>
+        <CmdStack>
           <Copy text={`./kb attempt ${p.slug} --lang go`} />
           <Copy text={`./kb attempt ${p.slug} --lang python`} />
           <Copy text={`./kb run ${p.slug}`} />
-        </div>
-        <a className="small" href={`vscode://file${dir}`}>
-          ⧉ open the problem folder in VS Code
-        </a>
-      </section>
+        </CmdStack>
+        <SmallLink href={`vscode://file${dir}`}>⧉ open the problem folder in VS Code</SmallLink>
+      </PracticeCard>
       <SimilarProblemsCard subject={subject} items={p.similar} names={topicNames} />
     </OnThisPage>
   );
@@ -296,82 +309,73 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
   let center;
   if (tab === "problem" || tab === "learn") {
     center = (
-      <article className="rd-article">
+      <S.ProblemArticle>
         {tab === "learn" && (
-          <p className="pb-note">
+          <S.Note>
             💡 Try the hints one at a time; the approach is a spoiler. Stuck for real? Practise the
             pattern's lesson first.
-          </p>
+          </S.Note>
         )}
         <Markdown text={md} path={p.readme_path} anchors />
-      </article>
+      </S.ProblemArticle>
     );
   } else if (tab === "attempts") {
     center = (
-      <div className="rd-attempts pb-attempts">
-        <section className="rd-card rd-new-attempt">
+      <Attempts>
+        <R.NewAttempt>
           <h3>Start a new attempt</h3>
-          <p className="muted small">
+          <MutedP $small>
             Attempts live in your private workspace. Create one from the repo root, solve it in your
             editor, then run it; this page picks the result up.
-          </p>
-          <div className="pb-cmds">
+          </MutedP>
+          <CmdStack>
             <Copy text={`./kb attempt ${p.slug} --lang go`} />
             <Copy text={`./kb attempt ${p.slug} --lang python`} />
-          </div>
-        </section>
+          </CmdStack>
+        </R.NewAttempt>
         <h3>Your attempts</h3>
-        {p.attempts.length === 0 && <p className="muted">None yet. Start one above.</p>}
-        <ul className="rd-attempt-list pb-attempt-list">
+        {p.attempts.length === 0 && <MutedP>None yet. Start one above.</MutedP>}
+        <R.AttemptList>
           {[...p.attempts].reverse().map((a, i) => {
             const r = a.last_run;
             const state = runState(r);
             return (
-              <li
-                key={a.name}
-                style={{ ["--i" as string]: i }}
-                className={state === "ok" ? "done" : state}
-              >
-                <div className="pb-attempt-row">
-                  <span className="rd-attempt-dot" />
-                  <a
-                    className="rd-attempt-name"
-                    href={`vscode://file${a.path}`}
-                    title="Open in VS Code"
-                  >
+              <R.AttemptItem key={a.name} $i={i} $stacked>
+                <S.AttemptRow>
+                  <R.AttemptDot
+                    $state={state === "ok" ? "done" : state === "fail" ? "fail" : "none"}
+                  />
+                  <R.AttemptName href={`vscode://file${a.path}`} title="Open in VS Code">
                     {a.name}
-                  </a>
-                  <span className="rd-tag">{a.lang}</span>
+                  </R.AttemptName>
+                  <R.Tag>{a.lang}</R.Tag>
                   {r ? (
-                    <span
-                      className={`rd-tag ${state === "ok" ? "ok" : "bad"}`}
-                      title={`last run ${r.ts}`}
-                    >
+                    <R.Tag $tone={state === "ok" ? "ok" : "bad"} title={`last run ${r.ts}`}>
                       {state === "ok" ? "✓" : "✗"} {r.passed}/{r.total}
                       {r.fit ? ` · ≈${r.fit}` : ""}
-                    </span>
+                    </R.Tag>
                   ) : (
-                    <span className="rd-tag">not run</span>
+                    <R.Tag>not run</R.Tag>
                   )}
-                  <Copy text={runCommand(a.path, root)} label="▶ run" />
-                  <a className="rd-vscode" href={`vscode://file${a.path}`} title="Open in VS Code">
+                  <Copy text={runCommand(a.path, root)} label="▶ run" inline />
+                  <R.VsCode href={`vscode://file${a.path}`} title="Open in VS Code">
                     ⧉ VS Code
-                  </a>
-                </div>
+                  </R.VsCode>
+                </S.AttemptRow>
                 {a.review && (
-                  <details className="review pb-review" open={i === 0}>
+                  <S.AttemptReview open={i === 0}>
                     <summary>📝 Tutor review</summary>
                     <Markdown text={a.review} path={p.readme_path} />
-                  </details>
+                  </S.AttemptReview>
                 )}
-              </li>
+              </R.AttemptItem>
             );
           })}
-        </ul>
-        <p className="muted small">
+        </R.AttemptList>
+        <MutedP $small>
           Want feedback on an attempt? In Claude Code: <code>/review</code>; it lands here.
-        </p>
-      </div>
+        </MutedP>
+      </Attempts>
     );
   } else {
     center = <ResourceList items={p.refs ?? []} title="Explanations elsewhere" />;
@@ -389,15 +393,15 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
         content: rows ? (
           <NavList groups={nav} placeholder="Filter problems…" />
         ) : (
-          <div className="loader small-loader" aria-label="loading" />
+          <Loader $small aria-label="loading" />
         ),
       }}
       right={{ title: "On this page", icon: "🧭", content: right }}
       footer={footer}
     >
-      <div className={`rd-center pb-center pb-view-${tab}`} ref={centerRef}>
+      <Center $narrow ref={centerRef}>
         {center}
-      </div>
+      </Center>
     </Workbench>
   );
 }
