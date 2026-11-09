@@ -1,0 +1,425 @@
+{
+  "version": 1,
+  "flags": {},
+  "pattern": "Pricing rules as strategies plus incremental aggregates: put each rule behind one interface as a pure function of (price, quantity), pick the applicable rule per line, and keep running totals updated by the delta of the one line that changed so reads are O(1). The same shape fits fee calculators, tax rules, shipping rates and scoring engines.",
+  "checks": [
+    {
+      "id": "req-cart-ops",
+      "type": "requirement",
+      "label": "Cart changes captured",
+      "keywords": [
+        "add",
+        "delete",
+        "remove",
+        "decrease"
+      ],
+      "sections": [
+        "functional"
+      ],
+      "tips": {
+        "nudge": "What can a shopper do to the contents of a cart?",
+        "hint": "Write requirements for adding a product and for removing all or some of it.",
+        "show": "F1: add_item adds a product (same SKU increases quantity). F2: delete_item removes a line or decreases its quantity."
+      }
+    },
+    {
+      "id": "req-total",
+      "type": "requirement",
+      "label": "Pricing the cart captured",
+      "keywords": [
+        "total",
+        "price the cart",
+        "amount due"
+      ],
+      "sections": [
+        "functional"
+      ],
+      "tips": {
+        "nudge": "What does the checkout page show at the bottom?",
+        "hint": "Add a requirement for the total price after promotions.",
+        "show": "F3: get_total_price returns the total after promotions, with a breakdown."
+      }
+    },
+    {
+      "id": "req-buy-n",
+      "type": "requirement",
+      "label": "Quantity-based deal captured",
+      "keywords": [
+        "free",
+        "buy n",
+        "2 + 1",
+        "2+1",
+        "bogo"
+      ],
+      "sections": [
+        "functional"
+      ],
+      "tips": {
+        "nudge": "One of the deals depends on how many units you buy.",
+        "hint": "Describe the 'buy some, get some free' rule precisely, including what happens with leftovers.",
+        "show": "F4: Buy N get M free on a SKU: in every group of N + M units, M are free."
+      }
+    },
+    {
+      "id": "req-percent",
+      "type": "requirement",
+      "label": "Price-based deal captured",
+      "keywords": [
+        "percent",
+        "%"
+      ],
+      "sections": [
+        "functional"
+      ],
+      "tips": {
+        "nudge": "The other deal takes a share off the price.",
+        "hint": "Describe the percentage rule and what it can target.",
+        "show": "F5: N% off a SKU or a category; optionally a cart-level percentage coupon."
+      }
+    },
+    {
+      "id": "req-read-cost",
+      "type": "requirement",
+      "label": "Read cost requirement stated",
+      "keywords": [
+        "o(1)",
+        "constant",
+        "incremental",
+        "cheap",
+        "fast",
+        "precomput",
+        "running"
+      ],
+      "sections": [
+        "non_functional"
+      ],
+      "tips": {
+        "nudge": "The total is shown on every page, but the cart rarely changes.",
+        "hint": "Add a non-functional requirement about how expensive reading the total may be.",
+        "show": "N1: get_total_price is O(1); totals are maintained incrementally on add/delete."
+      }
+    },
+    {
+      "id": "req-money-rules",
+      "type": "requirement",
+      "label": "Money and rounding pinned down",
+      "keywords": [
+        "cent",
+        "round",
+        "integer",
+        "decimal"
+      ],
+      "sections": [
+        "assumptions"
+      ],
+      "tips": {
+        "nudge": "What is 10% of 3.33, and how is 3.33 stored?",
+        "hint": "Write assumptions about the money type and the rounding rule.",
+        "show": "A1: integer cents, no floats. A2: percentages round half up to the cent."
+      }
+    },
+    {
+      "id": "req-combine-rules",
+      "type": "requirement",
+      "label": "Overlapping deals decided",
+      "keywords": [
+        "stack",
+        "combine",
+        "best",
+        "one promotion",
+        "at most one",
+        "overlap",
+        "priority"
+      ],
+      "sections": [
+        "assumptions"
+      ],
+      "tips": {
+        "nudge": "Two deals match the same apples. Now what?",
+        "hint": "Write an assumption about combining or choosing between promotions.",
+        "show": "A3: at most one item promotion per line, the best for the current quantity; a cart coupon applies after."
+      }
+    },
+    {
+      "id": "req-boundaries",
+      "type": "requirement",
+      "label": "Boundaries stated",
+      "keywords": [
+        "tax",
+        "shipping",
+        "payment",
+        "stock",
+        "inventory",
+        "currency"
+      ],
+      "sections": [
+        "out_of_scope"
+      ],
+      "tips": {
+        "nudge": "Which money-related things are other teams' problems?",
+        "hint": "List what the cart does not do.",
+        "show": "O1: tax, shipping, stock reservation, payment and multi-currency are out of scope."
+      }
+    },
+    {
+      "id": "api-add",
+      "type": "endpoint",
+      "label": "Adding defined",
+      "keywords": [
+        "add_item",
+        "additem",
+        "add item",
+        "add("
+      ],
+      "tips": {
+        "nudge": "Write the signature for putting something in the cart.",
+        "hint": "Name the method, its parameters (with defaults) and what it raises.",
+        "show": "ShoppingCart.add_item(product, quantity=1): ValueError if quantity < 1."
+      }
+    },
+    {
+      "id": "api-delete",
+      "type": "endpoint",
+      "label": "Removing defined",
+      "keywords": [
+        "delete_item",
+        "deleteitem",
+        "delete item",
+        "remove_item",
+        "remove"
+      ],
+      "tips": {
+        "nudge": "Write the signature for taking something out.",
+        "hint": "Cover removing a whole line and only some units, and the unknown-product case.",
+        "show": "ShoppingCart.delete_item(sku, quantity=None): KeyError for an unknown SKU."
+      }
+    },
+    {
+      "id": "api-total",
+      "type": "endpoint",
+      "label": "Reading the price defined",
+      "keywords": [
+        "get_total_price",
+        "gettotalprice",
+        "total"
+      ],
+      "tips": {
+        "nudge": "How does the page ask for the number at the bottom?",
+        "hint": "Define the read operation and its cost.",
+        "show": "ShoppingCart.get_total_price() -> cents, O(1); get_breakdown() for the details."
+      }
+    },
+    {
+      "id": "data-line",
+      "type": "entity",
+      "label": "Cart contents modelled",
+      "keywords": [
+        "line",
+        "cart item",
+        "cartitem",
+        "item"
+      ],
+      "tips": {
+        "nudge": "The cart isn't a list of products: what does it hold per product?",
+        "hint": "Model the per-product entry and the state it keeps.",
+        "show": "CartLine: product, quantity, cached subtotal and discount."
+      }
+    },
+    {
+      "id": "comp-promo-abstraction",
+      "type": "component",
+      "label": "An abstraction for deals",
+      "kinds": [
+        "interface",
+        "abstract"
+      ],
+      "keywords": [
+        "promotion",
+        "discount",
+        "pricing",
+        "rule",
+        "deal"
+      ],
+      "tips": {
+        "nudge": "Where would a third kind of deal plug in?",
+        "hint": "Add an interface or abstract class that every kind of deal implements.",
+        "show": "interface Promotion with discount_cents(unit_price, quantity) and applies_to(product)."
+      }
+    },
+    {
+      "id": "comp-buy-n",
+      "type": "component",
+      "label": "The quantity deal as a class",
+      "kinds": [
+        "class"
+      ],
+      "keywords": [
+        "buy",
+        "free",
+        "bogo",
+        "nget"
+      ],
+      "tips": {
+        "nudge": "Each kind of deal can be its own class.",
+        "hint": "Add the class for the buy-some-get-some-free rule.",
+        "show": "class BuyNGetMFree implements Promotion."
+      }
+    },
+    {
+      "id": "comp-percent",
+      "type": "component",
+      "label": "The percentage deal as a class",
+      "kinds": [
+        "class"
+      ],
+      "keywords": [
+        "percent"
+      ],
+      "tips": {
+        "nudge": "The other deal deserves its own class too.",
+        "hint": "Add the class for the percentage rule.",
+        "show": "class PercentOff implements Promotion (and PercentOffCoupon for the cart level)."
+      }
+    },
+    {
+      "id": "edge-implements",
+      "type": "edge",
+      "label": "Deals share one contract",
+      "from_kinds": [
+        "class"
+      ],
+      "to_kinds": [
+        "interface",
+        "abstract"
+      ],
+      "to_keywords": [
+        "promotion",
+        "discount",
+        "rule",
+        "deal"
+      ],
+      "tips": {
+        "nudge": "How does the cart treat all deals the same way?",
+        "hint": "Draw the 'implements' relationship from the concrete deals to the abstraction.",
+        "show": "BuyNGetMFree → Promotion and PercentOff → Promotion (implements)."
+      }
+    },
+    {
+      "id": "dd-discount-model",
+      "type": "decision",
+      "label": "How deal types vary",
+      "keywords": [
+        "discount",
+        "promotion",
+        "deal"
+      ],
+      "choice_keywords": [
+        "strategy",
+        "polymorph",
+        "interface"
+      ],
+      "tips": {
+        "nudge": "Compare a type field with a switch against something more open.",
+        "hint": "Write a deep dive on modelling discount types: options, choice, why.",
+        "show": "Strategy: a Promotion interface with one class per kind; the cart only calls discount_cents."
+      }
+    },
+    {
+      "id": "dd-read-cost",
+      "type": "decision",
+      "label": "How the total stays cheap",
+      "keywords": [
+        "total",
+        "read",
+        "recompute",
+        "cache"
+      ],
+      "choice_keywords": [
+        "incremental",
+        "running",
+        "cache",
+        "maintain",
+        "delta"
+      ],
+      "tips": {
+        "nudge": "When is the work done: on every read, or when the cart changes?",
+        "hint": "Write a deep dive on computing the total and its complexity.",
+        "show": "Incremental: each line caches its price; the cart keeps running totals updated by the changed line's delta; reads are O(1)."
+      }
+    },
+    {
+      "id": "dd-stacking",
+      "type": "decision",
+      "label": "Overlapping deals resolved",
+      "keywords": [
+        "stack",
+        "combine",
+        "overlap",
+        "several",
+        "best",
+        "multiple"
+      ],
+      "tips": {
+        "nudge": "20% off apples and 2 + 1 on apples: what does the shopper pay for 3?",
+        "hint": "Write a deep dive on stacking vs choosing one promotion.",
+        "show": "No stacking per line: the best item promotion for the current quantity, then one cart coupon."
+      }
+    },
+    {
+      "id": "wrap-future",
+      "type": "wrapup",
+      "label": "What changes next",
+      "key": "future",
+      "tips": {
+        "nudge": "Marketing already has two more ideas.",
+        "hint": "Say how new promotion types and combinable deals would fit.",
+        "show": "Fixed-amount coupons and buy-A-get-B as new Promotion classes; a stacking policy object; persisted carts."
+      }
+    },
+    {
+      "id": "wrap-failures",
+      "type": "wrapup",
+      "label": "Bad input and broken invariants",
+      "key": "failures",
+      "tips": {
+        "nudge": "What if someone deletes a product that isn't there, or adds 0?",
+        "hint": "Describe errors and how the running totals stay correct.",
+        "show": "Invalid input raises; totals change only in one private method, so they can't be half-updated."
+      }
+    },
+    {
+      "id": "sig-core",
+      "type": "signature",
+      "label": "Core API in code",
+      "names": [
+        "ShoppingCart.add_item",
+        "ShoppingCart.delete_item",
+        "ShoppingCart.get_total_price",
+        "Promotion",
+        "BuyNGetMFree(Promotion)",
+        "PercentOff(Promotion)"
+      ],
+      "tips": {
+        "nudge": "Write the public API as Python signatures.",
+        "hint": "Cover the cart's three operations and the promotion types.",
+        "show": "class ShoppingCart: add_item, delete_item, get_total_price; class Promotion(ABC); class BuyNGetMFree(Promotion); class PercentOff(Promotion)."
+      }
+    },
+    {
+      "id": "sig-values",
+      "type": "signature",
+      "label": "Values callers can't corrupt",
+      "names": [
+        "Product",
+        "LineView",
+        "PriceBreakdown",
+        "ShoppingCart.lines"
+      ],
+      "tips": {
+        "nudge": "What does a caller get back when it asks what's in the cart?",
+        "hint": "Declare the read-only values the cart hands out.",
+        "show": "Frozen dataclasses Product, LineView and PriceBreakdown; ShoppingCart.lines() returns LineViews."
+      }
+    }
+  ]
+}

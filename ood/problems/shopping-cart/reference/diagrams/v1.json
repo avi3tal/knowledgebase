@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "why": "Ownership first: the cart holds items of products. Each item carries a DiscountType, and get_total_price loops over every item with an if/elif per type, recomputing everything on every read.",
+  "nodes": [
+    {
+      "id": "shopper",
+      "kind": "actor",
+      "label": "Shopper",
+      "x": 40,
+      "y": 200
+    },
+    {
+      "id": "cart",
+      "kind": "class",
+      "label": "ShoppingCart",
+      "x": 260,
+      "y": 200
+    },
+    {
+      "id": "item",
+      "kind": "class",
+      "label": "CartItem",
+      "x": 480,
+      "y": 200
+    },
+    {
+      "id": "product",
+      "kind": "class",
+      "label": "Product",
+      "x": 700,
+      "y": 200
+    },
+    {
+      "id": "dtype",
+      "kind": "enum",
+      "label": "DiscountType",
+      "x": 480,
+      "y": 360
+    }
+  ],
+  "edges": [
+    {
+      "from": "shopper",
+      "to": "cart",
+      "label": "add / delete / total"
+    },
+    {
+      "from": "cart",
+      "to": "item",
+      "label": "has many"
+    },
+    {
+      "from": "item",
+      "to": "product",
+      "label": "of"
+    },
+    {
+      "from": "item",
+      "to": "dtype",
+      "label": "discount kind"
+    }
+  ]
+}

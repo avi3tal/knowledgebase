@@ -1,0 +1,104 @@
+{
+  "version": 2,
+  "why": "N2: in v1 every new promotion meant another elif inside the cart. Promotions become strategies behind one Promotion interface; a PromotionCatalog decides which apply to a product, and each CartLine asks them for its discount.",
+  "nodes": [
+    {
+      "id": "shopper",
+      "kind": "actor",
+      "label": "Shopper",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "cart",
+      "kind": "class",
+      "label": "ShoppingCart",
+      "x": 260,
+      "y": 220
+    },
+    {
+      "id": "line",
+      "kind": "class",
+      "label": "CartLine",
+      "x": 480,
+      "y": 220
+    },
+    {
+      "id": "product",
+      "kind": "class",
+      "label": "Product",
+      "x": 700,
+      "y": 220
+    },
+    {
+      "id": "catalog",
+      "kind": "class",
+      "label": "PromotionCatalog",
+      "x": 260,
+      "y": 400
+    },
+    {
+      "id": "promo",
+      "kind": "interface",
+      "label": "Promotion",
+      "x": 480,
+      "y": 400
+    },
+    {
+      "id": "bngm",
+      "kind": "class",
+      "label": "BuyNGetMFree",
+      "x": 360,
+      "y": 560
+    },
+    {
+      "id": "pct",
+      "kind": "class",
+      "label": "PercentOff",
+      "x": 600,
+      "y": 560
+    }
+  ],
+  "edges": [
+    {
+      "from": "shopper",
+      "to": "cart",
+      "label": "add / delete / total"
+    },
+    {
+      "from": "cart",
+      "to": "line",
+      "label": "has many"
+    },
+    {
+      "from": "line",
+      "to": "product",
+      "label": "of"
+    },
+    {
+      "from": "cart",
+      "to": "catalog",
+      "label": "finds promotions"
+    },
+    {
+      "from": "catalog",
+      "to": "promo",
+      "label": "has many"
+    },
+    {
+      "from": "line",
+      "to": "promo",
+      "label": "priced by"
+    },
+    {
+      "from": "bngm",
+      "to": "promo",
+      "label": "implements"
+    },
+    {
+      "from": "pct",
+      "to": "promo",
+      "label": "implements"
+    }
+  ]
+}

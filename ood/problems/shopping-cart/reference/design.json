@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "scope": {
+    "functional": [
+      {
+        "id": "F1",
+        "text": "add_item(product, quantity=1): add a product to the cart; adding a SKU that is already there increases its quantity."
+      },
+      {
+        "id": "F2",
+        "text": "delete_item(sku, quantity=None): remove the whole line, or decrease its quantity; deleting more than the cart holds empties the line; an unknown SKU is an error."
+      },
+      {
+        "id": "F3",
+        "text": "get_total_price(): the total after promotions, plus a breakdown (subtotal, item discounts, coupon discount)."
+      },
+      {
+        "id": "F4",
+        "text": "Buy N, get M free on a SKU (e.g. 2 + 1): in every group of N + M units, M are free."
+      },
+      {
+        "id": "F5",
+        "text": "Percentage off (e.g. 10% off) a SKU or a whole category; optionally a cart-level percentage coupon."
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "N1",
+        "text": "Reading the total is O(1): totals are maintained incrementally on add and delete, never recomputed on read."
+      },
+      {
+        "id": "N2",
+        "text": "Open for extension: a new promotion type is a new class; the cart is not edited."
+      },
+      {
+        "id": "N3",
+        "text": "Encapsulation: cart lines and running totals are internal; callers get read-only views and value objects."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Money is integer cents in one currency; no floats anywhere."
+      },
+      {
+        "id": "A2",
+        "text": "Percentages round half up to the cent, once per line and once for the coupon."
+      },
+      {
+        "id": "A3",
+        "text": "At most one item promotion per line: if several match, the one that gives the biggest discount for the current quantity wins (no stacking); a cart coupon applies after item promotions."
+      },
+      {
+        "id": "A4",
+        "text": "The unit price is snapshotted when a SKU is first added; promotions don't change while the cart is open."
+      },
+      {
+        "id": "A5",
+        "text": "One shopper edits a cart at a time (single-threaded per cart)."
+      }
+    ],
+    "out_of_scope": [
+      {
+        "id": "O1",
+        "text": "Tax, shipping, stock reservation, payment and multi-currency."
+      },
+      {
+        "id": "O2",
+        "text": "Cross-product deals (buy A get B) and fixed-amount coupons: designed for, not built."
+      }
+    ]
+  },
+  "api": [
+    {
+      "id": "E1",
+      "method": "POST",
+      "path": "ShoppingCart.add_item(product, quantity=1)",
+      "request": "Product, quantity >= 1",
+      "response": "None",
+      "notes": "ValueError if quantity < 1. Re-prices only the touched line: O(k) for k promotions matching that product."
+    },
+    {
+      "id": "E2",
+      "method": "DELETE",
+      "path": "ShoppingCart.delete_item(sku, quantity=None)",
+      "request": "SKU, optional quantity",
+      "response": "None",
+      "notes": "KeyError (ItemNotInCart) for an unknown SKU; quantity None or >= line quantity removes the line."
+    },
+    {
+      "id": "E3",
+      "method": "GET",
+      "path": "ShoppingCart.get_total_price()",
+      "request": "",
+      "response": "total in cents",
+      "notes": "O(1): reads the running totals and applies the coupon."
+    },
+    {
+      "id": "E4",
+      "method": "GET",
+      "path": "ShoppingCart.get_breakdown()",
+      "request": "",
+      "response": "PriceBreakdown(subtotal, item_discount, coupon_discount, total)",
+      "notes": "Immutable value object for the checkout page."
+    },
+    {
+      "id": "E5",
+      "method": "POST",
+      "path": "ShoppingCart.apply_coupon(coupon)",
+      "request": "CartPromotion",
+      "response": "None",
+      "notes": "One cart-level coupon at a time; replaces the previous one."
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "name": "Product",
+      "fields": "sku, name, unit_price_cents, category",
+      "store": "in memory",
+      "why": "Immutable value object (frozen dataclass): safe to share between carts."
+    },
+    {
+      "id": "D2",
+      "name": "CartLine (line item)",
+      "fields": "product, quantity, cached subtotal_cents, cached discount_cents, matching promotions",
+      "store": "in memory",
+      "why": "Internal to the cart; caches its own price so a read is free."
+    },
+    {
+      "id": "D3",
+      "name": "Promotion",
+      "fields": "BuyNGetMFree(sku, buy, free); PercentOff(percent, sku or category)",
+      "store": "in memory",
+      "why": "Strategy objects configured by the shop."
+    },
+    {
+      "id": "D4",
+      "name": "Running totals",
+      "fields": "_subtotal_cents, _item_discount_cents on the cart",
+      "store": "in memory",
+      "why": "Updated by the delta of the one line that changed."
+    }
+  ],
+  "deep_dives": [
+    {
+      "id": "DD1",
+      "title": "Modelling discount types",
+      "options": [
+        {
+          "name": "DiscountType enum + if/elif in get_total_price",
+          "pros": "one class, quick to write",
+          "cons": "every new promotion edits the cart; pricing logic is untestable on its own"
+        },
+        {
+          "name": "Strategy: a Promotion interface with one class per kind",
+          "pros": "open/closed, each rule tested alone, catalog decides which apply",
+          "cons": "a few more classes"
+        }
+      ],
+      "choice": "Strategy: Promotion interface with BuyNGetMFree and PercentOff, chosen per line by a PromotionCatalog",
+      "why": "The cart only asks a promotion for discount_cents(unit_price, quantity); a fixed-amount or bundle promotion is a new class. Each class is a pure function of price and quantity, so it is trivially unit-tested.",
+      "version": 2
+    },
+    {
+      "id": "DD2",
+      "title": "Making the total cheap to read",
+      "options": [
+        {
+          "name": "Recompute on every read",
+          "pros": "no cached state to get wrong",
+          "cons": "O(lines × promotions) on every page view"
+        },
+        {
+          "name": "Incremental running totals updated on add and delete",
+          "pros": "get_total_price is O(1); each change re-prices one line",
+          "cons": "must subtract the old line values before adding the new ones; needs a property test"
+        }
+      ],
+      "choice": "Incremental: each CartLine caches its subtotal and discount; on add/delete the cart subtracts the line's old values, re-prices that line and adds the new ones",
+      "why": "Writes are rare and touch one line; reads happen on every page. A randomised test asserts running totals == full recompute after thousands of operations.",
+      "version": 3
+    },
+    {
+      "id": "DD3",
+      "title": "When several promotions match (stacking)",
+      "options": [
+        {
+          "name": "Stack all matching promotions",
+          "pros": "generous",
+          "cons": "order-dependent results, discounts can exceed the price, hard to explain"
+        },
+        {
+          "name": "Best single item promotion per line, then one cart coupon",
+          "pros": "predictable, never negative, easy to explain on the receipt",
+          "cons": "re-evaluates k promotions when the quantity changes (k is tiny)"
+        }
+      ],
+      "choice": "No stacking on a line: pick the best item promotion for the current quantity; apply one cart-level coupon to the discounted subtotal",
+      "why": "A 20%-off and a 2 + 1 on the same apples: at 2 apples 20% wins, at 3 the free apple wins, so the choice is re-made per change. Clear rules beat clever ones on a receipt.",
+      "version": 3
+    },
+    {
+      "id": "DD4",
+      "title": "Money, rounding and visibility",
+      "options": [
+        {
+          "name": "float prices, public fields",
+          "pros": "short code",
+          "cons": "0.1 + 0.2 errors; callers can corrupt lines and totals"
+        },
+        {
+          "name": "int cents, round half up once per line; internal state behind methods and read-only views",
+          "pros": "exact, auditable, invariants protected",
+          "cons": "a little more ceremony"
+        }
+      ],
+      "choice": "Integer cents with half-up rounding; _lines and running totals are internal, lines() returns an immutable tuple of LineView",
+      "why": "Totals must match the receipt to the cent, and only the cart may change its own state, which is what keeps the running totals correct.",
+      "version": 3
+    }
+  ],
+  "wrapup": {
+    "bottlenecks": "None for a single cart: add/delete re-price one line (O(k) promotions), reads are O(1). Loading the promotion catalog per request is the real cost; cache it per process.",
+    "failures": "Invalid input (quantity < 1, unknown SKU) raises; the running totals are only changed through one private method so a failed operation can't leave them half-updated.",
+    "monitoring": "Log the promotion applied per line so a disputed receipt can be explained; alert when a discount exceeds a configured share of the price.",
+    "scale": "Many carts scale by keeping each cart independent (one per session) and the catalog read-only and shared.",
+    "future": "Fixed-amount coupons and buy-A-get-B bundles as new Promotion classes; a stacking policy object if marketing wants combinable deals; persist carts for logged-in users."
+  }
+}

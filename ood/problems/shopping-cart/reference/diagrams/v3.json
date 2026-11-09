@@ -1,0 +1,140 @@
+{
+  "version": 3,
+  "why": "N1, N3: v2 still summed every line on each read. Each CartLine now caches its subtotal and discount, and the cart keeps running totals updated by the delta of the line that changed, so get_total_price is O(1). A cart-level coupon is its own strategy (CartPromotion), and reads return an immutable PriceBreakdown.",
+  "nodes": [
+    {
+      "id": "shopper",
+      "kind": "actor",
+      "label": "Shopper",
+      "x": 40,
+      "y": 220
+    },
+    {
+      "id": "cart",
+      "kind": "class",
+      "label": "ShoppingCart",
+      "x": 260,
+      "y": 220
+    },
+    {
+      "id": "line",
+      "kind": "class",
+      "label": "CartLine",
+      "x": 480,
+      "y": 220
+    },
+    {
+      "id": "product",
+      "kind": "class",
+      "label": "Product",
+      "x": 700,
+      "y": 220
+    },
+    {
+      "id": "catalog",
+      "kind": "class",
+      "label": "PromotionCatalog",
+      "x": 260,
+      "y": 400
+    },
+    {
+      "id": "promo",
+      "kind": "interface",
+      "label": "Promotion",
+      "x": 480,
+      "y": 400
+    },
+    {
+      "id": "bngm",
+      "kind": "class",
+      "label": "BuyNGetMFree",
+      "x": 360,
+      "y": 560
+    },
+    {
+      "id": "pct",
+      "kind": "class",
+      "label": "PercentOff",
+      "x": 600,
+      "y": 560
+    },
+    {
+      "id": "cartpromo",
+      "kind": "interface",
+      "label": "CartPromotion",
+      "x": 40,
+      "y": 400
+    },
+    {
+      "id": "coupon",
+      "kind": "class",
+      "label": "PercentOffCoupon",
+      "x": 40,
+      "y": 560
+    },
+    {
+      "id": "breakdown",
+      "kind": "class",
+      "label": "PriceBreakdown",
+      "x": 700,
+      "y": 60
+    }
+  ],
+  "edges": [
+    {
+      "from": "shopper",
+      "to": "cart",
+      "label": "add / delete / total"
+    },
+    {
+      "from": "cart",
+      "to": "line",
+      "label": "has many (internal)"
+    },
+    {
+      "from": "line",
+      "to": "product",
+      "label": "of"
+    },
+    {
+      "from": "cart",
+      "to": "catalog",
+      "label": "finds promotions"
+    },
+    {
+      "from": "catalog",
+      "to": "promo",
+      "label": "has many"
+    },
+    {
+      "from": "line",
+      "to": "promo",
+      "label": "priced by (best one)"
+    },
+    {
+      "from": "bngm",
+      "to": "promo",
+      "label": "implements"
+    },
+    {
+      "from": "pct",
+      "to": "promo",
+      "label": "implements"
+    },
+    {
+      "from": "cart",
+      "to": "cartpromo",
+      "label": "applies coupon"
+    },
+    {
+      "from": "coupon",
+      "to": "cartpromo",
+      "label": "implements"
+    },
+    {
+      "from": "cart",
+      "to": "breakdown",
+      "label": "returns"
+    }
+  ]
+}
