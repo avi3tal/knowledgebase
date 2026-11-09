@@ -80,14 +80,6 @@ export const LbCenter = styled.div`
   max-width: ${t.readW};
   margin: 0 auto;
   animation: ${lbRise} 0.3s ease both;
-  /* TODO(lead): figures / traces are still matched by their old class names until they migrate */
-  .fig:not(.expanded),
-  .trace {
-    --wide: min(1040px, calc(100cqw - 48px));
-    width: var(--wide);
-    max-width: none;
-    margin-left: calc(50% - var(--wide) / 2);
-  }
 `;
 
 /** Page footer line: counts separated by gaps. */

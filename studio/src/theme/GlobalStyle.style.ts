@@ -59,6 +59,11 @@ export const GlobalStyle = createGlobalStyle`
     font-family: ${t.fontMono};
     font-size: 0.88em;
   }
+  :not(pre) > code {
+    background: ${t.panel2};
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
   button,
   select,
   input,
