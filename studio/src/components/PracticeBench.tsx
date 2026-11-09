@@ -5,16 +5,28 @@ import { api } from "../api";
 import type { Counts } from "../practice-bench";
 import { pct, withSession } from "../practice-bench";
 import { FOCUS_INFO, STATUS_LABEL, groupByStatus } from "../sessions";
+import { MutedP } from "../theme/primitives";
+import { t } from "../theme/theme";
+import * as S from "./PracticeBench.style";
 import type { NavGroup } from "./panes";
 
 /** Shared pieces of the Practice pages (problems, problem, progress, sessions) on the Workbench. */
 
 /** A command that copies itself on click. */
-export function Copy({ text, label }: { text: string; label?: string }) {
+export function Copy({
+  text,
+  label,
+  inline,
+}: {
+  text: string;
+  label?: string;
+  /** narrow form for attempt rows */
+  inline?: boolean;
+}) {
   const [done, setDone] = useState(false);
   return (
-    <code
-      className="cmd pb-cmd"
+    <S.Cmd
+      $inline={inline}
       title="click to copy"
       onClick={() => {
         void navigator.clipboard.writeText(text);
@@ -23,41 +35,52 @@ export function Copy({ text, label }: { text: string; label?: string }) {
       }}
     >
       {done ? "copied ✓" : (label ?? text)}
-    </code>
+    </S.Cmd>
   );
 }
 
 /** A stacked solved / failing / untried bar with a legend. */
-export function StatusBar({ c, legend = true }: { c: Counts; legend?: boolean }) {
+export function StatusBar({
+  c,
+  legend = true,
+  inline,
+  className,
+}: {
+  c: Counts;
+  legend?: boolean;
+  /** bar and legend in one row (workbench footers) */
+  inline?: boolean;
+  className?: string;
+}) {
   const w = (n: number) => `${c.total ? (100 * n) / c.total : 0}%`;
   return (
-    <div className="pb-statbar">
-      <div
-        className="pb-bar"
+    <S.StatBar $inline={inline} className={className}>
+      <S.Bar
+        $inline={inline}
         title={`${c.solved} solved · ${c.failing} failing · ${c.untried} untried`}
       >
-        <span className="solved" style={{ width: w(c.solved) }} />
-        <span className="failing" style={{ width: w(c.failing) }} />
-      </div>
+        <S.BarFill $kind="solved" $width={w(c.solved)} />
+        <S.BarFill $kind="failing" $width={w(c.failing)} />
+      </S.Bar>
       {legend && (
-        <div className="pb-legend">
-          <span className="solved">✓ {c.solved}</span>
-          <span className="failing">✗ {c.failing}</span>
-          <span className="untried">○ {c.untried}</span>
-          <span className="muted">{pct(c.solved, c.total)}%</span>
-        </div>
+        <S.Legend $inline={inline}>
+          <S.LegendItem $kind="solved">✓ {c.solved}</S.LegendItem>
+          <S.LegendItem $kind="failing">✗ {c.failing}</S.LegendItem>
+          <S.LegendItem $kind="untried">○ {c.untried}</S.LegendItem>
+          <S.LegendPct>{pct(c.solved, c.total)}%</S.LegendPct>
+        </S.Legend>
       )}
-    </div>
+    </S.StatBar>
   );
 }
 
 /** A labelled number in a page header. */
 export function Stat({ n, label, tone }: { n: ReactNode; label: string; tone?: string }) {
   return (
-    <span className={`pb-stat ${tone ?? ""}`}>
+    <S.StatBox $tone={tone}>
       <b>{n}</b>
       {label}
-    </span>
+    </S.StatBox>
   );
 }
 
@@ -90,10 +113,10 @@ export function useSessions(initial?: Session[], live?: Session) {
 }
 
 const STATUS_COLOR: Record<Session["status"], string> = {
-  active: "var(--accent)",
-  planned: "var(--warn)",
-  done: "var(--ok)",
-  abandoned: "var(--muted)",
+  active: t.accent,
+  planned: t.warn,
+  done: t.ok,
+  abandoned: t.muted,
 };
 
 /** Sessions grouped by status for the NavList; the current one highlighted. */
@@ -118,16 +141,16 @@ export function sessionNavGroups(sessions: Session[], current?: string): NavGrou
 /** The "plan with Claude" hint of the sessions pages. */
 export function PlanWithClaude() {
   return (
-    <section className="rd-card pb-claude">
+    <S.ClaudeCard>
       <h4>🤖 Plan with Claude</h4>
-      <p className="small">
+      <p>
         kb picks problems deterministically. For a plan that reasons about your strengths and
         weaknesses, run <code>/session</code> in Claude Code; it reads <code>kb feedback</code> and
         saves the plan here.
       </p>
-      <p className="small muted">
+      <MutedP $small>
         Review an attempt with <code>/review</code>.
-      </p>
-    </section>
+      </MutedP>
+    </S.ClaudeCard>
   );
 }

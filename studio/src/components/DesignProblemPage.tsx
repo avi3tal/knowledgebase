@@ -17,10 +17,16 @@ import type { DesignView } from "../route";
 import { designHref, designViewHref } from "../route";
 import type { TocEntry } from "../toc";
 import { extractToc } from "../toc";
+import { Button, Card, InlineError, Loader, MutedP, Pill } from "../theme/primitives";
+import { t } from "../theme/theme";
 import { Chips, OnThisPage, ProblemList } from "./DesignReaderPanes";
+import * as R from "./DesignReaderPanes.style";
+import * as S from "./DesignProblemPage.style";
+import * as G from "./SolutionArticle.style";
+import { ActionButton, PracticeStats } from "./PracticeBench.style";
 import { Markdown } from "./Markdown";
 import { RevealGate, SolutionArticle, VERSIONS_ID } from "./SolutionArticle";
-import { CENTER_SELECTOR, Workbench } from "./Workbench";
+import { CENTER_SELECTOR, Workbench, WorkbenchTab } from "./Workbench";
 import { Icon } from "./Icon";
 import { MetaTags, PageHeader, PrevNextFooter, StatusLabel, usePrevNextKeys } from "./PageHeader";
 import { SimilarProblemsCard } from "./PracticeLinks";
@@ -166,7 +172,7 @@ export function DesignProblemPage({
     <PageHeader
       title={p.title}
       meta={[
-        <span className={`pill ${p.difficulty}`}>{p.difficulty}</span>,
+        <Pill $difficulty={p.difficulty}>{p.difficulty}</Pill>,
         <StatusLabel status={p.status.status} />,
         p.minutes ? (
           <span>
@@ -185,23 +191,29 @@ export function DesignProblemPage({
         ),
       ]}
       actions={
-        <button className="btn primary" onClick={practise} disabled={busy}>
+        <Button $variant="primary" onClick={practise} disabled={busy}>
           <Icon name="play" size={13} /> {latest ? "Continue practising" : "Practise"}
-        </button>
+        </Button>
       }
     />
   );
 
+  const tabColor: Record<DesignView, string> = {
+    problem: t.accent,
+    solution: t.pattern,
+    attempts: t.ok,
+  };
   const tab = (v: DesignView, text: string, badge?: number, done?: boolean) => (
-    <a
+    <WorkbenchTab
       key={v}
-      className={`wb-tab rd-tab-${v} ${view === v ? "on" : ""} ${done ? "done" : ""}`}
+      on={view === v}
       href={designViewHref(p.subject, p.slug, v)}
-      aria-current={view === v ? "page" : undefined}
+      color={tabColor[v]}
+      badge={badge}
+      done={done}
     >
       {text}
-      {badge !== undefined && <span className="wb-tab-badge">{badge}</span>}
-    </a>
+    </WorkbenchTab>
   );
   const tabs = (
     <>
@@ -212,9 +224,9 @@ export function DesignProblemPage({
   );
 
   const practiceCard = (
-    <section className="rd-card rd-practice">
+    <S.PracticeCard>
       <h4>Practice</h4>
-      <div className="rd-practice-stats">
+      <PracticeStats>
         <span>
           <b>{p.attempts.length}</b> attempt{p.attempts.length === 1 ? "" : "s"}
         </span>
@@ -224,27 +236,27 @@ export function DesignProblemPage({
         <span>
           <b>{p.checks.length}</b> checks
         </span>
-      </div>
-      <a className="small" href={designViewHref(p.subject, p.slug, "attempts")}>
+      </PracticeStats>
+      <S.SmallLink href={designViewHref(p.subject, p.slug, "attempts")}>
         ＋ new attempt with a label
-      </a>
-    </section>
+      </S.SmallLink>
+    </S.PracticeCard>
   );
 
   const right = (
     <OnThisPage toc={toc} scroller={scroller}>
       {practiceCard}
       {technologies.length > 0 && (
-        <section className="rd-card">
+        <Card>
           <h4>Technologies</h4>
           <Chips ids={technologies} subject={p.subject} names={names} kind="tech" />
-        </section>
+        </Card>
       )}
       {patterns.length > 0 && (
-        <section className="rd-card">
+        <Card>
           <h4>Patterns</h4>
           <Chips ids={patterns} subject={p.subject} names={names} kind="pattern" />
-        </section>
+        </Card>
       )}
       <SimilarProblemsCard subject={p.subject} items={p.similar} names={names} />
     </OnThisPage>
@@ -262,47 +274,43 @@ export function DesignProblemPage({
   if (view === "problem") {
     center = (
       <>
-        <section className="rd-stages" aria-label="How you'll practise">
+        <S.Stages aria-label="How you'll practise">
           <h3>How you'll practise</h3>
           <ol>
             {stageSteps(p.stages, p.checks).map((s, i) => (
-              <li
-                key={s.stage}
-                className={`rd-step ${s.core ? "core" : ""}`}
-                style={{ ["--i" as string]: i }}
-              >
-                <span className="rd-step-icon">{STAGE_INFO[s.stage].icon}</span>
-                <span className="rd-step-label">{stageLabel(s.stage, p.stages)}</span>
-                <span className="rd-step-n">
+              <S.Step key={s.stage} $core={Boolean(s.core)} $i={i}>
+                <S.StepIcon>{STAGE_INFO[s.stage].icon}</S.StepIcon>
+                <S.StepLabel>{stageLabel(s.stage, p.stages)}</S.StepLabel>
+                <S.StepCount>
                   {s.checks ? `${s.checks} check${s.checks === 1 ? "" : "s"}` : "—"}
-                </span>
-              </li>
+                </S.StepCount>
+              </S.Step>
             ))}
           </ol>
           {p.stages.includes("parts") && (
-            <p className="muted small">
+            <MutedP $small>
               The core is <b>Decompose → Reduce</b>: split the problem into parts, solve each with
               its own options and sub-diagram, then merge them into one high-level design.
-            </p>
+            </MutedP>
           )}
-        </section>
-        <article className="rd-article">
+        </S.Stages>
+        <R.Article>
           <Markdown text={readme} path={p.readme_path} anchors />
-        </article>
+        </R.Article>
       </>
     );
   } else if (view === "solution") {
     center = !p.has_solution ? (
-      <section className="rd-gate">
-        <div className="rd-gate-icon">🚧</div>
+      <G.Gate>
+        <G.GateIcon>🚧</G.GateIcon>
         <h2>No worked solution yet</h2>
         <p>This problem has no reference solution. Practise it and compare with the rubric.</p>
-        <div className="rd-gate-actions">
-          <button className="rd-btn primary" onClick={practise} disabled={busy}>
+        <G.GateActions>
+          <ActionButton $variant="primary" onClick={practise} disabled={busy}>
             {practiseLabel}
-          </button>
-        </div>
-      </section>
+          </ActionButton>
+        </G.GateActions>
+      </G.Gate>
     ) : !open ? (
       <RevealGate
         onReveal={reveal}
@@ -311,9 +319,9 @@ export function DesignProblemPage({
         practiseLabel={practiseLabel}
       />
     ) : solError ? (
-      <div className="inline-error">⚠ Could not load the solution: {solError}</div>
+      <InlineError>⚠ Could not load the solution: {solError}</InlineError>
     ) : !solution ? (
-      <div className="loader" aria-label="loading" />
+      <Loader aria-label="loading" />
     ) : (
       <SolutionArticle
         solution={solution}
@@ -324,10 +332,10 @@ export function DesignProblemPage({
     );
   } else {
     center = (
-      <div className="rd-attempts">
-        <section className="rd-card rd-new-attempt">
+      <S.Attempts>
+        <R.NewAttempt>
           <h3>Start a new attempt</h3>
-          <div className="new-attempt">
+          <S.StartRow>
             <input
               value={label}
               placeholder="label (optional, kebab-case)"
@@ -335,40 +343,30 @@ export function DesignProblemPage({
               onChange={(e) => setLabel(e.target.value.toLowerCase())}
               onKeyDown={(e) => e.key === "Enter" && !badLabel && !busy && start(label)}
             />
-            <button className="primary" disabled={busy || badLabel} onClick={() => start(label)}>
+            <S.StartButton disabled={busy || badLabel} onClick={() => start(label)}>
               ＋ Start
-            </button>
-          </div>
-          {badLabel && (
-            <div className="inline-error">Use lowercase letters, digits and dashes.</div>
-          )}
-        </section>
+            </S.StartButton>
+          </S.StartRow>
+          {badLabel && <InlineError>Use lowercase letters, digits and dashes.</InlineError>}
+        </R.NewAttempt>
         <h3>Your attempts</h3>
         {p.attempts.length === 0 && (
-          <p className="muted">None yet. Start one above, or press ▶ Practice.</p>
+          <MutedP>None yet. Start one above, or press ▶ Practice.</MutedP>
         )}
-        <ul className="rd-attempt-list">
+        <R.AttemptList>
           {[...p.attempts].reverse().map((a, i) => (
-            <li key={a.name} style={{ ["--i" as string]: i }} className={a.submitted ? "done" : ""}>
-              <span className="rd-attempt-dot" />
-              <a className="rd-attempt-name" href={designHref(p.subject, p.slug, a.name)}>
-                {a.name}
-              </a>
-              {a.submitted ? (
-                <span className="rd-tag ok">✓ submitted</span>
-              ) : (
-                <span className="rd-tag">in progress</span>
-              )}
-              <a className="rd-vscode" href={`vscode://file${a.path}`} title="Open in VS Code">
+            <R.AttemptItem key={a.name} $i={i}>
+              <R.AttemptDot $state={a.submitted ? "done" : ""} />
+              <R.AttemptName href={designHref(p.subject, p.slug, a.name)}>{a.name}</R.AttemptName>
+              {a.submitted ? <R.Tag $tone="ok">✓ submitted</R.Tag> : <R.Tag>in progress</R.Tag>}
+              <R.VsCode href={`vscode://file${a.path}`} title="Open in VS Code">
                 ⧉ VS Code
-              </a>
-              <a className="rd-open" href={designHref(p.subject, p.slug, a.name)}>
-                Open →
-              </a>
-            </li>
+              </R.VsCode>
+              <R.OpenLink href={designHref(p.subject, p.slug, a.name)}>Open →</R.OpenLink>
+            </R.AttemptItem>
           ))}
-        </ul>
-      </div>
+        </R.AttemptList>
+      </S.Attempts>
     );
   }
 
@@ -394,10 +392,10 @@ export function DesignProblemPage({
       right={{ title: "On this page", icon: "🧭", content: right }}
       footer={footer}
     >
-      <div className={`rd-center rd-view-${view}`} ref={centerRef}>
-        {startError && <div className="inline-error">⚠ {startError}</div>}
+      <R.Center ref={centerRef}>
+        {startError && <InlineError>⚠ {startError}</InlineError>}
         {center}
-      </div>
+      </R.Center>
     </Workbench>
   );
 }

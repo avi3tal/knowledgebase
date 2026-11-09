@@ -10,6 +10,8 @@ import {
   partToDiagram,
   sortVersions,
 } from "../design";
+import { Loader, Muted } from "../theme/primitives";
+import * as S from "./DesignReference.style";
 import { DiagramCanvas } from "./DiagramCanvas";
 import { VersionPills } from "./DesignHighLevel";
 import { Markdown } from "./Markdown";
@@ -27,27 +29,27 @@ export function diagramFence(ref: Pick<Ref, "diagrams" | "design">, height = 340
     if (v) {
       const idx = diagrams.findIndex((d) => d.version === Number(v[1]));
       const d = diagrams[idx];
-      if (!d) return <div className="callout small">Diagram {name} is missing.</div>;
+      if (!d) return <S.Callout>Diagram {name} is missing.</S.Callout>;
       const hl = newParts(diffDiagrams(diagrams[idx - 1] ?? null, d), idx === 0);
       return (
-        <figure className="md-diagram">
+        <S.MdDiagram>
           <DiagramCanvas diagram={d} highlight={hl} height={height} />
           <figcaption>
-            <span className="why-tag">v{d.version}</span> {d.why}
+            <S.WhyTag>v{d.version}</S.WhyTag> {d.why}
           </figcaption>
-        </figure>
+        </S.MdDiagram>
       );
     }
     const p = /^part:(.+)$/.exec(name);
     const part = p ? (ref.design.parts ?? []).find((x) => x.id === p[1]) : undefined;
-    if (!part) return <div className="callout small">Diagram {name} is missing.</div>;
+    if (!part) return <S.Callout>Diagram {name} is missing.</S.Callout>;
     return (
-      <figure className="md-diagram">
+      <S.MdDiagram>
         <DiagramCanvas diagram={partToDiagram(part)} height={Math.round(height * 0.75)} />
         <figcaption>
-          <span className="why-tag">{part.id}</span> {part.title}
+          <S.WhyTag>{part.id}</S.WhyTag> {part.title}
         </figcaption>
-      </figure>
+      </S.MdDiagram>
     );
   };
 }
@@ -91,27 +93,27 @@ export function DesignReferenceView({
 
   if (error) {
     return (
-      <div className="callout">
+      <S.Notice>
         {error.includes("409") ? "Submit your attempt to unlock the reference." : error}
-      </div>
+      </S.Notice>
     );
   }
-  if (!ref) return <div className="loader" aria-label="loading" />;
+  if (!ref) return <Loader aria-label="loading" />;
   return (
-    <div className="ref-view">
-      <section className="pattern-card">
-        <span className="pattern-kicker">🧠 Transferable pattern</span>
+    <S.RefView>
+      <S.PatternCard>
+        <S.PatternKicker>🧠 Transferable pattern</S.PatternKicker>
         <p>{ref.pattern}</p>
-      </section>
+      </S.PatternCard>
 
       <section>
         <h3>🗺️ Reference diagrams</h3>
         <VersionPills versions={diagrams.map((d) => d.version)} shown={shown} onShow={setShown} />
         {diagram && (
           <>
-            <p className="why-read">
-              <span className="why-tag">why v{diagram.version}?</span> {diagram.why}
-            </p>
+            <S.WhyRead>
+              <S.WhyTag>why v{diagram.version}?</S.WhyTag> {diagram.why}
+            </S.WhyRead>
             <DiagramCanvas key={shown} diagram={diagram} highlight={highlight} height={420} />
           </>
         )}
@@ -120,47 +122,49 @@ export function DesignReferenceView({
       {ref.estimates.length > 0 && (
         <section>
           <h3>🧮 Reference estimates</h3>
-          <table className="sheet readonly">
+          <S.Sheet>
             <tbody>
               {ref.estimates.map((e) => (
-                <tr key={e.name}>
-                  <td className="mono">{e.name}</td>
-                  <td className="mono muted">{e.formula}</td>
-                  <td className="num">
-                    <b>{formatSI(e.value)}</b> <span className="muted">{e.unit}</span>
-                  </td>
-                </tr>
+                <S.Row key={e.name}>
+                  <S.Cell $mono>{e.name}</S.Cell>
+                  <S.Cell $mono $muted>
+                    {e.formula}
+                  </S.Cell>
+                  <S.Cell $num>
+                    <b>{formatSI(e.value)}</b> <Muted>{e.unit}</Muted>
+                  </S.Cell>
+                </S.Row>
               ))}
             </tbody>
-          </table>
+          </S.Sheet>
         </section>
       )}
 
       <section>
         <h3>✅ The answer per check</h3>
-        <ul className="answers">
+        <S.Answers>
           {check.checks.map((c) => (
-            <li key={c.id} className={c.passed ? "pass" : "fail"}>
-              <span className="cl-mark">{c.passed ? "✓" : "✗"}</span>
+            <S.Answer key={c.id}>
+              <S.Mark $pass={c.passed}>{c.passed ? "✓" : "✗"}</S.Mark>
               <div>
                 <b>{c.label}</b>{" "}
-                <span className="muted small">
+                <Muted $small>
                   {STAGE_INFO[c.stage].icon} {STAGE_INFO[c.stage].label}
-                </span>
+                </Muted>
                 <div>{ref.tips[c.id] ?? "—"}</div>
               </div>
-            </li>
+            </S.Answer>
           ))}
-        </ul>
+        </S.Answers>
       </section>
 
-      <section className="walkthrough">
+      <S.Walkthrough>
         <Markdown
           text={ref.walkthrough}
           path={`${subject}/problems/${slug}/reference.md`}
           fence={fence}
         />
-      </section>
-    </div>
+      </S.Walkthrough>
+    </S.RefView>
   );
 }

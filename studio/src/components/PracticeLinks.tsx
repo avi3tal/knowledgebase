@@ -2,6 +2,9 @@ import type { SimilarProblem, TopicProblem } from "../api";
 import { ROLE_LABEL, groupByRole, topicPageHref } from "../learn-bench";
 import { STATUS_ICON } from "../reader";
 import { problemHref } from "../route";
+import { Card, Muted } from "../theme/primitives";
+import { Badge } from "./PracticeBench.style";
+import * as S from "./PracticeLinks.style";
 
 /** Learn -> Practice: the problems that use a topic, grouped by how they use it. */
 export function TopicProblemList({
@@ -20,35 +23,31 @@ export function TopicProblemList({
   return (
     <>
       {groups.map((g) => (
-        <div key={g.role} className="lb-role">
+        <S.Role key={g.role}>
           {roles && (
             <h3>
-              {ROLE_LABEL[g.role]} <span className="muted small">{g.items.length}</span>
+              {ROLE_LABEL[g.role]} <Muted $small>{g.items.length}</Muted>
             </h3>
           )}
-          <ul className="lb-problem-grid lb-problem-rich">
+          <S.ProblemGrid>
             {g.items.map((p, i) => (
-              <li
-                key={p.slug}
-                className={`lb-diff-${p.difficulty}`}
-                style={{ ["--i" as string]: i }}
-              >
+              <S.ProblemItem key={p.slug} $difficulty={p.difficulty} $i={i}>
                 <a href={problemHref(subject, p.slug)}>
-                  <span className="lb-prob-top">
+                  <S.ProbTop>
                     {p.status && <span title={p.status}>{STATUS_ICON[p.status]}</span>}
-                    <span className="lb-prob-title">{p.title}</span>
-                    <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
-                  </span>
+                    <S.ProbTitle>{p.title}</S.ProbTitle>
+                    <Badge $difficulty={p.difficulty}>{p.difficulty}</Badge>
+                  </S.ProbTop>
                   {(p.other_topics ?? []).length > 0 && (
-                    <span className="lb-prob-with muted small">
+                    <S.ProbWith>
                       with {(p.other_topics ?? []).map((t) => names[t] ?? t).join(" · ")}
-                    </span>
+                    </S.ProbWith>
                   )}
                 </a>
-              </li>
+              </S.ProblemItem>
             ))}
-          </ul>
-        </div>
+          </S.ProblemGrid>
+        </S.Role>
       ))}
     </>
   );
@@ -66,18 +65,13 @@ export function CoTopics({
 }) {
   if (items.length === 0) return null;
   return (
-    <div className="chips lb-links">
+    <S.Links>
       {items.slice(0, 16).map((c) => (
-        <a
-          key={c.id}
-          className="lb-link"
-          href={topicPageHref(subject, c.id)}
-          title={`${c.count} shared problems`}
-        >
-          {names[c.id] ?? c.id} <span className="lb-link-tag">{c.count}</span>
-        </a>
+        <S.Link key={c.id} href={topicPageHref(subject, c.id)} title={`${c.count} shared problems`}>
+          {names[c.id] ?? c.id} <S.LinkTag>{c.count}</S.LinkTag>
+        </S.Link>
       ))}
-    </div>
+    </S.Links>
   );
 }
 
@@ -93,9 +87,9 @@ export function SimilarProblemsCard({
 }) {
   if (!items || items.length === 0) return null;
   return (
-    <section className="rd-card">
+    <Card>
       <h4>Similar problems</h4>
-      <ul className="lb-similar">
+      <S.Similar>
         {items.map((s) => (
           <li key={s.slug}>
             <a
@@ -103,12 +97,12 @@ export function SimilarProblemsCard({
               title={`shares ${s.shared.map((t) => names[t] ?? t).join(", ")}`}
             >
               <span title={s.status}>{STATUS_ICON[s.status]}</span> {s.title}{" "}
-              <span className={`badge ${s.difficulty}`}>{s.difficulty}</span>
+              <Badge $difficulty={s.difficulty}>{s.difficulty}</Badge>
             </a>
-            <span className="muted small"> {s.shared.map((t) => names[t] ?? t).join(" · ")}</span>
+            <Muted $small> {s.shared.map((t) => names[t] ?? t).join(" · ")}</Muted>
           </li>
         ))}
-      </ul>
-    </section>
+      </S.Similar>
+    </Card>
   );
 }

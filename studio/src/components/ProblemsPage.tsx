@@ -19,8 +19,12 @@ import type { NavGroup } from "./panes";
 import { NavList } from "./panes";
 import { StatusBar } from "./PracticeBench";
 import { Ring } from "./Ring";
-import { Workbench } from "./Workbench";
-import { PageHeader } from "./PageHeader";
+import { Workbench, WorkbenchTab } from "./Workbench";
+import { Card, Grow, Muted, MutedP, Tinted } from "../theme/primitives";
+import { t as tk } from "../theme/theme";
+import { Badge, Center, Empty, EmptyIcon, FooterRow, Side } from "./PracticeBench.style";
+import * as S from "./ProblemsPage.style";
+import { PageHeader, TitleSuffix } from "./PageHeader";
 
 const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 } as const;
 const STATUS_LABEL = { solved: "✓ solved", failing: "✗ failing", untried: "· untried" } as const;
@@ -124,7 +128,7 @@ export function ProblemsPage(props: {
       groups.push({
         key: "_other",
         label: "Other tags",
-        color: "var(--muted)",
+        color: tk.muted,
         items: other.map((t) => ({
           id: t,
           title: names[t] ?? t,
@@ -141,13 +145,13 @@ export function ProblemsPage(props: {
       title={
         <>
           Problems
-          {filter.topic && <span className="ph-title-sub"> · {topicName(filter.topic)}</span>}
+          {filter.topic && <TitleSuffix> · {topicName(filter.topic)}</TitleSuffix>}
         </>
       }
       meta={[
         <span>{all.total} problems</span>,
-        <span className="status solved">{all.solved} solved</span>,
-        all.failing > 0 && <span className="status failing">{all.failing} failing</span>,
+        <Tinted $tone="ok">{all.solved} solved</Tinted>,
+        all.failing > 0 && <Tinted $tone="bad">{all.failing} failing</Tinted>,
         <span>{all.untried} not started</span>,
       ]}
       actions={<Ring solved={all.solved} failing={all.failing} total={all.total} size={44} />}
@@ -155,15 +159,15 @@ export function ProblemsPage(props: {
   );
 
   const tab = (d: Difficulty | "", label: string, n: number) => (
-    <a
+    <WorkbenchTab
       key={d || "all"}
-      className={`wb-tab pb-tab-${d || "all"} ${filter.difficulty === d ? "on" : ""}`}
+      on={filter.difficulty === d}
       href={problemsHref(subject, { topic: filter.topic, difficulty: d })}
-      aria-current={filter.difficulty === d ? "page" : undefined}
+      color={d ? tk[d] : undefined}
+      badge={n}
     >
       {label}
-      <span className="wb-tab-badge">{n}</span>
-    </a>
+    </WorkbenchTab>
   );
   const tabs = (
     <>
@@ -173,60 +177,56 @@ export function ProblemsPage(props: {
   );
 
   const right = (
-    <div className="pb-side">
-      <section className="rd-card pb-summary">
+    <Side>
+      <Card>
         <h4>By difficulty</h4>
         {DIFFICULTIES.map((d) => (
-          <a
-            key={d}
-            className={`pb-diff-row ${d}`}
-            href={problemsHref(subject, { topic: "", difficulty: d })}
-          >
-            <span className={`badge ${d}`}>{d}</span>
+          <S.DiffRow key={d} href={problemsHref(subject, { topic: "", difficulty: d })}>
+            <S.DiffBadge $difficulty={d}>{d}</S.DiffBadge>
             <StatusBar c={byDiff[d]} legend={false} />
-            <span className="pb-num">
+            <S.Num>
               {byDiff[d].solved}/{byDiff[d].total}
-            </span>
-          </a>
+            </S.Num>
+          </S.DiffRow>
         ))}
-      </section>
-      <section className="rd-card">
+      </Card>
+      <Card>
         <h4>By status</h4>
         <StatusBar c={all} />
-      </section>
-      <section className="rd-card pb-next">
+      </Card>
+      <S.NextCard>
         <h4>🎯 Next to practise</h4>
-        {next.length === 0 && <p className="muted small">Everything is tried. Nice.</p>}
+        {next.length === 0 && <MutedP $small>Everything is tried. Nice.</MutedP>}
         <ol>
           {next.map(({ row: r, topic }, i) => (
-            <li key={r.slug} style={{ ["--i" as string]: i }}>
+            <S.NextItem key={r.slug} $i={i}>
               <a href={problemHref(subject, r.slug)}>{r.title}</a>
-              <span className={`badge ${r.difficulty}`}>{r.difficulty}</span>
-              <div className="muted small">
+              <Badge $difficulty={r.difficulty}>{r.difficulty}</Badge>
+              <Muted as="div" $small>
                 {topic ? `weak spot: ${topicName(topic)}` : "fresh ground"}
-              </div>
-            </li>
+              </Muted>
+            </S.NextItem>
           ))}
         </ol>
-      </section>
-      <p className="muted small">
+      </S.NextCard>
+      <MutedP $small>
         Plan a set from these in <a href="#/sessions">🎯 Sessions</a>, or ask Claude Code:{" "}
         <code>/session</code>.
-      </p>
-    </div>
+      </MutedP>
+    </Side>
   );
 
   const footer = (
-    <div className="pb-footer">
+    <FooterRow>
       <span>
         Showing <b>{shown.length}</b> / {rows.length}
       </span>
       {(filter.topic || filter.difficulty || status || query) && (
-        <span className="pb-filters">
-          {filter.topic && <span className="pb-pill">{topicName(filter.topic)}</span>}
-          {filter.difficulty && <span className="pb-pill">{filter.difficulty}</span>}
-          {status && <span className="pb-pill">{status}</span>}
-          {query && <span className="pb-pill">“{query}”</span>}
+        <S.Filters>
+          {filter.topic && <S.FilterPill>{topicName(filter.topic)}</S.FilterPill>}
+          {filter.difficulty && <S.FilterPill>{filter.difficulty}</S.FilterPill>}
+          {status && <S.FilterPill>{status}</S.FilterPill>}
+          {query && <S.FilterPill>“{query}”</S.FilterPill>}
           <a
             href={problemsHref(subject, { topic: "", difficulty: "" })}
             onClick={() => {
@@ -236,13 +236,11 @@ export function ProblemsPage(props: {
           >
             clear filters
           </a>
-        </span>
+        </S.Filters>
       )}
-      <span className="grow" />
-      <span className="muted">
-        {design ? "rows open the design reader" : "rows open the problem page"}
-      </span>
-    </div>
+      <Grow />
+      <Muted>{design ? "rows open the design reader" : "rows open the problem page"}</Muted>
+    </FooterRow>
   );
 
   return (
@@ -258,10 +256,9 @@ export function ProblemsPage(props: {
       right={{ title: "Summary", icon: "📊", content: right }}
       footer={footer}
     >
-      <div className="pb-center pb-problems">
-        <div className="pb-toolbar">
-          <input
-            className="rd-filter pb-search"
+      <Center>
+        <S.Toolbar>
+          <S.Search
             type="search"
             placeholder="Search problems…"
             aria-label="Search problems"
@@ -269,27 +266,28 @@ export function ProblemsPage(props: {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Escape" && setQuery("")}
           />
-          <div className="pb-seg" role="group" aria-label="status">
+          <S.Seg role="group" aria-label="status">
             {(["", ...STATUSES] as const).map((s) => (
-              <button
+              <S.SegButton
                 key={s || "any"}
-                className={`pb-seg-btn ${s} ${status === s ? "on" : ""}`}
+                $kind={s}
+                $on={status === s}
                 onClick={() => setStatus(s)}
                 aria-pressed={status === s}
               >
                 {s ? `${STATUS_ICON[s]} ${s}` : "any status"}
-              </button>
+              </S.SegButton>
             ))}
-          </div>
-        </div>
+          </S.Seg>
+        </S.Toolbar>
         {shown.length === 0 ? (
-          <div className="pb-empty">
-            <div className="pb-empty-icon">🔍</div>
+          <Empty>
+            <EmptyIcon>🔍</EmptyIcon>
             <p>No problem matches these filters.</p>
-          </div>
+          </Empty>
         ) : (
-          <div className="pb-table-wrap">
-            <table className="problems-table pb-table">
+          <S.TableWrap>
+            <S.Table>
               <thead>
                 <tr>
                   <th>Problem</th>
@@ -301,37 +299,33 @@ export function ProblemsPage(props: {
               </thead>
               <tbody>
                 {shown.map((r, i) => (
-                  <tr key={r.slug} className={r.status} style={{ ["--i" as string]: i }}>
+                  <S.Row key={r.slug} $status={r.status} $i={i}>
                     <td>
-                      <a className="pb-title" href={problemHref(subject, r.slug)}>
-                        {r.title}
-                      </a>
+                      <S.Title href={problemHref(subject, r.slug)}>{r.title}</S.Title>
                       {r.legacy_failing && (
-                        <span className="tag warn" title="an old solution of yours has a known bug">
-                          legacy bug
-                        </span>
+                        <S.Tag title="an old solution of yours has a known bug">legacy bug</S.Tag>
                       )}
-                      {r.complexity_miss && <span className="tag warn">complexity ✗</span>}
+                      {r.complexity_miss && <S.Tag>complexity ✗</S.Tag>}
                     </td>
                     <td>
-                      <span className={`badge ${r.difficulty}`}>{r.difficulty}</span>
+                      <Badge $difficulty={r.difficulty}>{r.difficulty}</Badge>
                     </td>
-                    <td className="muted small">
+                    <S.PatternCell>
                       {r.topics.map((t) => (
-                        <a key={t} href={topicLink(t)} className="topic-link">
+                        <S.TopicLink key={t} href={topicLink(t)}>
                           {topicName(t)}
-                        </a>
+                        </S.TopicLink>
                       ))}
-                    </td>
-                    <td className={`status ${r.status}`}>{STATUS_LABEL[r.status]}</td>
-                    <td className="muted">{r.attempts}</td>
-                  </tr>
+                    </S.PatternCell>
+                    <S.StatusCell $status={r.status}>{STATUS_LABEL[r.status]}</S.StatusCell>
+                    <S.CountCell>{r.attempts}</S.CountCell>
+                  </S.Row>
                 ))}
               </tbody>
-            </table>
-          </div>
+            </S.Table>
+          </S.TableWrap>
         )}
-      </div>
+      </Center>
     </Workbench>
   );
 }
