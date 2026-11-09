@@ -1,4 +1,5 @@
 import type { Topic } from "./api";
+import { PALETTE } from "./theme/theme";
 
 /** Presentation metadata for catalogs: groups, colours and icons (pure, tested in catalog.test.ts). */
 
@@ -116,17 +117,8 @@ const TOPIC_ICON: Record<string, string> = {
   "k8s-architecture": "☸️",
 };
 
-/** A fixed, colour-blind-aware-ish palette; groups get a stable colour by order of appearance. */
-export const PALETTE = [
-  "#6366f1", // indigo
-  "#0ea5e9", // sky
-  "#10b981", // emerald
-  "#f59e0b", // amber
-  "#ec4899", // pink
-  "#8b5cf6", // violet
-  "#14b8a6", // teal
-  "#f97316", // orange
-];
+/** Groups get a stable colour from the theme palette by order of appearance. */
+export { PALETTE };
 
 export function groupOf(t: Pick<Topic, "kind" | "group">): string {
   return t.group ?? t.kind;
@@ -168,7 +160,7 @@ export function groupTopics(topics: Topic[]): { group: string; color: string; to
     .sort(([a], [b]) => rank(a) - rank(b))
     .map(([group, ts], i) => ({
       group,
-      color: PALETTE[i % PALETTE.length] ?? "#6366f1",
+      color: PALETTE[i % PALETTE.length] ?? PALETTE[0],
       topics: [...ts].sort((a, b) => (a.order ?? 99) - (b.order ?? 99)),
     }));
 }

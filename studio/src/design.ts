@@ -1,3 +1,4 @@
+import { KIND_COLORS } from "./theme/theme";
 import type {
   DesignCheck,
   DesignDoc,
@@ -44,36 +45,46 @@ export interface KindStyle {
 
 export const KIND_STYLE: Record<string, KindStyle> = {
   // system-design
-  client: { icon: "💻", color: "#64748b", label: "Client", id: "client" },
-  dns: { icon: "🧭", color: "#0d9488", label: "DNS", id: "dns" },
-  cdn: { icon: "🌐", color: "#0891b2", label: "CDN", id: "cdn" },
-  "load-balancer": { icon: "⚖️", color: "#7c3aed", label: "Load balancer", id: "lb" },
-  "api-gateway": { icon: "🚪", color: "#9333ea", label: "API gateway", id: "gw" },
-  service: { icon: "⚙️", color: "#4f46e5", label: "Service", id: "svc" },
-  worker: { icon: "🛠️", color: "#2563eb", label: "Worker", id: "worker" },
-  scheduler: { icon: "⏰", color: "#0284c7", label: "Scheduler", id: "cron" },
-  cache: { icon: "⚡", color: "#dc2626", label: "Cache", id: "cache" },
-  sql: { icon: "🗄️", color: "#059669", label: "SQL DB", id: "db" },
-  nosql: { icon: "🧱", color: "#16a34a", label: "NoSQL / KV", id: "kv" },
-  blob: { icon: "🪣", color: "#65a30d", label: "Blob store", id: "blob" },
-  search: { icon: "🔎", color: "#ca8a04", label: "Search index", id: "search" },
-  queue: { icon: "📬", color: "#ea580c", label: "Queue", id: "queue" },
-  stream: { icon: "🌊", color: "#f97316", label: "Stream", id: "stream" },
-  coordinator: { icon: "🧩", color: "#db2777", label: "Coordinator", id: "coord" },
-  external: { icon: "🔗", color: "#78716c", label: "External", id: "ext" },
+  client: { icon: "💻", color: KIND_COLORS["client"]!, label: "Client", id: "client" },
+  dns: { icon: "🧭", color: KIND_COLORS["dns"]!, label: "DNS", id: "dns" },
+  cdn: { icon: "🌐", color: KIND_COLORS["cdn"]!, label: "CDN", id: "cdn" },
+  "load-balancer": {
+    icon: "⚖️",
+    color: KIND_COLORS["load-balancer"]!,
+    label: "Load balancer",
+    id: "lb",
+  },
+  "api-gateway": { icon: "🚪", color: KIND_COLORS["api-gateway"]!, label: "API gateway", id: "gw" },
+  service: { icon: "⚙️", color: KIND_COLORS["service"]!, label: "Service", id: "svc" },
+  worker: { icon: "🛠️", color: KIND_COLORS["worker"]!, label: "Worker", id: "worker" },
+  scheduler: { icon: "⏰", color: KIND_COLORS["scheduler"]!, label: "Scheduler", id: "cron" },
+  cache: { icon: "⚡", color: KIND_COLORS["cache"]!, label: "Cache", id: "cache" },
+  sql: { icon: "🗄️", color: KIND_COLORS["sql"]!, label: "SQL DB", id: "db" },
+  nosql: { icon: "🧱", color: KIND_COLORS["nosql"]!, label: "NoSQL / KV", id: "kv" },
+  blob: { icon: "🪣", color: KIND_COLORS["blob"]!, label: "Blob store", id: "blob" },
+  search: { icon: "🔎", color: KIND_COLORS["search"]!, label: "Search index", id: "search" },
+  queue: { icon: "📬", color: KIND_COLORS["queue"]!, label: "Queue", id: "queue" },
+  stream: { icon: "🌊", color: KIND_COLORS["stream"]!, label: "Stream", id: "stream" },
+  coordinator: {
+    icon: "🧩",
+    color: KIND_COLORS["coordinator"]!,
+    label: "Coordinator",
+    id: "coord",
+  },
+  external: { icon: "🔗", color: KIND_COLORS["external"]!, label: "External", id: "ext" },
   // ood
-  actor: { icon: "🧑", color: "#64748b", label: "Actor", id: "actor" },
-  class: { icon: "📦", color: "#4f46e5", label: "Class", id: "cls" },
-  abstract: { icon: "🫥", color: "#7c3aed", label: "Abstract class", id: "base" },
-  interface: { icon: "🔌", color: "#0891b2", label: "Interface", id: "iface" },
-  enum: { icon: "🔢", color: "#ca8a04", label: "Enum", id: "enum" },
+  actor: { icon: "🧑", color: KIND_COLORS["actor"]!, label: "Actor", id: "actor" },
+  class: { icon: "📦", color: KIND_COLORS["class"]!, label: "Class", id: "cls" },
+  abstract: { icon: "🫥", color: KIND_COLORS["abstract"]!, label: "Abstract class", id: "base" },
+  interface: { icon: "🔌", color: KIND_COLORS["interface"]!, label: "Interface", id: "iface" },
+  enum: { icon: "🔢", color: KIND_COLORS["enum"]!, label: "Enum", id: "enum" },
 };
 
 export function kindStyle(kind: string): KindStyle {
   return (
     KIND_STYLE[kind] ?? {
       icon: "◻️",
-      color: "#6b7489",
+      color: KIND_COLORS.unknown!,
       label: kind,
       id: kind.replace(/[^A-Za-z0-9]/g, "") || "node",
     }

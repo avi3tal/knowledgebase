@@ -19,6 +19,33 @@ export const PALETTE = [
   "#f97316", // orange
 ] as const;
 
+/** Design-console shape colours by node kind (canvas shapes, palette tiles, legends). */
+export const KIND_COLORS: Record<string, string> = {
+  client: "#64748b",
+  dns: "#0d9488",
+  cdn: "#0891b2",
+  "load-balancer": "#7c3aed",
+  "api-gateway": "#9333ea",
+  service: "#4f46e5",
+  worker: "#2563eb",
+  scheduler: "#0284c7",
+  cache: "#dc2626",
+  sql: "#059669",
+  nosql: "#16a34a",
+  blob: "#65a30d",
+  search: "#ca8a04",
+  queue: "#ea580c",
+  stream: "#f97316",
+  coordinator: "#db2777",
+  external: "#78716c",
+  actor: "#64748b",
+  class: "#4f46e5",
+  abstract: "#7c3aed",
+  interface: "#0891b2",
+  enum: "#ca8a04",
+  unknown: "#6b7489",
+};
+
 export interface Colors {
   bg: string;
   panel: string;
