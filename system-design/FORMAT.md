@@ -42,7 +42,7 @@ Every check has `id` (kebab), `type`, `label` and `tips: {nudge, hint, show}`.
 | `part` | parts | `keywords`, `choice_keywords?` | a part whose title/problem/covers/choice contains a keyword has a non-empty `choice`, `why` and a sub-diagram with ≥ 1 node (and the choice matches `choice_keywords`, if given) |
 | `decision` | deep-dives | `keywords`, `choice_keywords?` | a deep dive mentions a keyword **and** has a non-empty `choice` and `why` (and the choice itself matches `choice_keywords`, if given) |
 | `wrapup` | wrap-up | `key` ∈ bottlenecks, failures, monitoring, scale, future | that wrap-up answer has ≥ 15 chars |
-| `signature` | signatures | `names` | `signatures.py` / `signatures.go` declares every name: `Name`, `Class.method` (method on that class / Go receiver), or `Class(Base)` (Python base class) |
+| `signature` | signatures | `names` | `signatures.py` / `signatures.go` declares every name: `Name`, `Class.method` (method on that class / Go receiver), or `Class(Base)` (Python base class); `A\|B` accepts either spelling |
 
 Aim for 14–22 checks per system design problem, covering every stage, including **at least 2 `part` checks**.
 - Keyword checks pass on *any* matching item. Run each `part`/`decision` check against every reference

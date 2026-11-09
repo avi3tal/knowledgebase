@@ -262,7 +262,7 @@
       "tips": {
         "nudge": "Each kind of deal can be its own class.",
         "hint": "Add the class for the buy-some-get-some-free rule.",
-        "show": "class BuyNGetMFree implements Promotion."
+        "show": "class BuyXGetYPromotion implements Promotion (BOGO is BuyXGetYPromotion(buy=1, free=1))."
       }
     },
     {
@@ -278,7 +278,7 @@
       "tips": {
         "nudge": "The other deal deserves its own class too.",
         "hint": "Add the class for the percentage rule.",
-        "show": "class PercentOff implements Promotion (and PercentOffCoupon for the cart level)."
+        "show": "class PercentOffPromotion implements Promotion (and PercentOffCoupon for the cart level)."
       }
     },
     {
@@ -301,7 +301,7 @@
       "tips": {
         "nudge": "How does the cart treat all deals the same way?",
         "hint": "Draw the 'implements' relationship from the concrete deals to the abstraction.",
-        "show": "BuyNGetMFree → Promotion and PercentOff → Promotion (implements)."
+        "show": "BuyXGetYPromotion → Promotion and PercentOffPromotion → Promotion (implements)."
       }
     },
     {
@@ -396,13 +396,13 @@
         "ShoppingCart.delete_item",
         "ShoppingCart.get_total_price",
         "Promotion",
-        "BuyNGetMFree(Promotion)",
-        "PercentOff(Promotion)"
+        "BuyXGetYPromotion(Promotion)|BuyNGetMFree(Promotion)|BOGOPromotion(Promotion)|BuyXGetYFree(Promotion)",
+        "PercentOffPromotion(Promotion)|PercentOff(Promotion)|PercentagePromotion(Promotion)|PercentageOff(Promotion)"
       ],
       "tips": {
         "nudge": "Write the public API as Python signatures.",
         "hint": "Cover the cart's three operations and the promotion types.",
-        "show": "class ShoppingCart: add_item, delete_item, get_total_price; class Promotion(ABC); class BuyNGetMFree(Promotion); class PercentOff(Promotion)."
+        "show": "class ShoppingCart: add_item, delete_item, get_total_price; class Promotion(ABC); class BuyXGetYPromotion(Promotion); class PercentOffPromotion(Promotion)."
       }
     },
     {

@@ -778,7 +778,8 @@ def run_checks(problem: DesignProblem, attempt: Path) -> dict[str, Any]:
         elif t == "wrapup":
             passed = len(str(design.get("wrapup", {}).get(c["key"], "")).strip()) >= 15
         elif t == "signature":
-            missing = [n for n in c["names"] if n.lower() not in sig_names]
+            # "A|B" accepts either spelling (BuyXGetYPromotion(Promotion)|BOGOPromotion(Promotion))
+            missing = [n for n in c["names"] if not any(x.strip().lower() in sig_names for x in n.split("|"))]
             passed = not missing
             detail = "" if passed else f"missing: {', '.join(missing)}"
         results.append(

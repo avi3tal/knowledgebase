@@ -130,7 +130,7 @@
     {
       "id": "D3",
       "name": "Promotion",
-      "fields": "BuyNGetMFree(sku, buy, free); PercentOff(percent, sku or category)",
+      "fields": "BuyXGetYPromotion(sku, buy, free); PercentOffPromotion(percent, sku or category)",
       "store": "in memory",
       "why": "Strategy objects configured by the shop."
     },
@@ -158,7 +158,7 @@
           "cons": "a few more classes"
         }
       ],
-      "choice": "Strategy: Promotion interface with BuyNGetMFree and PercentOff, chosen per line by a PromotionCatalog",
+      "choice": "Strategy: Promotion interface with BuyXGetYPromotion and PercentOffPromotion, chosen per line by a PromotionCatalog",
       "why": "The cart only asks a promotion for discount_cents(unit_price, quantity); a fixed-amount or bundle promotion is a new class. Each class is a pure function of price and quantity, so it is trivially unit-tested.",
       "version": 2
     },

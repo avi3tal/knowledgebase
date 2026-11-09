@@ -30,28 +30,35 @@ class Promotion(ABC):
     """An item-level pricing rule (Strategy): a pure function of unit price and quantity."""
 
     @abstractmethod
-    def applies_to(self, product: Product) -> bool: ...
+    def targets(self) -> tuple[str, ...]:
+        """Index keys the rule applies to: "sku:<sku>" and/or "category:<name>"."""
+        ...
 
     @abstractmethod
     def discount_cents(self, unit_price_cents: Cents, quantity: int) -> Cents: ...
 
 
-class BuyNGetMFree(Promotion):
-    """In every group of buy + free units of one SKU, `free` units cost nothing (2 + 1: buy=2, free=1)."""
+class BuyXGetYPromotion(Promotion):
+    """Buy `buy`, get `free` of the same SKU free, repeating (2 + 1: buy=2, free=1)."""
 
     def __init__(self, sku: str, buy: int, free: int) -> None: ...
 
-    def applies_to(self, product: Product) -> bool: ...
+    @classmethod
+    def bogo(cls, sku: str) -> BuyXGetYPromotion:
+        """Buy one, get one free: the 1 + 1 special case."""
+        ...
+
+    def targets(self) -> tuple[str, ...]: ...
 
     def discount_cents(self, unit_price_cents: Cents, quantity: int) -> Cents: ...
 
 
-class PercentOff(Promotion):
-    """percent% off one SKU or every product in a category."""
+class PercentOffPromotion(Promotion):
+    """percent% off one SKU or every product in a category (exactly one of the two)."""
 
     def __init__(self, percent: int, *, sku: str | None = None, category: str | None = None) -> None: ...
 
-    def applies_to(self, product: Product) -> bool: ...
+    def targets(self) -> tuple[str, ...]: ...
 
     def discount_cents(self, unit_price_cents: Cents, quantity: int) -> Cents: ...
 
@@ -70,7 +77,7 @@ class PercentOffCoupon(CartPromotion):
 
 
 class PromotionCatalog:
-    """Read-only, shared between carts: which promotions could apply to a product."""
+    """Read-only, shared between carts: an index target key → promotions, so a lookup is O(k)."""
 
     def __init__(self, promotions: list[Promotion]) -> None: ...
 

@@ -316,6 +316,23 @@ def test_signature_names_are_qualified(tmp_path: Path) -> None:
     assert "lot.park" in design._signature_names(tmp_path)  # noqa: SLF001
 
 
+def test_signature_check_accepts_alternative_names() -> None:
+    p = design.load("ood", "shopping-cart")
+    adir = design.new_attempt(p)
+    check = {
+        "id": "s",
+        "type": "signature",
+        "label": "deal",
+        "names": ["BuyXGetYPromotion(Promotion)|BOGOPromotion(Promotion)"],
+    }
+    p.rubric = {"checks": [check]}
+    (adir / "signatures.py").write_text("class Promotion: ...\nclass BOGOPromotion(Promotion): ...\n")
+    assert design.run_checks(p, adir)["checks"][0]["passed"] is True
+    (adir / "signatures.py").write_text("class Promotion: ...\nclass Deal(Promotion): ...\n")
+    result = design.run_checks(p, adir)["checks"][0]
+    assert result["passed"] is False and "BuyXGetYPromotion" in result["detail"]
+
+
 def test_ood_smells() -> None:
     d = {
         "version": 1,

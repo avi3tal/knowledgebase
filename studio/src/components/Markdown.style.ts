@@ -1,12 +1,17 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { t } from "../theme/theme";
+import { Figure as CodeFigure } from "./CodeBlock.style";
+import { WIDE } from "./TracePlayer.style";
+
+/** Wider than the reading column: centred on it, up to the Workbench center's width (never narrower). */
+const BREAKOUT = `max(100%, ${WIDE})`;
 
 /**
  * The reading typography of rendered markdown (lessons, READMEs, solutions, design pages). Other
  * pages that show prose wrap their content in `Prose` (or `<Markdown>`, which does) and tweak it
  * with `${Prose} { … }` from their own style file.
  */
-export const Prose = styled.div`
+export const Prose = styled.div<{ $wide?: boolean }>`
   font-size: 15.5px;
   line-height: 1.7;
   color: ${t.text};
@@ -145,4 +150,14 @@ export const Prose = styled.div`
   tr:has(td:first-child strong) td {
     background: color-mix(in srgb, ${t.ok} 9%, transparent);
   }
+  ${({ $wide }) =>
+    $wide &&
+    css`
+      /* articles: code and wide tables (4+ columns) use the room around the reading column */
+      ${CodeFigure}, table:has(th:nth-child(4)) {
+        width: ${BREAKOUT};
+        max-width: none;
+        margin-left: calc(50% - ${BREAKOUT} / 2);
+      }
+    `}
 `;

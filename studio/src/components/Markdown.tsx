@@ -80,7 +80,7 @@ export function Markdown({
       return <Tag id={id}>{children}</Tag>;
     };
   return (
-    <S.Prose className={className}>
+    <S.Prose className={className} $wide={anchors}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeKeepMeta, rehypeRaw, rehypeCodeTabs]}
