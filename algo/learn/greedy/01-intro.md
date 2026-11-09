@@ -16,13 +16,8 @@ every step, so greedy is optimal.
 Example: **schedule the most non-overlapping meetings.** Greedy: always pick the meeting that
 **ends first** among those that still fit.
 
-```
-meetings sorted by end:      chosen?
-[1, 3]  ─────                 ✓  ends first, leaves the most room
-[2, 4]   ──────               ✗  overlaps [1, 3]
-[3, 5]      ──────            ✓  starts when the last one ended
-[0, 7] ──────────────         ✗
-[5, 8]          ──────        ✓
+```figure
+earliest-end-first
 ```
 
 Swap argument: if an optimal schedule starts with some meeting X instead, replace X with the

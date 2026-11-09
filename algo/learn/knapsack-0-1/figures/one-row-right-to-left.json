@@ -1,0 +1,107 @@
+{
+  "kind": "structure",
+  "title": "Right to left, dp[c − w] still holds the previous item's row, so an item can't be taken twice",
+  "caption": "Adding item w2 p10 to the one-row table. The shaded cells have already been updated for this item.",
+  "views": [
+    {
+      "type": "array",
+      "var": "dp",
+      "label": "dp[c] (capacity c)",
+      "pointers": {
+        "c": "c",
+        "c−w": "c-w"
+      },
+      "window": [
+        "lo",
+        "hi"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Before item w2 p10: dp holds row 1 (only item 1), [0, 6, 6, 6, 6, 6]. Walk c from 5 down to w = 2.",
+      "vars": {
+        "dp": [
+          0,
+          6,
+          6,
+          6,
+          6,
+          6
+        ],
+        "c": null,
+        "c-w": null,
+        "lo": null,
+        "hi": null
+      }
+    },
+    {
+      "text": "c = 5: max(6, dp[3] + 10) = 16. dp[3] is still the old 6, from the previous item's row.",
+      "vars": {
+        "dp": [
+          0,
+          6,
+          6,
+          6,
+          6,
+          16
+        ],
+        "c": 5,
+        "c-w": 3,
+        "lo": 5,
+        "hi": 5
+      }
+    },
+    {
+      "text": "c = 4: max(6, dp[2] + 10) = 16. dp[2] has not been touched yet for this item.",
+      "vars": {
+        "dp": [
+          0,
+          6,
+          6,
+          6,
+          16,
+          16
+        ],
+        "c": 4,
+        "c-w": 2,
+        "lo": 4,
+        "hi": 5
+      }
+    },
+    {
+      "text": "c = 3: max(6, dp[1] + 10) = 16.",
+      "vars": {
+        "dp": [
+          0,
+          6,
+          6,
+          16,
+          16,
+          16
+        ],
+        "c": 3,
+        "c-w": 1,
+        "lo": 3,
+        "hi": 5
+      }
+    },
+    {
+      "text": "c = 2: max(6, dp[0] + 10) = 10. Done: [0, 6, 10, 16, 16, 16]. Every read was to the left of every write, so item 2 was used at most once.",
+      "vars": {
+        "dp": [
+          0,
+          6,
+          10,
+          16,
+          16,
+          16
+        ],
+        "c": 2,
+        "c-w": 0,
+        "lo": 2,
+        "hi": 5
+      }
+    }
+  ]
+}

@@ -42,14 +42,13 @@ There are only two cases per element, and that's the whole algorithm:
 If you *swap* instead of copy, the zeros ride along to the right for free. Progress table for
 `[0,1,0,3,12]` (swap version):
 
-```
-read  nums[read]  action                  nums              write
- 0       0        skip                    [0,1,0,3,12]       0
- 1       1        swap(0,1), write++      [1,0,0,3,12]       1
- 2       0        skip                    [1,0,0,3,12]       1
- 3       3        swap(1,3), write++      [1,3,0,0,12]       2
- 4      12        swap(2,4), write++      [1,3,12,0,0]       3
-```
+| read | nums[read] | action | nums after | write after |
+|---|---|---|---|---|
+| 0 | 0 | skip | `[0,1,0,3,12]` | 0 |
+| 1 | 1 | swap(0, 1), write++ | `[1,0,0,3,12]` | 1 |
+| 2 | 0 | skip | `[1,0,0,3,12]` | 1 |
+| 3 | 3 | swap(1, 3), write++ | `[1,3,0,0,12]` | 2 |
+| 4 | 12 | swap(2, 4), write++ | `[1,3,12,0,0]` | 3 |
 
 Why it's safe: `write <= read` always, so you never overwrite something you haven't read yet,
 and everything between `write` and `read` is a zero.

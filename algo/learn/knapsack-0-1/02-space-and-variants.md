@@ -14,12 +14,8 @@ When you update `dp[c]` you read `dp[c - w]`, which is to the **left**. Walking 
 means the left part hasn't been touched yet for this item, so it still holds the **previous
 item's row**. That is exactly `dp[i-1][c-w]`, and the item can't be used twice.
 
-```
-item w2 p10, before:  dp = [0, 6, 6, 6, 6, 6]
-c = 5:  max(6, dp[3] + 10) = 16     dp[3] is still the old 6
-c = 4:  max(6, dp[2] + 10) = 16
-c = 3:  max(6, dp[1] + 10) = 16
-c = 2:  max(6, dp[0] + 10) = 10     after: [0, 6, 10, 16, 16, 16]
+```figure
+one-row-right-to-left
 ```
 
 If you walked **left to right** instead, `dp[c - w]` might already include the current item,

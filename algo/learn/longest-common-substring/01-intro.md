@@ -16,7 +16,7 @@ characters** `a[i-1]`, `b[j-1]` and on smaller prefix pairs. That gives an
 
 For the longest common **subsequence** (LCS):
 
-```
+```text
 dp[i][j] = LCS length of a[:i] and b[:j]
 
 dp[0][*] = dp[*][0] = 0                        an empty prefix has nothing in common
@@ -30,14 +30,8 @@ a[i-1] != b[j-1]  →  dp[i][j] = max(dp[i-1][j],        drop a's last char
 Each cell looks **up**, **left** and **up-left**. Filling row by row, left to right, guarantees
 all three are ready:
 
-```
-            ∅  b  d  c  b
-        ∅ [ 0  0  0  0  0 ]
-        a [ 0  0  0  0  0 ]
-        b [ 0  1  1  1  1 ]     a match moves you diagonally (↘ +1)
-        c [ 0  1  1  2  2 ]     a mismatch copies the better of ↓ and →
-        b [ 0  1  1  2  3 ]
-        d [ 0  1  2  2  3 ]  ← answer: bottom-right
+```figure
+lcs-table
 ```
 
 The extra row and column 0 stand for the **empty prefix**. They remove every `i == 0` special

@@ -14,7 +14,7 @@ intervals **from short to long**. This is called **interval DP**.
 
 For the longest palindromic subsequence (LPS):
 
-```
+```text
 dp[i][j] = LPS length of s[i..j]
 
 dp[i][i] = 1                                   one character
@@ -29,13 +29,8 @@ s[i] != s[j]  →  dp[i][j] = max(dp[i+1][j],    one end can't be used,
 those are shorter intervals. If you fill the table by interval length, one diagonal at a time,
 they're always ready:
 
-```
-        j→  a  b  b  c  a
-   i  a  [  1  .  .  .  ? ]   ← the answer, dp[0][n-1], is the last cell filled
-   ↓  b  [     1  .  .  . ]
-      b  [        1  .  . ]   length 1: main diagonal
-      c  [           1  . ]   length 2: next diagonal up
-      a  [              1 ]   ... and so on to the top-right corner
+```figure
+lps-diagonals
 ```
 
 The lower-left triangle (`i > j`) is an empty interval and stays 0.

@@ -39,11 +39,17 @@ them. Because the majority has more than half the votes, it can't be fully cance
 - For each `x`: if `count == 0`, take `x` as the new candidate. Then `count += 1` if
   `x == candidate`, else `count -= 1`.
 
-```
-x:          2  2  1  1  1  2  2
-candidate:  2  2  2  2  1  1  2     (switches when count hits 0)
-count:      1  2  1  0  1  0  1
-```
+| x | candidate | count |
+|---|---|---|
+| 2 | 2 | 1 |
+| 2 | 2 | 2 |
+| 1 | 2 | 1 |
+| 1 | 2 | 0 |
+| 1 | 1 | 1 |
+| 2 | 1 | 0 |
+| 2 | 2 | 1 |
+
+The candidate switches only when `count` has dropped to 0 (before the 5th and 7th elements).
 
 The final candidate is correct **only because a majority is guaranteed**. Without the guarantee
 you need a second pass to count it (see majority-element-ii).

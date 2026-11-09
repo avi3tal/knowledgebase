@@ -1,0 +1,107 @@
+{
+  "kind": "structure",
+  "title": "Left to right, dp[r − size] may already include this size: that is exactly \"use it again\"",
+  "caption": "Adding size 2 at $6 to the one-row table. The shaded cells are already updated for this size.",
+  "views": [
+    {
+      "type": "array",
+      "var": "dp",
+      "label": "dp[r] (rod length r)",
+      "pointers": {
+        "r": "r",
+        "r−size": "r-size"
+      },
+      "window": [
+        "lo",
+        "hi"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Before size 2 at $6: dp holds the length-1-only row, [0, 2, 4, 6, 8, 10]. Walk r from 2 up to 5.",
+      "vars": {
+        "dp": [
+          0,
+          2,
+          4,
+          6,
+          8,
+          10
+        ],
+        "r": null,
+        "r-size": null,
+        "lo": null,
+        "hi": null
+      }
+    },
+    {
+      "text": "r = 2: max(4, dp[0] + 6) = 6.",
+      "vars": {
+        "dp": [
+          0,
+          2,
+          6,
+          6,
+          8,
+          10
+        ],
+        "r": 2,
+        "r-size": 0,
+        "lo": 0,
+        "hi": 2
+      }
+    },
+    {
+      "text": "r = 3: max(6, dp[1] + 6) = 8.",
+      "vars": {
+        "dp": [
+          0,
+          2,
+          6,
+          8,
+          8,
+          10
+        ],
+        "r": 3,
+        "r-size": 1,
+        "lo": 0,
+        "hi": 3
+      }
+    },
+    {
+      "text": "r = 4: max(8, dp[2] + 6) = 12. dp[2] = 6 was updated a moment ago: it already holds one size-2 piece, and this adds a second.",
+      "vars": {
+        "dp": [
+          0,
+          2,
+          6,
+          8,
+          12,
+          10
+        ],
+        "r": 4,
+        "r-size": 2,
+        "lo": 0,
+        "hi": 4
+      }
+    },
+    {
+      "text": "r = 5: max(10, dp[3] + 6) = 14. Done: [0, 2, 6, 8, 12, 14]. Reading cells that are already updated is what lets a size repeat.",
+      "vars": {
+        "dp": [
+          0,
+          2,
+          6,
+          8,
+          12,
+          14
+        ],
+        "r": 5,
+        "r-size": 3,
+        "lo": 0,
+        "hi": 5
+      }
+    }
+  ]
+}

@@ -10,7 +10,7 @@ same length, a ribbon into many equal pieces.
 The classic example is **rod cutting**. A rod of length `n` can be cut into pieces. A piece of
 length `lengths[i]` sells for `prices[i]`. What's the most you can earn?
 
-```
+```text
 lengths = [1, 2, 3], prices = [2, 6, 7], n = 5
   5 = 2 + 2 + 1  → 6 + 6 + 2 = 14   ← best (the length-2 piece is used twice)
   5 = 2 + 3      → 6 + 7     = 13
@@ -44,17 +44,13 @@ in a dict or a 2-D array: **O(k · n)** time and space.
 
 `dp[i][r]` = the best price for a rod of length `r` using the first `i` sizes:
 
-```
+```text
 dp[i][r] = max( dp[i-1][r],                        # skip: row above
                 dp[i][r - size_i] + price_i )      # take: SAME row, further left
 ```
 
-```
-                     r:   0    1    2    3    4    5
-  ∅                       0    0    0    0    0    0
-  len 1 $2                0    2    4    6    8   10
-  len 2 $6                0    2    6    8   12   14   ← dp[2][5] = dp[2][3] + 6 = 8 + 6
-  len 3 $7                0    2    6    8   12   14
+```figure
+rod-cutting-table
 ```
 
 `dp[2][3] = 8` already contains one length-2 piece (2 + 1). Adding another to it gives 2 + 2 + 1

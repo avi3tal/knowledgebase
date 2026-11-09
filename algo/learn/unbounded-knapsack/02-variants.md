@@ -15,12 +15,8 @@ size**, so it may already contain a piece of this size. Adding one more is exact
 again". Compare the [0/1 version](../knapsack-0-1/02-space-and-variants.md), which walks right
 to left precisely to prevent this.
 
-```
-size 2, price 6, before: dp = [0, 2, 4, 6, 8, 10]
-r = 2: max(4,  dp[0] + 6) = 6
-r = 3: max(6,  dp[1] + 6) = 8
-r = 4: max(8,  dp[2] + 6) = 12     dp[2] = 6 already holds one size-2 piece
-r = 5: max(10, dp[3] + 6) = 14     after: [0, 2, 6, 8, 12, 14]
+```figure
+one-row-left-to-right
 ```
 
 O(k · n) time, **O(n)** space.

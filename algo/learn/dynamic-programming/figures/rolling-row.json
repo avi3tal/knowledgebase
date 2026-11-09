@@ -1,0 +1,202 @@
+{
+  "kind": "structure",
+  "title": "A row that only reads the row above can overwrite it: O(rows · cols) space becomes O(cols)",
+  "caption": "Cheapest path from the top-left corner, moving right or down, over the costs [[1,3,1,2], [1,5,1,4], [4,2,1,1]]. dp[r][c] = min(above, left) + cost[r][c].",
+  "views": [
+    {
+      "type": "grid",
+      "var": "dp",
+      "label": "dp table 3×4",
+      "cells": {
+        "dp[r][c]": [
+          "r",
+          "c"
+        ]
+      },
+      "marked": "deps"
+    },
+    {
+      "type": "array",
+      "var": "row",
+      "label": "rolling 1-D row (shaded = already the new row)",
+      "pointers": {
+        "c": "c"
+      },
+      "window": [
+        "zero",
+        "c"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "dp[1][1] = min(above 4, left 2) + 5 = 7. A cell reads only the cell above it and the cell to its left, so row 0 is never needed once row 1 is done.",
+      "vars": {
+        "dp": [
+          [
+            1,
+            4,
+            5,
+            7
+          ],
+          [
+            2,
+            7,
+            null,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null
+          ]
+        ],
+        "r": 1,
+        "c": 1,
+        "deps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ],
+        "row": [
+          2,
+          7,
+          5,
+          7
+        ],
+        "zero": 0
+      }
+    },
+    {
+      "text": "Keep one row instead. Before row 2 is written, row = [2, 7, 6, 10] is row 1. Writing row[0] = 2 + 4 = 6 turns slot 0 into row 2.",
+      "vars": {
+        "dp": [
+          [
+            1,
+            4,
+            5,
+            7
+          ],
+          [
+            2,
+            7,
+            6,
+            10
+          ],
+          [
+            6,
+            null,
+            null,
+            null
+          ]
+        ],
+        "r": 2,
+        "c": 0,
+        "deps": [
+          [
+            1,
+            0
+          ]
+        ],
+        "row": [
+          6,
+          7,
+          6,
+          10
+        ]
+      }
+    },
+    {
+      "text": "row[2] = min(row[2], row[1]) + 1 = min(6, 8) + 1 = 7. row[2] still holds the old value (the cell above); row[1] is already new (the cell to the left). Left of c is the new row, from c on the old one.",
+      "vars": {
+        "dp": [
+          [
+            1,
+            4,
+            5,
+            7
+          ],
+          [
+            2,
+            7,
+            6,
+            10
+          ],
+          [
+            6,
+            8,
+            7,
+            null
+          ]
+        ],
+        "r": 2,
+        "c": 2,
+        "deps": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        "row": [
+          6,
+          8,
+          7,
+          10
+        ]
+      }
+    },
+    {
+      "text": "row[3] = min(10, 7) + 1 = 8. The single row now holds the last row of the table, [6, 8, 7, 8]: the same answer in O(cols) space.",
+      "vars": {
+        "dp": [
+          [
+            1,
+            4,
+            5,
+            7
+          ],
+          [
+            2,
+            7,
+            6,
+            10
+          ],
+          [
+            6,
+            8,
+            7,
+            8
+          ]
+        ],
+        "r": 2,
+        "c": 3,
+        "deps": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "row": [
+          6,
+          8,
+          7,
+          8
+        ]
+      }
+    }
+  ]
+}

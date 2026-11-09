@@ -15,16 +15,8 @@ interval you kept. One linear sweep then answers the question.
 Two intervals `a` and `b` with `a.start <= b.start` overlap exactly when **`b.start <= a.end`**.
 Once you've sorted, that one comparison is the whole overlap test.
 
-```
-sorted by start:      [1──3]
-                        [2────6]
-                                  [8──10]
-                                     [9─11]
-                                              [15─18]
-
-merged:               [1──────6]  [8────11]   [15─18]
-                         ▲            ▲
-          2 <= 3 → extend to 6     9 <= 10 → extend to 11
+```figure
+merge-sweep
 ```
 
 The six ways two intervals can sit relative to each other reduce to **two cases** once

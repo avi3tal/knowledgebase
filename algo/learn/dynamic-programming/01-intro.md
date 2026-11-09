@@ -11,14 +11,8 @@ applies when a problem has two properties:
 2. **Overlapping subproblems**: the plain recursion reaches the **same** smaller problem many
    times. That's what makes it exponential, and why a cache fixes it.
 
-```
-paths(2,3)                                   without a memo, paths(1,2) is computed
-├── paths(1,3)                               on both branches, and the sharing
-│   ├── paths(0,3) = 1                       multiplies at every level → exponential
-│   └── paths(1,2)  ◄──┐
-└── paths(2,2)         │ same subproblem
-    ├── paths(1,2)  ◄──┘
-    └── paths(2,1)
+```figure
+paths-call-tree
 ```
 
 With a cache, each distinct state is computed once: **time = number of states × work per state.**

@@ -1,0 +1,272 @@
+{
+  "kind": "structure",
+  "title": "A match extends the diagonal by 1; a mismatch keeps the better of up and left",
+  "caption": "LCS of a = \"abcbd\" (rows) and b = \"bdcb\" (columns). Row and column ∅ are the empty prefix; the answer is the bottom-right cell.",
+  "views": [
+    {
+      "type": "grid",
+      "var": "dp",
+      "label": "dp[i][j]",
+      "row_labels": "a",
+      "col_labels": "b",
+      "cells": {
+        "dp[i][j]": [
+          "i",
+          "j"
+        ]
+      },
+      "marked": "deps"
+    }
+  ],
+  "frames": [
+    {
+      "text": "Row and column 0 are the empty prefix: 0. Row \"a\" stays 0 because b has no 'a'. In row \"b\", dp[2][1] matches b with b: dp[1][0] + 1 = 1.",
+      "vars": {
+        "dp": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            null,
+            null,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        ],
+        "a": [
+          "a",
+          "b",
+          "c",
+          "b",
+          "d"
+        ],
+        "b": [
+          "b",
+          "d",
+          "c",
+          "b"
+        ],
+        "i": 2,
+        "j": 1,
+        "deps": [
+          [
+            1,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "text": "dp[3][3]: 'c' == 'c', a match. Use it and move diagonally: dp[2][2] + 1 = 2.",
+      "vars": {
+        "dp": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            0,
+            1,
+            1,
+            2,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        ],
+        "i": 3,
+        "j": 3,
+        "deps": [
+          [
+            2,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "text": "dp[4][3]: 'b' != 'c', a mismatch. Drop a's last char (up, 2) or b's (left, 1), and keep the better: 2.",
+      "vars": {
+        "dp": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            0,
+            1,
+            1,
+            2,
+            2
+          ],
+          [
+            0,
+            1,
+            1,
+            2,
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        ],
+        "i": 4,
+        "j": 3,
+        "deps": [
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "text": "dp[5][4]: 'd' != 'b', so max(up 3, left 2) = 3. The bottom-right cell is the answer: \"bcb\" has length 3.",
+      "vars": {
+        "dp": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            0,
+            1,
+            1,
+            2,
+            2
+          ],
+          [
+            0,
+            1,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            2,
+            3
+          ]
+        ],
+        "i": 5,
+        "j": 4,
+        "deps": [
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            3
+          ]
+        ]
+      }
+    }
+  ]
+}
