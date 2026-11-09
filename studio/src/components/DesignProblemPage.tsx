@@ -20,7 +20,7 @@ import { extractToc } from "../toc";
 import { Chips, OnThisPage, ProblemList } from "./DesignReaderPanes";
 import { Markdown } from "./Markdown";
 import { RevealGate, SolutionArticle, VERSIONS_ID } from "./SolutionArticle";
-import { Workbench } from "./Workbench";
+import { CENTER_SELECTOR, Workbench } from "./Workbench";
 import { Icon } from "./Icon";
 import { MetaTags, PageHeader, PrevNextFooter, StatusLabel, usePrevNextKeys } from "./PageHeader";
 import { SimilarProblemsCard } from "./PracticeLinks";
@@ -64,7 +64,7 @@ export function DesignProblemPage({
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
-    setScroller(centerRef.current?.closest<HTMLElement>(".wb-center") ?? null);
+    setScroller(centerRef.current?.closest<HTMLElement>(CENTER_SELECTOR) ?? null);
   }, []);
 
   useEffect(() => {

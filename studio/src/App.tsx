@@ -11,10 +11,11 @@ import type {
   SubjectsResponse,
   TopicPageData,
 } from "./api";
-import { ThemeProvider } from "styled-components";
 import { api } from "./api";
+import * as S from "./App.style";
 import { GlobalStyle } from "./theme/GlobalStyle.style";
-import { darkTheme, lightTheme } from "./theme/theme";
+import { Loader } from "./theme/primitives";
+import { ThemeProvider, darkTheme, lightTheme } from "./theme/theme";
 import { Dashboard } from "./components/Dashboard";
 import { LessonView } from "./components/LessonView";
 import { ProblemCard } from "./components/ProblemCard";
@@ -178,10 +179,10 @@ export function App() {
             onTheme={toggleTheme}
             onSearch={() => setSearching(true)}
           />
-          <main className="content bench" key={window.location.hash}>
+          <S.Content key={window.location.hash}>
             <ErrorBoundary label="this page">
               {error && <ErrorBox msg={error} route={route} />}
-              {!error && !page && <div className="loader" aria-label="loading" />}
+              {!error && !page && <Loader aria-label="loading" />}
               {page?.kind === "home" && current && (
                 <SubjectHome subject={current} feedback={page.data} />
               )}
@@ -223,7 +224,7 @@ export function App() {
                 />
               )}
             </ErrorBoundary>
-          </main>
+          </S.Content>
           {searching && subjects && (
             <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />
           )}
@@ -236,7 +237,7 @@ export function App() {
 function ErrorBox({ msg, route }: { msg: string; route: Route }) {
   const missingLesson = route.page === "lesson" && msg.includes("404");
   return (
-    <div className="callout">
+    <S.ErrorCallout>
       {missingLesson ? (
         <>
           No lesson for <b>{route.page === "lesson" ? route.topic : ""}</b> yet —{" "}
@@ -254,6 +255,6 @@ function ErrorBox({ msg, route }: { msg: string; route: Route }) {
           {msg} — is <code>./kb studio</code> running?
         </>
       )}
-    </div>
+    </S.ErrorCallout>
   );
 }

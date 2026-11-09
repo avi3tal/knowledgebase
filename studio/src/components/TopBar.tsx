@@ -3,7 +3,9 @@ import type { Subject } from "../api";
 import { SUBJECT_ICON, SUBJECT_SHORT } from "../catalog";
 import type { Tab } from "../route";
 import { TAB_HREF } from "../route";
+import { Grow, Kbd } from "../theme/primitives";
 import { Icon } from "./Icon";
+import * as S from "./TopBar.style";
 
 /** Sections of a subject, in the top bar. `open` sections need practice data (hidden when locked). */
 export const SECTIONS: { tab: Tab; label: string; open?: boolean }[] = [
@@ -44,41 +46,41 @@ function SubjectSwitcher({
   }, [open]);
   const id = current?.id ?? "";
   return (
-    <div className="tb-switch" ref={ref}>
-      <button
-        className={`tb-switch-btn ${tab === "sessions" ? "dim" : ""}`}
+    <S.Switch ref={ref}>
+      <S.SwitchButton
+        $dim={tab === "sessions"}
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <span className="tb-subject-icon">{SUBJECT_ICON[id] ?? "📘"}</span>
+        <S.SubjectIcon>{SUBJECT_ICON[id] ?? "📘"}</S.SubjectIcon>
         <span>{SUBJECT_SHORT[id] ?? current?.title ?? "Subjects"}</span>
         <Icon name="chevronDown" size={14} />
-      </button>
+      </S.SwitchButton>
       {open && (
-        <div className="tb-menu" role="menu">
+        <S.Menu role="menu">
           {subjects.map((s) => (
-            <a
+            <S.MenuItem
               key={s.id}
               role="menuitem"
               href={TAB_HREF.learn(s.id)}
-              className={`tb-menu-item ${s.id === id ? "on" : ""}`}
+              $on={s.id === id}
               onClick={() => setOpen(false)}
             >
-              <span className="tb-subject-icon">{SUBJECT_ICON[s.id] ?? "📘"}</span>
-              <span className="tb-menu-text">
+              <S.SubjectIcon>{SUBJECT_ICON[s.id] ?? "📘"}</S.SubjectIcon>
+              <S.MenuText>
                 <b>{SUBJECT_SHORT[s.id] ?? s.title}</b>
                 <span>
                   {s.status === "locked" ? "Catalog and resources — lessons coming" : s.title}
                 </span>
-              </span>
+              </S.MenuText>
               {s.status === "locked" && <Icon name="lock" size={13} />}
               {s.id === id && <Icon name="check" size={14} />}
-            </a>
+            </S.MenuItem>
           ))}
-        </div>
+        </S.Menu>
       )}
-    </div>
+    </S.Switch>
   );
 }
 
@@ -100,41 +102,40 @@ export function TopBar({
 }) {
   const subject = current?.id ?? "algo";
   return (
-    <header className="topbar">
-      <a className="brand" href="#/" aria-label="kb studio home">
-        <span className="brand-mark">kb</span>
-      </a>
+    <S.Bar>
+      <S.Brand href="#/" aria-label="kb studio home">
+        <S.BrandMark>kb</S.BrandMark>
+      </S.Brand>
       <SubjectSwitcher subjects={subjects} current={current} tab={tab} />
-      <nav className="tb-sections" aria-label="Sections">
+      <S.Sections aria-label="Sections">
         {sectionsFor(current).map((s) => (
-          <a
+          <S.Section
             key={s.tab}
             href={TAB_HREF[s.tab](subject)}
-            className={`tb-section ${tab === s.tab ? "on" : ""}`}
+            $on={tab === s.tab}
             aria-current={tab === s.tab ? "page" : undefined}
           >
             {s.label}
-          </a>
+          </S.Section>
         ))}
-      </nav>
-      <span className="grow" />
-      <button className="tb-search" onClick={onSearch}>
+      </S.Sections>
+      <Grow />
+      <S.Search onClick={onSearch}>
         <Icon name="search" size={15} />
         <span>Search</span>
-        <kbd>⌘K</kbd>
-      </button>
-      <a href="#/sessions" className={`tb-link ${tab === "sessions" ? "on" : ""}`}>
+        <Kbd>⌘K</Kbd>
+      </S.Search>
+      <S.BarLink href="#/sessions" $on={tab === "sessions"}>
         <Icon name="target" size={15} />
         Sessions
-      </a>
-      <button
-        className="tb-icon"
+      </S.BarLink>
+      <S.IconButton
         onClick={onTheme}
         title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
         aria-label="Toggle theme"
       >
         <Icon name={theme === "light" ? "moon" : "sun"} size={16} />
-      </button>
-    </header>
+      </S.IconButton>
+    </S.Bar>
   );
 }

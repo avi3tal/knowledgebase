@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { navKey } from "../reader";
+import { Tinted, statusTone } from "../theme/primitives";
+import * as S from "./PageHeader.style";
 import { Icon } from "./Icon";
 
 /**
@@ -32,23 +34,21 @@ export function PageHeader({
 }) {
   const items = (meta ?? []).filter((m) => m !== null && m !== undefined && m !== false);
   return (
-    <div className="ph" style={accent ? { ["--c" as string]: accent } : undefined}>
-      {icon && <div className="ph-icon">{icon}</div>}
-      <div className="ph-main">
-        <h1 className="ph-title">{title}</h1>
+    <S.Root>
+      {icon && <S.IconTile $color={accent}>{icon}</S.IconTile>}
+      <S.Main>
+        <S.Title>{title}</S.Title>
         {items.length > 0 && (
-          <div className="ph-meta">
+          <S.Meta>
             {items.map((m, i) => (
-              <span className="ph-meta-item" key={i}>
-                {m}
-              </span>
+              <S.MetaItem key={i}>{m}</S.MetaItem>
             ))}
-          </div>
+          </S.Meta>
         )}
-        {sub && <p className="ph-sub">{sub}</p>}
-      </div>
-      {actions && <div className="ph-actions">{actions}</div>}
-    </div>
+        {sub && <S.Sub>{sub}</S.Sub>}
+      </S.Main>
+      {actions && <S.Actions>{actions}</S.Actions>}
+    </S.Root>
   );
 }
 
@@ -64,24 +64,18 @@ export function MetaTags({
   const shown = tags.slice(0, max);
   const rest = tags.slice(max);
   return (
-    <span className="ph-tags">
+    <S.Tags>
       {shown.map((t) =>
         t.href ? (
-          <a key={t.key} className="ph-tag" href={t.href}>
+          <S.Tag as="a" key={t.key} href={t.href}>
             {t.label}
-          </a>
+          </S.Tag>
         ) : (
-          <span key={t.key} className="ph-tag">
-            {t.label}
-          </span>
+          <S.Tag key={t.key}>{t.label}</S.Tag>
         ),
       )}
-      {rest.length > 0 && (
-        <span className="ph-tag more" title={rest.map((t) => t.key).join(", ")}>
-          +{rest.length}
-        </span>
-      )}
-    </span>
+      {rest.length > 0 && <S.Tag title={rest.map((t) => t.key).join(", ")}>+{rest.length}</S.Tag>}
+    </S.Tags>
   );
 }
 
@@ -103,11 +97,21 @@ export function StatusLabel({ status }: { status: string }) {
         ? "x"
         : "clock";
   return (
-    <span className={`status ${status}`}>
+    <Tinted $tone={statusTone(status)}>
       {status !== "untried" && <Icon name={icon} size={13} />}
       {STATUS_TEXT[status] ?? status}
-    </span>
+    </Tinted>
   );
+}
+
+/** A topic group's name in the meta line, in the group's colour. */
+export function MetaGroup({ color, children }: { color?: string; children: ReactNode }) {
+  return <S.Group $color={color}>{children}</S.Group>;
+}
+
+/** The title's quieter suffix ("Problems · Two Pointers"). */
+export function TitleSuffix({ children }: { children: ReactNode }) {
+  return <S.TitleSub>{children}</S.TitleSub>;
 }
 
 /** True when a key press is going into a text field (so global hotkeys must not steal it). */
@@ -147,23 +151,23 @@ export function PrevNextFooter({
   noun: string;
 }) {
   return (
-    <div className="pn">
+    <S.PrevNext>
       {prev ? (
-        <a className="pn-link prev" href={prev.href} title={`Previous ${noun} ( [ )`}>
+        <S.PrevNextLink href={prev.href} title={`Previous ${noun} ( [ )`}>
           <Icon name="arrowLeft" size={14} />
           <span>{prev.title}</span>
-        </a>
+        </S.PrevNextLink>
       ) : (
         <span />
       )}
       {next ? (
-        <a className="pn-link next" href={next.href} title={`Next ${noun} ( ] )`}>
+        <S.PrevNextLink href={next.href} title={`Next ${noun} ( ] )`}>
           <span>{next.title}</span>
           <Icon name="arrowRight" size={14} />
-        </a>
+        </S.PrevNextLink>
       ) : (
         <span />
       )}
-    </div>
+    </S.PrevNext>
   );
 }

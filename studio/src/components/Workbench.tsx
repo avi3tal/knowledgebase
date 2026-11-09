@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
+import * as S from "./Workbench.style";
 
 /**
  * The layout every studio page uses:
@@ -21,6 +22,9 @@ export interface Pane {
   /** px; default 280 (left) / 320 (right) */
   width?: number;
 }
+
+/** Selector of the Workbench center (the scroller), for `closest()` lookups. */
+export const CENTER_SELECTOR = "[data-wb-center]";
 
 const KEY = (id: string, side: string) => `kb.workbench.${id}.${side}`;
 
@@ -76,35 +80,34 @@ function SidePane({
 }) {
   if (collapsed)
     return (
-      <button
-        className={`wb-rail wb-rail-${side}`}
+      <S.Rail
+        $side={side}
         onClick={() => setCollapsed(false)}
         title={`Show ${pane.title}`}
         aria-label={`Show ${pane.title}`}
       >
         <Icon name={side === "left" ? "sidebar" : "sidebarRight"} size={16} />
-        <span className="wb-rail-title">{pane.title}</span>
-      </button>
+        <S.RailTitle>{pane.title}</S.RailTitle>
+      </S.Rail>
     );
   return (
-    <aside
-      className={`wb-pane wb-${side}`}
-      style={{ ["--w" as string]: `${pane.width ?? (side === "left" ? 280 : 320)}px` }}
+    <S.Pane
+      $side={side}
+      $width={pane.width ?? (side === "left" ? 280 : 320)}
       aria-label={pane.title}
     >
-      <div className="wb-pane-head">
-        <span className="wb-pane-title">{pane.title}</span>
-        <button
-          className="wb-collapse"
+      <S.PaneHead>
+        <span>{pane.title}</span>
+        <S.Collapse
           onClick={() => setCollapsed(true)}
           title={`Hide ${pane.title}`}
           aria-label={`Hide ${pane.title}`}
         >
           <Icon name={side === "left" ? "sidebar" : "sidebarRight"} size={15} />
-        </button>
-      </div>
-      <div className="wb-pane-body">{pane.content}</div>
-    </aside>
+        </S.Collapse>
+      </S.PaneHead>
+      <S.PaneBody>{pane.content}</S.PaneBody>
+    </S.Pane>
   );
 }
 
@@ -116,7 +119,7 @@ export function Workbench({
   right,
   footer,
   children,
-  centerClass = "",
+  flush = false,
   leftCollapsed: leftInitial = false,
 }: {
   /** remembers collapsed panes per page kind, e.g. "reader" / "console" */
@@ -127,7 +130,8 @@ export function Workbench({
   right?: Pane;
   footer?: ReactNode;
   children: ReactNode;
-  centerClass?: string;
+  /** the center has no padding and doesn't scroll (graph / diagram canvases fill it) */
+  flush?: boolean;
   /** start with the left pane folded to its rail (reading pages); a user's choice is remembered */
   leftCollapsed?: boolean;
 }) {
@@ -173,14 +177,14 @@ export function Workbench({
     };
   }, []);
   return (
-    <div className="workbench" ref={ref} style={{ ["--wb-top" as string]: `${top}px` }}>
+    <S.Root ref={ref} $top={top}>
       {(header || tabs) && (
-        <header className={`wb-header ${tabs ? "has-tabs" : ""}`}>
+        <S.Header $tabs={!!tabs}>
           {header}
-          {tabs && <nav className="wb-tabs">{tabs}</nav>}
-        </header>
+          {tabs && <S.Tabs>{tabs}</S.Tabs>}
+        </S.Header>
       )}
-      <div className="wb-body">
+      <S.Body>
         {left && (
           <SidePane
             side="left"
@@ -189,8 +193,9 @@ export function Workbench({
             setCollapsed={setLeftCollapsed}
           />
         )}
-        <main
-          className={`wb-center ${centerClass}`}
+        <S.Center
+          data-wb-center=""
+          $flush={flush}
           onPointerDown={() => {
             if (narrow) {
               setLeftNarrow(true);
@@ -199,7 +204,7 @@ export function Workbench({
           }}
         >
           {children}
-        </main>
+        </S.Center>
         {right && (
           <SidePane
             side="right"
@@ -208,8 +213,55 @@ export function Workbench({
             setCollapsed={setRightCollapsed}
           />
         )}
-      </div>
-      {footer && <footer className="wb-footer">{footer}</footer>}
-    </div>
+      </S.Body>
+      {footer && <S.Footer>{footer}</S.Footer>}
+    </S.Root>
+  );
+}
+
+/**
+ * A tab on the Workbench header's bottom edge: a link (`href`) or a button (`onClick`), with an
+ * optional count badge (`done` turns it green) and underline colour.
+ */
+export function WorkbenchTab({
+  on,
+  href,
+  onClick,
+  color,
+  badge,
+  done = false,
+  title,
+  children,
+}: {
+  on: boolean;
+  href?: string;
+  onClick?: () => void;
+  color?: string;
+  badge?: ReactNode;
+  done?: boolean;
+  title?: string;
+  children: ReactNode;
+}) {
+  const content = (
+    <>
+      {children}
+      {badge !== undefined && badge !== null && <S.TabBadge $done={done}>{badge}</S.TabBadge>}
+    </>
+  );
+  return href ? (
+    <S.Tab
+      as="a"
+      href={href}
+      $on={on}
+      $color={color}
+      title={title}
+      aria-current={on ? "page" : undefined}
+    >
+      {content}
+    </S.Tab>
+  ) : (
+    <S.Tab type="button" onClick={onClick} $on={on} $color={color} title={title} aria-pressed={on}>
+      {content}
+    </S.Tab>
   );
 }

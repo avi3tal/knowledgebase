@@ -149,3 +149,6 @@ export const t = {
 export function colorDeclarations(c: Colors): string {
   return (Object.keys(c) as (keyof Colors)[]).map((k) => `${cssVarName(k)}: ${c[k]};`).join("\n");
 }
+
+/** Re-exported so components import theming from the theme module, never from styled-components. */
+export { ThemeProvider } from "styled-components";

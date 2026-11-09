@@ -416,7 +416,7 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
       left={{ title: "Legend & filters", icon: "🎛️", content: left, width: 260 }}
       right={{ title: sel ? "Topic" : "Details", icon: "🔎", content: details }}
       footer={footer}
-      centerClass={view === "graph" ? "flush" : ""}
+      flush={view === "graph"}
     >
       {view === "graph" ? graphView : gridView}
     </Workbench>

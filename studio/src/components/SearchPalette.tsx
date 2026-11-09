@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ProblemRow, Subject } from "../api";
 import { api } from "../api";
 import { SUBJECT_SHORT } from "../catalog";
+import * as S from "./SearchPalette.style";
 import { buildIndex, search } from "../search";
 
 /** ⌘K / Ctrl+K palette: jump to any topic or problem in any subject. */
@@ -39,9 +40,9 @@ export function SearchPalette({ subjects, onClose }: { subjects: Subject[]; onCl
   };
 
   return (
-    <div className="palette-backdrop" onClick={onClose}>
-      <div className="palette" onClick={(e) => e.stopPropagation()}>
-        <input
+    <S.Backdrop onClick={onClose}>
+      <S.Palette onClick={(e) => e.stopPropagation()}>
+        <S.Input
           ref={input}
           placeholder="Search topics and problems across all subjects…"
           value={query}
@@ -51,30 +52,30 @@ export function SearchPalette({ subjects, onClose }: { subjects: Subject[]; onCl
           }}
           onKeyDown={onKey}
         />
-        <ul>
+        <S.Results>
           {results.map((r, i) => (
-            <li
+            <S.Result
               key={`${r.subject}:${r.kind}:${r.id}`}
-              className={i === cursor ? "on" : ""}
+              $on={i === cursor}
               onMouseEnter={() => setCursor(i)}
               onClick={() => go(r.href)}
             >
-              <span className="p-icon">{r.icon}</span>
-              <span className="p-title">{r.title}</span>
-              <span className="p-detail">{r.detail}</span>
-              <span className={`p-subject ${r.locked ? "locked" : ""}`}>
+              <S.ResultIcon>{r.icon}</S.ResultIcon>
+              <S.ResultTitle>{r.title}</S.ResultTitle>
+              <S.Detail>{r.detail}</S.Detail>
+              <S.Subject $locked={!!r.locked}>
                 {r.kind} · {SUBJECT_SHORT[r.subject] ?? r.subject}
-              </span>
-            </li>
+              </S.Subject>
+            </S.Result>
           ))}
-          {query && results.length === 0 && <li className="muted">No matches</li>}
+          {query && results.length === 0 && <S.Hint>No matches</S.Hint>}
           {!query && (
-            <li className="muted">
+            <S.Hint>
               Try “window”, “cache”, “two sum”, “heap”… ↑↓ to move, ⏎ to open, esc to close
-            </li>
+            </S.Hint>
           )}
-        </ul>
-      </div>
-    </div>
+        </S.Results>
+      </S.Palette>
+    </S.Backdrop>
   );
 }

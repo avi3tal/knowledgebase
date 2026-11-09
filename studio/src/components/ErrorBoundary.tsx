@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Component } from "react";
+import * as S from "./ErrorBoundary.style";
 
 /** Keeps one broken widget (a figure, a trace) from blanking the whole page. */
 export class ErrorBoundary extends Component<
@@ -13,9 +14,9 @@ export class ErrorBoundary extends Component<
   render() {
     if (this.state.error)
       return (
-        <p className="why wrong">
+        <S.Message>
           Could not render {this.props.label ?? "this block"}: {this.state.error.message}
-        </p>
+        </S.Message>
       );
     return this.props.children;
   }

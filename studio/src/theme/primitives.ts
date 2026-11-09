@@ -82,8 +82,18 @@ const danger = css`
   }
 `;
 
-export type ButtonVariant = "default" | "primary" | "ghost" | "danger";
-const VARIANT = { default: css``, primary, ghost, danger };
+const dangerSolid = css`
+  background: ${t.bad};
+  border-color: ${t.bad};
+  color: #fff;
+  &:hover:not(:disabled) {
+    border-color: ${t.bad};
+    background: color-mix(in srgb, ${t.bad} 88%, #000);
+  }
+`;
+
+export type ButtonVariant = "default" | "primary" | "ghost" | "danger" | "dangerSolid";
+const VARIANT = { default: css``, primary, ghost, danger, dangerSolid };
 
 /** A button; `as="a"` for links that look like buttons. `$size="sm"` is the compact 28px form. */
 export const Button = styled.button<{ $variant?: ButtonVariant; $size?: "sm" | "md" }>`

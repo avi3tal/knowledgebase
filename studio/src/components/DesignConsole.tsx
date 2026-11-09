@@ -580,7 +580,7 @@ export function DesignConsole({
         left={left}
         right={right}
         footer={footer}
-        centerClass={onDiagramTab ? "flush" : ""}
+        flush={onDiagramTab}
       >
         {tab === "high-level" && (
           <HighLevelEditor

@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "../theme/primitives";
+import * as S from "./ConfirmDialog.style";
 
 /** In-page modal confirmation (never window.confirm). Esc cancels, Enter confirms. */
 export function ConfirmDialog({
@@ -29,9 +31,8 @@ export function ConfirmDialog({
   // Portal: the page content keeps a transform from its entry animation, which would
   // otherwise make this fixed overlay position relative to <main>.
   return createPortal(
-    <div className="modal-backdrop" onClick={onNo}>
-      <div
-        className="modal"
+    <S.Backdrop onClick={onNo}>
+      <S.Modal
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -39,14 +40,14 @@ export function ConfirmDialog({
       >
         <h3>{title}</h3>
         {children}
-        <div className="modal-actions">
-          <button onClick={onNo}>{no}</button>
-          <button className={danger ? "danger solid" : "primary"} onClick={onYes} autoFocus>
+        <S.Actions>
+          <Button onClick={onNo}>{no}</Button>
+          <Button $variant={danger ? "dangerSolid" : "primary"} onClick={onYes} autoFocus>
             {yes}
-          </button>
-        </div>
-      </div>
-    </div>,
+          </Button>
+        </S.Actions>
+      </S.Modal>
+    </S.Backdrop>,
     document.body,
   );
 }
@@ -66,12 +67,14 @@ export function ConfirmBar({
   onNo: () => void;
 }) {
   return (
-    <span className="confirm-bar" role="alertdialog">
+    <S.Bar role="alertdialog">
       <span>{text}</span>
-      <button className={danger ? "danger solid" : "primary"} onClick={onYes}>
+      <Button $size="sm" $variant={danger ? "dangerSolid" : "primary"} onClick={onYes}>
         {yes}
-      </button>
-      <button onClick={onNo}>Cancel</button>
-    </span>
+      </Button>
+      <Button $size="sm" onClick={onNo}>
+        Cancel
+      </Button>
+    </S.Bar>
   );
 }

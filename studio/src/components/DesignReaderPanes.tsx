@@ -36,7 +36,7 @@ export function ProblemList({
 
   // Bring the current problem into view in a long list.
   useEffect(() => {
-    listRef.current?.querySelector(".rd-prob.current")?.scrollIntoView({ block: "nearest" });
+    listRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest" });
   }, [rows]);
 
   return (

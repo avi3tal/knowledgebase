@@ -1,3 +1,5 @@
+import { Svg } from "./Icon.style";
+
 /** A small stroke icon set for the app chrome (24×24 viewBox, currentColor, no dependency). */
 const PATHS = {
   chevronDown: "M6 9l6 6 6-6",
@@ -31,15 +33,15 @@ export type IconName = keyof typeof PATHS;
 export function Icon({
   name,
   size = 16,
-  className = "",
+  className,
 }: {
   name: IconName;
   size?: number;
   className?: string;
 }) {
   return (
-    <svg
-      className={`icon ${className}`}
+    <Svg
+      className={className}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -51,6 +53,6 @@ export function Icon({
       aria-hidden="true"
     >
       <path d={PATHS[name]} />
-    </svg>
+    </Svg>
   );
 }
