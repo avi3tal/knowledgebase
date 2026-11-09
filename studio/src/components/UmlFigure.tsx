@@ -1,6 +1,8 @@
 import { useId } from "react";
 import type { UmlFigure as UmlSpec, UmlRelation } from "../figures";
 import { STEREOTYPE_LABEL, UML, nearEnd, splitVisibility, umlEdge, umlLayout } from "../figures";
+import { FailMark } from "./FigureView.style";
+import * as S from "./UmlFigure.style";
 
 /** Marker shapes; each comes in three colours (normal / highlighted / failed). */
 const SHAPES = {
@@ -33,7 +35,7 @@ function ends(r: UmlRelation): [Shape | null, Shape | null, boolean] {
   }
 }
 
-const VIS_CLASS: Record<string, string> = { "+": "pub", "-": "priv", "#": "prot", "~": "pkg" };
+const VIS: Record<string, S.Visibility> = { "+": "pub", "-": "priv", "#": "prot", "~": "pkg" };
 
 /**
  * A UML class diagram: class boxes (stereotype, name, fields, methods) and relations with proper
@@ -52,12 +54,7 @@ export function UmlFigure({ f, active }: { f: UmlSpec; active: number }) {
   const marker = (s: Shape | null, t: Tone) => (s ? `url(#${uid}-${s}-${t})` : undefined);
 
   return (
-    <svg
-      className="fig-svg uml"
-      viewBox={`0 0 ${width} ${height}`}
-      style={{ maxWidth: width }}
-      role="img"
-    >
+    <S.Svg viewBox={`0 0 ${width} ${height}`} $maxWidth={width} role="img">
       <title>{f.title}</title>
       <defs>
         {TONES.flatMap((t) =>
@@ -75,7 +72,7 @@ export function UmlFigure({ f, active }: { f: UmlSpec; active: number }) {
                 markerUnits="userSpaceOnUse"
                 orient="auto"
               >
-                <path d={m.d} className={`uml-head ${m.fill} ${t}`} />
+                <S.Head d={m.d} $fill={m.fill} $tone={t} />
               </marker>
             );
           }),
@@ -87,15 +84,17 @@ export function UmlFigure({ f, active }: { f: UmlSpec; active: number }) {
         if (!a || !b) return null;
         const key = `${r.from}>${r.to}`;
         const tone = toneOf(key, litEdges);
-        const state = tone !== "base" ? tone : dim ? "dim" : "";
+        const state: S.UmlState = tone !== "base" ? tone : dim ? "dim" : "";
         const [startShape, endShape, dashed] = ends(r);
         const { start, end } = umlEdge(a, b);
         const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
         const fromM = nearEnd(start, end);
         const toM = nearEnd(end, start);
         return (
-          <g key={key} className={`uml-rel ${r.type} ${dashed ? "dashed" : ""} ${state}`}>
-            <line
+          <S.Rel key={key} $state={state}>
+            <S.Line
+              $state={state}
+              $dashed={dashed}
               x1={start.x}
               y1={start.y}
               x2={end.x}
@@ -104,82 +103,76 @@ export function UmlFigure({ f, active }: { f: UmlSpec; active: number }) {
               markerEnd={marker(endShape, tone)}
             />
             {r.label && (
-              <text className="uml-rel-label" x={mid.x} y={mid.y - 6} textAnchor="middle">
+              <S.RelLabel $on={state === "on"} x={mid.x} y={mid.y - 6} textAnchor="middle">
                 {r.label}
-              </text>
+              </S.RelLabel>
             )}
             {r.from_mult && (
-              <text className="uml-mult" x={fromM.x} y={fromM.y + 4} textAnchor="middle">
+              <S.Mult $on={state === "on"} x={fromM.x} y={fromM.y + 4} textAnchor="middle">
                 {r.from_mult}
-              </text>
+              </S.Mult>
             )}
             {r.to_mult && (
-              <text className="uml-mult" x={toM.x} y={toM.y + 4} textAnchor="middle">
+              <S.Mult $on={state === "on"} x={toM.x} y={toM.y + 4} textAnchor="middle">
                 {r.to_mult}
-              </text>
+              </S.Mult>
             )}
             {tone === "failed" && (
-              <text className="flow-fail" x={mid.x} y={mid.y + 6} textAnchor="middle">
+              <FailMark x={mid.x} y={mid.y + 6} textAnchor="middle">
                 ✕
-              </text>
+              </FailMark>
             )}
-          </g>
+          </S.Rel>
         );
       })}
       {f.classes.map((c) => {
         const b = boxes.get(c.id);
         if (!b) return null;
         const tone = toneOf(c.id, litNodes);
-        const state = tone !== "base" ? tone : dim ? "dim" : "";
+        const state: S.UmlState = tone !== "base" ? tone : dim ? "dim" : "";
         const r = 6;
         const headerPath = `M0,${b.header} V${r} A${r},${r} 0 0 1 ${r},0 H${b.w - r} A${r},${r} 0 0 1 ${b.w},${r} V${b.header} Z`;
         const nameY = UML.padY + (c.stereotype ? UML.stereo : 0) + 15;
         const member = (text: string, i: number, top: number) => {
           const [vis, rest] = splitVisibility(text);
           return (
-            <text
-              key={i}
-              className="uml-member"
-              x={UML.padX}
-              y={top + UML.padY + i * UML.line + 13}
-            >
-              {vis && <tspan className={`uml-vis ${VIS_CLASS[vis] ?? ""}`}>{vis} </tspan>}
+            <S.Member key={i} x={UML.padX} y={top + UML.padY + i * UML.line + 13}>
+              {vis && <S.Vis $vis={VIS[vis]}>{vis} </S.Vis>}
               <tspan>{rest}</tspan>
-            </text>
+            </S.Member>
           );
         };
         const methodsTop = b.header + b.fields;
         return (
-          <g
-            key={c.id}
-            className={`uml-class ${c.stereotype ?? ""} ${state}`}
-            transform={`translate(${b.x} ${b.y})`}
-          >
-            <rect className="uml-box" width={b.w} height={b.h} rx={r} />
-            <path className="uml-header" d={headerPath} />
+          <S.Class key={c.id} $state={state} transform={`translate(${b.x} ${b.y})`}>
+            <S.Box width={b.w} height={b.h} rx={r} />
+            <S.Header $state={state} d={headerPath} />
             {c.stereotype && (
-              <text className="uml-stereo" x={b.w / 2} y={UML.padY + 10} textAnchor="middle">
+              <S.Stereo x={b.w / 2} y={UML.padY + 10} textAnchor="middle">
                 {STEREOTYPE_LABEL[c.stereotype]}
-              </text>
+              </S.Stereo>
             )}
-            <text className="uml-name" x={b.w / 2} y={nameY} textAnchor="middle">
+            <S.Name
+              $abstract={c.stereotype === "abstract"}
+              x={b.w / 2}
+              y={nameY}
+              textAnchor="middle"
+            >
               {c.name}
-            </text>
-            <line className="uml-sep" x1={0} y1={b.header} x2={b.w} y2={b.header} />
+            </S.Name>
+            <S.Sep x1={0} y1={b.header} x2={b.w} y2={b.header} />
             {(c.fields ?? []).map((m, i) => member(m, i, b.header))}
-            {b.methods > 0 && (
-              <line className="uml-sep" x1={0} y1={methodsTop} x2={b.w} y2={methodsTop} />
-            )}
+            {b.methods > 0 && <S.Sep x1={0} y1={methodsTop} x2={b.w} y2={methodsTop} />}
             {(c.methods ?? []).map((m, i) => member(m, i, methodsTop))}
-            <rect className="uml-outline" width={b.w} height={b.h} rx={r} />
+            <S.Outline $state={state} width={b.w} height={b.h} rx={r} />
             {tone === "failed" && (
-              <text className="flow-fail" x={b.w - 10} y={16} textAnchor="middle">
+              <FailMark x={b.w - 10} y={16} textAnchor="middle">
                 ✕
-              </text>
+              </FailMark>
             )}
-          </g>
+          </S.Class>
         );
       })}
-    </svg>
+    </S.Svg>
   );
 }

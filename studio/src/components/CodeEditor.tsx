@@ -2,6 +2,7 @@ import type { KeyboardEvent } from "react";
 import { useRef } from "react";
 import { useHighlighted } from "../highlight";
 import { Tokens } from "./CodeBlock";
+import * as S from "./CodeEditor.style";
 
 /**
  * A textarea with live syntax highlighting: a highlighted <pre> underlay sits behind a textarea
@@ -13,29 +14,31 @@ export function CodeEditor({
   lang,
   onKeyDown,
   label,
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
   lang: string;
   onKeyDown?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
   label: string;
+  /** lets a parent size the editor with `styled(CodeEditor)` */
+  className?: string;
 }) {
   const under = useRef<HTMLPreElement>(null);
   const tokens = useHighlighted(value, lang);
   const lines = value.split("\n");
   return (
-    <div className="ce">
-      <pre className="ce-under" ref={under} aria-hidden="true">
+    <S.Editor className={className}>
+      <S.Under ref={under} aria-hidden="true">
         <code>
           {lines.map((text, i) => (
-            <span key={i} className="ce-line">
+            <S.Line key={i}>
               <Tokens line={tokens?.[i]} text={text} />
-            </span>
+            </S.Line>
           ))}
         </code>
-      </pre>
-      <textarea
-        className="ce-input"
+      </S.Under>
+      <S.Input
         aria-label={label}
         spellCheck={false}
         autoCapitalize="off"
@@ -51,6 +54,6 @@ export function CodeEditor({
           u.scrollLeft = e.currentTarget.scrollLeft;
         }}
       />
-    </div>
+    </S.Editor>
   );
 }

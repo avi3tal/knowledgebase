@@ -8,7 +8,9 @@ import { metaOf, parseMeta, rehypeCodeTabs, rehypeKeepMeta, type HastLike } from
 import { RootContext } from "../context";
 import { linkTarget } from "../links";
 import { slugify, uniqueId } from "../toc";
+import { Callout, DialogueLine } from "./Callout";
 import { CodeBlock, CodeTabs, type CodeSpec } from "./CodeBlock";
+import * as S from "./Markdown.style";
 
 const textOf = (n: ReactNode): string =>
   typeof n === "string" || typeof n === "number"
@@ -39,6 +41,18 @@ const specOf = (pre: HastLike | undefined): CodeSpec | undefined => {
   };
 };
 
+/** Props of the custom elements callouts.ts emits (attributes arrive as lower-case props). */
+interface CalloutProps {
+  kind?: string;
+  heading?: string;
+  children?: ReactNode;
+}
+interface DialogueProps {
+  speaker?: string;
+  who?: string;
+  children?: ReactNode;
+}
+
 /**
  * Content is authored in this repo (trusted), so raw HTML such as <details> spoilers is allowed.
  * `fence(lang, body)` may replace a fenced code block (e.g. ```diagram v2```) with a component;
@@ -49,11 +63,13 @@ export function Markdown({
   path,
   fence,
   anchors = false,
+  className,
 }: {
   text: string;
   path: string;
   fence?: (lang: string, body: string) => ReactNode | undefined;
   anchors?: boolean;
+  className?: string;
 }) {
   const root = useContext(RootContext);
   const seen = new Map<string, number>();
@@ -64,7 +80,7 @@ export function Markdown({
       return <Tag id={id}>{children}</Tag>;
     };
   return (
-    <div className="markdown">
+    <S.Prose className={className}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeKeepMeta, rehypeRaw, rehypeCodeTabs]}
@@ -72,6 +88,16 @@ export function Markdown({
           {
             h2: heading("h2"),
             h3: heading("h3"),
+            "kb-callout": ({ kind, heading: title, children }: CalloutProps) => (
+              <Callout kind={kind ?? "note"} heading={title}>
+                {children}
+              </Callout>
+            ),
+            "kb-line": ({ speaker, who, children }: DialogueProps) => (
+              <DialogueLine speaker={speaker ?? ""} who={who ?? ""}>
+                {children}
+              </DialogueLine>
+            ),
             codetabs: ({ node }: { node?: HastLike }) => (
               <CodeTabs
                 items={(node?.children ?? []).flatMap((p) => {
@@ -113,6 +139,6 @@ export function Markdown({
       >
         {expandCallouts(text)}
       </ReactMarkdown>
-    </div>
+    </S.Prose>
   );
 }
