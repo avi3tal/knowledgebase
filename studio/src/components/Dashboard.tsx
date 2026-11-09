@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Feedback, Topic } from "../api";
-import { SUBJECT_ICON, SUBJECT_SHORT, groupLabel, groupTopics, topicIcon } from "../catalog";
+import { groupLabel, groupTopics, topicIcon } from "../catalog";
 import {
   masteryIcon,
   pct,
@@ -14,9 +14,10 @@ import { STATUS_ICON } from "../reader";
 import { problemHref } from "../route";
 import type { NavGroup } from "./panes";
 import { NavList } from "./panes";
-import { Stat, StatusBar } from "./PracticeBench";
+import { StatusBar } from "./PracticeBench";
 import { Ring } from "./Ring";
 import { Workbench } from "./Workbench";
+import { PageHeader } from "./PageHeader";
 
 /** Topics worth a progress tile: practised or taught. Grouped like the Learn tab. */
 export function progressGroups(data: Feedback, topics: Topic[]) {
@@ -86,32 +87,23 @@ export function Dashboard({ data, topics }: { data: Feedback; topics: Topic[] })
   );
 
   const header = (
-    <div className="rd-header pb-head">
-      <div className="rd-icon">📈</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className="pb-kicker">
-            {SUBJECT_ICON[subject] ?? "📘"} {SUBJECT_SHORT[subject] ?? subject}
-          </span>
-          <span className="muted small">
-            computed by <code>kb feedback</code> from your private workspace · today {data.today}
-          </span>
-        </div>
-        <h1>Your progress</h1>
-        <div className="pb-stats">
-          <Stat n={totals.topics} label="topics" />
-          <Stat n={totals.lessons} label="lessons" />
-          <Stat n={totals.solved} label="solved" tone="ok" />
-          <Stat n={totals.failing} label="failing" tone="bad" />
-          <Stat n={totals.untried} label="untried" />
-          <Stat n={totals.quiz === null ? "—" : `${Math.round(totals.quiz * 100)}%`} label="quiz" />
-          {totals.due > 0 && <Stat n={totals.due} label="reviews due" tone="warn" />}
-        </div>
-      </div>
-      <div className="pb-ring" title="problems solved">
-        <Ring solved={totals.solved} failing={totals.failing} total={totals.total} size={64} />
-      </div>
-    </div>
+    <PageHeader
+      title="Your progress"
+      meta={[
+        <span>{totals.topics} topics</span>,
+        <span>{totals.lessons} lessons</span>,
+        <span className="status solved">{totals.solved} solved</span>,
+        totals.failing > 0 && <span className="status failing">{totals.failing} failing</span>,
+        <span>{totals.untried} not started</span>,
+        <span>quiz {totals.quiz === null ? "—" : `${Math.round(totals.quiz * 100)}%`}</span>,
+        totals.due > 0 && <span className="status started">{totals.due} reviews due</span>,
+      ]}
+      actions={
+        <span title="problems solved">
+          <Ring solved={totals.solved} failing={totals.failing} total={totals.total} size={44} />
+        </span>
+      }
+    />
   );
 
   const tab = (g: string, label: string, n: number, color?: string) => (

@@ -8,12 +8,10 @@ import type {
   ProblemCardData,
   ProblemRow,
   Session,
-  Subject,
   SubjectsResponse,
   TopicPageData,
 } from "./api";
 import { api } from "./api";
-import { SUBJECT_ICON, SUBJECT_SHORT, topicIcon } from "./catalog";
 import { Dashboard } from "./components/Dashboard";
 import { LessonView } from "./components/LessonView";
 import { ProblemCard } from "./components/ProblemCard";
@@ -25,20 +23,12 @@ import { SubjectHome } from "./components/SubjectHome";
 import { SubjectMap } from "./components/SubjectMap";
 import { TopicPage } from "./components/TopicPage";
 import { RootContext, SubjectContext } from "./context";
-import type { Route, Tab } from "./route";
-import { TAB_HREF, designHref, parseRoute, problemHref, tabOf } from "./route";
+import type { Route } from "./route";
+import { parseRoute, problemHref, tabOf } from "./route";
+import { TopBar } from "./components/TopBar";
+import { isTyping } from "./components/PageHeader";
 import { DesignConsole } from "./components/DesignConsole";
 import { DesignProblemPage } from "./components/DesignProblemPage";
-
-/** True when a key press is going into a text field (so global hotkeys must not steal it). */
-function isTyping(t: EventTarget | null): boolean {
-  return (
-    t instanceof HTMLInputElement ||
-    t instanceof HTMLTextAreaElement ||
-    t instanceof HTMLSelectElement ||
-    (t instanceof HTMLElement && t.isContentEditable)
-  );
-}
 
 type Page =
   | { kind: "home"; data: Feedback | null }
@@ -66,14 +56,31 @@ function useRoute(): Route {
 type Theme = "light" | "dark";
 
 function useTheme(): [Theme, () => void] {
-  const [theme, setTheme] = useState<Theme>(() =>
-    localStorage.getItem("kb-theme") === "dark" ? "dark" : "light",
+  // An explicit choice (stored) wins; otherwise follow the OS setting.
+  const [chosen, setChosen] = useState<Theme | null>(() => {
+    const v = localStorage.getItem("kb-theme");
+    return v === "dark" || v === "light" ? v : null;
+  });
+  const [system, setSystem] = useState<Theme>(() =>
+    window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light",
   );
   useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mq) return;
+    const on = () => setSystem(mq.matches ? "dark" : "light");
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const theme = chosen ?? system;
+  useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem("kb-theme", theme);
   }, [theme]);
-  return [theme, useCallback(() => setTheme((t) => (t === "light" ? "dark" : "light")), [])];
+  const toggle = useCallback(() => {
+    const next: Theme = theme === "light" ? "dark" : "light";
+    localStorage.setItem("kb-theme", next);
+    setChosen(next);
+  }, [theme]);
+  return [theme, toggle];
 }
 
 function load(route: Route): Promise<Page> {
@@ -116,13 +123,6 @@ function load(route: Route): Promise<Page> {
   }
 }
 
-const TABS: { tab: Tab; label: string; icon: string; open?: boolean }[] = [
-  { tab: "learn", label: "Learn", icon: "📖" },
-  { tab: "problems", label: "Problems", icon: "🧪", open: true },
-  { tab: "map", label: "Knowledge map", icon: "🗺️" },
-  { tab: "progress", label: "Progress", icon: "📈", open: true },
-];
-
 export function App() {
   const route = useRoute();
   const [theme, toggleTheme] = useTheme();
@@ -158,58 +158,21 @@ export function App() {
 
   const current = subjects?.subjects.find((s) => s.id === route.subject);
   const tab = tabOf(route);
-  const locked = current?.status === "locked";
 
   return (
     <RootContext.Provider value={subjects?.root ?? ""}>
       <SubjectContext.Provider
         value={{ subject: current ?? null, subjects: subjects?.subjects ?? [] }}
       >
-        <header className="topbar">
-          <a className="brand" href="#/">
-            <span className="brand-mark">kb</span> studio
-          </a>
-          <nav className="subject-tabs">
-            {subjects?.subjects.map((s) => (
-              <a
-                key={s.id}
-                href={TAB_HREF.learn(s.id)}
-                className={`subject-tab ${s.id === route.subject && tab !== "sessions" ? "on" : ""} ${s.status === "locked" ? "locked" : ""}`}
-                title={s.status === "locked" ? "Lessons coming — map and resources ready" : s.title}
-              >
-                <span>{SUBJECT_ICON[s.id] ?? "📘"}</span> {SUBJECT_SHORT[s.id] ?? s.title}
-                {s.status === "locked" && <span className="lock">🔒</span>}
-              </a>
-            ))}
-          </nav>
-          <span className="grow" />
-          <a href="#/sessions" className={`sessions-link ${tab === "sessions" ? "on" : ""}`}>
-            🎯 Sessions
-          </a>
-          <button className="search-trigger" onClick={() => setSearching(true)}>
-            🔍 Search <kbd>⌘K</kbd>
-          </button>
-          <button
-            className="icon-btn"
-            onClick={toggleTheme}
-            title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-          >
-            {theme === "light" ? "🌙" : "☀️"}
-          </button>
-        </header>
-        <nav className={`subtabs ${tab === "sessions" ? "hidden" : ""}`}>
-          {TABS.filter((t) => !(locked && t.open)).map((t) => (
-            <a
-              key={t.tab}
-              href={TAB_HREF[t.tab](route.subject)}
-              className={`subtab ${t.tab === tab ? "on" : ""}`}
-            >
-              {t.icon} {t.label}
-            </a>
-          ))}
-        </nav>
+        <TopBar
+          subjects={subjects?.subjects ?? []}
+          current={current}
+          tab={tab}
+          theme={theme}
+          onTheme={toggleTheme}
+          onSearch={() => setSearching(true)}
+        />
         <main className="content bench" key={window.location.hash}>
-          {current && <Crumbs route={route} subject={current} page={page} />}
           {error && <ErrorBox msg={error} route={route} />}
           {!error && !page && <div className="loader" aria-label="loading" />}
           {page?.kind === "home" && current && (
@@ -259,38 +222,6 @@ export function App() {
   );
 }
 
-/** Breadcrumbs for detail pages (lesson, topic, problem) back to the subject's grid. */
-function Crumbs({ route, subject, page }: { route: Route; subject: Subject; page: Page | null }) {
-  let leaf: string | null = null;
-  if (route.page === "lesson" || route.page === "topic") {
-    const t = subject.topics.find((x) => x.id === route.topic);
-    leaf = t ? `${topicIcon(t)} ${t.name}` : route.topic;
-  } else if (route.page === "problem") {
-    leaf = page?.kind === "problem" ? page.data.title : route.slug;
-  } else if (route.page === "design") {
-    leaf = page?.kind === "design" ? page.data.title : route.slug;
-  } else if (route.page === "console") {
-    return (
-      <div className="crumbs">
-        <a href={`#/problems/${subject.id}`}>Problems</a> <span>›</span>
-        <a href={designHref(subject.id, route.slug)}>
-          {page?.kind === "console" ? page.data.problem.title : route.slug}
-        </a>{" "}
-        <span>›</span> <b>{route.attempt}</b>
-      </div>
-    );
-  }
-  if (!leaf) return null;
-  const parent =
-    route.page === "problem" || route.page === "design"
-      ? ["problems", "Problems"]
-      : ["home", "Learn"];
-  return (
-    <div className="crumbs">
-      <a href={`#/${parent[0]}/${subject.id}`}>{parent[1]}</a> <span>›</span> <b>{leaf}</b>
-    </div>
-  );
-}
 function ErrorBox({ msg, route }: { msg: string; route: Route }) {
   const missingLesson = route.page === "lesson" && msg.includes("404");
   return (

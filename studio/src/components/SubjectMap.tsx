@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Graph, Subject } from "../api";
-import { SUBJECT_ICON, groupLabel, groupOf, groupTopics, topicIcon } from "../catalog";
+import { groupLabel, groupOf, groupTopics, topicIcon } from "../catalog";
 import type { MapNode } from "../learn-bench";
 import {
   edgePath,
@@ -15,6 +15,7 @@ import {
 } from "../learn-bench";
 import { TopicLinks } from "./LearnBenchParts";
 import { Workbench } from "./Workbench";
+import { PageHeader } from "./PageHeader";
 
 type View = "graph" | "grid";
 
@@ -54,22 +55,14 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
     });
 
   const header = (
-    <div className="rd-header lb-header">
-      <div className="rd-icon">🗺️</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className="lb-group-pill">
-            {SUBJECT_ICON[subject.id] ?? "📘"} {subject.title}
-          </span>
-          {subject.status === "locked" && <span className="tag">🔒 locked — lessons coming</span>}
-        </div>
-        <h1>Knowledge map</h1>
-        <p className="lb-usage">
-          Every topic with its prerequisites, related topics, practice problems and resources. Click
-          a topic for details.
-        </p>
-      </div>
-    </div>
+    <PageHeader
+      title="Knowledge map"
+      meta={[
+        <span>{subject.title}</span>,
+        subject.status === "locked" && <span>Lessons coming</span>,
+      ]}
+      sub="Every topic with its prerequisites, related topics, practice problems and resources. Click a topic for details."
+    />
   );
 
   const tab = (v: View, icon: string, label: string, colour: string) => (

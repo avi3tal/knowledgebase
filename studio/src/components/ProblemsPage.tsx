@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from "react";
 import type { ProblemRow } from "../api";
-import { SUBJECT_ICON, SUBJECT_SHORT, groupLabel, groupTopics, topicIcon } from "../catalog";
+import { groupLabel, groupTopics, topicIcon } from "../catalog";
 import { SubjectContext } from "../context";
 import type { Status } from "../practice-bench";
 import {
@@ -17,9 +17,10 @@ import { DIFFICULTIES, STATUS_ICON } from "../reader";
 import { DESIGN_SUBJECTS, problemHref } from "../route";
 import type { NavGroup } from "./panes";
 import { NavList } from "./panes";
-import { StatusBar, Stat } from "./PracticeBench";
+import { StatusBar } from "./PracticeBench";
 import { Ring } from "./Ring";
 import { Workbench } from "./Workbench";
+import { PageHeader } from "./PageHeader";
 
 const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 } as const;
 const STATUS_LABEL = { solved: "✓ solved", failing: "✗ failing", untried: "· untried" } as const;
@@ -44,8 +45,6 @@ export function filterProblems(rows: ProblemRow[], f: ProblemFilters): ProblemRo
         DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty] || a.title.localeCompare(b.title),
     );
 }
-
-const DIFF_ICON: Record<Difficulty, string> = { easy: "🌱", medium: "🔥", hard: "⚡" };
 
 /**
  * Every problem of a subject on the Workbench: topic filters left, the table in the center,
@@ -138,49 +137,38 @@ export function ProblemsPage(props: {
   }, [rows, subj, subject, filter, names]);
 
   const header = (
-    <div className="rd-header pb-head">
-      <div className="rd-icon">{SUBJECT_ICON[subject] ?? "🧪"}</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className="pb-kicker">Practice</span>
-          <span className="muted small">
-            mirrors <code>{subject}/problems/</code> · status from your runs
-          </span>
-        </div>
-        <h1>
-          {SUBJECT_SHORT[subject] ?? subject} problems
-          {filter.topic && <span className="pb-h1-sub"> · {topicName(filter.topic)}</span>}
-        </h1>
-        <div className="pb-stats">
-          <Stat n={all.total} label="problems" />
-          <Stat n={all.solved} label="solved" tone="ok" />
-          <Stat n={all.failing} label="failing" tone="bad" />
-          <Stat n={all.untried} label="untried" />
-        </div>
-      </div>
-      <div className="pb-ring">
-        <Ring solved={all.solved} failing={all.failing} total={all.total} size={64} />
-      </div>
-    </div>
+    <PageHeader
+      title={
+        <>
+          Problems
+          {filter.topic && <span className="ph-title-sub"> · {topicName(filter.topic)}</span>}
+        </>
+      }
+      meta={[
+        <span>{all.total} problems</span>,
+        <span className="status solved">{all.solved} solved</span>,
+        all.failing > 0 && <span className="status failing">{all.failing} failing</span>,
+        <span>{all.untried} not started</span>,
+      ]}
+      actions={<Ring solved={all.solved} failing={all.failing} total={all.total} size={44} />}
+    />
   );
 
-  const tab = (d: Difficulty | "", label: string, icon: string, n: number) => (
+  const tab = (d: Difficulty | "", label: string, n: number) => (
     <a
       key={d || "all"}
       className={`wb-tab pb-tab-${d || "all"} ${filter.difficulty === d ? "on" : ""}`}
       href={problemsHref(subject, { topic: filter.topic, difficulty: d })}
       aria-current={filter.difficulty === d ? "page" : undefined}
     >
-      {icon} {label}
+      {label}
       <span className="wb-tab-badge">{n}</span>
     </a>
   );
   const tabs = (
     <>
-      {tab("", "All", "🧪", inTopic.length)}
-      {DIFFICULTIES.map((d) =>
-        tab(d, d[0]!.toUpperCase() + d.slice(1), DIFF_ICON[d], tabDiff[d].total),
-      )}
+      {tab("", "All", inTopic.length)}
+      {DIFFICULTIES.map((d) => tab(d, d[0]!.toUpperCase() + d.slice(1), tabDiff[d].total))}
     </>
   );
 

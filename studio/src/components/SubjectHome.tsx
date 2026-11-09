@@ -12,6 +12,7 @@ import {
 import { NavList } from "./panes";
 import { Ring } from "./Ring";
 import { Workbench } from "./Workbench";
+import { PageHeader } from "./PageHeader";
 
 const GROUP_KEY = (subject: string) => `kb.learn-home.${subject}.group`;
 
@@ -76,43 +77,36 @@ export function SubjectHome({
   let card = 0;
 
   const header = (
-    <div className="rd-header lb-header">
-      <div className="rd-icon">{SUBJECT_ICON[subject.id] ?? "📘"}</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className="lb-group-pill">Learn</span>
-          {locked && <span className="muted small">🔒 lessons coming · map & resources ready</span>}
-        </div>
-        <h1>{subject.title}</h1>
-        <div className="lb-stats">
+    <PageHeader
+      icon={SUBJECT_ICON[subject.id] ?? "📘"}
+      title={subject.title}
+      meta={[
+        <span>{stats.topics} topics</span>,
+        <span>{stats.lessons} lessons</span>,
+        stats.problems > 0 && (
           <span>
-            <b>{stats.topics}</b> topics
+            {stats.solved}/{stats.problems} problems solved
           </span>
-          <span>
-            <b>{stats.lessons}</b> lessons
-          </span>
-          {stats.problems > 0 && (
-            <span>
-              <b>
-                {stats.solved}/{stats.problems}
-              </b>{" "}
-              problems solved
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="lb-hero-ring" title={`${stats.solved} of ${stats.problems} problems solved`}>
-        <Ring
-          solved={stats.solved}
-          failing={stats.failing}
-          total={stats.problems}
-          size={58}
-          label={
-            stats.problems ? `${Math.round((100 * stats.solved) / stats.problems)}%` : undefined
-          }
-        />
-      </div>
-    </div>
+        ),
+        locked && <span>Lessons coming · map and resources ready</span>,
+      ]}
+      actions={
+        stats.problems > 0 ? (
+          <div
+            className="lb-hero-ring"
+            title={`${stats.solved} of ${stats.problems} problems solved`}
+          >
+            <Ring
+              solved={stats.solved}
+              failing={stats.failing}
+              total={stats.problems}
+              size={44}
+              label={`${Math.round((100 * stats.solved) / stats.problems)}%`}
+            />
+          </div>
+        ) : undefined
+      }
+    />
   );
 
   const tabs = (
@@ -122,7 +116,7 @@ export function SubjectHome({
         onClick={() => setGroup("")}
         aria-pressed={group === ""}
       >
-        ✨ All <span className="wb-tab-badge">{subject.topics.length}</span>
+        All <span className="wb-tab-badge">{subject.topics.length}</span>
       </button>
       {groups.map((g) => {
         const lessons = g.topics.filter((t) => t.has_lesson).length;

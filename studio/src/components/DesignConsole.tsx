@@ -37,6 +37,7 @@ import type { CanvasHandle, Selection } from "./DiagramCanvas";
 import { Inspector } from "./Inspector";
 import { ShapePalette } from "./ShapePalette";
 import { Workbench } from "./Workbench";
+import { Icon } from "./Icon";
 import {
   ApiDataEditor,
   DeepDivesEditor,
@@ -374,9 +375,9 @@ export function DesignConsole({
 
   // ---- regions
   const header = (
-    <>
+    <div className="ch-row">
       <a className="ch-back" href={designHref(subject, slug)} title="Back to the problem">
-        ←
+        <Icon name="arrowLeft" size={16} />
       </a>
       <h1 className="ch-title">
         {problem.title} <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
@@ -390,7 +391,7 @@ export function DesignConsole({
         href={`vscode://file${initial.path}`}
         title="Open the attempt folder in VS Code"
       >
-        ⧉ VS Code
+        <Icon name="code" size={13} /> VS Code
       </a>
       <code className="cmd" onClick={copy} title={`click to copy: ${cmd}`}>
         {copied ? "copied ✓" : cmd}
@@ -418,9 +419,9 @@ export function DesignConsole({
         onClick={() => setConfirmSubmit(true)}
         disabled={busy !== null}
       >
-        {busy === "submit" ? "submitting…" : check.submitted ? "Re-submit" : "🚀 Submit"}
+        {busy === "submit" ? "submitting…" : check.submitted ? "Re-submit" : "Submit"}
       </button>
-    </>
+    </div>
   );
 
   const tabBar = tabs.map((t, i) => {
@@ -432,7 +433,7 @@ export function DesignConsole({
           onClick={() => setTab(t)}
           style={{ ["--tab-c" as string]: "#f59e0b" }}
         >
-          📖 Reference <span className="wb-tab-badge">🔓</span>
+          Reference
         </button>
       );
     const s = check.stages[t];
@@ -446,9 +447,6 @@ export function DesignConsole({
         aria-current={tab === t ? "step" : undefined}
       >
         <span className="tab-num">{i + 1}</span>
-        <span className="tab-icon" aria-hidden>
-          {STAGE_INFO[t].icon}
-        </span>
         {stageLabel(t, problem.stages)}
         <span className="wb-tab-badge">
           {s && s.total > 0 ? (done ? "✓" : `${s.passed}/${s.total}`) : "–"}

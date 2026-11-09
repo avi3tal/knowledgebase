@@ -1,19 +1,21 @@
 import type { ReactNode } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Icon } from "./Icon";
 
 /**
- * The shared page layout of the design reader and the design console:
+ * The layout every studio page uses:
  *
- *   header
- *   tabs
+ *   header (PageHeader) with the tabs on its bottom edge
  *   left pane | center | right pane
- *   footer
+ *   footer (slim prev / next)
  *
- * The page fills the viewport below the app bar; each pane scrolls on its own. Side panes collapse to
- * a thin rail (remembered per `id` + side in localStorage) and become overlays on narrow screens.
+ * The page fills the viewport below the top bar; each pane scrolls on its own. Side panes collapse to
+ * a thin rail (remembered per `id` + side in localStorage; `leftCollapsed` sets the first-visit
+ * default) and become overlays on narrow screens.
  */
 export interface Pane {
   title: string;
+  /** unused: pane chrome draws its own icons (kept so call sites need not change) */
   icon?: string;
   content: ReactNode;
   /** px; default 280 (left) / 320 (right) */
@@ -22,12 +24,17 @@ export interface Pane {
 
 const KEY = (id: string, side: string) => `kb.workbench.${id}.${side}`;
 
-function useCollapsed(id: string, side: "left" | "right"): [boolean, (v: boolean) => void] {
+function useCollapsed(
+  id: string,
+  side: "left" | "right",
+  initial = false,
+): [boolean, (v: boolean) => void] {
   const [v, setV] = useState(() => {
     try {
-      return localStorage.getItem(KEY(id, side)) === "1";
+      const stored = localStorage.getItem(KEY(id, side));
+      return stored === null ? initial : stored === "1";
     } catch {
-      return false;
+      return initial;
     }
   });
   useEffect(() => {
@@ -75,7 +82,7 @@ function SidePane({
         title={`Show ${pane.title}`}
         aria-label={`Show ${pane.title}`}
       >
-        <span className="wb-rail-icon">{pane.icon ?? (side === "left" ? "»" : "«")}</span>
+        <Icon name={side === "left" ? "sidebar" : "sidebarRight"} size={16} />
         <span className="wb-rail-title">{pane.title}</span>
       </button>
     );
@@ -86,17 +93,14 @@ function SidePane({
       aria-label={pane.title}
     >
       <div className="wb-pane-head">
-        <span className="wb-pane-title">
-          {pane.icon && <span className="wb-pane-icon">{pane.icon}</span>}
-          {pane.title}
-        </span>
+        <span className="wb-pane-title">{pane.title}</span>
         <button
           className="wb-collapse"
           onClick={() => setCollapsed(true)}
           title={`Hide ${pane.title}`}
           aria-label={`Hide ${pane.title}`}
         >
-          {side === "left" ? "«" : "»"}
+          <Icon name={side === "left" ? "sidebar" : "sidebarRight"} size={15} />
         </button>
       </div>
       <div className="wb-pane-body">{pane.content}</div>
@@ -113,6 +117,7 @@ export function Workbench({
   footer,
   children,
   centerClass = "",
+  leftCollapsed: leftInitial = false,
 }: {
   /** remembers collapsed panes per page kind, e.g. "reader" / "console" */
   id: string;
@@ -123,8 +128,10 @@ export function Workbench({
   footer?: ReactNode;
   children: ReactNode;
   centerClass?: string;
+  /** start with the left pane folded to its rail (reading pages); a user's choice is remembered */
+  leftCollapsed?: boolean;
 }) {
-  const [leftWide, setLeftWide] = useCollapsed(id, "left");
+  const [leftWide, setLeftWide] = useCollapsed(id, "left", leftInitial);
   const [rightWide, setRightWide] = useCollapsed(id, "right");
   // Narrow screens: panes float over the center, so they start closed (not remembered) and a click
   // in the center closes them again.
@@ -167,8 +174,12 @@ export function Workbench({
   }, []);
   return (
     <div className="workbench" ref={ref} style={{ ["--wb-top" as string]: `${top}px` }}>
-      {header && <header className="wb-header">{header}</header>}
-      {tabs && <nav className="wb-tabs">{tabs}</nav>}
+      {(header || tabs) && (
+        <header className={`wb-header ${tabs ? "has-tabs" : ""}`}>
+          {header}
+          {tabs && <nav className="wb-tabs">{tabs}</nav>}
+        </header>
+      )}
       <div className="wb-body">
         {left && (
           <SidePane

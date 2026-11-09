@@ -197,6 +197,20 @@ export function splitReadme(md: string): ReadmeParts {
   return { problem: problem.join("\n").trim(), learn: learn.join("\n").trim() };
 }
 
+/** A README without its title line and `> Difficulty: …` meta line (the page header shows both). */
+export function stripReadmeHead(md: string): string {
+  const lines = md.split("\n");
+  let i = 0;
+  while (
+    i < lines.length &&
+    (lines[i]?.trim() === "" ||
+      /^# /.test(lines[i] ?? "") ||
+      /^>\s*Difficulty:/i.test(lines[i] ?? ""))
+  )
+    i++;
+  return lines.slice(i).join("\n");
+}
+
 export interface SourceLink {
   name: string;
   url: string | null;

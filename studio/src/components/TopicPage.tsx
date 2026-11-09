@@ -16,6 +16,7 @@ import { NavList } from "./panes";
 import { CoTopics, TopicProblemList } from "./PracticeLinks";
 import { ResourceList } from "./Resources";
 import { Workbench } from "./Workbench";
+import { Icon } from "./Icon";
 
 type View = "overview" | "practice" | "resources";
 
@@ -42,9 +43,8 @@ export function TopicPage({ data }: { data: TopicPageData }) {
   const practiseHref = problemsHref(subj, { topic: topic.id, difficulty: "" });
   const state = data.state ?? (data.has_lesson ? "lesson" : "practice-only");
   const coTopics = data.co_topics ?? [];
-  const lessonCount = nav.flatMap((g) => g.items).filter((i) => !i.muted).length;
 
-  const tab = (v: View, icon: string, label: string, colour: string, badge?: number) => (
+  const tab = (v: View, label: string, colour: string, badge?: number) => (
     <button
       key={v}
       className={`wb-tab ${view === v ? "on" : ""}`}
@@ -52,7 +52,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
       onClick={() => setView(v)}
       aria-pressed={view === v}
     >
-      {icon} {label}
+      {label}
       {badge !== undefined && <span className="wb-tab-badge">{badge}</span>}
     </button>
   );
@@ -64,18 +64,18 @@ export function TopicPage({ data }: { data: TopicPageData }) {
       topics={topics}
       kicker={
         <>
-          <span className="muted small">topic</span>
-          {data.subject_status === "locked" && <span className="tag">🔒 locked subject</span>}
+          <span>Topic</span>
+          {data.subject_status === "locked" && <span>Lessons coming</span>}
         </>
       }
       action={
         data.has_lesson ? (
-          <a className="rd-btn primary big" href={lessonHref(subj, topic.id)}>
-            ▶ Lesson<span className="rd-btn-sub">open the lesson</span>
+          <a className="btn primary" href={lessonHref(subj, topic.id)}>
+            <Icon name="book" size={14} /> Open the lesson
           </a>
         ) : data.problems.length > 0 ? (
-          <a className="rd-btn primary big" href={practiseHref}>
-            🧪 Practise<span className="rd-btn-sub">{data.problems.length} problems</span>
+          <a className="btn primary" href={practiseHref}>
+            <Icon name="play" size={13} /> Practise {data.problems.length} problems
           </a>
         ) : undefined
       }
@@ -237,12 +237,13 @@ export function TopicPage({ data }: { data: TopicPageData }) {
   return (
     <Workbench
       id="topic"
+      leftCollapsed
       header={header}
       tabs={
         <>
-          {tab("overview", "🧭", "Overview", "var(--accent)")}
-          {tab("practice", "🧪", "Practice", "var(--ok)", data.problems.length)}
-          {tab("resources", "📚", "Resources", "var(--rd-tech)", data.resources.length)}
+          {tab("overview", "Overview", "var(--accent)")}
+          {tab("practice", "Practice", "var(--ok)", data.problems.length)}
+          {tab("resources", "Resources", "var(--rd-tech)", data.resources.length)}
         </>
       }
       left={{
@@ -251,17 +252,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
         content: subject ? <NavList groups={nav} placeholder="Filter topics…" /> : <PaneLoading />,
       }}
       right={{ title: "Connections", icon: "🔗", content: right }}
-      footer={
-        <PrevNextFooter
-          subject={subj}
-          prev={pn.prev}
-          next={pn.next}
-          index={pn.index}
-          total={pn.total}
-          noun="topic"
-          extra={<span className="muted"> · {lessonCount} with a lesson</span>}
-        />
-      }
+      footer={<PrevNextFooter prev={pn.prev} next={pn.next} noun="topic" />}
     >
       <div className="lb-center lb-topic">{center}</div>
     </Workbench>

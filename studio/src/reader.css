@@ -452,7 +452,7 @@ a.rd-nav.next:hover {
 
 /* ---------------------------------------------------------------- center */
 .rd-center {
-  max-width: 920px;
+  max-width: var(--read-w);
   margin: 0 auto;
   animation: rd-in 0.35s ease both;
 }
@@ -466,19 +466,10 @@ a.rd-nav.next:hover {
     transform: none;
   }
 }
-.rd-article .markdown {
-  line-height: 1.65;
-}
 .rd-article .markdown h2 {
-  margin-top: 1.8em;
-  padding-bottom: 6px;
-  border-bottom: 2px solid transparent;
-  border-image: linear-gradient(90deg, var(--accent), var(--rd-pattern), transparent) 1;
   scroll-margin-top: 12px;
 }
 .rd-article .markdown h3 {
-  margin-top: 1.4em;
-  color: var(--accent);
   scroll-margin-top: 12px;
 }
 .rd-article .markdown h2:first-child {

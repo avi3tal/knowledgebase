@@ -5,9 +5,10 @@ import { groupTopics, topicIcon } from "../catalog";
 import { sessionsSummary } from "../practice-bench";
 import { FOCUS_INFO, STATUS_LABEL, groupByStatus, scoreBand } from "../sessions";
 import { NavList } from "./panes";
-import { PlanWithClaude, Stat, sessionNavGroups, useSessions } from "./PracticeBench";
+import { PlanWithClaude, sessionNavGroups, useSessions } from "./PracticeBench";
 import { Ring } from "./Ring";
 import { Workbench } from "./Workbench";
+import { PageHeader } from "./PageHeader";
 
 /** All study sessions on the Workbench: the list left, cards or the builder center, totals right. */
 export function SessionsPage({ sessions, subjects }: { sessions: Session[]; subjects: Subject[] }) {
@@ -18,28 +19,20 @@ export function SessionsPage({ sessions, subjects }: { sessions: Session[]; subj
   const claude = sessions.filter((s) => s.generator === "claude").length;
 
   const header = (
-    <div className="rd-header pb-head">
-      <div className="rd-icon">🎯</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className="pb-kicker">Practice</span>
-          <span className="muted small">stored privately in _workspace/sessions</span>
-        </div>
-        <h1>Study sessions</h1>
-        <div className="pb-stats">
-          <Stat n={sum.total} label="sessions" />
-          <Stat n={sum.active} label="in progress" tone="accent" />
-          <Stat n={sum.done} label="done" tone="ok" />
-          <Stat n={sum.average ?? "—"} label="avg score" />
-        </div>
-      </div>
-      <button className="rd-btn primary big" onClick={() => setBuilding((b) => !b)}>
-        {building ? "✕ Close builder" : "＋ New session"}
-        <span className="rd-btn-sub">
-          {building ? "back to your sessions" : "kb picks the problems"}
-        </span>
-      </button>
-    </div>
+    <PageHeader
+      title="Study sessions"
+      meta={[
+        <span>{sum.total} sessions</span>,
+        sum.active > 0 && <span className="status started">{sum.active} in progress</span>,
+        <span className="status solved">{sum.done} done</span>,
+        <span>avg score {sum.average ?? "—"}</span>,
+      ]}
+      actions={
+        <button className="btn primary" onClick={() => setBuilding((b) => !b)}>
+          {building ? "Close builder" : "New session"}
+        </button>
+      }
+    />
   );
 
   const tabs = (
@@ -48,13 +41,13 @@ export function SessionsPage({ sessions, subjects }: { sessions: Session[]; subj
         className={`wb-tab pb-tab-list ${building ? "" : "on"}`}
         onClick={() => setBuilding(false)}
       >
-        🗂️ Sessions <span className="wb-tab-badge">{sessions.length}</span>
+        Sessions <span className="wb-tab-badge">{sessions.length}</span>
       </button>
       <button
         className={`wb-tab pb-tab-new ${building ? "on" : ""}`}
         onClick={() => setBuilding(true)}
       >
-        ✨ New session
+        New session
       </button>
     </>
   );

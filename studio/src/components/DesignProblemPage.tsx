@@ -1,19 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DesignProblemData, DesignReference, ProblemRow } from "../api";
 import { api } from "../api";
-import { SUBJECT_SHORT } from "../catalog";
 import { STAGE_INFO, stageLabel } from "../design";
 import {
   LABEL_RE,
   fencedVersions,
   latestAttempt,
-  navKey,
   needsGate,
   neighbours,
   orderProblems,
   revealKey,
   stageSteps,
 } from "../reader";
+import { stripReadmeHead } from "../practice-bench";
 import type { DesignView } from "../route";
 import { designHref, designViewHref } from "../route";
 import type { TocEntry } from "../toc";
@@ -22,6 +21,8 @@ import { Chips, OnThisPage, ProblemList } from "./DesignReaderPanes";
 import { Markdown } from "./Markdown";
 import { RevealGate, SolutionArticle, VERSIONS_ID } from "./SolutionArticle";
 import { Workbench } from "./Workbench";
+import { Icon } from "./Icon";
+import { MetaTags, PageHeader, PrevNextFooter, StatusLabel, usePrevNextKeys } from "./PageHeader";
 import { SimilarProblemsCard } from "./PracticeLinks";
 
 // The page remounts on every hash change (App keys it), so keep fetched data across tabs.
@@ -34,15 +35,6 @@ function readRevealed(subject: string, slug: string): boolean {
   } catch {
     return false;
   }
-}
-
-function isTyping(t: EventTarget | null): boolean {
-  return (
-    t instanceof HTMLInputElement ||
-    t instanceof HTMLTextAreaElement ||
-    t instanceof HTMLSelectElement ||
-    (t instanceof HTMLElement && t.isContentEditable)
-  );
 }
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -107,18 +99,10 @@ export function DesignProblemPage({
   const ordered = useMemo(() => orderProblems(rows ?? []), [rows]);
   const { prev, next } = neighbours(ordered, p.slug);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return;
-      const dir = navKey(e);
-      const target = dir === "prev" ? prev : dir === "next" ? next : null;
-      if (!target) return;
-      e.preventDefault();
-      window.location.hash = designViewHref(p.subject, target.slug, view);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [prev, next, p.subject, view]);
+  usePrevNextKeys(
+    prev ? designViewHref(p.subject, prev.slug, view) : null,
+    next ? designViewHref(p.subject, next.slug, view) : null,
+  );
 
   const latest = latestAttempt(p.attempts);
   const start = (withLabel?: string) => {
@@ -161,8 +145,9 @@ export function DesignProblemPage({
     );
   };
 
+  const readme = useMemo(() => stripReadmeHead(p.readme), [p.readme]);
   const toc = useMemo<TocEntry[]>(() => {
-    if (view === "problem") return extractToc(p.readme);
+    if (view === "problem") return extractToc(readme);
     if (view === "solution" && solution) {
       const t = extractToc(solution.walkthrough);
       const gallery =
@@ -170,52 +155,59 @@ export function DesignProblemPage({
       return gallery ? [...t, { level: 2, text: "Design versions", id: VERSIONS_ID }] : t;
     }
     return [];
-  }, [view, p.readme, solution]);
+  }, [view, readme, solution]);
 
-  const ood = p.subject === "ood";
   const submitted = p.attempts.filter((a) => a.submitted).length;
   const technologies = p.technologies.length ? p.technologies : (solution?.technologies ?? []);
   const patterns = p.patterns.length ? p.patterns : (solution?.patterns ?? []);
   const badLabel = label !== "" && !LABEL_RE.test(label);
 
   const header = (
-    <div className="rd-header">
-      <div className="rd-icon">{ood ? "🧩" : "🏗️"}</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
-          <span className={`rd-state ${p.status.status}`}>{p.status.status}</span>
-          {p.minutes ? <span className="muted small">⏱ ~{p.minutes} min</span> : null}
-          {p.aka.length > 0 && <span className="muted small">also: {p.aka.join(", ")}</span>}
-        </div>
-        <h1>{p.title}</h1>
-        {p.topics.length > 0 && (
-          <Chips ids={p.topics} subject={p.subject} names={names} kind="topic" />
-        )}
-      </div>
-      <button className="rd-btn primary big" onClick={practise} disabled={busy}>
-        ▶ Practice
-        <span className="rd-btn-sub">{latest ? "continue latest" : "start an attempt"}</span>
-      </button>
-    </div>
+    <PageHeader
+      title={p.title}
+      meta={[
+        <span className={`pill ${p.difficulty}`}>{p.difficulty}</span>,
+        <StatusLabel status={p.status.status} />,
+        p.minutes ? (
+          <span>
+            <Icon name="clock" size={13} /> ~{p.minutes} min
+          </span>
+        ) : null,
+        p.aka.length > 0 && <span>also {p.aka.join(", ")}</span>,
+        p.topics.length > 0 && (
+          <MetaTags
+            tags={p.topics.map((id) => ({
+              key: names[id] ?? id,
+              label: names[id] ?? id,
+              href: `#/topic/${p.subject}/${id}`,
+            }))}
+          />
+        ),
+      ]}
+      actions={
+        <button className="btn primary" onClick={practise} disabled={busy}>
+          <Icon name="play" size={13} /> {latest ? "Continue practising" : "Practise"}
+        </button>
+      }
+    />
   );
 
-  const tab = (v: DesignView, icon: string, text: string, badge?: number, done?: boolean) => (
+  const tab = (v: DesignView, text: string, badge?: number, done?: boolean) => (
     <a
       key={v}
       className={`wb-tab rd-tab-${v} ${view === v ? "on" : ""} ${done ? "done" : ""}`}
       href={designViewHref(p.subject, p.slug, v)}
       aria-current={view === v ? "page" : undefined}
     >
-      {icon} {text}
+      {text}
       {badge !== undefined && <span className="wb-tab-badge">{badge}</span>}
     </a>
   );
   const tabs = (
     <>
-      {tab("problem", "📄", "Problem")}
-      {tab("solution", "📖", "Solution")}
-      {tab("attempts", "🗂️", "Attempts", p.attempts.length, submitted > 0)}
+      {tab("problem", "Description")}
+      {tab("solution", "Solution")}
+      {tab("attempts", "Attempts", p.attempts.length, submitted > 0)}
     </>
   );
 
@@ -233,9 +225,6 @@ export function DesignProblemPage({
           <b>{p.checks.length}</b> checks
         </span>
       </div>
-      <button className="rd-btn primary" onClick={practise} disabled={busy}>
-        {latest ? "▶ Continue latest" : "▶ Start practising"}
-      </button>
       <a className="small" href={designViewHref(p.subject, p.slug, "attempts")}>
         ＋ new attempt with a label
       </a>
@@ -245,12 +234,6 @@ export function DesignProblemPage({
   const right = (
     <OnThisPage toc={toc} scroller={scroller}>
       {practiceCard}
-      {p.topics.length > 0 && (
-        <section className="rd-card">
-          <h4>Topics</h4>
-          <Chips ids={p.topics} subject={p.subject} names={names} kind="topic" />
-        </section>
-      )}
       {technologies.length > 0 && (
         <section className="rd-card">
           <h4>Technologies</h4>
@@ -268,34 +251,11 @@ export function DesignProblemPage({
   );
 
   const footer = (
-    <div className="rd-footer">
-      {prev ? (
-        <a className="rd-nav prev" href={designViewHref(p.subject, prev.slug, view)}>
-          ← <span>{prev.title}</span>
-        </a>
-      ) : (
-        <span className="rd-nav prev muted">← first problem</span>
-      )}
-      <span className="rd-foot-mid">
-        <b>{SUBJECT_SHORT[p.subject] ?? p.subject}</b>
-        {ordered.length > 0 && (
-          <span className="muted">
-            {" "}
-            · {ordered.findIndex((r) => r.slug === p.slug) + 1} / {ordered.length}
-          </span>
-        )}
-        <span className="rd-keys muted">
-          <kbd>[</kbd> <kbd>]</kbd> prev / next
-        </span>
-      </span>
-      {next ? (
-        <a className="rd-nav next" href={designViewHref(p.subject, next.slug, view)}>
-          <span>{next.title}</span> →
-        </a>
-      ) : (
-        <span className="rd-nav next muted">last problem →</span>
-      )}
-    </div>
+    <PrevNextFooter
+      prev={prev ? { title: prev.title, href: designViewHref(p.subject, prev.slug, view) } : null}
+      next={next ? { title: next.title, href: designViewHref(p.subject, next.slug, view) } : null}
+      noun="problem"
+    />
   );
 
   let center;
@@ -327,7 +287,7 @@ export function DesignProblemPage({
           )}
         </section>
         <article className="rd-article">
-          <Markdown text={p.readme} path={p.readme_path} anchors />
+          <Markdown text={readme} path={p.readme_path} anchors />
         </article>
       </>
     );
@@ -415,6 +375,7 @@ export function DesignProblemPage({
   return (
     <Workbench
       id="reader"
+      leftCollapsed
       header={header}
       tabs={tabs}
       left={{

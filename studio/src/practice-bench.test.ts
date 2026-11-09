@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Feedback, ProblemRow, Session, TopicFeedback } from "./api";
 import {
+  stripReadmeHead,
   countByDifficulty,
   countByTopic,
   countStatus,
@@ -305,5 +306,16 @@ describe("sessions", () => {
       ]),
     ).toEqual({ total: 3, active: 1, done: 1, average: 71, completion: 0.75 });
     expect(sessionsSummary([]).average).toBeNull();
+  });
+});
+
+describe("stripReadmeHead", () => {
+  it("drops the title and the difficulty meta line", () => {
+    expect(stripReadmeHead("# T\n\n> Difficulty: **easy** · x\n\nBody\n# Not first")).toBe(
+      "Body\n# Not first",
+    );
+  });
+  it("keeps a README without a head", () => {
+    expect(stripReadmeHead("Body")).toBe("Body");
   });
 });

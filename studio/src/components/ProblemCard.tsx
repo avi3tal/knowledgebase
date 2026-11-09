@@ -1,7 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ProblemCardData, ProblemRow } from "../api";
 import { api } from "../api";
-import { SUBJECT_SHORT, topicIcon } from "../catalog";
 import { RootContext, SubjectContext } from "../context";
 import type { ProblemTab } from "../practice-bench";
 import {
@@ -12,7 +11,7 @@ import {
   runState,
   splitReadme,
 } from "../practice-bench";
-import { STATUS_ICON, groupProblems, navKey, neighbours, orderProblems } from "../reader";
+import { STATUS_ICON, groupProblems, neighbours, orderProblems } from "../reader";
 import { parseRoute } from "../route";
 import { runCommand } from "../sessions";
 import { extractToc } from "../toc";
@@ -23,6 +22,8 @@ import { NavList, useCenterScroller } from "./panes";
 import { Copy } from "./PracticeBench";
 import { ResourceList } from "./Resources";
 import { Workbench } from "./Workbench";
+import { Icon } from "./Icon";
+import { MetaTags, PageHeader, PrevNextFooter, StatusLabel, usePrevNextKeys } from "./PageHeader";
 import { SimilarProblemsCard } from "./PracticeLinks";
 
 /**
@@ -107,20 +108,11 @@ function ProblemCardCompact({ p, pattern }: { p: ProblemCardData; pattern?: stri
 // The page remounts on every hash change (App keys it): keep the problem list across problems.
 const rowsCache = new Map<string, ProblemRow[]>();
 
-function isTyping(t: EventTarget | null): boolean {
-  return (
-    t instanceof HTMLInputElement ||
-    t instanceof HTMLTextAreaElement ||
-    t instanceof HTMLSelectElement ||
-    (t instanceof HTMLElement && t.isContentEditable)
-  );
-}
-
-const TAB_INFO: Record<ProblemTab, { icon: string; label: string }> = {
-  problem: { icon: "📄", label: "Problem" },
-  learn: { icon: "💡", label: "Hints & learning" },
-  attempts: { icon: "🗂️", label: "Attempts" },
-  resources: { icon: "📚", label: "Resources" },
+const TAB_LABEL: Record<ProblemTab, string> = {
+  problem: "Description",
+  learn: "Hints & learning",
+  attempts: "Attempts",
+  resources: "Resources",
 };
 
 function ProblemPage({ p }: { p: ProblemCardData }) {
@@ -167,18 +159,7 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
   // The tab carries over; a neighbour without it opens on Problem (it re-checks on load).
   const hrefFor = (slug: string) => problemTabHref(subject, slug, tab);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return;
-      const dir = navKey(e);
-      const target = dir === "prev" ? prev : dir === "next" ? next : null;
-      if (!target) return;
-      e.preventDefault();
-      window.location.hash = problemTabHref(subject, target.slug, tab);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [prev, next, subject, tab]);
+  usePrevNextKeys(prev ? hrefFor(prev.slug) : null, next ? hrefFor(next.slug) : null);
 
   const nav = useMemo<NavGroup[]>(
     () =>
@@ -215,54 +196,49 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
   const reviews = p.attempts.filter((a) => a.review).length;
 
   const header = (
-    <div className="rd-header pb-head">
-      <div className={`rd-icon pb-icon-${status}`}>{STATUS_ICON[status]}</div>
-      <div className="rd-head-main">
-        <div className="rd-kicker">
-          <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
-          <span className={`rd-state ${status}`}>{status}</span>
-          <span className="muted small" title="expected complexity">
-            ⏱ {p.expected_complexity.time} · 💾 {p.expected_complexity.space}
-          </span>
-          {sources.map((s) =>
-            s.url ? (
-              <a key={s.name} className="pb-source" href={s.url} target="_blank" rel="noreferrer">
-                ↗ {s.name}
-              </a>
-            ) : (
-              <span key={s.name} className="pb-source plain">
-                {s.name}
-              </span>
-            ),
-          )}
-        </div>
-        <h1>{p.title}</h1>
-        {p.patterns.length > 0 && (
-          <div className="chips">
-            {p.patterns.map((x) => (
-              <span key={x} className="rd-chip pattern">
-                {x}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-      {latest ? (
-        <a className="rd-btn primary big" href={`vscode://file${latest.path}`}>
-          ⧉ Continue in VS Code
-          <span className="rd-btn-sub">{latest.name}</span>
-        </a>
-      ) : (
-        <button
-          className="rd-btn primary big"
-          onClick={() => void navigator.clipboard.writeText(startCmd)}
-          title={`copies: ${startCmd}`}
-        >
-          ▶ Start an attempt
-          <span className="rd-btn-sub">copies {startCmd}</span>
-        </button>
-      )}
-    </div>
+    <PageHeader
+      title={p.title}
+      meta={[
+        <span className={`pill ${p.difficulty}`}>{p.difficulty}</span>,
+        <StatusLabel status={status} />,
+        <span title="expected time · space complexity">
+          {p.expected_complexity.time} · {p.expected_complexity.space}
+        </span>,
+        ...sources.map((s) =>
+          s.url ? (
+            <a href={s.url} target="_blank" rel="noreferrer">
+              {s.name} <Icon name="external" size={12} />
+            </a>
+          ) : (
+            <span>{s.name}</span>
+          ),
+        ),
+        topics.length > 0 && (
+          <MetaTags
+            tags={topics.map(({ id, topic }) => ({
+              key: topic?.name ?? id,
+              label: topic?.name ?? id,
+              href: topic?.has_lesson ? `#/learn/${subject}/${id}` : `#/topic/${subject}/${id}`,
+            }))}
+          />
+        ),
+      ]}
+      actions={
+        latest ? (
+          <a className="btn primary" href={`vscode://file${latest.path}`} title={latest.name}>
+            <Icon name="code" size={15} /> Continue in VS Code
+          </a>
+        ) : (
+          <button
+            className="btn primary"
+            onClick={() => void navigator.clipboard.writeText(startCmd)}
+            title={`copies: ${startCmd}`}
+          >
+            <Icon name="play" size={13} /> Start an attempt
+          </button>
+        )
+      }
+    />
   );
 
   const tabs = available.map((t) => {
@@ -275,7 +251,7 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
         href={problemTabHref(subject, p.slug, t)}
         aria-current={tab === t ? "page" : undefined}
       >
-        {TAB_INFO[t].icon} {TAB_INFO[t].label}
+        {TAB_LABEL[t]}
         {badge !== undefined && <span className="wb-tab-badge">{badge}</span>}
       </a>
     );
@@ -305,56 +281,16 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
           ⧉ open the problem folder in VS Code
         </a>
       </section>
-      {topics.length > 0 && (
-        <section className="rd-card">
-          <h4>Learn the patterns</h4>
-          <div className="chips">
-            {topics.map(({ id, topic }) => (
-              <a
-                key={id}
-                className={`rd-chip ${topic?.has_lesson ? "" : "plain"}`}
-                href={topic?.has_lesson ? `#/learn/${subject}/${id}` : `#/topic/${subject}/${id}`}
-                title={topic?.has_lesson ? "open the lesson" : "topic page (no lesson yet)"}
-              >
-                {topic ? `${topicIcon(topic)} ${topic.name}` : id}
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
       <SimilarProblemsCard subject={subject} items={p.similar} names={topicNames} />
     </OnThisPage>
   );
 
   const footer = (
-    <div className="rd-footer">
-      {prev ? (
-        <a className="rd-nav prev" href={hrefFor(prev.slug)}>
-          ← <span>{prev.title}</span>
-        </a>
-      ) : (
-        <span className="rd-nav prev muted">← first problem</span>
-      )}
-      <span className="rd-foot-mid">
-        <b>{SUBJECT_SHORT[subject] ?? subject}</b>
-        {ordered.length > 0 && (
-          <span className="muted">
-            {" "}
-            · {ordered.findIndex((r) => r.slug === p.slug) + 1} / {ordered.length}
-          </span>
-        )}
-        <span className="rd-keys muted">
-          <kbd>[</kbd> <kbd>]</kbd> prev / next
-        </span>
-      </span>
-      {next ? (
-        <a className="rd-nav next" href={hrefFor(next.slug)}>
-          <span>{next.title}</span> →
-        </a>
-      ) : (
-        <span className="rd-nav next muted">last problem →</span>
-      )}
-    </div>
+    <PrevNextFooter
+      prev={prev ? { title: prev.title, href: hrefFor(prev.slug) } : null}
+      next={next ? { title: next.title, href: hrefFor(next.slug) } : null}
+      noun="problem"
+    />
   );
 
   let center;
@@ -444,6 +380,7 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
   return (
     <Workbench
       id="problem"
+      leftCollapsed
       header={header}
       tabs={tabs}
       left={{

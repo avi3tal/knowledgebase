@@ -30,6 +30,7 @@ import { Quiz } from "./Quiz";
 import { ResourceList } from "./Resources";
 import { TracePlayer } from "./TracePlayer";
 import { Workbench } from "./Workbench";
+import { Icon } from "./Icon";
 
 const TAB_COLOUR: Record<SectionKey, string> = {
   learn: "var(--accent)",
@@ -200,7 +201,7 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
           onClick={() => show(s.key)}
           aria-pressed={active === s.key}
         >
-          {s.icon} {s.label}
+          {s.label}
           {s.count > 0 && (
             <span className="wb-tab-badge" title={s.key === "learn" ? "visual traces" : undefined}>
               {s.key === "learn" ? `▶ ${s.count}` : s.count}
@@ -209,9 +210,7 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
         </button>
       ))}
     </>
-  ) : (
-    <span className="wb-tab on lb-tab-static">📖 Lesson</span>
-  );
+  ) : undefined;
 
   const right = (
     <OnThisPage toc={toc} scroller={scroller}>
@@ -247,7 +246,7 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
         </section>
       )}
       <a className="small lb-more" href={topicPageHref(lesson.subject, lesson.topic)}>
-        🗺️ topic page & neighbourhood →
+        Topic page and neighbourhood →
       </a>
     </OnThisPage>
   );
@@ -255,12 +254,13 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
   return (
     <Workbench
       id="lesson"
+      leftCollapsed
       header={
         <TopicHeader
           topic={topic}
           fallbackTitle={lesson.title}
           topics={topics}
-          kicker={<span className="muted small">lesson</span>}
+          kicker={<span>Lesson</span>}
         />
       }
       tabs={tabs}
@@ -274,16 +274,7 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
         ),
       }}
       right={{ title: "On this page", icon: "🧭", content: right }}
-      footer={
-        <PrevNextFooter
-          subject={lesson.subject}
-          prev={pn.prev}
-          next={pn.next}
-          index={pn.index}
-          total={pn.total}
-          noun="lesson"
-        />
-      }
+      footer={<PrevNextFooter prev={pn.prev} next={pn.next} noun="lesson" />}
     >
       <div className="lb-center" ref={centerRef}>
         <article className="lesson lb-lesson">
@@ -310,8 +301,8 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
             {sections
               .slice(sections.indexOf(current) + 1, sections.indexOf(current) + 2)
               .map((s) => (
-                <button key={s.key} className="rd-btn primary" onClick={() => show(s.key)}>
-                  Next: {s.icon} {s.label} →
+                <button key={s.key} className="btn primary" onClick={() => show(s.key)}>
+                  Next: {s.label} <Icon name="arrowRight" size={14} />
                 </button>
               ))}
           </div>
