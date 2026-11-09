@@ -76,6 +76,19 @@ export type ViewSpec =
   | GridViewSpec
   | IntervalsViewSpec
   | CallStackViewSpec;
+/**
+ * A drawn graph (nodes at x/y, optional weights and arrows). Produced by kb/trace.py from a var
+ * holding `{nodes, edges, highlight?, labels?}`; used by lesson `structure` figures. Kept out of
+ * `ViewSpec` (whose consumers dispatch exhaustively) — figures use `FigureViewSpec`.
+ */
+export interface GraphViewSpec {
+  id?: string;
+  type: "graph";
+  var: string;
+  label?: string;
+}
+/** Every view a lesson figure can draw: the trace views plus `graph`. */
+export type FigureViewSpec = ViewSpec | GraphViewSpec;
 
 export interface ArrayState {
   values: Json[];
@@ -124,6 +137,14 @@ export interface IntervalsState {
 export interface CallStackState {
   frames: { fn: string; args: Record<string, Json> }[];
 }
+export interface GraphState {
+  nodes: { id: string; x: number; y: number }[];
+  edges: { from: string; to: string; w: Json; directed: boolean }[];
+  /** edges as "from>to" (either direction matches an undirected edge) */
+  highlight: { nodes: string[]; edges: string[] };
+  /** text under a node, e.g. "d=3" */
+  labels: Record<string, string>;
+}
 export type ViewState =
   | ArrayState
   | MapState
@@ -132,7 +153,8 @@ export type ViewState =
   | TreeState
   | GridState
   | IntervalsState
-  | CallStackState;
+  | CallStackState
+  | GraphState;
 
 export interface TraceStep {
   line: number;
@@ -152,7 +174,7 @@ export interface Trace {
 
 export const TRACE_VERSION = 1;
 
-export function viewId(spec: ViewSpec): string {
+export function viewId(spec: FigureViewSpec): string {
   return spec.id ?? ("var" in spec ? spec.var : spec.type);
 }
 
@@ -191,6 +213,15 @@ export function heapAsTree(values: Json[]): TreeState {
     right: 2 * i + 2 < values.length ? 2 * i + 2 : null,
   }));
   return { root: values.length ? 0 : null, nodes, pointers: {}, groups: {} };
+}
+
+/** Is a graph edge highlighted? ("a>b"; an undirected edge also matches "b>a".) */
+export function graphEdgeOn(
+  state: GraphState,
+  e: { from: string; to: string; directed: boolean },
+): boolean {
+  const lit = state.highlight.edges;
+  return lit.includes(`${e.from}>${e.to}`) || (!e.directed && lit.includes(`${e.to}>${e.from}`));
 }
 
 /** [min, max] over every interval of every lane (for a shared axis). */

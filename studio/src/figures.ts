@@ -1,6 +1,7 @@
 /** Lesson figures (spec format: tools/kb/figures.py). Pure helpers; tested in figures.test.ts. */
 import type { Diagram } from "./api";
 import type { Highlight } from "./design";
+import type { FigureViewSpec, ViewState } from "./trace";
 
 export interface FigureStep {
   text: string;
@@ -27,6 +28,10 @@ export interface Scenario {
   edges?: unknown[];
   actors?: unknown[];
   messages?: unknown[];
+  classes?: unknown[];
+  relations?: unknown[];
+  views?: unknown[];
+  frames?: unknown[];
 }
 interface FigureBase {
   title: string;
@@ -63,7 +68,51 @@ export interface SequenceFigure extends FigureBase {
   actors: { id: string; label: string; kind?: string }[];
   messages: { from: string; to: string; label: string; style?: MessageStyle; note?: string }[];
 }
-export type Figure = ArchitectureFigure | FlowchartFigure | SequenceFigure;
+export type UmlStereotype = "interface" | "abstract" | "enum";
+/**
+ * inherits / implements: `from` = subclass, `to` = parent (triangle at `to`).
+ * composition / aggregation: `from` = whole (diamond at `from`), `to` = part.
+ * association: plain line (`navigable` adds an open arrow at `to`); dependency: dashed, arrow at `to`.
+ */
+export type UmlRelationType =
+  "inherits" | "implements" | "composition" | "aggregation" | "association" | "dependency";
+export interface UmlClass {
+  id: string;
+  name: string;
+  stereotype?: UmlStereotype;
+  /** "- name: type" (visibility + - # ~); enum values plain */
+  fields?: string[];
+  methods?: string[];
+  /** top-left corner */
+  x: number;
+  y: number;
+}
+export interface UmlRelation {
+  from: string;
+  to: string;
+  type: UmlRelationType;
+  label?: string;
+  from_mult?: string;
+  to_mult?: string;
+  navigable?: boolean;
+}
+export interface UmlFigure extends FigureBase {
+  kind: "uml";
+  classes: UmlClass[];
+  relations?: UmlRelation[];
+}
+/** A structure frame as the API serves it: kb normalised the plain vars into trace view states. */
+export interface StructureFrame {
+  text: string;
+  state: Record<string, ViewState>;
+}
+export interface StructureFigure extends FigureBase {
+  kind: "structure";
+  views: FigureViewSpec[];
+  frames: StructureFrame[];
+}
+export type Figure =
+  ArchitectureFigure | FlowchartFigure | SequenceFigure | UmlFigure | StructureFigure;
 
 const CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳";
 /** 1 → "①" … 20 → "⑳", then "(21)". */
@@ -147,8 +196,170 @@ export function sequenceSteps(f: SequenceFigure): FigureStep[] {
   return f.messages.map((m) => ({ text: m.note ?? m.label, nodes: [m.from, m.to] }));
 }
 
+/** Structure figures: every frame is a step (highlight comes from its pointers / window / cells). */
+export function structureSteps(f: StructureFigure): FigureStep[] {
+  return f.frames.map((fr) => ({ text: fr.text }));
+}
+
 export function stepsOf(f: Figure): FigureStep[] {
-  return f.kind === "sequence" ? sequenceSteps(f) : (f.steps ?? []);
+  if (f.kind === "sequence") return sequenceSteps(f);
+  if (f.kind === "structure") return structureSteps(f);
+  return f.steps ?? [];
+}
+
+/** The frame a structure figure shows at `step` (-1, the resting picture, shows the first). */
+export function structureFrame(f: StructureFigure, step: number): StructureFrame | undefined {
+  return f.frames[Math.max(0, Math.min(step, f.frames.length - 1))];
+}
+
+// ---------------------------------------------------------------- uml layout
+
+export const UML = {
+  /** monospace member at 12px */
+  charW: 7.3,
+  /** bold class name at 14px */
+  nameW: 8.4,
+  /** «stereotype» at 11px */
+  stereoW: 6.4,
+  line: 17,
+  padX: 10,
+  padY: 6,
+  minW: 120,
+  name: 20,
+  stereo: 14,
+  /** empty compartment */
+  empty: 10,
+  /** space around the whole diagram */
+  pad: 28,
+} as const;
+
+export const STEREOTYPE_LABEL: Record<UmlStereotype, string> = {
+  interface: "«interface»",
+  abstract: "«abstract»",
+  enum: "«enumeration»",
+};
+
+export interface UmlBox {
+  w: number;
+  h: number;
+  /** heights of the three compartments (methods = 0 for an enum without methods) */
+  header: number;
+  fields: number;
+  methods: number;
+}
+
+/** Size of a class box: as wide as its longest line, as tall as its compartments. */
+export function umlBox(c: UmlClass): UmlBox {
+  const fields = c.fields ?? [];
+  const methods = c.methods ?? [];
+  const widest = Math.max(
+    c.name.length * UML.nameW,
+    c.stereotype ? STEREOTYPE_LABEL[c.stereotype].length * UML.stereoW : 0,
+    ...[...fields, ...methods].map((m) => m.length * UML.charW),
+  );
+  const compartment = (n: number) => (n ? UML.padY * 2 + n * UML.line : UML.empty);
+  const header = UML.padY * 2 + UML.name + (c.stereotype ? UML.stereo : 0);
+  const f = compartment(fields.length);
+  const m = c.stereotype === "enum" && methods.length === 0 ? 0 : compartment(methods.length);
+  return {
+    w: Math.max(UML.minW, Math.ceil(widest + UML.padX * 2)),
+    h: header + f + m,
+    header,
+    fields: f,
+    methods: m,
+  };
+}
+
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export const rectCenter = (r: Rect): Point => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
+
+/** Where the line from the rectangle's centre toward `p` leaves the rectangle. */
+export function rectBorderPoint(r: Rect, p: Point): Point {
+  const c = rectCenter(r);
+  const dx = p.x - c.x;
+  const dy = p.y - c.y;
+  if (dx === 0 && dy === 0) return c;
+  const tx = dx === 0 ? Infinity : r.w / 2 / Math.abs(dx);
+  const ty = dy === 0 ? Infinity : r.h / 2 / Math.abs(dy);
+  const t = Math.min(tx, ty);
+  return { x: c.x + dx * t, y: c.y + dy * t };
+}
+
+/**
+ * A relation drawn between two boxes, border to border: a straight vertical (horizontal) line
+ * through the middle of their overlap when the boxes share columns (rows), else along the
+ * centre-to-centre line.
+ */
+export function umlEdge(a: Rect, b: Rect): { start: Point; end: Point } {
+  const lo = Math.max(a.x, b.x);
+  const hi = Math.min(a.x + a.w, b.x + b.w);
+  if (hi - lo >= 24 && (a.y + a.h <= b.y || b.y + b.h <= a.y)) {
+    const x = (lo + hi) / 2;
+    const down = a.y < b.y;
+    return {
+      start: { x, y: down ? a.y + a.h : a.y },
+      end: { x, y: down ? b.y : b.y + b.h },
+    };
+  }
+  const top = Math.max(a.y, b.y);
+  const bottom = Math.min(a.y + a.h, b.y + b.h);
+  if (bottom - top >= 16 && (a.x + a.w <= b.x || b.x + b.w <= a.x)) {
+    const y = (top + bottom) / 2;
+    const right = a.x < b.x;
+    return {
+      start: { x: right ? a.x + a.w : a.x, y },
+      end: { x: right ? b.x : b.x + b.w, y },
+    };
+  }
+  return { start: rectBorderPoint(a, rectCenter(b)), end: rectBorderPoint(b, rectCenter(a)) };
+}
+
+/**
+ * Anchor for a label near `end` of a line (a multiplicity): `along` units back toward `other`,
+ * then `side` units to the right of the direction of travel.
+ */
+export function nearEnd(end: Point, other: Point, along = 18, side = 12): Point {
+  const dx = other.x - end.x;
+  const dy = other.y - end.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  return { x: end.x + ux * along - uy * side, y: end.y + uy * along + ux * side };
+}
+
+/** "+ add(x)" → ["+", "add(x)"]; enum values and bare names have no visibility. */
+export function splitVisibility(member: string): [string, string] {
+  const m = /^([+\-#~])\s*(.*)$/.exec(member);
+  return m ? [m[1] ?? "", m[2] ?? ""] : ["", member];
+}
+
+/** Boxes of every class (offset by the diagram padding) and the SVG size that holds them. */
+export function umlLayout(f: UmlFigure): {
+  boxes: Map<string, Rect & UmlBox>;
+  width: number;
+  height: number;
+} {
+  const boxes = new Map<string, Rect & UmlBox>();
+  let width = 0;
+  let height = 0;
+  for (const c of f.classes) {
+    const b = umlBox(c);
+    const r = { ...b, x: c.x + UML.pad, y: c.y + UML.pad };
+    boxes.set(c.id, r);
+    width = Math.max(width, r.x + r.w + UML.pad);
+    height = Math.max(height, r.y + r.h + UML.pad);
+  }
+  return { boxes, width, height };
 }
 
 // ---------------------------------------------------------------- flowchart layout

@@ -22,13 +22,16 @@ import {
 import { kindStyle } from "../design";
 import type { CanvasHandle } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
+import { StructureFigure } from "./StructureFigure";
+import { UmlFigure } from "./UmlFigure";
 
 const STEP_MS = 2600;
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * A lesson figure: an animated diagram (architecture / sequence / flowchart). It auto-plays its
+ * A lesson figure: an animated diagram (architecture / sequence / flowchart / uml) or a
+ * data-structure still (structure: one frame per step). It auto-plays its
  * steps the first time it scrolls into view — request "packets" travel along the active arrows,
  * failures turn red with ✕ — and its scenario tabs replay the same system for failures, edge
  * cases, alternatives and risks.
@@ -106,6 +109,10 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
     );
   } else if (shown.kind === "sequence") {
     body = <SequenceSvg f={shown} active={step} />;
+  } else if (shown.kind === "uml") {
+    body = <UmlFigure f={shown} active={step} />;
+  } else if (shown.kind === "structure") {
+    body = <StructureFigure f={shown} step={step} />;
   } else {
     body = <FlowchartSvg f={shown} active={step} />;
   }

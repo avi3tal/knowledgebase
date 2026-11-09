@@ -1,0 +1,50 @@
+{
+  "kind": "uml",
+  "title": "A class box: name, fields, methods — with visibility on every member",
+  "caption": "Stereotypes go above the name: «abstract» (name in italics), «interface», «enumeration». Show only the members that matter for the design.",
+  "classes": [
+    {
+      "id": "account",
+      "name": "Account",
+      "stereotype": "abstract",
+      "fields": ["- id: str", "- balance: int", "# status: AccountStatus"],
+      "methods": ["+ deposit(amount: int): None", "+ withdraw(amount: int): None", "# _check(amount: int): None"],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "notifier",
+      "name": "Notifier",
+      "stereotype": "interface",
+      "methods": ["+ notify(account_id: str, msg: str): None"],
+      "x": 340,
+      "y": 0
+    },
+    {
+      "id": "status",
+      "name": "AccountStatus",
+      "stereotype": "enum",
+      "fields": ["OPEN", "FROZEN", "CLOSED"],
+      "x": 340,
+      "y": 130
+    }
+  ],
+  "steps": [
+    {
+      "text": "Three compartments: the header (stereotype + name), the fields, then the methods. «abstract» means it can't be instantiated, and its name is set in italics.",
+      "nodes": ["account"]
+    },
+    {
+      "text": "Every member starts with its visibility: - private (id, balance), # protected (status, _check: for subclasses), + public (deposit, withdraw). The public methods are the class's contract.",
+      "nodes": ["account"]
+    },
+    {
+      "text": "«interface»: only method signatures, no fields and no state. Classes implement it.",
+      "nodes": ["notifier"]
+    },
+    {
+      "text": "«enumeration»: a closed set of values, listed plainly in the fields compartment and with no visibility.",
+      "nodes": ["status"]
+    }
+  ]
+}

@@ -29,14 +29,15 @@ do. Read `CLAUDE.md` first.
 structure and tone.
 
 1. **Content (markdown, 2–4 files):**
-   - **Intro:** the problem shape, the key insight, an ASCII sketch, and the code template.
+   - **Intro:** the problem shape, the key insight, a `structure` figure, and the code template.
    - **Variants:** the second template if one exists, e.g. fixed vs dynamic window.
    - **How to recognise it:** strong signals, anti-signals that name the look-alike pattern and
      why, complexity, and pitfalls.
    - Use the catalog entry (`usage`, `ds`, `samples` come from the DesignGurus patterns PDF) as the
      seed. No `<!-- -->` placeholders.
-   - **Figures, not ASCII art** (system design / OOD; reference: `system-design/learn/rate-limiting/`).
-     Embed a real diagram right after the paragraph that introduces it with a fence whose body is
+   - **Figures, not ASCII art** (every subject; references: `system-design/learn/rate-limiting/`,
+     `ood/learn/uml-basics/`, `algo/learn/two-pointers/`). ASCII diagrams in code fences are not
+     allowed: no box drawings, arrows, pointer rows or tables of cells. Embed a real diagram right after the paragraph that introduces it with a fence whose body is
      the figure name, ```` ```figure\nplacement\n``` ````, and put the spec in
      `<topic>/figures/<name>.json` (format and checks: `tools/kb/figures.py`):
      - `architecture` — boxes and arrows with the design-console shapes (`kind` from the
@@ -47,8 +48,36 @@ structure and tone.
        protocols (`style`: call | reply | error | async | self; `note` = narration).
      - `flowchart` — the decision an algorithm makes per request (`type`: start | step |
        decision | end; `col`/`row` grid; label branches yes/no; `tone`: good | bad on outcomes).
+     - `uml` (OOD class diagrams) — `classes [{id, name, stereotype?: interface|abstract|enum,
+       fields?, methods?, x, y}]` (`x`/`y` = top-left; members carry visibility: `"+ add(p:
+       Product): None"`, `"- _lines: dict[str, Line]"`, `"# _hook()"`, enum values plain) and
+       `relations [{from, to, type, label?, from_mult?, to_mult?, navigable?}]`. `type`:
+       inherits / implements (`from` = subclass, triangle at `to`), composition / aggregation
+       (`from` = the whole, diamond at `from`), association (`navigable: true` adds an arrow),
+       dependency (dashed). Steps highlight classes (`nodes`) and relations (`edges: ["a>b"]`):
+       ```json
+       {"kind": "uml", "title": "An order owns its lines",
+        "classes": [{"id": "o", "name": "Order", "fields": ["- lines: list[OrderLine]"], "x": 0, "y": 0},
+                    {"id": "l", "name": "OrderLine", "fields": ["- qty: int"], "x": 0, "y": 160}],
+        "relations": [{"from": "o", "to": "l", "type": "composition", "from_mult": "1", "to_mult": "1..*"}],
+        "steps": [{"text": "Lines die with their order.", "nodes": ["o", "l"], "edges": ["o>l"]}]}
+       ```
+     - `structure` (algo: arrays, pointers, trees, lists, DP tables, graphs) — `views` are trace
+       view specs (see the view types in step 2, plus `graph`), `frames [{text, vars}]` are the
+       narrated steps (2–6). Vars are plain JSON and carry over from the previous frame (null
+       clears). Trees are level-order lists, linked lists are lists; a tree / list pointer var is
+       an index into that list. A `graph` var is `{nodes: [{id, x, y}], edges: [{from, to, w?,
+       directed?}], highlight?: {nodes, edges: ["a>b"]}, labels?: {id: "d=3"}}`. Same spoiler
+       rule as traces: invent data, never a practice problem's.
+       ```json
+       {"kind": "structure", "title": "write trails read",
+        "views": [{"type": "array", "var": "nums", "pointers": {"w": "write", "r": "read"}}],
+        "frames": [{"text": "4 kept, write = 1", "vars": {"nums": [4, -1, 7], "read": 0, "write": 1}},
+                   {"text": "−1 skipped", "vars": {"read": 1}}]}
+       ```
      Aim for 3–6 figures per lesson, each with a `title` that states the takeaway and a one-line
-     `caption`. Keep node labels ≤ 18 characters. ASCII stays only for formulas and tiny tables.
+     `caption`. Keep node labels ≤ 18 characters. Plain text in fences stays only for formulas
+     and code.
    - **Animate the system, not just the happy path.** Figures auto-play when scrolled into view
      (packets travel the active arrows). Give the lesson's 2–3 central figures **`scenarios`**
      (tabs): `failure` (a component dies or a message is lost: `fail: [...]` in a step, sequence
@@ -82,6 +111,8 @@ structure and tone.
      - `intervals` — `lanes: {label: var}` (lists of [start, end]), `pointers: {label: index_var}`
        into the first lane.
      - `callstack` — no options; shows active frames of the traced function and nested helpers.
+     - `graph` — `var` holds `{nodes: [{id, x, y}], edges, highlight?, labels?}` (mainly for
+       `structure` figures; a trace can watch such a dict too).
    - Keep traced code portable across Python versions: one call per line, no `a and f(x)` /
      `x or g()` short-circuits around calls on a `return` line (line events differ between
      versions and the trace goes stale under `make test`).
@@ -90,7 +121,7 @@ structure and tone.
    - Typed inputs: `"types": {"head": "ListNode"}` converts JSON input (and `checks` inputs)
      using kb meta types; `"returns": "ListNode"` converts the result back. For cycle demos, use
      `"cycle": {"head": pos}` on the block (or on a check) to link the tail to node `pos`.
-   - If the topic needs a visual that doesn't exist yet (e.g. a general graph drawing), say so
+   - If the topic needs a visual that doesn't exist yet (e.g. a trie or a segment tree), say so
      and propose adding a view type: Python `kb/trace.py` snapshot, plus the
      TS type in `studio/src/trace.ts`, plus a renderer in `studio/src/components/TraceViews.tsx`,
      plus fixture tests. Don't fake it.

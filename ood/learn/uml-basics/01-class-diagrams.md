@@ -7,27 +7,18 @@ before any code. You don't need full UML. You need a handful of notations used *
 
 ## A class box
 
-```
- ┌──────────────────────────┐
- │ «abstract» Account       │   name (+ stereotype: «interface», «abstract», «enum»)
- ├──────────────────────────┤
- │ - id: str                │   fields:  - private  # protected  + public
- │ - balance: int           │
- ├──────────────────────────┤
- │ + deposit(amount): None  │   methods (only the important ones)
- │ + withdraw(amount): None │
- └──────────────────────────┘
+A box has three compartments: the name (with a stereotype such as `«interface»`, `«abstract»` or
+`«enum»`), the fields, then the methods. Only list the important ones. Every member starts with
+its visibility: `-` private, `#` protected, `+` public.
+
+```figure
+class-box
 ```
 
 ## The six relationships (strongest last)
 
-```
- A ─────────▶ B      association    A knows / holds a reference to B
- A ┄┄┄┄┄┄┄┄> B      dependency     A *uses* B briefly (parameter, local), no field (dashed, open arrowhead)
- A ◇───────── B      aggregation    A has Bs, but Bs can live on without A
- A ◆───────── B      composition    A owns Bs; Bs die with A
- A ───────▷ B        inheritance    A IS-A B (solid line, hollow triangle)
- A ┄┄┄┄┄┄▷ B        realization    A implements interface B (dashed, hollow triangle)
+```figure
+six-relations
 ```
 
 (The diamond sits on the **whole**: `Team ◇── Player`, `Order ◆── OrderLine`.)
@@ -46,8 +37,8 @@ ownership**: who creates the part, and who deletes it.
 
 Write it at the far end of the line: `1`, `0..1`, `*` (many), `1..*`.
 
-```
- Customer 1 ───────── * Order 1 ◆───────── 1..* OrderLine * ───────── 1 Product
+```figure
+multiplicity
 ```
 
 Read it as "one customer has many orders; an order has at least one line; each line refers to

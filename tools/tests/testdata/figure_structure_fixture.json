@@ -1,0 +1,213 @@
+{
+ "kind": "structure",
+ "title": "Fixture: shortest paths on a small graph, a tree and an array",
+ "views": [
+  {
+   "type": "graph",
+   "var": "g",
+   "label": "graph"
+  },
+  {
+   "type": "tree",
+   "var": "root",
+   "pointers": {
+    "cur": "node"
+   }
+  },
+  {
+   "type": "array",
+   "var": "dist",
+   "pointers": {
+    "i": "i"
+   }
+  }
+ ],
+ "frames": [
+  {
+   "text": "start at a",
+   "state": {
+    "g": {
+     "nodes": [
+      {
+       "id": "a",
+       "x": 0,
+       "y": 0
+      },
+      {
+       "id": "b",
+       "x": 120,
+       "y": 0
+      },
+      {
+       "id": "c",
+       "x": 60,
+       "y": 90
+      }
+     ],
+     "edges": [
+      {
+       "from": "a",
+       "to": "b",
+       "w": 4,
+       "directed": true
+      },
+      {
+       "from": "a",
+       "to": "c",
+       "w": 1,
+       "directed": false
+      },
+      {
+       "from": "c",
+       "to": "b",
+       "w": 2,
+       "directed": false
+      }
+     ],
+     "highlight": {
+      "nodes": [
+       "a"
+      ],
+      "edges": []
+     },
+     "labels": {
+      "a": "d=0"
+     }
+    },
+    "root": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 2,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "cur": 0
+     },
+     "groups": {}
+    },
+    "dist": {
+     "values": [
+      0,
+      null,
+      null
+     ],
+     "pointers": {
+      "i": 0
+     },
+     "window": null
+    }
+   }
+  },
+  {
+   "text": "relax a-c",
+   "state": {
+    "g": {
+     "nodes": [
+      {
+       "id": "a",
+       "x": 0,
+       "y": 0
+      },
+      {
+       "id": "b",
+       "x": 120,
+       "y": 0
+      },
+      {
+       "id": "c",
+       "x": 60,
+       "y": 90
+      }
+     ],
+     "edges": [
+      {
+       "from": "a",
+       "to": "b",
+       "w": 4,
+       "directed": true
+      },
+      {
+       "from": "a",
+       "to": "c",
+       "w": 1,
+       "directed": false
+      },
+      {
+       "from": "c",
+       "to": "b",
+       "w": 2,
+       "directed": false
+      }
+     ],
+     "highlight": {
+      "nodes": [
+       "a",
+       "c"
+      ],
+      "edges": [
+       "c>a"
+      ]
+     },
+     "labels": {
+      "a": "d=0",
+      "c": "d=1"
+     }
+    },
+    "root": {
+     "root": 0,
+     "nodes": [
+      {
+       "id": 0,
+       "val": 2,
+       "left": 1,
+       "right": 2
+      },
+      {
+       "id": 1,
+       "val": 1,
+       "left": null,
+       "right": null
+      },
+      {
+       "id": 2,
+       "val": 3,
+       "left": null,
+       "right": null
+      }
+     ],
+     "pointers": {
+      "cur": 2
+     },
+     "groups": {}
+    },
+    "dist": {
+     "values": [
+      0,
+      null,
+      1
+     ],
+     "pointers": {
+      "i": 2
+     },
+     "window": null
+    }
+   }
+  }
+ ]
+}

@@ -22,6 +22,9 @@ Trace JSON (version 1) is the contract with the studio (studio/src/trace.ts):
                  row_labels: [..]|null, col_labels: [..]|null}
   intervals:    {lanes: {name: [[start, end], ...]}, pointers: {name: index|null}}
   callstack:    {frames: [{fn, args: {name: brief value}}]}
+  graph:        {nodes: [{id, x, y}], edges: [{from, to, w, directed}],
+                 highlight: {nodes: [id], edges: ["from>to"]}, labels: {id: text}}
+                 (the var holds that dict; used by lesson figures, rarely by traces)
 Node ids (linkedlist, tree) are stable for the whole trace so the studio can animate in place.
 """
 
@@ -41,8 +44,8 @@ TRACE_VERSION = 1
 MAX_STEPS = 400
 MAX_LIST_NODES = 64
 MAX_TREE_NODES = 63
-VIEW_TYPES = {"array", "map", "vars", "linkedlist", "tree", "heap", "grid", "intervals", "callstack"}
-_NEEDS_VAR = {"array", "map", "linkedlist", "tree", "heap", "grid"}
+VIEW_TYPES = {"array", "map", "vars", "linkedlist", "tree", "heap", "grid", "intervals", "callstack", "graph"}
+_NEEDS_VAR = {"array", "map", "linkedlist", "tree", "heap", "grid", "graph"}
 _NOTE_RE = re.compile(r"\s*#\s*note:\s*(.+?)\s*$")
 
 
@@ -270,6 +273,32 @@ def _intervals_state(item: dict[str, Any], local_vars: dict[str, Any]) -> dict[s
     return {"lanes": lanes, "pointers": pointers}
 
 
+def _graph_state(item: dict[str, Any], local_vars: dict[str, Any]) -> dict[str, Any]:
+    """A drawn graph: the var holds {nodes, edges, highlight?, labels?}; missing parts default to empty."""
+    raw = local_vars.get(item["var"])
+    raw = raw if isinstance(raw, dict) else {}
+    highlight = raw.get("highlight") if isinstance(raw.get("highlight"), dict) else {}
+    nodes = [{"id": str(n["id"]), "x": n["x"], "y": n["y"]} for n in raw.get("nodes") or []]
+    edges = [
+        {
+            "from": str(e["from"]),
+            "to": str(e["to"]),
+            "w": e.get("w"),
+            "directed": bool(e.get("directed", False)),
+        }
+        for e in raw.get("edges") or []
+    ]
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "highlight": {
+            "nodes": [str(n) for n in highlight.get("nodes") or []],
+            "edges": [str(e) for e in highlight.get("edges") or []],
+        },
+        "labels": {str(k): str(v) for k, v in (raw.get("labels") or {}).items()},
+    }
+
+
 def _brief(value: Any) -> Any:
     """Compact, JSON-safe rendering of an argument for the call-stack view."""
     if _is_tree_node(value) or _is_node(value):
@@ -314,6 +343,8 @@ def snapshot(
             state[vid] = _grid_state(item, local_vars)
         elif kind == "intervals":
             state[vid] = _intervals_state(item, local_vars)
+        elif kind == "graph":
+            state[vid] = _graph_state(item, local_vars)
         elif kind == "callstack":
             out = []
             for f in frames or []:

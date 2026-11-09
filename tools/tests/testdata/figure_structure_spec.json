@@ -1,0 +1,56 @@
+{
+  "kind": "structure",
+  "title": "Fixture: shortest paths on a small graph, a tree and an array",
+  "views": [
+    { "type": "graph", "var": "g", "label": "graph" },
+    { "type": "tree", "var": "root", "pointers": { "cur": "node" } },
+    { "type": "array", "var": "dist", "pointers": { "i": "i" } }
+  ],
+  "frames": [
+    {
+      "text": "start at a",
+      "vars": {
+        "g": {
+          "nodes": [
+            { "id": "a", "x": 0, "y": 0 },
+            { "id": "b", "x": 120, "y": 0 },
+            { "id": "c", "x": 60, "y": 90 }
+          ],
+          "edges": [
+            { "from": "a", "to": "b", "w": 4, "directed": true },
+            { "from": "a", "to": "c", "w": 1 },
+            { "from": "c", "to": "b", "w": 2 }
+          ],
+          "highlight": { "nodes": ["a"] },
+          "labels": { "a": "d=0" }
+        },
+        "root": [2, 1, 3],
+        "node": 0,
+        "dist": [0, null, null],
+        "i": 0
+      }
+    },
+    {
+      "text": "relax a-c",
+      "vars": {
+        "g": {
+          "nodes": [
+            { "id": "a", "x": 0, "y": 0 },
+            { "id": "b", "x": 120, "y": 0 },
+            { "id": "c", "x": 60, "y": 90 }
+          ],
+          "edges": [
+            { "from": "a", "to": "b", "w": 4, "directed": true },
+            { "from": "a", "to": "c", "w": 1 },
+            { "from": "c", "to": "b", "w": 2 }
+          ],
+          "highlight": { "nodes": ["a", "c"], "edges": ["c>a"] },
+          "labels": { "a": "d=0", "c": "d=1" }
+        },
+        "node": 2,
+        "dist": [0, null, 1],
+        "i": 2
+      }
+    }
+  ]
+}
