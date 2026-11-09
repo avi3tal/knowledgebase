@@ -260,6 +260,8 @@ export function IntervalsView({ spec, state }: { spec: IntervalsViewSpec; state:
 export function GraphView({ spec, state }: { spec: GraphViewSpec; state: GraphState }) {
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, "");
   if (state.nodes.length === 0) return <span className="muted">empty</span>;
+  // circles grow to fit the longest node id (prefixes, names), like tree nodes do
+  const { r: R } = nodeSize(state.nodes.map((n) => n.id));
   const pad = R + 26;
   const minX = Math.min(...state.nodes.map((n) => n.x));
   const minY = Math.min(...state.nodes.map((n) => n.y));
