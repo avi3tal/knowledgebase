@@ -85,6 +85,8 @@ export const GlobalStyle = createGlobalStyle`
     cursor: text;
   }
   textarea {
+    border-radius: 8px;
+    padding: 6px 10px;
     width: 100%;
     resize: vertical;
     min-height: 34px;

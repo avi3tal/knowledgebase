@@ -33,67 +33,6 @@ const breakout = css`
   margin-left: calc(50% - ${WIDE} / 2);
 `;
 
-/**
- * The look of DiagramCanvas internals while a figure is playing (class names owned by
- * DiagramCanvas: dg-node, dg-edge, dg-packet, dg-fail-mark…). Kept here because these rules only
- * exist for lesson figures; they must follow DiagramCanvas's markup.
- */
-const diagramPresentation = css`
-  .dg-label {
-    font-size: 12px;
-  }
-  .dg-packet {
-    fill: ${t.accent};
-    stroke: ${t.panel};
-    stroke-width: 2;
-    filter: drop-shadow(0 0 4px ${t.accent});
-  }
-  .dg-fail-mark circle {
-    fill: ${t.bad};
-    stroke: ${t.panel};
-    stroke-width: 2;
-  }
-  .dg-fail-mark text {
-    fill: #fff;
-    font-size: 13px;
-    font-weight: 800;
-  }
-  .dg-node.is-failed .dg-card {
-    stroke: ${t.bad} !important;
-    stroke-dasharray: 6 4;
-  }
-  .dg-edge.is-failed .dg-edge-line {
-    stroke: ${t.bad} !important;
-    stroke-dasharray: 6 5;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .dg-packets {
-      display: none;
-    }
-  }
-`;
-
-const diagramStepping = css`
-  .dg-node:not(.is-new),
-  .dg-edge:not(.is-new) {
-    opacity: 0.28;
-    transition: opacity 0.25s;
-  }
-  .dg-node.is-failed,
-  .dg-edge.is-failed {
-    opacity: 1;
-  }
-  .dg-edge.is-new .dg-edge-line {
-    stroke-dasharray: 8 6;
-    animation: ${figMarch} 0.7s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .dg-edge.is-new .dg-edge-line {
-      animation: none;
-    }
-  }
-`;
-
 export const Fig = styled.figure<{ $stepping?: boolean; $expanded?: boolean }>`
   ${box}
   ${({ $expanded }) =>
@@ -110,8 +49,6 @@ export const Fig = styled.figure<{ $stepping?: boolean; $expanded?: boolean }>`
             ${t.shadowLift};
         `
       : breakout}
-  ${diagramPresentation}
-  ${({ $stepping }) => $stepping && diagramStepping}
   ${({ $expanded }) =>
     $expanded &&
     css`
