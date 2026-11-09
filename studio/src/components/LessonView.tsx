@@ -31,6 +31,7 @@ import { Quiz } from "./Quiz";
 import { ResourceList } from "./Resources";
 import { TracePlayer } from "./TracePlayer";
 import { Workbench } from "./Workbench";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { Icon } from "./Icon";
 
 const TAB_COLOUR: Record<SectionKey, string> = {
@@ -62,7 +63,9 @@ function LessonBlock({
             if (lang !== "figure") return undefined;
             const fig = b.figures?.[body];
             return fig ? (
-              <FigureView figure={fig} number={figureNumbers.get(`${i}:${body}`)} />
+              <ErrorBoundary label={`figure “${body}”`}>
+                <FigureView figure={fig} number={figureNumbers.get(`${i}:${body}`)} />
+              </ErrorBoundary>
             ) : (
               <p className="why wrong">Missing figure “{body}” — run ./kb learn validate.</p>
             );

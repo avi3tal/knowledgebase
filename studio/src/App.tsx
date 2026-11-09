@@ -26,6 +26,7 @@ import { RootContext, SubjectContext } from "./context";
 import type { Route } from "./route";
 import { parseRoute, problemHref, tabOf } from "./route";
 import { TopBar } from "./components/TopBar";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { isTyping } from "./components/PageHeader";
 import { DesignConsole } from "./components/DesignConsole";
 import { DesignProblemPage } from "./components/DesignProblemPage";
@@ -173,46 +174,48 @@ export function App() {
           onSearch={() => setSearching(true)}
         />
         <main className="content bench" key={window.location.hash}>
-          {error && <ErrorBox msg={error} route={route} />}
-          {!error && !page && <div className="loader" aria-label="loading" />}
-          {page?.kind === "home" && current && (
-            <SubjectHome subject={current} feedback={page.data} />
-          )}
-          {page?.kind === "dashboard" && (
-            <Dashboard data={page.data} topics={current?.topics ?? []} />
-          )}
-          {page?.kind === "sessions" && subjects && (
-            <SessionsPage sessions={page.data} subjects={subjects.subjects} />
-          )}
-          {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
-          {page?.kind === "lesson" && <LessonView lesson={page.data} />}
-          {page?.kind === "problem" && <ProblemCard p={page.data} open />}
-          {page?.kind === "design" && (
-            <DesignProblemPage
-              p={page.data}
-              view={route.page === "design" ? route.view : "problem"}
-              names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-            />
-          )}
-          {page?.kind === "console" && (
-            <DesignConsole
-              key={page.data.attempt.name}
-              problem={page.data.problem}
-              initial={page.data.attempt}
-            />
-          )}
-          {page?.kind === "topic" && <TopicPage data={page.data} />}
-          {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
-          {page?.kind === "problems" && (
-            <ProblemsPage
-              subject={route.subject}
-              rows={page.data}
-              names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-              lessons={
-                new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))
-              }
-            />
-          )}
+          <ErrorBoundary label="this page">
+            {error && <ErrorBox msg={error} route={route} />}
+            {!error && !page && <div className="loader" aria-label="loading" />}
+            {page?.kind === "home" && current && (
+              <SubjectHome subject={current} feedback={page.data} />
+            )}
+            {page?.kind === "dashboard" && (
+              <Dashboard data={page.data} topics={current?.topics ?? []} />
+            )}
+            {page?.kind === "sessions" && subjects && (
+              <SessionsPage sessions={page.data} subjects={subjects.subjects} />
+            )}
+            {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
+            {page?.kind === "lesson" && <LessonView lesson={page.data} />}
+            {page?.kind === "problem" && <ProblemCard p={page.data} open />}
+            {page?.kind === "design" && (
+              <DesignProblemPage
+                p={page.data}
+                view={route.page === "design" ? route.view : "problem"}
+                names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+              />
+            )}
+            {page?.kind === "console" && (
+              <DesignConsole
+                key={page.data.attempt.name}
+                problem={page.data.problem}
+                initial={page.data.attempt}
+              />
+            )}
+            {page?.kind === "topic" && <TopicPage data={page.data} />}
+            {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
+            {page?.kind === "problems" && (
+              <ProblemsPage
+                subject={route.subject}
+                rows={page.data}
+                names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+                lessons={
+                  new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))
+                }
+              />
+            )}
+          </ErrorBoundary>
         </main>
         {searching && subjects && (
           <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />

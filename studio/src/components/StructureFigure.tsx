@@ -65,8 +65,8 @@ export function StructureFigure({ f, step }: { f: StructureSpec; step: number })
     <div className="viz fig-views">
       {f.views.map((spec) => {
         const id = viewId(spec);
-        const state = frame.state[id];
-        return state ? <View key={id} spec={spec} state={state} prev={prev?.state[id]} /> : null;
+        const state = frame.state?.[id];
+        return state ? <View key={id} spec={spec} state={state} prev={prev?.state?.[id]} /> : null;
       })}
     </div>
   );
