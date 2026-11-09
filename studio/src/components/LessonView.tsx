@@ -30,15 +30,19 @@ import { ProblemCard } from "./ProblemCard";
 import { Quiz } from "./Quiz";
 import { ResourceList } from "./Resources";
 import { TracePlayer } from "./TracePlayer";
-import { Workbench } from "./Workbench";
+import { Workbench, WorkbenchTab } from "./Workbench";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Icon } from "./Icon";
+import { Button, MutedP } from "../theme/primitives";
+import { t } from "../theme/theme";
+import * as L from "./LearnBenchParts.style";
+import * as S from "./LessonView.style";
 
 const TAB_COLOUR: Record<SectionKey, string> = {
-  learn: "var(--accent)",
-  quiz: "var(--rd-pattern)",
-  practice: "var(--ok)",
-  resources: "var(--rd-tech)",
+  learn: t.accent,
+  quiz: t.pattern,
+  practice: t.ok,
+  resources: t.tech,
 };
 
 function LessonBlock({
@@ -67,84 +71,79 @@ function LessonBlock({
                 <FigureView figure={fig} number={figureNumbers.get(`${i}:${body}`)} />
               </ErrorBoundary>
             ) : (
-              <p className="why wrong">Missing figure “{body}” — run ./kb learn validate.</p>
+              <S.ErrorText>Missing figure “{body}” — run ./kb learn validate.</S.ErrorText>
             );
           }}
         />
       );
     case "trace":
       return (
-        <div id={blockId(i)} className="lb-block">
+        <S.Block id={blockId(i)}>
           {isTrace(b.trace) ? (
             <TracePlayer trace={b.trace} />
           ) : (
-            <p className="why wrong">
+            <S.ErrorText>
               Unsupported trace format — rebuild with <code>./kb learn build</code>.
-            </p>
+            </S.ErrorText>
           )}
-        </div>
+        </S.Block>
       );
     case "quiz":
       return (
-        <div id={blockId(i)} className="lb-block">
+        <S.Block id={blockId(i)}>
           <Quiz
             subject={lesson.subject}
             topic={lesson.topic}
             items={b.items}
             names={lesson.names}
           />
-        </div>
+        </S.Block>
       );
     case "resources":
       return (
-        <div id={blockId(i)} className="lb-block">
+        <S.Block id={blockId(i)}>
           <ResourceList items={b.resources} />
-        </div>
+        </S.Block>
       );
     case "problems":
       return (
-        <section id={blockId(i)} className="lb-block">
+        <S.Block as="section" id={blockId(i)}>
           <h2>Practice</h2>
-          <p className="muted">
+          <MutedP>
             Easy → hard. Start an attempt, solve it in VS Code, then <code>./kb run</code> it. Each
             run feeds your progress.
-          </p>
+          </MutedP>
           {b.problems.map((p) => (
             <ProblemCard key={p.slug} p={p} pattern={lesson.topic} />
           ))}
-        </section>
+        </S.Block>
       );
     case "design-problems":
       return (
-        <section id={blockId(i)} className="lb-block">
+        <S.Block as="section" id={blockId(i)}>
           <h2>Practice in the design console</h2>
-          <p className="muted">
+          <MutedP>
             Scope → estimates → API → versioned diagrams → deep dives → wrap-up, with live rubric
             checks and tips on demand.
-          </p>
-          <div className="cards design-cards">
+          </MutedP>
+          <L.CardGrid>
             {b.problems.map((p, k) => (
-              <a
-                key={p.slug}
-                className="topic-card design-card"
-                href={designHref(lesson.subject, p.slug)}
-                style={{ ["--i" as string]: k }}
-              >
-                <div className="tc-head">
-                  <span className="tc-icon">{lesson.subject === "ood" ? "🧩" : "🏗️"}</span>
-                  <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
-                </div>
-                <div className="tc-name">{p.title}</div>
-                <div className="tc-foot">
-                  {p.minutes ? <span className="tc-pill">⏱ {p.minutes} min</span> : null}
-                  <span className={`tc-pill ${p.attempts.length ? "lesson" : ""}`}>
+              <L.TopicCard key={p.slug} href={designHref(lesson.subject, p.slug)} $i={k}>
+                <L.CardHead>
+                  <L.CardIcon>{lesson.subject === "ood" ? "🧩" : "🏗️"}</L.CardIcon>
+                  <L.Badge $difficulty={p.difficulty}>{p.difficulty}</L.Badge>
+                </L.CardHead>
+                <L.CardName>{p.title}</L.CardName>
+                <L.CardFoot>
+                  {p.minutes ? <L.CardPill>⏱ {p.minutes} min</L.CardPill> : null}
+                  <L.CardPill $kind={p.attempts.length ? "lesson" : undefined}>
                     {p.attempts.length} attempt{p.attempts.length === 1 ? "" : "s"}
-                  </span>
-                </div>
-              </a>
+                  </L.CardPill>
+                </L.CardFoot>
+              </L.TopicCard>
             ))}
-          </div>
-        </section>
+          </L.CardGrid>
+        </S.Block>
       );
   }
 }
@@ -200,27 +199,28 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
   const tabs = tabbed ? (
     <>
       {sections.map((s) => (
-        <button
+        <WorkbenchTab
           key={s.key}
-          className={`wb-tab ${active === s.key ? "on" : ""}`}
-          style={{ ["--tab-c" as string]: TAB_COLOUR[s.key] }}
+          on={active === s.key}
+          color={TAB_COLOUR[s.key]}
           onClick={() => show(s.key)}
-          aria-pressed={active === s.key}
+          badge={
+            s.count > 0 ? (
+              <span title={s.key === "learn" ? "visual traces" : undefined}>
+                {s.key === "learn" ? `▶ ${s.count}` : s.count}
+              </span>
+            ) : undefined
+          }
         >
           {s.label}
-          {s.count > 0 && (
-            <span className="wb-tab-badge" title={s.key === "learn" ? "visual traces" : undefined}>
-              {s.key === "learn" ? `▶ ${s.count}` : s.count}
-            </span>
-          )}
-        </button>
+        </WorkbenchTab>
       ))}
     </>
   ) : undefined;
 
   const right = (
     <OnThisPage toc={toc} scroller={scroller}>
-      <section className="rd-card lb-card">
+      <S.SideCard>
         <h4>Learn first</h4>
         <TopicLinks
           subject={lesson.subject}
@@ -228,8 +228,8 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
           topics={topics}
           names={lesson.names}
         />
-      </section>
-      <section className="rd-card lb-card">
+      </S.SideCard>
+      <S.SideCard>
         <h4>Related</h4>
         <TopicLinks
           subject={lesson.subject}
@@ -237,23 +237,23 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
           topics={topics}
           names={lesson.names}
         />
-      </section>
+      </S.SideCard>
       {problems.length > 0 && (
-        <section className="rd-card lb-card">
+        <S.SideCard>
           <h4>Practice problems</h4>
-          <ul className="lb-problems">
+          <S.ProblemList>
             {problems.map((p) => (
               <li key={p.slug}>
-                <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
+                <L.Badge $difficulty={p.difficulty}>{p.difficulty}</L.Badge>
                 <a href={p.href}>{p.title}</a>
               </li>
             ))}
-          </ul>
-        </section>
+          </S.ProblemList>
+        </S.SideCard>
       )}
-      <a className="small lb-more" href={topicPageHref(lesson.subject, lesson.topic)}>
+      <S.More href={topicPageHref(lesson.subject, lesson.topic)}>
         Topic page and neighbourhood →
-      </a>
+      </S.More>
     </OnThisPage>
   );
 
@@ -282,14 +282,10 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
       right={{ title: "On this page", icon: "🧭", content: right }}
       footer={<PrevNextFooter prev={pn.prev} next={pn.next} noun="lesson" />}
     >
-      <div className="lb-center" ref={centerRef}>
-        <article className="lesson lb-lesson">
+      <L.LbCenter ref={centerRef}>
+        <S.Article>
           {sections.map((s) => (
-            <div
-              key={s.key}
-              className={`lb-section lb-section-${s.key}`}
-              hidden={tabbed && s.key !== current?.key}
-            >
+            <S.Section key={s.key} hidden={tabbed && s.key !== current?.key}>
               {s.blocks.map((i) => (
                 <LessonBlock
                   key={i}
@@ -299,21 +295,21 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
                   figureNumbers={figureNumbers}
                 />
               ))}
-            </div>
+            </S.Section>
           ))}
-        </article>
+        </S.Article>
         {tabbed && current && (
-          <div className="lb-next-section">
+          <S.NextSection>
             {sections
               .slice(sections.indexOf(current) + 1, sections.indexOf(current) + 2)
               .map((s) => (
-                <button key={s.key} className="btn primary" onClick={() => show(s.key)}>
+                <Button key={s.key} $variant="primary" onClick={() => show(s.key)}>
                   Next: {s.label} <Icon name="arrowRight" size={14} />
-                </button>
+                </Button>
               ))}
-          </div>
+          </S.NextSection>
         )}
-      </div>
+      </L.LbCenter>
     </Workbench>
   );
 }

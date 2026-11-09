@@ -9,10 +9,13 @@ import {
   topicNavGroups,
   topicStateOf,
 } from "../learn-bench";
+import { Grow, Muted, MutedP } from "../theme/primitives";
+import * as L from "./LearnBenchParts.style";
 import { NavList } from "./panes";
-import { Ring } from "./Ring";
-import { Workbench } from "./Workbench";
 import { PageHeader } from "./PageHeader";
+import { Ring } from "./Ring";
+import * as S from "./SubjectHome.style";
+import { Workbench, WorkbenchTab } from "./Workbench";
 
 const GROUP_KEY = (subject: string) => `kb.learn-home.${subject}.group`;
 
@@ -92,18 +95,16 @@ export function SubjectHome({
       ]}
       actions={
         stats.problems > 0 ? (
-          <div
-            className="lb-hero-ring"
-            title={`${stats.solved} of ${stats.problems} problems solved`}
-          >
+          <L.HeroRing title={`${stats.solved} of ${stats.problems} problems solved`}>
             <Ring
               solved={stats.solved}
               failing={stats.failing}
               total={stats.problems}
               size={44}
+              labelSize={13}
               label={`${Math.round((100 * stats.solved) / stats.problems)}%`}
             />
-          </div>
+          </L.HeroRing>
         ) : undefined
       }
     />
@@ -111,93 +112,92 @@ export function SubjectHome({
 
   const tabs = (
     <>
-      <button
-        className={`wb-tab ${group === "" ? "on" : ""}`}
-        onClick={() => setGroup("")}
-        aria-pressed={group === ""}
-      >
-        All <span className="wb-tab-badge">{subject.topics.length}</span>
-      </button>
+      <WorkbenchTab on={group === ""} onClick={() => setGroup("")} badge={subject.topics.length}>
+        All
+      </WorkbenchTab>
       {groups.map((g) => {
         const lessons = g.topics.filter((t) => t.has_lesson).length;
+        const on = group === g.group;
         return (
-          <button
+          <WorkbenchTab
             key={g.group}
-            className={`wb-tab lb-tab ${group === g.group ? "on" : ""} ${lessons === g.topics.length ? "done" : ""}`}
-            style={{ ["--tab-c" as string]: g.color, ["--c" as string]: g.color }}
+            on={on}
+            done={lessons === g.topics.length}
+            color={g.color}
             onClick={() => setGroup(g.group)}
-            aria-pressed={group === g.group}
             title={`${lessons} of ${g.topics.length} with a lesson`}
+            badge={g.topics.length}
           >
-            <span className="lb-swatch" /> {groupLabel(g.group)}
-            <span className="wb-tab-badge">{g.topics.length}</span>
-          </button>
+            <L.TabLabel $color={on ? g.color : undefined}>
+              <L.Swatch $color={g.color} /> {groupLabel(g.group)}
+            </L.TabLabel>
+          </WorkbenchTab>
         );
       })}
     </>
   );
 
   const sugList = (items: typeof sugg.next) => (
-    <ul className="lb-sugg">
+    <S.SuggList>
       {items.map((s, i) => {
         const t = subject.topics.find((x) => x.id === s.id);
         return (
-          <li key={s.id} style={{ ["--i" as string]: i }}>
-            <a href={hrefOf(s.id)}>
-              <span className="lb-sugg-icon">{t ? topicIcon(t) : "•"}</span>
-              <span className="lb-sugg-name">{s.name}</span>
-              <span className={`lb-sugg-why ${s.tone}`}>{s.reason}</span>
-            </a>
-          </li>
+          <S.SuggItem key={s.id} $i={i}>
+            <S.SuggLink href={hrefOf(s.id)}>
+              <S.SuggIcon>{t ? topicIcon(t) : "•"}</S.SuggIcon>
+              <S.SuggName>{s.name}</S.SuggName>
+              <S.SuggWhy $tone={s.tone}>{s.reason}</S.SuggWhy>
+            </S.SuggLink>
+          </S.SuggItem>
         );
       })}
-    </ul>
+    </S.SuggList>
   );
 
   const right = (
-    <div className="lb-right">
-      <section className="rd-card lb-card">
+    <L.Stack>
+      <L.LearnCard>
         <h4>⏭ Next up</h4>
-        {!feedback && <p className="muted small">No progress data yet.</p>}
+        {!feedback && <MutedP $small>No progress data yet.</MutedP>}
         {feedback && sugg.next.length === 0 && (
-          <p className="muted small">Nothing due and every lesson started. 🎉</p>
+          <MutedP $small>Nothing due and every lesson started. 🎉</MutedP>
         )}
         {sugList(sugg.next)}
-      </section>
-      <section className="rd-card lb-card">
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>🩹 Weakest</h4>
         {sugg.weakest.length === 0 ? (
-          <p className="muted small">No failing problems or weak quizzes yet.</p>
+          <MutedP $small>No failing problems or weak quizzes yet.</MutedP>
         ) : (
           sugList(sugg.weakest)
         )}
-      </section>
-      <section className="rd-card lb-card lb-quick">
+      </L.LearnCard>
+      <S.Quick>
         <h4>🚀 Quick start</h4>
         {sugg.next[0] ? (
-          <a className="rd-btn primary" href={hrefOf(sugg.next[0].id)}>
+          <L.RdButton as="a" $variant="primary" href={hrefOf(sugg.next[0].id)}>
             ▶ {sugg.next[0].tone === "due" ? "Review" : "Start"}: {sugg.next[0].name}
-          </a>
+          </L.RdButton>
         ) : (
           firstLesson && (
-            <a className="rd-btn primary" href={lessonHref(subject.id, firstLesson.id)}>
+            <L.RdButton as="a" $variant="primary" href={lessonHref(subject.id, firstLesson.id)}>
               ▶ Start: {firstLesson.name}
-            </a>
+            </L.RdButton>
           )
         )}
-        <a className="rd-btn ghost" href="#/sessions">
+        <L.RdButton as="a" $variant="ghost" href="#/sessions">
           🎯 Study sessions
-        </a>
-        <p className="muted small">
+        </L.RdButton>
+        <MutedP $small>
           Plan a personalised session in Claude Code with <code>/session</code>, then run it from
           Sessions.
-        </p>
-      </section>
-    </div>
+        </MutedP>
+      </S.Quick>
+    </L.Stack>
   );
 
   const footer = (
-    <div className="lb-footer">
+    <L.Footer>
       <span>
         <b>{stats.topics}</b> topics
       </span>
@@ -207,8 +207,8 @@ export function SubjectHome({
       <span>
         <b>{stats.problems}</b> problems{stats.problems > 0 && ` · ${stats.solved} solved`}
       </span>
-      {feedback && <span className="muted">today {feedback.today}</span>}
-    </div>
+      {feedback && <Muted>today {feedback.today}</Muted>}
+    </L.Footer>
   );
 
   const shownGroups = groups.filter((g) => !group || g.group === group);
@@ -227,65 +227,65 @@ export function SubjectHome({
       right={{ title: "Next up", icon: "🎯", content: right }}
       footer={footer}
     >
-      <div className="home lb-home">
+      <S.Home>
         {due.length > 0 && (
-          <div className="callout due">
+          <L.Callout $row>
             ⏰ Spaced review due:{" "}
             {due.map((t) => (
-              <a key={t.id} className="chip-link" href={hrefOf(t.id)}>
+              <S.ChipLink key={t.id} href={hrefOf(t.id)}>
                 {t.name}
-              </a>
+              </S.ChipLink>
             ))}
-          </div>
+          </L.Callout>
         )}
-        <div className="toolbar">
-          <input
-            className="filter"
+        <S.Toolbar>
+          <S.Filter
             placeholder={`Filter ${subject.topics.length} topics…`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           {stats.lessons > 0 && (
-            <label className="pill check">
+            <S.LessonsOnly as="label">
               <input
                 type="checkbox"
                 checked={lessonsOnly}
                 onChange={(e) => setLessonsOnly(e.target.checked)}
               />{" "}
               with lesson
-            </label>
+            </S.LessonsOnly>
           )}
-        </div>
+        </S.Toolbar>
         {shownGroups.every((g) => g.topics.filter(visible).length === 0) && (
-          <p className="muted">No topic matches.</p>
+          <MutedP>No topic matches.</MutedP>
         )}
         {shownGroups.map((g) => {
           const shown = g.topics.filter(visible);
           if (shown.length === 0) return null;
           return (
-            <section key={g.group} className="group" style={{ ["--c" as string]: g.color }}>
-              <h2 className="group-title">
-                <span className="swatch" /> {groupLabel(g.group)}
-                <span className="muted small"> {shown.length}</span>
-              </h2>
-              <div className="cards">
+            <section key={g.group}>
+              <L.GroupTitle>
+                <L.Dot $color={g.color} /> {groupLabel(g.group)}
+                <Muted $small> {shown.length}</Muted>
+              </L.GroupTitle>
+              <L.CardGrid $min={210}>
                 {shown.map((t) => {
                   const f = fb.get(t.id);
                   const total = f?.problems.length ?? 0;
                   const state = topicStateOf(t);
                   return (
-                    <a
+                    <L.TopicCard
                       key={t.id}
-                      className={`topic-card ${t.has_lesson ? "has-lesson" : ""} ${state === "planned" ? "planned" : ""}`}
+                      $color={g.color}
+                      $i={card++}
+                      $planned={state === "planned"}
                       href={state === "planned" ? undefined : bestHref(subject.id, t)}
                       aria-disabled={state === "planned" || undefined}
                       title={state === "planned" ? "Planned: no lesson or problem yet" : undefined}
-                      style={{ ["--i" as string]: card++ }}
                     >
-                      <div className="tc-head">
-                        <span className="tc-icon">{topicIcon(t)}</span>
-                        {t.order ? <span className="tc-order">#{t.order}</span> : null}
-                        <span className="grow" />
+                      <L.CardHead>
+                        <L.CardIcon $color={g.color}>{topicIcon(t)}</L.CardIcon>
+                        {t.order ? <L.CardOrder $color={g.color}>#{t.order}</L.CardOrder> : null}
+                        <Grow />
                         {total > 0 && (
                           <Ring
                             solved={f?.counts.solved ?? 0}
@@ -293,36 +293,36 @@ export function SubjectHome({
                             total={total}
                           />
                         )}
-                      </div>
-                      <div className="tc-name">{t.name}</div>
-                      <div className="tc-usage">{t.usage}</div>
-                      <div className="tc-foot">
+                      </L.CardHead>
+                      <L.CardName>{t.name}</L.CardName>
+                      <L.CardUsage>{t.usage}</L.CardUsage>
+                      <L.CardFoot>
                         {t.has_lesson ? (
-                          <span className="tc-pill lesson">▶ lesson</span>
+                          <L.CardPill $kind="lesson" $color={g.color}>
+                            ▶ lesson
+                          </L.CardPill>
                         ) : state === "planned" ? (
-                          <span className="tc-pill">planned</span>
+                          <L.CardPill>planned</L.CardPill>
                         ) : (t.problems ?? total) > 0 ? (
-                          <span className="tc-pill">
-                            🧪 practise · {t.problems ?? total} problems
-                          </span>
+                          <L.CardPill>🧪 practise · {t.problems ?? total} problems</L.CardPill>
                         ) : (
-                          <span className="tc-pill">📚 reading</span>
+                          <L.CardPill>📚 reading</L.CardPill>
                         )}
                         {f?.review_due && feedback && f.review_due <= feedback.today && (
-                          <span className="tc-pill due">review due</span>
+                          <L.CardPill $kind="due">review due</L.CardPill>
                         )}
                         {f?.quiz_accuracy != null && (
-                          <span className="tc-pill">quiz {Math.round(f.quiz_accuracy * 100)}%</span>
+                          <L.CardPill>quiz {Math.round(f.quiz_accuracy * 100)}%</L.CardPill>
                         )}
-                      </div>
-                    </a>
+                      </L.CardFoot>
+                    </L.TopicCard>
                   );
                 })}
-              </div>
+              </L.CardGrid>
             </section>
           );
         })}
-      </div>
+      </S.Home>
     </Workbench>
   );
 }

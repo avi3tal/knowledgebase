@@ -15,8 +15,12 @@ import { NeighbourhoodGraph } from "./NeighbourhoodGraph";
 import { NavList } from "./panes";
 import { CoTopics, TopicProblemList } from "./PracticeLinks";
 import { ResourceList } from "./Resources";
-import { Workbench } from "./Workbench";
+import { Workbench, WorkbenchTab } from "./Workbench";
 import { Icon } from "./Icon";
+import { Button, Muted, MutedP, difficultyColor } from "../theme/primitives";
+import { t as tokens } from "../theme/theme";
+import * as L from "./LearnBenchParts.style";
+import * as S from "./TopicPage.style";
 
 type View = "overview" | "practice" | "resources";
 
@@ -45,16 +49,9 @@ export function TopicPage({ data }: { data: TopicPageData }) {
   const coTopics = data.co_topics ?? [];
 
   const tab = (v: View, label: string, colour: string, badge?: number) => (
-    <button
-      key={v}
-      className={`wb-tab ${view === v ? "on" : ""}`}
-      style={{ ["--tab-c" as string]: colour }}
-      onClick={() => setView(v)}
-      aria-pressed={view === v}
-    >
+    <WorkbenchTab key={v} on={view === v} color={colour} onClick={() => setView(v)} badge={badge}>
       {label}
-      {badge !== undefined && <span className="wb-tab-badge">{badge}</span>}
-    </button>
+    </WorkbenchTab>
   );
 
   const header = (
@@ -70,46 +67,46 @@ export function TopicPage({ data }: { data: TopicPageData }) {
       }
       action={
         data.has_lesson ? (
-          <a className="btn primary" href={lessonHref(subj, topic.id)}>
+          <Button as="a" $variant="primary" href={lessonHref(subj, topic.id)}>
             <Icon name="book" size={14} /> Open the lesson
-          </a>
+          </Button>
         ) : data.problems.length > 0 ? (
-          <a className="btn primary" href={practiseHref}>
+          <Button as="a" $variant="primary" href={practiseHref}>
             <Icon name="play" size={13} /> Practise {data.problems.length} problems
-          </a>
+          </Button>
         ) : undefined
       }
     />
   );
 
   const right = (
-    <div className="lb-right">
-      <section className={`rd-card lb-card ${data.has_lesson ? "lb-has-lesson" : ""}`}>
+    <L.Stack>
+      <L.LearnCard>
         <h4>Lesson</h4>
         {data.has_lesson ? (
-          <a className="rd-btn primary" href={lessonHref(subj, topic.id)}>
+          <L.RdButton as="a" $variant="primary" href={lessonHref(subj, topic.id)}>
             ▶ Open the lesson →
-          </a>
+          </L.RdButton>
         ) : (
-          <p className="muted small">
+          <MutedP $small>
             No lesson yet. In Claude Code:{" "}
             <code>
               /learn {subj} {topic.id}
             </code>
-          </p>
+          </MutedP>
         )}
-      </section>
-      <section className="rd-card lb-card">
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>Learn first</h4>
         <TopicLinks subject={subj} ids={topic.prereqs ?? []} topics={topics} names={names} />
-      </section>
-      <section className="rd-card lb-card">
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>Related</h4>
         <TopicLinks subject={subj} ids={topic.related ?? []} topics={topics} names={names} />
-      </section>
-      <section className="rd-card lb-card">
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>At a glance</h4>
-        <div className="rd-practice-stats">
+        <L.Stats>
           <span>
             <b>{data.problems.length}</b> problems
           </span>
@@ -119,39 +116,41 @@ export function TopicPage({ data }: { data: TopicPageData }) {
           <span>
             <b>{Math.max(0, data.graph.nodes.length - 1)}</b> neighbours
           </span>
-        </div>
-      </section>
-    </div>
+        </L.Stats>
+      </L.LearnCard>
+    </L.Stack>
   );
 
   let center;
   if (view === "overview") {
     center = (
       <>
-        <section className="lb-hero-card">
+        <S.HeroCard>
           <h2>What it's for</h2>
-          <p className="lb-lead">{topic.usage}</p>
+          <S.Lead>{topic.usage}</S.Lead>
           {topic.samples.length > 0 && (
-            <p className="muted">Classic problems: {topic.samples.join(" · ")}</p>
+            <MutedP>Classic problems: {topic.samples.join(" · ")}</MutedP>
           )}
-          {topic.ds.length > 0 && (
-            <p className="muted small">Data structures: {topic.ds.join(", ")}</p>
-          )}
+          {topic.ds.length > 0 && <MutedP $small>Data structures: {topic.ds.join(", ")}</MutedP>}
           {data.problems.length > 0 && (
-            <p className="lb-hero-actions">
+            <S.HeroActions>
               {data.has_lesson && (
-                <a className="rd-btn primary" href={lessonHref(subj, topic.id)}>
+                <L.RdButton as="a" $variant="primary" href={lessonHref(subj, topic.id)}>
                   ▶ Learn it
-                </a>
+                </L.RdButton>
               )}
-              <a className={`rd-btn ${data.has_lesson ? "" : "primary"}`} href={practiseHref}>
+              <L.RdButton
+                as="a"
+                $variant={data.has_lesson ? "default" : "primary"}
+                href={practiseHref}
+              >
                 🧪 Practise {data.problems.length} problem{data.problems.length === 1 ? "" : "s"}
-              </a>
-            </p>
+              </L.RdButton>
+            </S.HeroActions>
           )}
-        </section>
+        </S.HeroCard>
         {state === "planned" && (
-          <section className="rd-card lb-planned">
+          <S.Planned>
             <h2>Planned</h2>
             <p>
               No lesson, problem or resource uses this topic yet. Start from its neighbours below,
@@ -166,7 +165,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
               topics={topics}
               names={names}
             />
-          </section>
+          </S.Planned>
         )}
         {data.problems.length > 0 && (
           <section>
@@ -182,9 +181,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
         {coTopics.length > 0 && (
           <section>
             <h2>Often used with</h2>
-            <p className="muted small">
-              Topics that appear in the same problems: learn them together.
-            </p>
+            <MutedP $small>Topics that appear in the same problems: learn them together.</MutedP>
             <CoTopics subject={subj} items={coTopics} names={names} />
           </section>
         )}
@@ -202,25 +199,26 @@ export function TopicPage({ data }: { data: TopicPageData }) {
   } else if (view === "practice") {
     center =
       data.problems.length === 0 ? (
-        <p className="muted">No problem uses this topic yet.</p>
+        <MutedP>No problem uses this topic yet.</MutedP>
       ) : (
         <section>
           <h2>Problems that use it</h2>
           {(["easy", "medium", "hard"] as const).map((d) =>
             byDiff(d).length === 0 ? null : (
-              <div key={d} className={`lb-diff lb-diff-${d}`}>
+              <S.Diff key={d}>
                 <h3>
-                  <span className={`badge ${d}`}>{d}</span>{" "}
-                  <span className="muted small">{byDiff(d).length}</span>
+                  <L.Badge $difficulty={d}>{d}</L.Badge> <Muted $small>{byDiff(d).length}</Muted>
                 </h3>
-                <ul className="lb-problem-grid">
+                <S.ProblemGrid>
                   {byDiff(d).map((p, i) => (
-                    <li key={p.slug} style={{ ["--i" as string]: i }}>
-                      <a href={problemHref(subj, p.slug)}>{p.title}</a>
-                    </li>
+                    <S.ProblemItem key={p.slug} $i={i}>
+                      <S.ProblemLink $color={difficultyColor(d)} href={problemHref(subj, p.slug)}>
+                        {p.title}
+                      </S.ProblemLink>
+                    </S.ProblemItem>
                   ))}
-                </ul>
-              </div>
+                </S.ProblemGrid>
+              </S.Diff>
             ),
           )}
         </section>
@@ -228,7 +226,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
   } else {
     center =
       data.resources.length === 0 ? (
-        <p className="muted">No curated resources for this topic yet.</p>
+        <MutedP>No curated resources for this topic yet.</MutedP>
       ) : (
         <ResourceList items={data.resources} title="Resources" />
       );
@@ -241,9 +239,9 @@ export function TopicPage({ data }: { data: TopicPageData }) {
       header={header}
       tabs={
         <>
-          {tab("overview", "Overview", "var(--accent)")}
-          {tab("practice", "Practice", "var(--ok)", data.problems.length)}
-          {tab("resources", "Resources", "var(--rd-tech)", data.resources.length)}
+          {tab("overview", "Overview", tokens.accent)}
+          {tab("practice", "Practice", tokens.ok, data.problems.length)}
+          {tab("resources", "Resources", tokens.tech, data.resources.length)}
         </>
       }
       left={{
@@ -254,7 +252,7 @@ export function TopicPage({ data }: { data: TopicPageData }) {
       right={{ title: "Connections", icon: "🔗", content: right }}
       footer={<PrevNextFooter prev={pn.prev} next={pn.next} noun="topic" />}
     >
-      <div className="lb-center lb-topic">{center}</div>
+      <L.LbCenter>{center}</L.LbCenter>
     </Workbench>
   );
 }

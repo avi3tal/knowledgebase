@@ -16,8 +16,11 @@ import type { NavGroup } from "./panes";
 import { NavList } from "./panes";
 import { StatusBar } from "./PracticeBench";
 import { Ring } from "./Ring";
-import { Workbench } from "./Workbench";
+import { Grow, Muted, MutedP, Tinted } from "../theme/primitives";
+import * as S from "./Dashboard.style";
+import * as L from "./LearnBenchParts.style";
 import { PageHeader } from "./PageHeader";
+import { Workbench, WorkbenchTab } from "./Workbench";
 
 /** Topics worth a progress tile: practised or taught. Grouped like the Learn tab. */
 export function progressGroups(data: Feedback, topics: Topic[]) {
@@ -92,11 +95,11 @@ export function Dashboard({ data, topics }: { data: Feedback; topics: Topic[] })
       meta={[
         <span>{totals.topics} topics</span>,
         <span>{totals.lessons} lessons</span>,
-        <span className="status solved">{totals.solved} solved</span>,
-        totals.failing > 0 && <span className="status failing">{totals.failing} failing</span>,
+        <Tinted $tone="ok">{totals.solved} solved</Tinted>,
+        totals.failing > 0 && <Tinted $tone="bad">{totals.failing} failing</Tinted>,
         <span>{totals.untried} not started</span>,
         <span>quiz {totals.quiz === null ? "—" : `${Math.round(totals.quiz * 100)}%`}</span>,
-        totals.due > 0 && <span className="status started">{totals.due} reviews due</span>,
+        totals.due > 0 && <Tinted $tone="warn">{totals.due} reviews due</Tinted>,
       ]}
       actions={
         <span title="problems solved">
@@ -107,17 +110,16 @@ export function Dashboard({ data, topics }: { data: Feedback; topics: Topic[] })
   );
 
   const tab = (g: string, label: string, n: number, color?: string) => (
-    <a
+    <WorkbenchTab
       key={g || "all"}
-      className={`wb-tab ${group === g ? "on" : ""}`}
-      style={color ? { ["--tab-c" as string]: color } : undefined}
+      on={group === g}
+      color={color}
       href={progressHref(subject, { group: g, topic: "" })}
-      aria-current={group === g ? "page" : undefined}
+      badge={n}
     >
-      {color && <span className="pb-tab-dot" style={{ background: color }} />}
+      {color && <S.TabDot $color={color} />}
       {label}
-      <span className="wb-tab-badge">{n}</span>
-    </a>
+    </WorkbenchTab>
   );
   const tabs = (
     <>
@@ -129,78 +131,80 @@ export function Dashboard({ data, topics }: { data: Feedback; topics: Topic[] })
   const topicRow = (t: (typeof shownTiles)[number], tone: "ok" | "bad") => (
     <li key={t.id}>
       <a href={topicHref(t.id)}>{t.name}</a>
-      <span className={`pb-num ${tone}`}>
+      <S.Num $tone={tone}>
         {t.counts.solved}/{t.problems.length}
-      </span>
+      </S.Num>
     </li>
   );
 
   const right = (
-    <div className="pb-side">
-      <section className="rd-card">
+    <S.Side>
+      <L.RdCard>
         <h4>💪 Strongest</h4>
         {strongest.length === 0 ? (
-          <p className="muted small">Solve a problem to see your strengths.</p>
+          <MutedP $small>Solve a problem to see your strengths.</MutedP>
         ) : (
-          <ol className="pb-rank">{strongest.map((t) => topicRow(t, "ok"))}</ol>
+          <S.Rank>{strongest.map((t) => topicRow(t, "ok"))}</S.Rank>
         )}
-      </section>
-      <section className="rd-card">
+      </L.RdCard>
+      <L.RdCard>
         <h4>🩹 Weakest</h4>
         {weakest.length === 0 ? (
-          <p className="muted small">Nothing weak yet: no failing or half-done topics.</p>
+          <MutedP $small>Nothing weak yet: no failing or half-done topics.</MutedP>
         ) : (
-          <ol className="pb-rank">{weakest.map((t) => topicRow(t, "bad"))}</ol>
+          <S.Rank>{weakest.map((t) => topicRow(t, "bad"))}</S.Rank>
         )}
-      </section>
-      <section className="rd-card">
+      </L.RdCard>
+      <L.RdCard>
         <h4>🕒 Recently practised</h4>
         {recent.length === 0 ? (
-          <p className="muted small">
+          <MutedP $small>
             No runs yet. Start with <code>./kb attempt &lt;slug&gt;</code> and <code>./kb run</code>
             .
-          </p>
+          </MutedP>
         ) : (
-          <ul className="pb-recent">
+          <S.Recent>
             {recent.map((p) => (
               <li key={p.slug}>
-                <span className={`rd-status ${p.status}`}>{STATUS_ICON[p.status]}</span>
+                <S.StatusMark $status={p.status}>{STATUS_ICON[p.status]}</S.StatusMark>
                 <a href={problemHref(subject, p.slug)}>{p.title}</a>
-                <span className="muted small">{p.last_practiced?.slice(5, 10)}</span>
+                <Muted $small>{p.last_practiced?.slice(5, 10)}</Muted>
               </li>
             ))}
-          </ul>
+          </S.Recent>
         )}
-      </section>
+      </L.RdCard>
       {due.length > 0 && (
-        <section className="rd-card pb-due">
+        <S.DueCard>
           <h4>⏰ Spaced review due</h4>
-          <div className="chips">
+          <S.DueChips>
             {due.map((t) => (
-              <a key={t.id} className="rd-chip" href={topicHref(t.id)}>
+              <S.DueChip key={t.id} href={topicHref(t.id)}>
                 {t.name}
-              </a>
+              </S.DueChip>
             ))}
-          </div>
-        </section>
+          </S.DueChips>
+        </S.DueCard>
       )}
-    </div>
+    </S.Side>
   );
 
   const footer = (
-    <div className="pb-footer">
+    <S.Footer>
       <span>
         <b>{totals.total}</b> problems · <b>{totals.topics}</b> topics
       </span>
-      <StatusBar c={totals} />
-      <span className="grow" />
+      <S.FooterBar>
+        <StatusBar c={totals} />
+      </S.FooterBar>
+      <Grow />
       {data.unmapped_tags.length > 0 && (
-        <span className="muted small" title={data.unmapped_tags.join(", ")}>
+        <Muted $small title={data.unmapped_tags.join(", ")}>
           {data.unmapped_tags.length} unmapped tag{data.unmapped_tags.length === 1 ? "" : "s"}
-        </span>
+        </Muted>
       )}
-      <span className="muted">no AI involved</span>
-    </div>
+      <Muted>no AI involved</Muted>
+    </S.Footer>
   );
 
   return (
@@ -216,39 +220,40 @@ export function Dashboard({ data, topics }: { data: Feedback; topics: Topic[] })
       right={{ title: "Highlights", icon: "✨", content: right }}
       footer={footer}
     >
-      <div className="pb-center pb-progress" ref={centerRef}>
+      <S.Center ref={centerRef}>
         {due.length > 0 && (
-          <div className="callout">⏰ Spaced review due: {due.map((t) => t.name).join(", ")}</div>
+          <L.Callout>⏰ Spaced review due: {due.map((t) => t.name).join(", ")}</L.Callout>
         )}
         {visible.length === 0 && (
-          <div className="pb-empty">
-            <div className="pb-empty-icon">🌱</div>
+          <S.Empty>
+            <S.EmptyIcon>🌱</S.EmptyIcon>
             <p>No topics practised or taught yet. Open a lesson or start an attempt.</p>
-          </div>
+          </S.Empty>
         )}
         {visible.map((g) => (
-          <section key={g.group} className="pb-group" style={{ ["--c" as string]: g.color }}>
-            <h2 className="group-title">
-              <span className="swatch" /> {groupLabel(g.group)}
-              <span className="muted small"> {g.tiles.length}</span>
-            </h2>
-            <div className="grid">
+          <S.Group key={g.group}>
+            <L.GroupTitle>
+              <L.Dot $color={g.color} /> {groupLabel(g.group)}
+              <Muted $small> {g.tiles.length}</Muted>
+            </L.GroupTitle>
+            <L.Grid>
               {g.tiles.map((t, i) => (
                 <TopicTile
                   key={t.id}
                   t={t}
                   subject={subject}
                   index={i}
+                  color={g.color}
                   current={t.id === view.topic}
                 />
               ))}
-            </div>
-          </section>
+            </L.Grid>
+          </S.Group>
         ))}
         {data.unmapped_tags.length > 0 && (
-          <p className="muted">Unmapped problem tags: {data.unmapped_tags.join(", ")}</p>
+          <MutedP>Unmapped problem tags: {data.unmapped_tags.join(", ")}</MutedP>
         )}
-      </div>
+      </S.Center>
     </Workbench>
   );
 }
@@ -257,42 +262,42 @@ function TopicTile({
   t,
   subject,
   index,
+  color,
   current,
 }: {
   t: Feedback["topics"][number];
   subject: string;
   index: number;
+  color: string;
   current: boolean;
 }) {
   return (
-    <div
-      className={`tile pb-tile ${current ? "current" : ""}`}
-      data-topic={t.id}
-      style={{ ["--i" as string]: index }}
-    >
-      <div className="tile-head">
+    <S.Tile $color={color} $i={index} $current={current} data-topic={t.id}>
+      <S.TileHead>
         <b>
-          <span className="pb-mastery">{masteryIcon(t)}</span> {t.name}
+          <S.Mastery $color={color}>{masteryIcon(t)}</S.Mastery> {t.name}
         </b>
         {t.has_lesson ? (
           <a href={`#/learn/${subject}/${t.id}`}>open lesson →</a>
         ) : (
-          <a className="muted" href={`#/topic/${subject}/${t.id}`}>
+          <Muted as="a" href={`#/topic/${subject}/${t.id}`}>
             topic page →
-          </a>
+          </Muted>
         )}
-      </div>
-      <StatusBar c={{ total: t.problems.length, ...t.counts }} legend={false} />
-      <div className="muted small">
+      </S.TileHead>
+      <S.TileBar>
+        <StatusBar c={{ total: t.problems.length, ...t.counts }} legend={false} />
+      </S.TileBar>
+      <Muted $small as="div">
         {t.problems.length} problems · quiz{" "}
         {t.quiz_accuracy === null ? "—" : `${Math.round(t.quiz_accuracy * 100)}%`}
         {t.last_practiced ? ` · last ${t.last_practiced.slice(0, 10)}` : ""}
-      </div>
-      <ul className="advice">
+      </Muted>
+      <S.Advice>
         {t.advice.slice(0, 3).map((a) => (
           <li key={a}>{a}</li>
         ))}
-      </ul>
-    </div>
+      </S.Advice>
+    </S.Tile>
   );
 }
