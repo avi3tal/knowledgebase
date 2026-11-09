@@ -11,7 +11,10 @@ import type {
   SubjectsResponse,
   TopicPageData,
 } from "./api";
+import { ThemeProvider } from "styled-components";
 import { api } from "./api";
+import { GlobalStyle } from "./theme/GlobalStyle.style";
+import { darkTheme, lightTheme } from "./theme/theme";
 import { Dashboard } from "./components/Dashboard";
 import { LessonView } from "./components/LessonView";
 import { ProblemCard } from "./components/ProblemCard";
@@ -161,67 +164,72 @@ export function App() {
   const tab = tabOf(route);
 
   return (
-    <RootContext.Provider value={subjects?.root ?? ""}>
-      <SubjectContext.Provider
-        value={{ subject: current ?? null, subjects: subjects?.subjects ?? [] }}
-      >
-        <TopBar
-          subjects={subjects?.subjects ?? []}
-          current={current}
-          tab={tab}
-          theme={theme}
-          onTheme={toggleTheme}
-          onSearch={() => setSearching(true)}
-        />
-        <main className="content bench" key={window.location.hash}>
-          <ErrorBoundary label="this page">
-            {error && <ErrorBox msg={error} route={route} />}
-            {!error && !page && <div className="loader" aria-label="loading" />}
-            {page?.kind === "home" && current && (
-              <SubjectHome subject={current} feedback={page.data} />
-            )}
-            {page?.kind === "dashboard" && (
-              <Dashboard data={page.data} topics={current?.topics ?? []} />
-            )}
-            {page?.kind === "sessions" && subjects && (
-              <SessionsPage sessions={page.data} subjects={subjects.subjects} />
-            )}
-            {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
-            {page?.kind === "lesson" && <LessonView lesson={page.data} />}
-            {page?.kind === "problem" && <ProblemCard p={page.data} open />}
-            {page?.kind === "design" && (
-              <DesignProblemPage
-                p={page.data}
-                view={route.page === "design" ? route.view : "problem"}
-                names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-              />
-            )}
-            {page?.kind === "console" && (
-              <DesignConsole
-                key={page.data.attempt.name}
-                problem={page.data.problem}
-                initial={page.data.attempt}
-              />
-            )}
-            {page?.kind === "topic" && <TopicPage data={page.data} />}
-            {page?.kind === "map" && current && <SubjectMap subject={current} graph={page.data} />}
-            {page?.kind === "problems" && (
-              <ProblemsPage
-                subject={route.subject}
-                rows={page.data}
-                names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
-                lessons={
-                  new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))
-                }
-              />
-            )}
-          </ErrorBoundary>
-        </main>
-        {searching && subjects && (
-          <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />
-        )}
-      </SubjectContext.Provider>
-    </RootContext.Provider>
+    <ThemeProvider theme={theme === "dark" ? darkTheme : lightTheme}>
+      <GlobalStyle />
+      <RootContext.Provider value={subjects?.root ?? ""}>
+        <SubjectContext.Provider
+          value={{ subject: current ?? null, subjects: subjects?.subjects ?? [] }}
+        >
+          <TopBar
+            subjects={subjects?.subjects ?? []}
+            current={current}
+            tab={tab}
+            theme={theme}
+            onTheme={toggleTheme}
+            onSearch={() => setSearching(true)}
+          />
+          <main className="content bench" key={window.location.hash}>
+            <ErrorBoundary label="this page">
+              {error && <ErrorBox msg={error} route={route} />}
+              {!error && !page && <div className="loader" aria-label="loading" />}
+              {page?.kind === "home" && current && (
+                <SubjectHome subject={current} feedback={page.data} />
+              )}
+              {page?.kind === "dashboard" && (
+                <Dashboard data={page.data} topics={current?.topics ?? []} />
+              )}
+              {page?.kind === "sessions" && subjects && (
+                <SessionsPage sessions={page.data} subjects={subjects.subjects} />
+              )}
+              {page?.kind === "session" && <SessionView key={page.data.id} initial={page.data} />}
+              {page?.kind === "lesson" && <LessonView lesson={page.data} />}
+              {page?.kind === "problem" && <ProblemCard p={page.data} open />}
+              {page?.kind === "design" && (
+                <DesignProblemPage
+                  p={page.data}
+                  view={route.page === "design" ? route.view : "problem"}
+                  names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+                />
+              )}
+              {page?.kind === "console" && (
+                <DesignConsole
+                  key={page.data.attempt.name}
+                  problem={page.data.problem}
+                  initial={page.data.attempt}
+                />
+              )}
+              {page?.kind === "topic" && <TopicPage data={page.data} />}
+              {page?.kind === "map" && current && (
+                <SubjectMap subject={current} graph={page.data} />
+              )}
+              {page?.kind === "problems" && (
+                <ProblemsPage
+                  subject={route.subject}
+                  rows={page.data}
+                  names={Object.fromEntries((current?.topics ?? []).map((t) => [t.id, t.name]))}
+                  lessons={
+                    new Set((current?.topics ?? []).filter((t) => t.has_lesson).map((t) => t.id))
+                  }
+                />
+              )}
+            </ErrorBoundary>
+          </main>
+          {searching && subjects && (
+            <SearchPalette subjects={subjects.subjects} onClose={() => setSearching(false)} />
+          )}
+        </SubjectContext.Provider>
+      </RootContext.Provider>
+    </ThemeProvider>
   );
 }
 
