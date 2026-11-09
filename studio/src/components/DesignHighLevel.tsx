@@ -3,10 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import type { DesignCheck, Diagram } from "../api";
 import type { Highlight } from "../design";
 import { highlightFor, parseDiagramJson, smellsByNode } from "../design";
+import { Grow, Muted } from "../theme/primitives";
 import { CodeEditor } from "./CodeEditor";
 import { ConfirmBar } from "./ConfirmDialog";
 import type { CanvasHandle, Selection } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
+import * as D from "./DesignShared.style";
+import * as S from "./DesignHighLevel.style";
 
 /** Version pills v1 … vN with smell / missing-why markers. */
 export function VersionPills({
@@ -21,29 +24,29 @@ export function VersionPills({
   check?: DesignCheck;
 }) {
   return (
-    <div className="version-pills" role="tablist">
+    <S.Pills role="tablist">
       {versions.map((v, i) => {
         const info = check?.versions.find((x) => x.version === v);
         const smelly = (info?.smells.length ?? 0) > 0;
         const noWhy = check?.versions_missing_why.includes(v);
         return (
-          <span key={v} className="vp-wrap">
-            {i > 0 && <span className="vp-arrow">→</span>}
-            <button
+          <S.PillWrap key={v}>
+            {i > 0 && <S.Arrow>→</S.Arrow>}
+            <S.Pill
               role="tab"
               aria-selected={v === shown}
-              className={`vpill ${v === shown ? "on" : ""} ${smelly ? "smelly" : ""}`}
+              $on={v === shown}
               onClick={() => onShow(v)}
               title={info?.why || (noWhy ? "missing a why" : `version ${v}`)}
             >
               v{v}
-              {smelly && <span className="vp-dot bad" title={`${info?.smells.length} smells`} />}
-              {noWhy && <span className="vp-dot warn" title="missing a why" />}
-            </button>
-          </span>
+              {smelly && <S.Dot $kind="bad" title={`${info?.smells.length} smells`} />}
+              {noWhy && <S.Dot $kind="warn" title="missing a why" />}
+            </S.Pill>
+          </S.PillWrap>
         );
       })}
-    </div>
+    </S.Pills>
   );
 }
 
@@ -100,16 +103,15 @@ export function HighLevelEditor({
 
   return (
     <>
-      <div className="cx-toolbar">
+      <D.Toolbar>
         <VersionPills versions={versions} shown={shown} onShow={setShown} check={check} />
-        <button
-          className="primary new-version"
+        <D.AccentButton
           onClick={onNewVersion}
           disabled={versions.length >= 20}
           title="Copy the latest version into a new one, then change what it fixes"
         >
           ＋ New version
-        </button>
+        </D.AccentButton>
         {!isFirst &&
           shown === Math.max(...versions) &&
           (confirmDelete ? (
@@ -124,23 +126,23 @@ export function HighLevelEditor({
               onNo={() => setConfirmDelete(false)}
             />
           ) : (
-            <button className="ghost danger" onClick={() => setConfirmDelete(true)}>
+            <D.DangerButton $ghost onClick={() => setConfirmDelete(true)}>
               🗑 v{shown}
-            </button>
+            </D.DangerButton>
           ))}
-        <span className="grow" />
-        <div className="seg">
-          <button className={mode === "canvas" ? "on" : ""} onClick={() => setMode("canvas")}>
+        <Grow />
+        <S.Seg>
+          <S.SegButton $on={mode === "canvas"} onClick={() => setMode("canvas")}>
             🎨 Canvas
-          </button>
-          <button className={mode === "json" ? "on" : ""} onClick={() => setMode("json")}>
+          </S.SegButton>
+          <S.SegButton $on={mode === "json"} onClick={() => setMode("json")}>
             {"{ }"} JSON
-          </button>
-        </div>
-      </div>
-      <div className="cx-subbar">
-        <label className={`why-field ${diagram.why.trim() ? "" : "missing"}`}>
-          <span className="why-tag">why v{shown}?</span>
+          </S.SegButton>
+        </S.Seg>
+      </D.Toolbar>
+      <D.Subbar>
+        <S.WhyField $missing={!diagram.why.trim()}>
+          <S.WhyTag $missing={!diagram.why.trim()}>why v{shown}?</S.WhyTag>
           <input
             value={diagram.why}
             placeholder={
@@ -152,34 +154,32 @@ export function HighLevelEditor({
             }
             onChange={(e) => onDiagram({ ...diagram, why: e.target.value })}
           />
-        </label>
+        </S.WhyField>
         {info && !isFirst && (
-          <div className="diff-strip">
+          <S.DiffStrip>
             {info.diff.added_nodes.map((n) => (
-              <span key={`+${n}`} className="diff-chip add">
+              <S.DiffChip key={`+${n}`} $kind="add">
                 ＋ {n}
-              </span>
+              </S.DiffChip>
             ))}
             {info.diff.removed_nodes.map((n) => (
-              <span key={`-${n}`} className="diff-chip del">
+              <S.DiffChip key={`-${n}`} $kind="del">
                 − {n}
-              </span>
+              </S.DiffChip>
             ))}
             {info.diff.added_edges.length + info.diff.removed_edges.length > 0 && (
-              <span className="muted small">
+              <Muted $small>
                 {info.diff.added_edges.length} new · {info.diff.removed_edges.length} removed
                 connections
-              </span>
+              </Muted>
             )}
-            {changes === 0 && (
-              <span className="muted small">No change vs the previous version yet.</span>
-            )}
-          </div>
+            {changes === 0 && <Muted $small>No change vs the previous version yet.</Muted>}
+          </S.DiffStrip>
         )}
-        {saveError && <span className="inline-error">⚠ {saveError}</span>}
-      </div>
+        {saveError && <D.ErrorLine $flat>⚠ {saveError}</D.ErrorLine>}
+      </D.Subbar>
       {mode === "canvas" ? (
-        <div className="cx-canvas">
+        <D.CanvasFill>
           <DiagramCanvas
             key={shown}
             diagram={diagram}
@@ -193,7 +193,7 @@ export function HighLevelEditor({
             handle={canvasRef}
             reservedIds={reservedIds}
           />
-        </div>
+        </D.CanvasFill>
       ) : (
         <JsonTab key={shown} diagram={diagram} onApply={onDiagram} />
       )}
@@ -206,26 +206,24 @@ export function ShownSmells({ check, shown }: { check: DesignCheck; shown: numbe
   const list = check.smells.filter((s) => s.version === shown);
   const last = Math.max(0, ...check.versions.map((v) => v.version));
   return (
-    <section className={`smells ${list.length ? "" : "clean"}`}>
+    <S.Smells $clean={list.length === 0}>
       <b>👃 Smells in v{shown}</b>
-      {shown !== last && <span className="muted small"> (only the final version counts)</span>}
+      {shown !== last && <Muted $small> (only the final version counts)</Muted>}
       {list.length === 0 ? (
-        <p className="muted small ok-line">✓ None: clean structure.</p>
+        <S.OkLine>✓ None: clean structure.</S.OkLine>
       ) : (
         <ul>
           {list.map((s) => (
             <li key={`${s.rule}:${s.nodes.join(",")}`}>
               <code>{s.rule}</code> {s.message}{" "}
               {s.nodes.map((n) => (
-                <span key={n} className="smell-node">
-                  {n}
-                </span>
+                <S.SmellNode key={n}>{n}</S.SmellNode>
               ))}
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </S.Smells>
   );
 }
 
@@ -245,7 +243,7 @@ export function JsonTab({ diagram, onApply }: { diagram: Diagram; onApply: (d: D
     onApply(r.diagram);
   };
   return (
-    <div className="json-tab">
+    <S.Json>
       <CodeEditor
         label="Diagram JSON"
         lang="json"
@@ -255,10 +253,10 @@ export function JsonTab({ diagram, onApply }: { diagram: Diagram; onApply: (d: D
           setDirty(true);
         }}
       />
-      <div className="json-actions">
-        <button className="primary" onClick={apply} disabled={!dirty}>
+      <S.JsonActions>
+        <D.AccentButton onClick={apply} disabled={!dirty}>
           Apply &amp; save
-        </button>
+        </D.AccentButton>
         <button
           onClick={() => {
             setText(pretty);
@@ -269,14 +267,14 @@ export function JsonTab({ diagram, onApply }: { diagram: Diagram; onApply: (d: D
         >
           Revert
         </button>
-        {error && <span className="inline-error">⚠ {error}</span>}
-        <span className="muted small">
+        {error && <D.ErrorLine>⚠ {error}</D.ErrorLine>}
+        <Muted $small>
           Format:{" "}
           <code>
             {"{version, why, nodes: [{id, kind, label, x, y}], edges: [{from, to, label}]}"}
           </code>
-        </span>
-      </div>
-    </div>
+        </Muted>
+      </S.JsonActions>
+    </S.Json>
   );
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { filterPalette, kindShape, kindStyle, paletteGroups } from "../design";
+import * as S from "./ShapePalette.style";
 
 type Drag = { kind: string; sx: number; sy: number; x: number; y: number; over: boolean } | null;
 const MOVED = 5;
@@ -35,20 +36,16 @@ export function ShapePalette({
   let i = 0;
   const ghost = drag && moved(drag, drag.x, drag.y) ? kindStyle(drag.kind) : null;
   return (
-    <div className={`stencil ${disabled ? "off" : ""} ${ghost ? "dragging" : ""}`}>
+    <S.Root $dragging={Boolean(ghost)}>
       {ghost &&
         drag &&
         createPortal(
-          <div
-            className={`shape-ghost ${drag.over ? "over" : ""}`}
-            style={{ left: drag.x, top: drag.y, ["--kc" as string]: ghost.color }}
-          >
-            <span className="tile-shape">{ghost.icon}</span> {ghost.label}
-          </div>,
+          <S.Ghost $x={drag.x} $y={drag.y} $color={ghost.color} $over={drag.over}>
+            <S.TileIcon $shape={kindShape(drag.kind)}>{ghost.icon}</S.TileIcon> {ghost.label}
+          </S.Ghost>,
           document.body,
         )}
-      <input
-        className="stencil-filter"
+      <S.Filter
         type="search"
         placeholder="🔍 Filter shapes…"
         value={q}
@@ -60,21 +57,21 @@ export function ShapePalette({
         }}
         aria-label="filter shapes"
       />
-      {note && <p className="muted small stencil-note">{note}</p>}
-      {shown.length === 0 && <p className="muted small">No shape matches “{q}”.</p>}
+      {note && <S.Note>{note}</S.Note>}
+      {shown.length === 0 && <S.Empty>No shape matches “{q}”.</S.Empty>}
       {shown.map((g) => (
-        <section key={g.title} className="stencil-group">
+        <S.Group key={g.title}>
           <h4>
             <span>{g.icon}</span> {g.title}
           </h4>
-          <div className="stencil-grid">
+          <S.Grid $off={disabled}>
             {g.kinds.map((k) => {
               const s = kindStyle(k);
               return (
-                <button
+                <S.Tile
                   key={k}
-                  className={`shape-tile tile-${kindShape(k)}`}
-                  style={{ ["--kc" as string]: s.color, ["--i" as string]: i++ }}
+                  $color={s.color}
+                  $i={i++}
                   disabled={disabled}
                   onPointerDown={(e) => {
                     if (e.button !== 0 || disabled) return;
@@ -116,20 +113,20 @@ export function ShapePalette({
                   }}
                   title={`${s.label}: drag onto the canvas, or click / Enter to add it`}
                 >
-                  <span className="tile-shape" aria-hidden>
+                  <S.TileIcon $shape={kindShape(k)} aria-hidden>
                     {s.icon}
-                  </span>
-                  <span className="tile-label">{s.label}</span>
-                </button>
+                  </S.TileIcon>
+                  <S.TileLabel>{s.label}</S.TileLabel>
+                </S.Tile>
               );
             })}
-          </div>
-        </section>
+          </S.Grid>
+        </S.Group>
       ))}
-      <p className="muted small stencil-foot">
+      <S.Foot>
         Drag a shape onto the grid, or click it to drop it in the middle. Connect shapes from the ●
         handle on their right edge.
-      </p>
-    </div>
+      </S.Foot>
+    </S.Root>
   );
 }

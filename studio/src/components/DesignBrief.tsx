@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import type { DesignDoc, DesignProblemData } from "../api";
 import { extractBrief } from "../design";
+import { LinkButton, Muted, MutedP } from "../theme/primitives";
+import * as D from "./DesignShared.style";
+import * as S from "./DesignBrief.style";
 import { Markdown } from "./Markdown";
+import { t } from "../theme/theme";
 
 /**
  * Left pane on the form stages: what the interviewer says when asked (from the README), plus the
@@ -18,47 +22,46 @@ export function DesignBrief({
 }) {
   const brief = useMemo(() => extractBrief(problem.readme), [problem.readme]);
   const lists = [
-    { title: "Functional", cls: "f", items: scope.functional ?? [] },
-    { title: "Non-functional", cls: "n", items: scope.non_functional ?? [] },
+    { title: "Functional", cls: "f", color: undefined, items: scope.functional ?? [] },
+    { title: "Non-functional", cls: "n", color: t.cyan, items: scope.non_functional ?? [] },
   ];
   const empty = lists.every((l) => l.items.every((x) => !x.text.trim()));
   return (
-    <div className="brief">
-      <section className="brief-card">
+    <div>
+      <S.Card>
         <h4>🗣️ The interviewer says</h4>
         {brief ? (
           <Markdown text={brief} path={problem.readme_path} />
         ) : (
-          <p className="muted small">This problem’s README has no interviewer notes.</p>
+          <MutedP $small>This problem’s README has no interviewer notes.</MutedP>
         )}
-      </section>
-      <section className="brief-card">
+      </S.Card>
+      <S.Card>
         <h4>🎯 Your requirements</h4>
         {empty && (
-          <p className="muted small">
-            None yet.{" "}
-            <button className="link-btn" onClick={onScope}>
-              Write them in Scope →
-            </button>
-          </p>
+          <MutedP $small>
+            None yet. <LinkButton onClick={onScope}>Write them in Scope →</LinkButton>
+          </MutedP>
         )}
         {lists.map((l) =>
           l.items.some((x) => x.text.trim()) ? (
-            <div key={l.cls} className="brief-reqs">
-              <div className="muted small">{l.title}</div>
+            <S.Reqs key={l.cls}>
+              <Muted $small as="div">
+                {l.title}
+              </Muted>
               <ul>
                 {l.items
                   .filter((x) => x.text.trim())
                   .map((x) => (
                     <li key={x.id}>
-                      <span className={`id-chip req-${l.cls}`}>{x.id}</span> {x.text}
+                      <D.IdChip $color={l.color}>{x.id}</D.IdChip> {x.text}
                     </li>
                   ))}
               </ul>
-            </div>
+            </S.Reqs>
           ) : null,
         )}
-      </section>
+      </S.Card>
     </div>
   );
 }

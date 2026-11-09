@@ -1,19 +1,17 @@
 import type { DesignDoc, EstimateResult, EstimateRow } from "../api";
 import { SCOPE_LISTS, addScopeItem, formatSI, nextItemId } from "../design";
+import { Muted, MutedP } from "../theme/primitives";
 import { CodeEditor } from "./CodeEditor";
+import * as D from "./DesignShared.style";
+import * as S from "./DesignStages.style";
 
 /** Stage editors of the design console. Each is controlled: it gets a value and calls onChange. */
 
 function Remove({ onClick, what }: { onClick: () => void; what: string }) {
   return (
-    <button
-      className="icon-x"
-      onClick={onClick}
-      title={`Remove ${what}`}
-      aria-label={`remove ${what}`}
-    >
+    <D.RemoveX onClick={onClick} title={`Remove ${what}`} aria-label={`remove ${what}`}>
       ×
-    </button>
+    </D.RemoveX>
   );
 }
 
@@ -27,18 +25,18 @@ export function ScopeEditor({
   onChange: (s: DesignDoc["scope"]) => void;
 }) {
   return (
-    <div className="scope-grid">
+    <S.ScopeGrid>
       {SCOPE_LISTS.map(({ key, prefix, title, hint }, li) => {
         const items = scope[key] ?? [];
         const set = (next: typeof items) => onChange({ ...scope, [key]: next });
         return (
-          <section key={key} className={`scope-col sc-${key}`} style={{ ["--i" as string]: li }}>
-            <header>
-              <b>{title}</b> <span className="muted small">{hint}</span>
-            </header>
+          <S.ScopeCol key={key} $color={S.scopeColor(key)} $i={li}>
+            <S.ScopeHeader>
+              <b>{title}</b> <Muted $small>{hint}</Muted>
+            </S.ScopeHeader>
             {items.map((it, i) => (
-              <div key={it.id} className="scope-item">
-                <span className="id-chip">{it.id}</span>
+              <S.ScopeItem key={it.id}>
+                <S.ScopeId $color={S.scopeColor(key)}>{it.id}</S.ScopeId>
                 <textarea
                   rows={1}
                   value={it.text}
@@ -55,20 +53,20 @@ export function ScopeEditor({
                   }}
                 />
                 <Remove what={it.id} onClick={() => set(items.filter((x) => x.id !== it.id))} />
-              </div>
+              </S.ScopeItem>
             ))}
-            <button className="add-btn" onClick={() => set(addScopeItem(items, prefix))}>
+            <D.AddButton onClick={() => set(addScopeItem(items, prefix))}>
               ＋ {prefix}
               {nextItemId(prefix, items).slice(1)}
-            </button>
-          </section>
+            </D.AddButton>
+          </S.ScopeCol>
         );
       })}
-      <p className="muted small stage-foot">
+      <S.StageFoot>
         Ids are assigned for you; cite them later (“N2: 10k read QPS → cache”). Enter adds the next
         item.
-      </p>
-    </div>
+      </S.StageFoot>
+    </S.ScopeGrid>
   );
 }
 
@@ -117,16 +115,16 @@ export function EstimatesEditor({
     onChange(next);
   };
   return (
-    <div className="estimates">
-      <div className="sheet-wrap">
-        <table className="sheet">
+    <S.Estimates>
+      <D.SheetWrap>
+        <D.Sheet>
           <thead>
             <tr>
               <th />
               <th>name</th>
               <th>formula</th>
               <th>unit</th>
-              <th className="num">value</th>
+              <D.NumTh>value</D.NumTh>
               <th />
             </tr>
           </thead>
@@ -135,8 +133,8 @@ export function EstimatesEditor({
               const res = results[i];
               const fresh = res && res.name === r.name && res.formula === r.formula;
               return (
-                <tr key={i} className={res?.error ? "has-error" : ""}>
-                  <td className="row-num">
+                <D.Row key={i} $error={Boolean(res?.error)}>
+                  <S.RowMoves>
                     <button onClick={() => move(i, -1)} disabled={i === 0} aria-label="move up">
                       ↑
                     </button>
@@ -147,18 +145,17 @@ export function EstimatesEditor({
                     >
                       ↓
                     </button>
-                  </td>
+                  </S.RowMoves>
                   <td>
-                    <input
-                      className="mono"
+                    <D.MonoInput
                       value={r.name}
                       placeholder="write_qps"
                       onChange={(e) => set(i, { name: e.target.value.replace(/\s/g, "_") })}
                     />
                   </td>
                   <td>
-                    <input
-                      className="mono wide"
+                    <D.MonoInput
+                      $wide
                       value={r.formula}
                       placeholder="100 * million / month"
                       onChange={(e) => set(i, { formula: e.target.value })}
@@ -173,48 +170,45 @@ export function EstimatesEditor({
                       ))}
                     </select>
                   </td>
-                  <td className={`num value ${fresh ? "" : "stale"}`}>
+                  <S.ValueCell $stale={!fresh}>
                     {res?.error ? (
-                      <span className="err" title={res.error}>
-                        ⚠ {res.error}
-                      </span>
+                      <S.CellError title={res.error}>⚠ {res.error}</S.CellError>
                     ) : (
                       <b title={res?.value?.toLocaleString() ?? ""}>
-                        {formatSI(res?.value)} <span className="muted">{r.unit}</span>
+                        {formatSI(res?.value)} <Muted>{r.unit}</Muted>
                       </b>
                     )}
-                  </td>
+                  </S.ValueCell>
                   <td>
                     <Remove
                       what={r.name || "row"}
                       onClick={() => onChange(rows.filter((_, k) => k !== i))}
                     />
                   </td>
-                </tr>
+                </D.Row>
               );
             })}
           </tbody>
-        </table>
-        <button
-          className="add-btn"
+        </D.Sheet>
+        <D.AddButton
           onClick={() =>
             onChange([...rows, { name: `row${rows.length + 1}`, formula: "", unit: "" }])
           }
         >
           ＋ Row
-        </button>
-        <p className="muted small">
+        </D.AddButton>
+        <MutedP $small>
           Rows are evaluated top to bottom; a formula may use earlier row names, numbers (
           <code>1e6</code>), <code>+ - * / // % ** ^ ( )</code> and the constants on the right.
           Values update after each autosave.
-        </p>
-      </div>
-      <aside className="ref-card">
+        </MutedP>
+      </D.SheetWrap>
+      <S.RefCard>
         <h4>Constants</h4>
         <dl>
           {Object.entries(constants).map(([k, v]) => (
             <div key={k}>
-              <dt className="mono">{k}</dt>
+              <S.Mono>{k}</S.Mono>
               <dd>
                 {formatSI(v)}
                 {["day", "hour", "month"].includes(k) ? " s" : ""}
@@ -246,8 +240,8 @@ export function EstimatesEditor({
             <li key={r}>{r}</li>
           ))}
         </ul>
-      </aside>
-    </div>
+      </S.RefCard>
+    </S.Estimates>
   );
 }
 
@@ -274,10 +268,10 @@ export function ApiDataEditor({
     ["sql", "nosql", "cache", "blob", "search", "queue", "stream"].includes(k),
   );
   return (
-    <div className="api-data">
+    <div>
       <h3>🔌 Endpoints</h3>
-      <div className="sheet-wrap">
-        <table className="sheet">
+      <D.SheetWrap>
+        <D.Sheet>
           <thead>
             <tr>
               <th>id</th>
@@ -293,22 +287,21 @@ export function ApiDataEditor({
             {api.map((r, i) => (
               <tr key={r.id}>
                 <td>
-                  <span className="id-chip">{r.id}</span>
+                  <D.IdChip>{r.id}</D.IdChip>
                 </td>
                 <td>
-                  <select
-                    className={`method m-${r.method.toLowerCase()}`}
+                  <S.MethodSelect
+                    $method={r.method}
                     value={r.method}
                     onChange={(e) => setApi(i, { method: e.target.value })}
                   >
                     {METHODS.map((m) => (
                       <option key={m}>{m}</option>
                     ))}
-                  </select>
+                  </S.MethodSelect>
                 </td>
                 <td>
-                  <input
-                    className="mono"
+                  <D.MonoInput
                     value={r.path}
                     placeholder="/urls"
                     onChange={(e) => setApi(i, { path: e.target.value })}
@@ -347,9 +340,8 @@ export function ApiDataEditor({
               </tr>
             ))}
           </tbody>
-        </table>
-        <button
-          className="add-btn"
+        </D.Sheet>
+        <D.AddButton
           onClick={() =>
             onChange({
               ...doc,
@@ -368,12 +360,12 @@ export function ApiDataEditor({
           }
         >
           ＋ Endpoint
-        </button>
-      </div>
+        </D.AddButton>
+      </D.SheetWrap>
 
       <h3>🗃️ Data model</h3>
-      <div className="sheet-wrap">
-        <table className="sheet">
+      <D.SheetWrap>
+        <D.Sheet>
           <thead>
             <tr>
               <th>id</th>
@@ -388,7 +380,7 @@ export function ApiDataEditor({
             {data.map((r, i) => (
               <tr key={r.id}>
                 <td>
-                  <span className="id-chip">{r.id}</span>
+                  <D.IdChip>{r.id}</D.IdChip>
                 </td>
                 <td>
                   <input
@@ -398,9 +390,8 @@ export function ApiDataEditor({
                   />
                 </td>
                 <td>
-                  <textarea
+                  <D.MonoTextarea
                     rows={1}
-                    className="mono"
                     value={r.fields}
                     placeholder="code PK, long_url, created_at"
                     onChange={(e) => setData(i, { fields: e.target.value })}
@@ -431,14 +422,13 @@ export function ApiDataEditor({
               </tr>
             ))}
           </tbody>
-        </table>
+        </D.Sheet>
         <datalist id="kb-stores">
           {stores.map((s) => (
             <option key={s} value={s} />
           ))}
         </datalist>
-        <button
-          className="add-btn"
+        <D.AddButton
           onClick={() =>
             onChange({
               ...doc,
@@ -450,8 +440,8 @@ export function ApiDataEditor({
           }
         >
           ＋ Entity
-        </button>
-      </div>
+        </D.AddButton>
+      </D.SheetWrap>
     </div>
   );
 }
@@ -473,13 +463,12 @@ export function DeepDivesEditor({
   const set = (i: number, patch: Partial<Dive>) =>
     onChange({ ...doc, deep_dives: dives.map((d, k) => (k === i ? { ...d, ...patch } : d)) });
   return (
-    <div className="dives">
+    <S.Dives>
       {dives.map((d, i) => (
-        <section key={d.id} className="dive-card" style={{ ["--i" as string]: i }}>
-          <header>
-            <span className="id-chip">{d.id}</span>
-            <input
-              className="dive-title"
+        <S.DiveCard key={d.id} $i={i}>
+          <S.DiveHeader>
+            <D.IdChip>{d.id}</D.IdChip>
+            <S.DiveTitle
               value={d.title}
               placeholder="What are you deciding? e.g. how to generate short codes"
               onChange={(e) => set(i, { title: e.target.value })}
@@ -488,8 +477,8 @@ export function DeepDivesEditor({
               what={d.id}
               onClick={() => onChange({ ...doc, deep_dives: dives.filter((_, k) => k !== i) })}
             />
-          </header>
-          <table className="sheet options">
+          </S.DiveHeader>
+          <D.Sheet>
             <thead>
               <tr>
                 <th>option</th>
@@ -508,7 +497,7 @@ export function DeepDivesEditor({
                       : {}),
                   });
                 return (
-                  <tr key={k} className={d.choice && d.choice === o.name ? "chosen" : ""}>
+                  <D.Row key={k} $chosen={Boolean(d.choice) && d.choice === o.name}>
                     <td>
                       <input
                         value={o.name}
@@ -538,20 +527,19 @@ export function DeepDivesEditor({
                         onClick={() => set(i, { options: d.options.filter((_, j) => j !== k) })}
                       />
                     </td>
-                  </tr>
+                  </D.Row>
                 );
               })}
             </tbody>
-          </table>
-          <button
-            className="add-btn"
+          </D.Sheet>
+          <D.AddButton
             onClick={() => set(i, { options: [...d.options, { name: "", pros: "", cons: "" }] })}
           >
             ＋ Option
-          </button>
-          <div className="dive-decision">
+          </D.AddButton>
+          <S.DiveDecision>
             <label>
-              <span className="muted small">choice</span>
+              <Muted $small>choice</Muted>
               <select value={d.choice} onChange={(e) => set(i, { choice: e.target.value })}>
                 <option value="">— pick one —</option>
                 {d.options
@@ -567,7 +555,7 @@ export function DeepDivesEditor({
               </select>
             </label>
             <label>
-              <span className="muted small">adopted in</span>
+              <Muted $small>adopted in</Muted>
               <select
                 value={d.version ?? ""}
                 onChange={(e) => {
@@ -584,20 +572,20 @@ export function DeepDivesEditor({
                 ))}
               </select>
             </label>
-            <label className="grow">
-              <span className="muted small">why</span>
+            <S.GrowField>
+              <Muted $small>why</Muted>
               <textarea
                 rows={2}
                 value={d.why}
                 placeholder="Why this option wins for *these* requirements (cite F/N ids)"
                 onChange={(e) => set(i, { why: e.target.value })}
               />
-            </label>
-          </div>
-        </section>
+            </S.GrowField>
+          </S.DiveDecision>
+        </S.DiveCard>
       ))}
-      <button
-        className="add-btn big-add"
+      <D.AddButton
+        $big
         onClick={() =>
           onChange({
             ...doc,
@@ -618,8 +606,8 @@ export function DeepDivesEditor({
         }
       >
         ＋ Deep dive
-      </button>
-    </div>
+      </D.AddButton>
+    </S.Dives>
   );
 }
 
@@ -663,28 +651,26 @@ export function WrapUpEditor({
   onChange: (w: Record<string, string>) => void;
 }) {
   return (
-    <div className="wrapup">
+    <S.Wrapup>
       {keys.map((k, i) => {
         const info = WRAPUP_INFO[k] ?? { title: k, icon: "📝", prompt: "" };
         const v = wrapup[k] ?? "";
         return (
-          <label key={k} className="wrap-card" style={{ ["--i" as string]: i }}>
-            <span className="wrap-title">
+          <S.WrapCard key={k} $i={i}>
+            <S.WrapTitle>
               {info.icon} {info.title}
-              <span className={`chars ${v.trim().length >= 15 ? "ok" : ""}`}>
-                {v.trim().length} chars
-              </span>
-            </span>
+              <S.Chars $ok={v.trim().length >= 15}>{v.trim().length} chars</S.Chars>
+            </S.WrapTitle>
             <textarea
               rows={4}
               value={v}
               placeholder={info.prompt}
               onChange={(e) => onChange({ ...wrapup, [k]: e.target.value })}
             />
-          </label>
+          </S.WrapCard>
         );
       })}
-    </div>
+    </S.Wrapup>
   );
 }
 
@@ -698,11 +684,11 @@ export function SignaturesEditor({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="signatures">
-      <p className="callout info">
+    <div>
+      <D.Callout $info>
         ✍️ <b>Signatures only</b>: classes, interfaces and function signatures with types, no bodies
         (use <code>...</code>). Saved as <code>signatures.py</code> in the attempt.
-      </p>
+      </D.Callout>
       <CodeEditor
         label="signatures.py"
         lang="python"

@@ -26,6 +26,7 @@ import {
 } from "../design";
 import { designHref } from "../route";
 import { runCommand } from "../sessions";
+import { Grow, Muted, MutedP } from "../theme/primitives";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { DesignBrief } from "./DesignBrief";
 import type { TipState } from "./DesignChecklist";
@@ -33,10 +34,12 @@ import { DesignChecklist } from "./DesignChecklist";
 import { HighLevelEditor, ShownSmells } from "./DesignHighLevel";
 import { PartsEditor } from "./DesignParts";
 import { DesignReferenceView } from "./DesignReference";
+import * as D from "./DesignShared.style";
+import * as S from "./DesignConsole.style";
 import type { CanvasHandle, Selection } from "./DiagramCanvas";
 import { Inspector } from "./Inspector";
 import { ShapePalette } from "./ShapePalette";
-import { Workbench } from "./Workbench";
+import { Workbench, WorkbenchTab } from "./Workbench";
 import { Icon } from "./Icon";
 import {
   ApiDataEditor,
@@ -343,12 +346,9 @@ export function DesignConsole({
   };
   const firstError = Object.values(saver.errors)[0];
   const saveBadge = (
-    <span
-      className={`save-state ${saver.state}`}
-      title={firstError ?? "Edits autosave after a short pause"}
-    >
+    <S.SaveState $state={saver.state} title={firstError ?? "Edits autosave after a short pause"}>
       {saveLabel[saver.state]}
-    </span>
+    </S.SaveState>
   );
 
   // ---- what the canvas on screen edits (for the inspector)
@@ -375,83 +375,66 @@ export function DesignConsole({
 
   // ---- regions
   const header = (
-    <div className="ch-row">
-      <a className="ch-back" href={designHref(subject, slug)} title="Back to the problem">
+    <S.HeaderRow>
+      <S.Back href={designHref(subject, slug)} title="Back to the problem">
         <Icon name="arrowLeft" size={16} />
-      </a>
-      <h1 className="ch-title">
-        {problem.title} <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
-        {check.submitted && <span className="tag ok-tag">✓ submitted</span>}
-      </h1>
-      <code className="muted small ch-attempt" title={`attempt folder: ${attempt}`}>
-        {attempt}
-      </code>
-      <a
-        className="ch-vscode small"
-        href={`vscode://file${initial.path}`}
-        title="Open the attempt folder in VS Code"
-      >
+      </S.Back>
+      <S.Title>
+        {problem.title}{" "}
+        <S.Difficulty $difficulty={problem.difficulty}>{problem.difficulty}</S.Difficulty>
+        {check.submitted && <S.SubmittedTag>✓ submitted</S.SubmittedTag>}
+      </S.Title>
+      <S.Attempt title={`attempt folder: ${attempt}`}>{attempt}</S.Attempt>
+      <S.VsCode href={`vscode://file${initial.path}`} title="Open the attempt folder in VS Code">
         <Icon name="code" size={13} /> VS Code
-      </a>
-      <code className="cmd" onClick={copy} title={`click to copy: ${cmd}`}>
+      </S.VsCode>
+      <S.Command onClick={copy} title={`click to copy: ${cmd}`}>
         {copied ? "copied ✓" : cmd}
-      </code>
-      <span className="grow" />
-      {actionError && (
-        <span className="inline-error" role="alert">
-          ⚠ {actionError}
-        </span>
-      )}
-      <button
-        className={`timer ${over ? "over" : ""} ${running ? "" : "paused"}`}
+      </S.Command>
+      <Grow />
+      {actionError && <S.HeaderError role="alert">⚠ {actionError}</S.HeaderError>}
+      <S.Timer
+        $over={over}
+        $paused={!running}
         onClick={() => setRunning((r) => !r)}
         title={running ? "Pause the timer" : "Resume the timer"}
       >
         ⏱ {formatClock(elapsed)}
-        {problem.minutes ? <span className="muted"> / {problem.minutes}:00</span> : null}
-      </button>
+        {problem.minutes ? <Muted> / {problem.minutes}:00</Muted> : null}
+      </S.Timer>
       {saveBadge}
-      <button className="check-btn" onClick={() => void runCheck()} disabled={busy !== null}>
+      <S.CheckButton onClick={() => void runCheck()} disabled={busy !== null}>
         {busy === "check" ? "checking…" : "✓ Check"}
-      </button>
-      <button
-        className="primary submit-btn"
-        onClick={() => setConfirmSubmit(true)}
-        disabled={busy !== null}
-      >
+      </S.CheckButton>
+      <S.SubmitButton onClick={() => setConfirmSubmit(true)} disabled={busy !== null}>
         {busy === "submit" ? "submitting…" : check.submitted ? "Re-submit" : "Submit"}
-      </button>
-    </div>
+      </S.SubmitButton>
+    </S.HeaderRow>
   );
 
   const tabBar = tabs.map((t, i) => {
     if (t === "reference")
       return (
-        <button
-          key={t}
-          className={`wb-tab ref-tab ${tab === t ? "on" : ""}`}
-          onClick={() => setTab(t)}
-          style={{ ["--tab-c" as string]: "#f59e0b" }}
-        >
-          Reference
-        </button>
+        <WorkbenchTab key={t} on={tab === t} onClick={() => setTab(t)} color="#f59e0b">
+          <S.RefLabel>Reference</S.RefLabel>
+        </WorkbenchTab>
       );
     const s = check.stages[t];
     const done = Boolean(s && s.total > 0 && s.passed === s.total);
     return (
-      <button
+      <WorkbenchTab
         key={t}
-        className={`wb-tab ${tab === t ? "on" : ""} ${done ? "done" : ""}`}
+        on={tab === t}
         onClick={() => setTab(t)}
-        style={{ ["--tab-c" as string]: STAGE_COLOR[t] }}
-        aria-current={tab === t ? "step" : undefined}
+        color={STAGE_COLOR[t]}
+        done={done}
+        badge={s && s.total > 0 ? (done ? "✓" : `${s.passed}/${s.total}`) : "–"}
       >
-        <span className="tab-num">{i + 1}</span>
+        <S.TabNum $on={tab === t} $done={done} $color={STAGE_COLOR[t]}>
+          {i + 1}
+        </S.TabNum>
         {stageLabel(t, problem.stages)}
-        <span className="wb-tab-badge">
-          {s && s.total > 0 ? (done ? "✓" : `${s.passed}/${s.total}`) : "–"}
-        </span>
-      </button>
+      </WorkbenchTab>
     );
   });
 
@@ -528,51 +511,49 @@ export function DesignConsole({
   const pct = check.total ? (100 * check.passed) / check.total : 0;
   const footer = (
     <>
-      <button className="ghost" disabled={!prevTab} onClick={() => prevTab && setTab(prevTab)}>
+      <D.GhostButton disabled={!prevTab} onClick={() => prevTab && setTab(prevTab)}>
         ← {prevTab ? tabName(prevTab) : "start"}
-      </button>
-      <div className="ft-progress" title={`${check.passed} of ${check.total} checks pass`}>
-        <div className="ft-bar">
-          <span style={{ width: `${pct}%` }} />
-        </div>
+      </D.GhostButton>
+      <S.Progress title={`${check.passed} of ${check.total} checks pass`}>
+        <S.Bar>
+          <S.BarFill $pct={pct} />
+        </S.Bar>
         <b>
           {check.passed}/{check.total}
         </b>{" "}
         checks
-      </div>
-      <span className={`ft-chip ${check.final_smells.length ? "bad" : "ok"}`}>
+      </S.Progress>
+      <S.Chip $tone={check.final_smells.length ? "bad" : "ok"}>
         👃 {check.final_smells.length} smell{check.final_smells.length === 1 ? "" : "s"}
-      </span>
-      <span className="ft-chip">
+      </S.Chip>
+      <S.Chip>
         🗺️ {diagrams.length} version{diagrams.length === 1 ? "" : "s"}
-      </span>
+      </S.Chip>
       {problem.stages.includes("parts") && (
-        <span className="ft-chip">
+        <S.Chip>
           🧩 {parts.length} part{parts.length === 1 ? "" : "s"}
-        </span>
+        </S.Chip>
       )}
-      <span className="grow" />
+      <Grow />
       {saveBadge}
-      <button
-        className={nextTab ? "primary" : "ghost"}
-        disabled={!nextTab}
-        onClick={() => nextTab && setTab(nextTab)}
-      >
-        {nextTab ? tabName(nextTab) : "end"} →
-      </button>
+      {nextTab ? (
+        <D.AccentButton onClick={() => setTab(nextTab)}>{tabName(nextTab)} →</D.AccentButton>
+      ) : (
+        <D.GhostButton disabled>end →</D.GhostButton>
+      )}
     </>
   );
 
   const formErrors = Object.entries(saver.errors)
     .filter(([k]) => !k.startsWith("diagram:"))
     .map(([k, e]) => (
-      <div key={k} className="inline-error">
+      <D.ErrorLine key={k}>
         ⚠ {k}: {e}
-      </div>
+      </D.ErrorLine>
     ));
 
   return (
-    <div className="console">
+    <S.Root>
       <Workbench
         id="console"
         header={header}
@@ -623,12 +604,12 @@ export function DesignConsole({
           />
         )}
         {!onDiagramTab && (
-          <div className="console-form" key={tab}>
-            <h2 className="stage-title">
+          <S.Form key={tab}>
+            <S.StageTitle>
               {tab === "reference"
                 ? "📖 Reference"
                 : `${STAGE_INFO[tab].icon} ${stageLabel(tab, problem.stages)}`}
-            </h2>
+            </S.StageTitle>
             {tab === "scope" && (
               <ScopeEditor
                 scope={design.scope}
@@ -668,14 +649,14 @@ export function DesignConsole({
               <DesignReferenceView subject={subject} slug={slug} attempt={attempt} check={check} />
             )}
             {formErrors}
-          </div>
+          </S.Form>
         )}
       </Workbench>
       {toast &&
         createPortal(
-          <div className={`toast ${toast.good ? "good" : ""}`} role="status">
+          <S.Toast $good={toast.good} role="status">
             {toast.text}
-          </div>,
+          </S.Toast>,
           document.body,
         )}
 
@@ -694,12 +675,12 @@ export function DesignConsole({
             checks and <b>{check.final_smells.length}</b> smell
             {check.final_smells.length === 1 ? "" : "s"} in the final version.
           </p>
-          <p className="muted small">
+          <MutedP $small>
             Submitting records a run and unlocks the reference walkthrough (a spoiler). You can keep
             editing afterwards.
-          </p>
+          </MutedP>
         </ConfirmDialog>
       )}
-    </div>
+    </S.Root>
   );
 }

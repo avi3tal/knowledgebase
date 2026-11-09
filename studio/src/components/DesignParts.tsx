@@ -9,9 +9,12 @@ import {
   newPart,
   partToDiagram,
 } from "../design";
+import { Grow, Muted, MutedP } from "../theme/primitives";
 import { ConfirmBar } from "./ConfirmDialog";
 import type { CanvasHandle, Selection } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
+import * as D from "./DesignShared.style";
+import * as S from "./DesignParts.style";
 
 /**
  * Decompose stage (center pane): the parts as chips in a toolbar, the selected part's sub-diagram on
@@ -64,18 +67,18 @@ export function PartsEditor({
 
   return (
     <>
-      <div className="cx-toolbar parts-bar">
-        <div className="part-chips" role="tablist" aria-label="parts">
+      <D.Toolbar>
+        <S.PartChips role="tablist" aria-label="parts">
           {parts.map((p, i) => {
             const miss = missingPartNodes(latest, [p]).length;
             const empty = (p.diagram?.nodes ?? []).length === 0;
             return (
-              <button
+              <S.PartChip
                 key={p.id}
                 role="tab"
                 aria-selected={p.id === part?.id}
-                className={`part-chip ${p.id === part?.id ? "on" : ""} ${!empty && miss === 0 ? "composed" : ""}`}
-                style={{ ["--i" as string]: i }}
+                $on={p.id === part?.id}
+                $i={i}
                 onClick={() => {
                   setSelected(p.id);
                   setConfirmRemove(false);
@@ -88,19 +91,20 @@ export function PartsEditor({
                       : `${miss} component${miss === 1 ? "" : "s"} not in the design yet`
                 }
               >
-                <span className="pc-id">{p.id}</span>
-                <span className="pc-title">{p.title || "untitled"}</span>
-                <span className="pc-state">{empty ? "○" : miss === 0 ? "✓" : `+${miss}`}</span>
-              </button>
+                <S.PcId>{p.id}</S.PcId>
+                <S.PcTitle>{p.title || "untitled"}</S.PcTitle>
+                <S.PcState $composed={!empty && miss === 0}>
+                  {empty ? "○" : miss === 0 ? "✓" : `+${miss}`}
+                </S.PcState>
+              </S.PartChip>
             );
           })}
-          <button className="add-btn part-add" onClick={add} disabled={parts.length >= 12}>
+          <S.PartAdd onClick={add} disabled={parts.length >= 12}>
             ＋ Part
-          </button>
-        </div>
-        <span className="grow" />
-        <button
-          className="primary compose-btn"
+          </S.PartAdd>
+        </S.PartChips>
+        <Grow />
+        <S.ComposeButton
           onClick={onCompose}
           disabled={!canCompose}
           title={
@@ -110,33 +114,31 @@ export function PartsEditor({
           }
         >
           🧬 Compose into high-level
-          {preview.parts.length > 0 && <span className="compose-count">+{preview.nodes}</span>}
-        </button>
-      </div>
+          {preview.parts.length > 0 && <S.ComposeCount>+{preview.nodes}</S.ComposeCount>}
+        </S.ComposeButton>
+      </D.Toolbar>
 
       {!part ? (
-        <div className="parts-empty">
-          <div className="pe-card">
-            <div className="pe-icon">🧩</div>
+        <S.Empty>
+          <S.EmptyCard>
+            <S.EmptyIcon>🧩</S.EmptyIcon>
             <h3>Split the problem into parts</h3>
-            <p className="muted">
+            <MutedP>
               One part per hard requirement: the hot read path, the write path, fan-out, search,
               analytics… Solve each on its own (options, a choice, a small diagram), then compose
               them into the high-level design. Reuse the same component ids across parts so they
               merge.
-            </p>
-            <button className="primary" onClick={add}>
-              ＋ First part
-            </button>
-          </div>
-        </div>
+            </MutedP>
+            <D.AccentButton onClick={add}>＋ First part</D.AccentButton>
+          </S.EmptyCard>
+        </S.Empty>
       ) : (
         <>
-          <div className="cx-subbar">
+          <D.Subbar>
             <PartStatus part={part} latest={latest} />
-            {saveError && <span className="inline-error">⚠ {saveError}</span>}
-          </div>
-          <div className="cx-canvas">
+            {saveError && <D.ErrorLine $flat>⚠ {saveError}</D.ErrorLine>}
+          </D.Subbar>
+          <D.CanvasFill>
             <DiagramCanvas
               key={part.id}
               diagram={partToDiagram(part)}
@@ -153,20 +155,16 @@ export function PartsEditor({
                   .flatMap((p) => p.diagram.nodes.map((n) => n.id)),
               ]}
             />
-          </div>
-          <div className={`part-drawer ${drawer ? "open" : ""}`}>
-            <button
-              className="drawer-toggle"
-              onClick={() => setDrawer((d) => !d)}
-              aria-expanded={drawer}
-            >
+          </D.CanvasFill>
+          <S.Drawer>
+            <S.DrawerToggle onClick={() => setDrawer((d) => !d)} aria-expanded={drawer}>
               {drawer ? "▾" : "▴"} {part.id} · {part.title || "untitled part"}: problem, options,
               choice
-            </button>
+            </S.DrawerToggle>
             {drawer && (
-              <div className="drawer-body">
+              <S.DrawerBody>
                 <PartSheet part={part} scope={scope} onChange={edit} />
-                <div className="part-remove">
+                <S.PartRemove>
                   {confirmRemove ? (
                     <ConfirmBar
                       text={`Remove ${part.id} and its sub-diagram?`}
@@ -181,14 +179,14 @@ export function PartsEditor({
                       onNo={() => setConfirmRemove(false)}
                     />
                   ) : (
-                    <button className="ghost danger" onClick={() => setConfirmRemove(true)}>
+                    <D.DangerButton $ghost onClick={() => setConfirmRemove(true)}>
                       🗑 Remove {part.id}
-                    </button>
+                    </D.DangerButton>
                   )}
-                </div>
-              </div>
+                </S.PartRemove>
+              </S.DrawerBody>
             )}
-          </div>
+          </S.Drawer>
         </>
       )}
     </>
@@ -200,23 +198,21 @@ function PartStatus({ part, latest }: { part: DesignPart; latest: Diagram | unde
   const n = (part.diagram?.nodes ?? []).length;
   if (n === 0)
     return (
-      <span className="part-status muted small">
-        Draw this part’s components: drag shapes from the stencil.
-      </span>
+      <S.Status $tone="muted">Draw this part’s components: drag shapes from the stencil.</S.Status>
     );
   if (miss.length === 0)
     return (
-      <span className="part-status ok">
+      <S.Status $tone="ok">
         ✓ composed into v{latest?.version}: all {n} component{n === 1 ? "" : "s"} are in the design
-      </span>
+      </S.Status>
     );
   return (
-    <span className="part-status warn">
+    <S.Status $tone="warn">
       {miss.length} component{miss.length === 1 ? "" : "s"} not in the design yet:{" "}
       {miss.map((id) => (
         <code key={id}>{id}</code>
       ))}
-    </span>
+    </S.Status>
   );
 }
 
@@ -237,9 +233,9 @@ function ChipInput({
     setText("");
   };
   return (
-    <div className="chip-input">
+    <S.ChipInput>
       {values.map((v) => (
-        <span key={v} className="chip">
+        <S.Chip key={v}>
           {v}
           <button
             onClick={() => onChange(values.filter((x) => x !== v))}
@@ -247,7 +243,7 @@ function ChipInput({
           >
             ×
           </button>
-        </span>
+        </S.Chip>
       ))}
       <input
         value={text}
@@ -263,7 +259,7 @@ function ChipInput({
         }}
         onBlur={commit}
       />
-    </div>
+    </S.ChipInput>
   );
 }
 
@@ -286,38 +282,37 @@ export function PartSheet({
       covers: part.covers.includes(id) ? part.covers.filter((c) => c !== id) : [...part.covers, id],
     });
   return (
-    <div className="part-sheet">
-      <div className="ps-row">
-        <label className="ps-title">
-          <span className="muted small">title</span>
+    <S.Sheet>
+      <S.Fields>
+        <S.TitleField>
+          <Muted $small>title</Muted>
           <input
             value={part.title}
             placeholder="e.g. Redirect read path"
             onChange={(e) => set({ title: e.target.value })}
           />
-        </label>
-        <div className="ps-covers">
-          <span className="muted small">covers</span>
-          <div className="cover-chips">
-            {ids.length === 0 && (
-              <span className="muted small">Write requirements in Scope first (F1, N1…).</span>
-            )}
+        </S.TitleField>
+        <S.Covers>
+          <Muted $small>covers</Muted>
+          <S.CoverChips>
+            {ids.length === 0 && <Muted $small>Write requirements in Scope first (F1, N1…).</Muted>}
             {[...ids, ...stray.map((id) => ({ id, text: "not in scope any more" }))].map((it) => (
-              <button
+              <S.CoverChip
                 key={it.id}
-                className={`cover-chip c-${it.id[0]?.toLowerCase()} ${part.covers.includes(it.id) ? "on" : ""}`}
+                $kind={it.id[0]?.toLowerCase() ?? ""}
+                $on={part.covers.includes(it.id)}
                 onClick={() => toggle(it.id)}
                 title={it.text}
                 aria-pressed={part.covers.includes(it.id)}
               >
                 {it.id}
-              </button>
+              </S.CoverChip>
             ))}
-          </div>
-        </div>
-      </div>
+          </S.CoverChips>
+        </S.Covers>
+      </S.Fields>
       <label>
-        <span className="muted small">problem: what is hard about this piece?</span>
+        <Muted $small>problem: what is hard about this piece?</Muted>
         <textarea
           rows={2}
           value={part.problem}
@@ -325,7 +320,7 @@ export function PartSheet({
           onChange={(e) => set({ problem: e.target.value })}
         />
       </label>
-      <table className="sheet options">
+      <D.Sheet>
         <thead>
           <tr>
             <th />
@@ -344,17 +339,17 @@ export function PartSheet({
                 ...(patch.name !== undefined && chosen ? { choice: patch.name } : {}),
               });
             return (
-              <tr key={k} className={chosen ? "chosen" : ""}>
+              <D.Row key={k} $chosen={chosen}>
                 <td>
-                  <button
-                    className={`choose-btn ${chosen ? "on" : ""}`}
+                  <S.ChooseButton
+                    $on={chosen}
                     disabled={!o.name.trim()}
                     onClick={() => set({ choice: chosen ? "" : o.name })}
                     title={chosen ? "Chosen" : "Choose this option"}
                     aria-pressed={chosen}
                   >
                     {chosen ? "★" : "☆"}
-                  </button>
+                  </S.ChooseButton>
                 </td>
                 <td>
                   <input
@@ -380,29 +375,27 @@ export function PartSheet({
                   />
                 </td>
                 <td>
-                  <button
-                    className="icon-x"
+                  <D.RemoveX
                     onClick={() => set({ options: part.options.filter((_, j) => j !== k) })}
                     aria-label="remove option"
                     title="Remove option"
                   >
                     ×
-                  </button>
+                  </D.RemoveX>
                 </td>
-              </tr>
+              </D.Row>
             );
           })}
         </tbody>
-      </table>
-      <button
-        className="add-btn"
+      </D.Sheet>
+      <D.AddButton
         onClick={() => set({ options: [...part.options, { name: "", pros: "", cons: "" }] })}
       >
         ＋ Option
-      </button>
-      <div className="ps-row">
-        <label className="ps-choice">
-          <span className="muted small">choice (★ an option, or write your own)</span>
+      </D.AddButton>
+      <S.Fields>
+        <S.ChoiceField>
+          <Muted $small>choice (★ an option, or write your own)</Muted>
           <input
             value={part.choice}
             list={`part-opts-${part.id}`}
@@ -416,35 +409,35 @@ export function PartSheet({
                 <option key={o.name} value={o.name} />
               ))}
           </datalist>
-        </label>
-        <label className="grow">
-          <span className="muted small">why</span>
+        </S.ChoiceField>
+        <S.WhyField>
+          <Muted $small>why</Muted>
           <textarea
             rows={2}
             value={part.why}
             placeholder="Why this option wins for these requirements (cite F/N ids)"
             onChange={(e) => set({ why: e.target.value })}
           />
-        </label>
-      </div>
-      <div className="ps-row">
-        <div className="grow">
-          <span className="muted small">technologies</span>
+        </S.WhyField>
+      </S.Fields>
+      <S.Fields>
+        <S.Half>
+          <Muted $small>technologies</Muted>
           <ChipInput
             values={part.technologies}
             onChange={(technologies) => set({ technologies })}
             placeholder="redis, kafka… (Enter)"
           />
-        </div>
-        <div className="grow">
-          <span className="muted small">patterns</span>
+        </S.Half>
+        <S.Half>
+          <Muted $small>patterns</Muted>
           <ChipInput
             values={part.patterns}
             onChange={(patterns) => set({ patterns })}
             placeholder="cache-aside, sharding… (Enter)"
           />
-        </div>
-      </div>
-    </div>
+        </S.Half>
+      </S.Fields>
+    </S.Sheet>
   );
 }
