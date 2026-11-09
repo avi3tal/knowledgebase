@@ -394,3 +394,25 @@ export function linkedTo(id: string, edges: MapEdge[]): Set<string> {
   }
   return out;
 }
+
+/**
+ * A lesson's opening markdown without what the page header already shows: the `# Title` line and a
+ * one-line `> Group · …` meta quote right under it.
+ */
+export function stripLessonHead(md: string): string {
+  const lines = md.split("\n");
+  let i = 0;
+  const skipBlank = () => {
+    while (i < lines.length && (lines[i] ?? "").trim() === "") i++;
+  };
+  skipBlank();
+  if (!/^# /.test(lines[i] ?? "")) return md;
+  i++;
+  skipBlank();
+  const quote = lines[i] ?? "";
+  if (/^>/.test(quote) && quote.includes("·") && !/^>/.test(lines[i + 1] ?? "")) {
+    i++;
+    skipBlank();
+  }
+  return lines.slice(i).join("\n");
+}

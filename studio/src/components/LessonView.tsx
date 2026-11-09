@@ -2,6 +2,7 @@ import { useContext, useMemo, useRef, useState } from "react";
 import type { Block, Lesson } from "../api";
 import { SubjectContext } from "../context";
 import type { SectionKey } from "../learn-bench";
+import { stripLessonHead } from "../learn-bench";
 import {
   blockId,
   lessonHref,
@@ -54,7 +55,7 @@ function LessonBlock({
     case "markdown":
       return (
         <Markdown
-          text={b.text}
+          text={i === firstMarkdown(lesson.blocks) ? stripLessonHead(b.text) : b.text}
           path={b.path}
           anchors
           fence={(lang, body) => {
@@ -146,6 +147,8 @@ function LessonBlock({
 }
 
 /** A lesson in the Workbench: Learn | Quiz | Practice | Resources tabs, lessons list, TOC. */
+const firstMarkdown = (blocks: Lesson["blocks"]) => blocks.findIndex((x) => x.type === "markdown");
+
 export function LessonView({ lesson }: { lesson: Lesson }) {
   const { subject } = useContext(SubjectContext);
   const topics = useMemo(() => subject?.topics ?? [], [subject]);

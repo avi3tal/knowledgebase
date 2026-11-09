@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { stripLessonHead } from "./learn-bench";
 import type { Block, Feedback, Graph, Topic, TopicFeedback } from "./api";
 import {
   bestHref,
@@ -327,5 +328,17 @@ describe("topic states and roles", () => {
       ["topic", ["y"]],
       ["pattern", ["x", "z"]],
     ]);
+  });
+});
+
+describe("stripLessonHead", () => {
+  it("drops the title and the meta quote", () => {
+    expect(stripLessonHead("# Sliding Window\n\n> Pattern #1 · DS: array\n\nBody")).toBe("Body");
+  });
+  it("keeps a real multi-line quote", () => {
+    expect(stripLessonHead("# T\n> a · b\n> c\nBody")).toBe("> a · b\n> c\nBody");
+  });
+  it("leaves markdown without a title alone", () => {
+    expect(stripLessonHead("Intro\n# Later")).toBe("Intro\n# Later");
   });
 });

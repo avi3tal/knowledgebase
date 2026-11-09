@@ -175,13 +175,12 @@ export function OnThisPage({
   const pct = Math.round(progress * 100);
   return (
     <div className="rd-otp">
-      <div className="rd-progress" aria-label={`${pct}% read`} title={`${pct}% read`}>
-        <div className="rd-progress-bar" style={{ transform: `scaleX(${progress})` }} />
-      </div>
-      <div className="rd-progress-label muted small">{pct}% read</div>
-      {toc.length === 0 ? (
-        <p className="muted small">No sections on this tab.</p>
-      ) : (
+      {toc.length > 0 && (
+        <div className="rd-progress" aria-label={`${pct}% read`} title={`${pct}% read`}>
+          <div className="rd-progress-bar" style={{ transform: `scaleX(${progress})` }} />
+        </div>
+      )}
+      {toc.length === 0 ? null : (
         <ol className="rd-toc">
           {toc.map((t, i) => (
             <li key={t.id} className={`l${t.level} ${i === active ? "on" : ""}`}>

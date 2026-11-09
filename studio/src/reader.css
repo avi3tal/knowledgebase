@@ -101,11 +101,11 @@
 }
 .rd-btn.primary {
   border: 0;
-  color: #fff;
-  background: linear-gradient(120deg, var(--accent), var(--rd-pattern));
+  color: var(--panel);
+  background: var(--text);
 }
 :root[data-theme="dark"] .rd-btn.primary {
-  color: var(--on-accent);
+  color: var(--panel);
 }
 .rd-btn.ghost {
   background: var(--accent-soft);
@@ -304,7 +304,7 @@ a.rd-chip:hover {
 .rd-progress-bar {
   height: 100%;
   transform-origin: left;
-  background: linear-gradient(90deg, var(--accent), var(--rd-pattern), var(--rd-core));
+  background: var(--accent);
   transition: transform 0.25s ease-out;
 }
 .rd-progress-label {
@@ -373,11 +373,7 @@ a.rd-chip:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 10%, var(--bg)),
-    color-mix(in srgb, var(--rd-pattern) 10%, var(--bg))
-  );
+  background: var(--panel);
 }
 .rd-practice-stats {
   display: flex;
@@ -608,7 +604,7 @@ a.rd-nav.next:hover {
   position: absolute;
   inset: 0 0 auto;
   height: 5px;
-  background: linear-gradient(90deg, var(--accent), var(--rd-pattern), var(--rd-core));
+  background: var(--accent);
 }
 .rd-gate-icon {
   font-size: 2.4em;
