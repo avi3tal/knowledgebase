@@ -13,11 +13,8 @@ return slow
 
 **Where `slow` stops on an even length depends on the loop condition:**
 
-```
-odd  (5):  1 2 [3] 4 5          both conditions → 3
-even (4):  1 2 3 4
-           while fast and fast.next            → slow = 3  (second middle)
-           while fast.next and fast.next.next  → slow = 2  (first middle)
+```figure
+middle-two-conditions
 ```
 
 - Use the **second** middle when the problem says so (LeetCode's "middle of the list").
@@ -44,10 +41,8 @@ return slow                       # the node where the cycle begins
 **Why it works (distance sketch).** Call the tail length before the cycle `a`, the cycle length
 `c`, and let the pointers meet `b` steps past the cycle's entry.
 
-```
-head ──a──► entry ──b──► meet
-              ▲            │
-              └──── c-b ───┘
+```figure
+cycle-entry
 ```
 
 - The tortoise walked `a + b`. The hare walked twice as far, `2(a + b)`.

@@ -15,12 +15,8 @@ after it. So:
 - in an **unweighted graph or grid**, the first time BFS reaches a node is along a **shortest
   path** (fewest edges).
 
-```
-            4               queue (front → back)        level
-          /   \             [4]                         0
-         9     2            [9, 2]                      1
-        /     / \           [3, 5, 7]                   2
-       3     5   7          []                          done
+```figure
+level-queue
 ```
 
 When you pop a node you push its children **at the back**. They wait until the whole current

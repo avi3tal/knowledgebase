@@ -5,13 +5,8 @@
 BFS finds the fewest **edges** between two nodes. Once edges have different **weights** (minutes,
 prices, distances), fewest edges is no longer cheapest:
 
-```
-        4
-   A ───────── B          BFS (fewest edges):  A → B        cost 4
-    \         /           cheapest:            A → C → B    cost 1 + 2 = 3
-   1 \       / 2
-      \     /
-        C
+```figure
+fewest-vs-cheapest
 ```
 
 ## Pick the algorithm by the graph

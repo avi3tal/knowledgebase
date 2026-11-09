@@ -1,0 +1,125 @@
+{
+  "kind": "structure",
+  "title": "With weights, the fewest edges is not the cheapest path",
+  "caption": "Three nodes; the numbers on the edges are their costs.",
+  "views": [
+    {
+      "type": "graph",
+      "var": "g",
+      "label": "weighted graph"
+    }
+  ],
+  "frames": [
+    {
+      "text": "BFS counts edges: A → B is one edge, so BFS returns it, at cost 4.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "A",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "B",
+              "x": 200,
+              "y": 0
+            },
+            {
+              "id": "C",
+              "x": 100,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "A",
+              "to": "B",
+              "w": 4
+            },
+            {
+              "from": "A",
+              "to": "C",
+              "w": 1
+            },
+            {
+              "from": "C",
+              "to": "B",
+              "w": 2
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "A",
+              "B"
+            ],
+            "edges": [
+              "A>B"
+            ]
+          },
+          "labels": {
+            "A": "start",
+            "B": "cost 4"
+          }
+        }
+      }
+    },
+    {
+      "text": "A → C → B uses two edges but costs 1 + 2 = 3. Dijkstra settles C at d = 1 first, then improves B from 4 to 3.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "A",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "B",
+              "x": 200,
+              "y": 0
+            },
+            {
+              "id": "C",
+              "x": 100,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "A",
+              "to": "B",
+              "w": 4
+            },
+            {
+              "from": "A",
+              "to": "C",
+              "w": 1
+            },
+            {
+              "from": "C",
+              "to": "B",
+              "w": 2
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "A",
+              "C",
+              "B"
+            ],
+            "edges": [
+              "A>C",
+              "C>B"
+            ]
+          },
+          "labels": {
+            "A": "d=0",
+            "C": "d=1",
+            "B": "d=3"
+          }
+        }
+      }
+    }
+  ]
+}

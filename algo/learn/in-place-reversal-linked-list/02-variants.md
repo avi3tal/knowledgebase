@@ -4,10 +4,11 @@ Split the list into blocks of `k` and reverse each block in place. It's the sub-
 in a loop. The border bookkeeping becomes "the tail of the previous block points to the new
 front of this block":
 
+```figure
+k-group-blocks
 ```
-dummy → [block 1] → [block 2] → … → [short tail]
-          ▲ group_prev points at the node before the current block
 
+```text
 repeat:
     look k nodes ahead of group_prev; fewer than k left? stop
     reverse the k nodes with the template, starting prev at the node AFTER the block

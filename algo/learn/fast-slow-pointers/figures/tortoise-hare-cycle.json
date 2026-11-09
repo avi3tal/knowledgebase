@@ -1,0 +1,570 @@
+{
+  "kind": "structure",
+  "title": "Inside a loop the hare gains one node per round, so it must land on the tortoise",
+  "caption": "Nine nodes; the tail 9 links back to node 3, making a cycle of 7. slow moves 1 per round, fast moves 2.",
+  "views": [
+    {
+      "type": "graph",
+      "var": "g",
+      "label": "list with a cycle (9 → 3)"
+    }
+  ],
+  "frames": [
+    {
+      "text": "Round 0: both start at the head, node 1.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 240,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 320,
+              "y": 0
+            },
+            {
+              "id": "6",
+              "x": 400,
+              "y": 0
+            },
+            {
+              "id": "7",
+              "x": 400,
+              "y": 100
+            },
+            {
+              "id": "8",
+              "x": 280,
+              "y": 100
+            },
+            {
+              "id": "9",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "7",
+              "directed": true
+            },
+            {
+              "from": "7",
+              "to": "8",
+              "directed": true
+            },
+            {
+              "from": "8",
+              "to": "9",
+              "directed": true
+            },
+            {
+              "from": "9",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "1"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "1": "slow · fast"
+          }
+        }
+      }
+    },
+    {
+      "text": "Round 2: slow reaches the entry 3, fast is already at 5. Both are now inside the cycle.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 240,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 320,
+              "y": 0
+            },
+            {
+              "id": "6",
+              "x": 400,
+              "y": 0
+            },
+            {
+              "id": "7",
+              "x": 400,
+              "y": 100
+            },
+            {
+              "id": "8",
+              "x": 280,
+              "y": 100
+            },
+            {
+              "id": "9",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "7",
+              "directed": true
+            },
+            {
+              "from": "7",
+              "to": "8",
+              "directed": true
+            },
+            {
+              "from": "8",
+              "to": "9",
+              "directed": true
+            },
+            {
+              "from": "9",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "3",
+              "5"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "3": "slow",
+            "5": "fast"
+          }
+        }
+      }
+    },
+    {
+      "text": "Round 4: slow = 5, fast = 9. fast has run ahead and is about to wrap round to 3.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 240,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 320,
+              "y": 0
+            },
+            {
+              "id": "6",
+              "x": 400,
+              "y": 0
+            },
+            {
+              "id": "7",
+              "x": 400,
+              "y": 100
+            },
+            {
+              "id": "8",
+              "x": 280,
+              "y": 100
+            },
+            {
+              "id": "9",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "7",
+              "directed": true
+            },
+            {
+              "from": "7",
+              "to": "8",
+              "directed": true
+            },
+            {
+              "from": "8",
+              "to": "9",
+              "directed": true
+            },
+            {
+              "from": "9",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "5",
+              "9"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "5": "slow",
+            "9": "fast"
+          }
+        }
+      }
+    },
+    {
+      "text": "Round 6: slow = 7, fast = 6. Measured along the cycle, fast is just 1 node behind slow.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 240,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 320,
+              "y": 0
+            },
+            {
+              "id": "6",
+              "x": 400,
+              "y": 0
+            },
+            {
+              "id": "7",
+              "x": 400,
+              "y": 100
+            },
+            {
+              "id": "8",
+              "x": 280,
+              "y": 100
+            },
+            {
+              "id": "9",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "7",
+              "directed": true
+            },
+            {
+              "from": "7",
+              "to": "8",
+              "directed": true
+            },
+            {
+              "from": "8",
+              "to": "9",
+              "directed": true
+            },
+            {
+              "from": "9",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "6",
+              "7"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "7": "slow",
+            "6": "fast"
+          }
+        }
+      }
+    },
+    {
+      "text": "Round 7: the gap shrank from 1 to 0, so both stand on node 8. Same node: there is a cycle.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "2",
+              "x": 80,
+              "y": 0
+            },
+            {
+              "id": "3",
+              "x": 160,
+              "y": 0
+            },
+            {
+              "id": "4",
+              "x": 240,
+              "y": 0
+            },
+            {
+              "id": "5",
+              "x": 320,
+              "y": 0
+            },
+            {
+              "id": "6",
+              "x": 400,
+              "y": 0
+            },
+            {
+              "id": "7",
+              "x": 400,
+              "y": 100
+            },
+            {
+              "id": "8",
+              "x": 280,
+              "y": 100
+            },
+            {
+              "id": "9",
+              "x": 160,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "1",
+              "to": "2",
+              "directed": true
+            },
+            {
+              "from": "2",
+              "to": "3",
+              "directed": true
+            },
+            {
+              "from": "3",
+              "to": "4",
+              "directed": true
+            },
+            {
+              "from": "4",
+              "to": "5",
+              "directed": true
+            },
+            {
+              "from": "5",
+              "to": "6",
+              "directed": true
+            },
+            {
+              "from": "6",
+              "to": "7",
+              "directed": true
+            },
+            {
+              "from": "7",
+              "to": "8",
+              "directed": true
+            },
+            {
+              "from": "8",
+              "to": "9",
+              "directed": true
+            },
+            {
+              "from": "9",
+              "to": "3",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "8"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "8": "slow · fast"
+          }
+        }
+      }
+    }
+  ]
+}

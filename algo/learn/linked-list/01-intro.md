@@ -11,11 +11,8 @@ class ListNode:
         self.next = next
 ```
 
-```
-head
- │
- ▼
-[1] → [2] → [3] → [4] → None
+```figure
+chain-of-nodes
 ```
 
 There's no index. To reach the 4th node you follow three `next` pointers. In exchange, once

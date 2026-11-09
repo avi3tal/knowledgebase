@@ -6,14 +6,8 @@ A **tree** is a connected graph with no cycles: n nodes, n − 1 edges, exactly 
 two nodes. In interviews it is almost always a **rooted binary tree**: every node has a value and
 at most two children, `left` and `right`.
 
-```
-            10            depth 0   ← root
-          /    \
-         5      15        depth 1
-        / \    /  \
-       3   7  13   18     depth 2
-      /   /
-     1   6                depth 3   ← leaves: 1, 6, 13, 18
+```figure
+tree-anatomy
 ```
 
 Vocabulary that shows up in problem statements:

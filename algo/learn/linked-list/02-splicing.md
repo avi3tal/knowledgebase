@@ -16,10 +16,8 @@ Most medium list problems are combinations of a few techniques:
 
 ## The splice
 
-```
-before:  prev → A → B          curr → X → (rest)
-step 1:  curr.next = prev.next          X → A
-step 2:  prev.next = curr       prev → X → A → B
+```figure
+splice-order
 ```
 
 Do the steps in that order. Doing step 2 first makes `prev.next` point at `curr`, and step 1

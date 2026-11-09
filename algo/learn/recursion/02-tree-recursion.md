@@ -6,14 +6,8 @@ When a function calls itself **twice or more**, the calls form a tree. The leave
 and the stack only ever holds **one root-to-leaf path**. So space is the **depth**, while time is
 the **number of nodes** in the tree.
 
-```
-                    build("")
-             /                    \
-       build("0")               build("1")
-       /       \                 /       \
- build("00") build("01")   build("10") build("11")
-   /   \       /   \          ...
-"000" "001" "010" "011"   ← leaves: 2^n of them; depth is only n
+```figure
+binary-strings-tree
 ```
 
 This "choose, recurse, then try the next choice" shape is the starting point of

@@ -1,0 +1,103 @@
+{
+  "kind": "structure",
+  "title": "DFS follows one branch to a leaf, backs up to the latest fork, then tries the next",
+  "caption": "Looking for a root-to-leaf path that spells 1 → 1 → 5. The highlighted nodes are the current path (the call stack).",
+  "views": [
+    {
+      "type": "tree",
+      "var": "root",
+      "label": "tree",
+      "pointers": {
+        "dfs": "node"
+      },
+      "groups": {
+        "path": "p"
+      }
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "path"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "dfs(1) at the root: 1 matches sequence[0]. path = [1].",
+      "vars": {
+        "root": [
+          1,
+          1,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "node": 0,
+        "p": [
+          0
+        ],
+        "path": [
+          1
+        ]
+      }
+    },
+    {
+      "text": "Go left first: dfs(1 left) matches sequence[1]. path = [1, 1].",
+      "vars": {
+        "node": 1,
+        "p": [
+          0,
+          1
+        ],
+        "path": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "text": "dfs(2) ✗ and dfs(3) ✗: neither is 5, so each returns at once. The left 1 has no child left to try; it is popped and path = [1].",
+      "vars": {
+        "node": 4,
+        "p": [
+          0
+        ],
+        "path": [
+          1
+        ]
+      }
+    },
+    {
+      "text": "Back at the root's fork, go right: dfs(1 right) matches. path = [1, 1] again. Then dfs(4) ✗.",
+      "vars": {
+        "node": 5,
+        "p": [
+          0,
+          2
+        ],
+        "path": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "text": "dfs(5) ✓: it matches the last value and is a leaf. path = [1, 1, 5] is found.",
+      "vars": {
+        "node": 6,
+        "p": [
+          0,
+          2,
+          6
+        ],
+        "path": [
+          1,
+          1,
+          5
+        ]
+      }
+    }
+  ]
+}

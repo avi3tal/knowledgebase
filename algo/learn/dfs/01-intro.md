@@ -16,15 +16,8 @@ to try. That gives you two places to put work:
 - **On the way back up** (post-order): combine the children's return values, e.g.
   `1 + max(left, right)` for the height.
 
-```
-            1                 dfs(1)                 path = [1]
-          /   \                 dfs(1 left)          path = [1, 1]
-         1     1                  dfs(2) ✗           value mismatch, back up
-        / \   / \                 dfs(3) ✗
-       2   3 4   5              ← pop 1 (left)       path = [1]
-                                dfs(1 right)         path = [1, 1]
-  sequence 1 → 1 → 5              dfs(4) ✗
-                                  dfs(5) ✓ leaf      path = [1, 1, 5]  found
+```figure
+path-backtrack
 ```
 
 ## The template (recursive)

@@ -1,0 +1,74 @@
+{
+  "kind": "structure",
+  "title": "Two calls per level make a tree: 2^n leaves, but the stack holds only one path",
+  "caption": "The calls of build(prefix) for n = 3. Each call appends \"0\" or \"1\" and recurses; a prefix of length n is a leaf.",
+  "views": [
+    {
+      "type": "tree",
+      "var": "calls",
+      "label": "build(prefix) calls",
+      "pointers": {
+        "now": "now"
+      },
+      "groups": {
+        "stack": "stack"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "build(\"\") is the root call. It will call build(\"0\") and then build(\"1\").",
+      "vars": {
+        "calls": [
+          "\"\"",
+          "0",
+          "1",
+          "00",
+          "01",
+          "10",
+          "11",
+          "000",
+          "001",
+          "010",
+          "011",
+          "100",
+          "101",
+          "110",
+          "111"
+        ],
+        "now": 0,
+        "stack": [
+          0
+        ]
+      }
+    },
+    {
+      "text": "Running build(\"010\"): the call stack is exactly the path \"\" → \"0\" → \"01\" → \"010\". Space is the depth, n + 1 frames.",
+      "vars": {
+        "now": 9,
+        "stack": [
+          0,
+          1,
+          4,
+          9
+        ]
+      }
+    },
+    {
+      "text": "The leaves are the 2^3 = 8 finished strings. Time is the number of calls: 2^(n+1) − 1 = 15 nodes.",
+      "vars": {
+        "now": null,
+        "stack": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      }
+    }
+  ]
+}

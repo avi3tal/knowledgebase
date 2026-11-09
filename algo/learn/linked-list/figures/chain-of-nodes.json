@@ -1,0 +1,43 @@
+{
+  "kind": "structure",
+  "title": "Only the head is held; every other node is reached by following next",
+  "caption": "The list 1 → 2 → 3 → 4 → None. There is no index: reaching the k-th node costs k − 1 hops.",
+  "views": [
+    {
+      "type": "linkedlist",
+      "var": "head",
+      "label": "list",
+      "pointers": {
+        "head": "h",
+        "curr": "curr"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "All you are given is head, a pointer to the first node. Each node holds a value and one next pointer; the last next is None.",
+      "vars": {
+        "head": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "h": 0,
+        "curr": null
+      }
+    },
+    {
+      "text": "To read the 3rd value you start at head and follow next twice. curr = head.next.next lands on 3.",
+      "vars": {
+        "curr": 2
+      }
+    },
+    {
+      "text": "One more hop reaches the tail 4, whose next is None. Walking the whole list is O(n); there is no shortcut.",
+      "vars": {
+        "curr": 3
+      }
+    }
+  ]
+}

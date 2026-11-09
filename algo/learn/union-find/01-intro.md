@@ -11,14 +11,8 @@ as a forest of parent pointers and answers both operations in almost O(1):
 - `union(a, b)`: merge the groups of a and b.
 - Two items are connected iff `find(a) == find(b)`.
 
-```
-parent: [0, 0, 1, 3, 3]      index:  0  1  2  3  4
-
-   0         3               groups: {0, 1, 2}  {3, 4}
-   |         |
-   1         4               find(2): 2 → 1 → 0, so the root is 0
-   |
-   2
+```figure
+parent-forest
 ```
 
 ## Making it fast

@@ -15,20 +15,8 @@ between them tells you what you want to know:
 - If the list **loops**, the hare can never reach an end. It goes round the loop and catches the
   tortoise from behind. That gives you **cycle detection** with O(1) extra space.
 
-```
- head
-  1 → 2 → 3 → 4 → 5 → 6
-          ↑           ↓
-          9 ← 8 ← 7 ←─┘          the tail links back to node 3
-
-round 0:  slow=1  fast=1
-round 1:  slow=2  fast=3
-round 2:  slow=3  fast=5
-round 3:  slow=4  fast=7
-round 4:  slow=5  fast=9
-round 5:  slow=6  fast=4
-round 6:  slow=7  fast=6
-round 7:  slow=8  fast=8   ← same node: there is a cycle
+```figure
+tortoise-hare-cycle
 ```
 
 ## Why the hare can't jump over the tortoise: the gap argument
@@ -37,7 +25,7 @@ Once both pointers are inside a cycle of length `c`, measure the **gap**: how ma
 `fast` is *behind* `slow` along the cycle. Each round `slow` moves 1 and `fast` moves 2, so the gap
 shrinks by **exactly 1**:
 
-```
+```text
 gap:  g → g-1 → g-2 → … → 1 → 0   (meet)
 ```
 

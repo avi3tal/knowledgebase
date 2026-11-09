@@ -11,18 +11,8 @@ nodes onto a stack. Interviews usually ask for **O(1) extra space**.
 pointers. `prev` is the part already reversed, `curr` is the node you're flipping, and `nxt`
 is the rest of the list, saved before you cut the link that leads to it.
 
-```
-before:   None   1 → 2 → 3 → 4 → None
-          prev  curr
-
-step:     nxt = curr.next          save the rest (2 → 3 → 4)
-          curr.next = prev         flip:  None ← 1
-          prev, curr = curr, nxt   advance both
-
-after 1:  None ← 1    2 → 3 → 4 → None
-                prev curr
-after 4:  None ← 1 ← 2 ← 3 ← 4    curr = None
-                              prev = new head
+```figure
+flip-arrows
 ```
 
 ## The template: reverse a whole list
@@ -54,7 +44,7 @@ the borders. Before the loop, remember two nodes:
 When the loop ends, `prev` is the new **front** of the reversed part (old node `q`) and `curr` is
 the node right **after** `q`. Two assignments stitch the list back together:
 
-```
+```python
 before.next = prev        # or head = prev when p == 1
 sub_tail.next = curr
 ```

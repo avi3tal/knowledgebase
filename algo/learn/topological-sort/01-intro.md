@@ -13,17 +13,8 @@ next. Take it, cross it off as a prerequisite of everything it unlocks, and repe
 every node, how many prerequisites are still pending, its **in-degree**. A node becomes
 ready the moment its in-degree drops to 0.
 
-```
-edges: 0→2  1→2  1→3  2→4  3→4  4→5
-
-in-degree:  0:0  1:0  2:2  3:1  4:2  5:1
-queue: [0, 1]                         ← the sources
-take 0 → 2:1                          order: 0
-take 1 → 2:0 ✓, 3:0 ✓   queue [2, 3]  order: 0 1
-take 2 → 4:1
-take 3 → 4:0 ✓          queue [4]     order: 0 1 2 3
-take 4 → 5:0 ✓          queue [5]     order: 0 1 2 3 4
-take 5                                order: 0 1 2 3 4 5   (all 6 → no cycle)
+```figure
+kahn-in-degrees
 ```
 
 If the queue empties before every node has been taken, the leftover nodes all wait on each

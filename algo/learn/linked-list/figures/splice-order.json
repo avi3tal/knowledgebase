@@ -1,0 +1,208 @@
+{
+  "kind": "structure",
+  "title": "Splice in two writes: point the new node forward first, then link it in",
+  "caption": "P = prev, X = curr (the node being moved), R = the rest of curr's list, saved as nxt before any rewiring.",
+  "views": [
+    {
+      "type": "graph",
+      "var": "g",
+      "label": "nodes and next pointers"
+    }
+  ],
+  "frames": [
+    {
+      "text": "Before: prev → A → B, and curr → X → rest. Save nxt = curr.next (R) first, or the rest is lost once X is rewired.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "P",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "A",
+              "x": 90,
+              "y": 0
+            },
+            {
+              "id": "B",
+              "x": 180,
+              "y": 0
+            },
+            {
+              "id": "X",
+              "x": 45,
+              "y": 100
+            },
+            {
+              "id": "R",
+              "x": 180,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "P",
+              "to": "A",
+              "directed": true
+            },
+            {
+              "from": "A",
+              "to": "B",
+              "directed": true
+            },
+            {
+              "from": "X",
+              "to": "R",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "P",
+              "X"
+            ],
+            "edges": []
+          },
+          "labels": {
+            "P": "prev",
+            "X": "curr",
+            "R": "nxt"
+          }
+        }
+      }
+    },
+    {
+      "text": "Step 1: curr.next = prev.next. X now points at A. Nothing is reachable from prev yet that wasn't before.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "P",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "A",
+              "x": 90,
+              "y": 0
+            },
+            {
+              "id": "B",
+              "x": 180,
+              "y": 0
+            },
+            {
+              "id": "X",
+              "x": 45,
+              "y": 100
+            },
+            {
+              "id": "R",
+              "x": 180,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "P",
+              "to": "A",
+              "directed": true
+            },
+            {
+              "from": "A",
+              "to": "B",
+              "directed": true
+            },
+            {
+              "from": "X",
+              "to": "A",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "X",
+              "A"
+            ],
+            "edges": [
+              "X>A"
+            ]
+          },
+          "labels": {
+            "P": "prev",
+            "X": "curr",
+            "R": "nxt"
+          }
+        }
+      }
+    },
+    {
+      "text": "Step 2: prev.next = curr. The chain reads prev → X → A → B. Done in the other order, prev.next would already be X and step 1 would make X point at itself.",
+      "vars": {
+        "g": {
+          "nodes": [
+            {
+              "id": "P",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "A",
+              "x": 90,
+              "y": 0
+            },
+            {
+              "id": "B",
+              "x": 180,
+              "y": 0
+            },
+            {
+              "id": "X",
+              "x": 45,
+              "y": 100
+            },
+            {
+              "id": "R",
+              "x": 180,
+              "y": 100
+            }
+          ],
+          "edges": [
+            {
+              "from": "P",
+              "to": "X",
+              "directed": true
+            },
+            {
+              "from": "A",
+              "to": "B",
+              "directed": true
+            },
+            {
+              "from": "X",
+              "to": "A",
+              "directed": true
+            }
+          ],
+          "highlight": {
+            "nodes": [
+              "P",
+              "X"
+            ],
+            "edges": [
+              "P>X",
+              "X>A"
+            ]
+          },
+          "labels": {
+            "P": "prev",
+            "X": "curr",
+            "R": "nxt"
+          }
+        }
+      }
+    }
+  ]
+}
