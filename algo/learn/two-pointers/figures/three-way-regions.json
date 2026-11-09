@@ -1,0 +1,36 @@
+{
+  "kind": "structure",
+  "title": "Three pointers keep four regions: small | equal | unexplored | large",
+  "caption": "Here the array is partitioned around the pivot 5. The window is the unexplored region nums[mid .. high]. Everything left of low is < 5, low..mid−1 is == 5, and right of high is > 5.",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "label": "nums (pivot = 5)",
+      "pointers": { "low": "low", "mid": "mid", "high": "high" },
+      "window": ["mid", "high"]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Start: everything is unexplored. low = mid = 0 and high = n − 1. nums[0] = 5 equals the pivot, so mid just moves on.",
+      "vars": { "nums": [5, 8, 2, 5, 9, 1, 5, 3], "low": 0, "mid": 0, "high": 7 }
+    },
+    {
+      "text": "nums[mid] = 8 > 5: swap it with nums[high] and move high left. mid stays put, because the 3 that came back from the right hasn't been looked at yet.",
+      "vars": { "nums": [5, 3, 2, 5, 9, 1, 5, 8], "mid": 1, "high": 6 }
+    },
+    {
+      "text": "nums[mid] = 3 < 5: swap it with nums[low], then move both low and mid right. What came from low was already explored (an equal value), so it's safe to step past it.",
+      "vars": { "nums": [3, 5, 2, 5, 9, 1, 5, 8], "low": 1, "mid": 2 }
+    },
+    {
+      "text": "A few steps later, all four regions are visible: [3, 2] small, [5, 5] equal, [5, 1] unexplored, [9, 8] large.",
+      "vars": { "nums": [3, 2, 5, 5, 5, 1, 9, 8], "low": 2, "mid": 4, "high": 5 }
+    },
+    {
+      "text": "mid passes high, so the unexplored region is empty and you're done, in one pass with O(1) extra space.",
+      "vars": { "nums": [3, 2, 1, 5, 5, 5, 9, 8], "low": 3, "mid": 6, "high": 5 }
+    }
+  ]
+}

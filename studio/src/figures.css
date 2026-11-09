@@ -592,3 +592,174 @@
   max-width: none !important;
   height: 100%;
 }
+
+/* ---- uml class diagrams (UmlFigure.tsx) ---- */
+.uml-class,
+.uml-rel {
+  transition: opacity 0.3s;
+}
+.uml-class.dim,
+.uml-rel.dim {
+  opacity: 0.28;
+}
+.uml-box {
+  fill: var(--panel);
+}
+.uml-header {
+  fill: var(--panel-2);
+}
+.uml-outline {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.4;
+  transition: stroke 0.3s;
+}
+.uml-sep {
+  stroke: var(--border);
+  stroke-width: 1.2;
+}
+.uml-name {
+  fill: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+.uml-class.abstract .uml-name {
+  font-style: italic;
+}
+.uml-stereo {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.uml-member {
+  fill: var(--text);
+  font-family: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+.uml-vis {
+  font-weight: 700;
+}
+.uml-vis.pub {
+  fill: var(--ok);
+}
+.uml-vis.priv {
+  fill: var(--bad);
+  opacity: 0.85;
+}
+.uml-vis.prot {
+  fill: var(--warn);
+}
+.uml-vis.pkg {
+  fill: var(--muted);
+}
+.uml-class.on .uml-outline {
+  stroke: var(--accent);
+  stroke-width: 2.6;
+}
+.uml-class.on .uml-header {
+  fill: var(--accent-soft);
+}
+.uml-class.failed .uml-outline {
+  stroke: var(--bad);
+  stroke-width: 2.2;
+  stroke-dasharray: 6 4;
+}
+.uml-rel line {
+  stroke: var(--text);
+  stroke-width: 1.5;
+  transition:
+    stroke 0.3s,
+    stroke-width 0.3s;
+}
+.uml-rel.dashed line {
+  stroke-dasharray: 7 5;
+}
+.uml-rel.on line {
+  stroke: var(--accent);
+  stroke-width: 2.6;
+}
+.uml-rel.failed line {
+  stroke: var(--bad);
+  stroke-width: 2.2;
+}
+.uml-head {
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.uml-head.base {
+  stroke: var(--text);
+}
+.uml-head.on {
+  stroke: var(--accent);
+}
+.uml-head.failed {
+  stroke: var(--bad);
+}
+.uml-head.hollow {
+  fill: var(--panel);
+}
+.uml-head.none {
+  fill: none;
+}
+.uml-head.solid.base {
+  fill: var(--text);
+}
+.uml-head.solid.on {
+  fill: var(--accent);
+}
+.uml-head.solid.failed {
+  fill: var(--bad);
+}
+.uml-rel-label,
+.uml-mult {
+  fill: var(--muted);
+  font-size: 12px;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.uml-rel-label {
+  font-style: italic;
+}
+.uml-mult {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.uml-rel.on .uml-rel-label,
+.uml-rel.on .uml-mult {
+  fill: var(--accent);
+}
+
+/* ---- structure stills (StructureFigure.tsx) and the graph view ---- */
+.fig-views {
+  padding: 4px 8px;
+  min-width: 0;
+  align-items: safe center;
+}
+.fig.expanded .fig-views {
+  overflow: auto;
+}
+.graph-edge .edge {
+  transition:
+    stroke 0.3s,
+    stroke-width 0.3s;
+}
+.graph-edge.on .edge {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.graph-head {
+  fill: var(--muted);
+}
+.graph-w {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 4px;
+}
+.graph-edge.on .graph-w {
+  fill: var(--accent);
+}

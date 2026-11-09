@@ -17,15 +17,8 @@ for read in range(write, len(nums)):
 return write                   # length of the kept prefix
 ```
 
-```
-index:   0  1  2  3  4  5
-nums:    0  0  1  1  1  2    nums[0] is always kept, so write = 1
-read=1:     wr               0 == last kept 0 → skip
-read=2:     w  r             1 != 0 → nums[1] = 1, write = 2
-read=3:        w  r          1 == last kept 1 → skip
-read=4:        w     r       1 == 1           → skip
-read=5:        w        r    2 != 1 → nums[2] = 2, write = 3
-nums:    0  1  2 | 1  1  2   new length = 3 (what's after write doesn't matter)
+```figure
+read-write-compact
 ```
 
 `read` is always at or ahead of `write`, so a write never overwrites something you still have
@@ -41,9 +34,8 @@ output (fill from the back when the output shares storage with an input).
 Some in-place problems split the array into **three** groups, e.g. all values `< pivot`, then
 `== pivot`, then `> pivot`. Use three pointers that keep four regions:
 
-```
-[ 0 .. low-1 ]   [ low .. mid-1 ]   [ mid .. high ]   [ high+1 .. n-1 ]
-   "small"           "equal"          unexplored          "large"
+```figure
+three-way-regions
 ```
 
 `mid` scans the unexplored region. Each step it either swaps the element into the small or

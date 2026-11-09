@@ -24,7 +24,14 @@ export function ArrayView({ spec, state }: { spec: ArrayViewSpec; state: ArraySt
   return (
     <div className="viz-block">
       <div className="viz-label">{spec.label ?? spec.var}</div>
-      <div className="array" style={{ width: Math.max(1, state.values.length) * CELL }}>
+      <div
+        className="array"
+        style={{
+          width: Math.max(1, state.values.length) * CELL,
+          // room for every pointer row (labels stack 22px apart under the cells)
+          paddingBottom: Math.max(56, 12 + Object.keys(state.pointers).length * 22),
+        }}
+      >
         {win && (
           <div
             className="window-frame"

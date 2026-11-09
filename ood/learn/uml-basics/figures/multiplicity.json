@@ -1,0 +1,39 @@
+{
+  "kind": "uml",
+  "title": "Multiplicity sits at the far end of each line",
+  "caption": "One customer has many orders, an order has at least one line, and each line refers to exactly one product. The fields show how each multiplicity turns into code.",
+  "classes": [
+    { "id": "customer", "name": "Customer", "fields": ["- orders: list[Order]"], "x": 0, "y": 0 },
+    {
+      "id": "order",
+      "name": "Order",
+      "fields": ["- customer: Customer", "- lines: list[OrderLine]"],
+      "x": 340,
+      "y": 0
+    },
+    { "id": "line", "name": "OrderLine", "fields": ["- product: Product", "- qty: int"], "x": 340, "y": 200 },
+    { "id": "product", "name": "Product", "fields": ["- sku: str"], "x": 0, "y": 200 }
+  ],
+  "relations": [
+    { "from": "customer", "to": "order", "type": "association", "from_mult": "1", "to_mult": "*" },
+    { "from": "order", "to": "line", "type": "composition", "from_mult": "1", "to_mult": "1..*" },
+    { "from": "line", "to": "product", "type": "association", "from_mult": "*", "to_mult": "1" }
+  ],
+  "steps": [
+    {
+      "text": "Customer 1 ─ * Order: one customer has many orders (`list[Order]`), and each order has exactly one customer (a required constructor argument).",
+      "nodes": ["customer", "order"],
+      "edges": ["customer>order"]
+    },
+    {
+      "text": "Order 1 ◆─ 1..* OrderLine: an order owns at least one line. Composition, so the lines die with the order.",
+      "nodes": ["order", "line"],
+      "edges": ["order>line"]
+    },
+    {
+      "text": "OrderLine * ─ 1 Product: many lines can point at the same product, and each line refers to exactly one.",
+      "nodes": ["line", "product"],
+      "edges": ["line>product"]
+    }
+  ]
+}

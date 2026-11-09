@@ -1,0 +1,73 @@
+{
+  "kind": "uml",
+  "title": "The six relationships, from weakest to strongest",
+  "caption": "Diamonds sit on the whole and triangles point at the parent. A dashed line means a looser tie: a dependency, or an interface being implemented rather than a class being inherited.",
+  "classes": [
+    { "id": "booking", "name": "Booking", "fields": ["- guest: Guest"], "x": 0, "y": 0 },
+    { "id": "guest", "name": "Guest", "fields": ["- name: str"], "x": 0, "y": 150 },
+    { "id": "report", "name": "ReportService", "methods": ["+ export(w: PdfWriter): None"], "x": 280, "y": 0 },
+    { "id": "pdf", "name": "PdfWriter", "methods": ["+ write(page: str): None"], "x": 280, "y": 150 },
+    { "id": "team", "name": "Team", "fields": ["- players: list[Player]"], "x": 580, "y": 0 },
+    { "id": "player", "name": "Player", "fields": ["- name: str"], "x": 580, "y": 150 },
+    { "id": "order", "name": "Order", "fields": ["- lines: list[OrderLine]"], "x": 0, "y": 290 },
+    { "id": "line", "name": "OrderLine", "fields": ["- qty: int"], "x": 0, "y": 440 },
+    {
+      "id": "account",
+      "name": "Account",
+      "stereotype": "abstract",
+      "methods": ["+ withdraw(amount: int): None"],
+      "x": 280,
+      "y": 290
+    },
+    { "id": "savings", "name": "SavingsAccount", "fields": ["- rate: float"], "x": 280, "y": 440 },
+    {
+      "id": "notifier",
+      "name": "Notifier",
+      "stereotype": "interface",
+      "methods": ["+ notify(msg: str): None"],
+      "x": 580,
+      "y": 290
+    },
+    { "id": "email", "name": "EmailNotifier", "methods": ["+ notify(msg: str): None"], "x": 580, "y": 440 }
+  ],
+  "relations": [
+    { "from": "booking", "to": "guest", "type": "association", "navigable": true, "label": "guest" },
+    { "from": "report", "to": "pdf", "type": "dependency", "label": "«use»" },
+    { "from": "team", "to": "player", "type": "aggregation", "from_mult": "1", "to_mult": "*" },
+    { "from": "order", "to": "line", "type": "composition", "from_mult": "1", "to_mult": "1..*" },
+    { "from": "savings", "to": "account", "type": "inherits" },
+    { "from": "email", "to": "notifier", "type": "implements" }
+  ],
+  "steps": [
+    {
+      "text": "Association (solid line, open arrow): Booking knows its Guest. It holds a reference to one in a field.",
+      "nodes": ["booking", "guest"],
+      "edges": ["booking>guest"]
+    },
+    {
+      "text": "Dependency (dashed, open arrow): ReportService only uses a PdfWriter briefly, as a parameter or a local. There's no field.",
+      "nodes": ["report", "pdf"],
+      "edges": ["report>pdf"]
+    },
+    {
+      "text": "Aggregation (hollow diamond on the whole): a Team has Players, but a Player lives on when the team folds.",
+      "nodes": ["team", "player"],
+      "edges": ["team>player"]
+    },
+    {
+      "text": "Composition (filled diamond on the whole): an Order owns its OrderLines. It creates them, and they die with it.",
+      "nodes": ["order", "line"],
+      "edges": ["order>line"]
+    },
+    {
+      "text": "Inheritance (solid line, hollow triangle at the parent): a SavingsAccount IS-A Account.",
+      "nodes": ["savings", "account"],
+      "edges": ["savings>account"]
+    },
+    {
+      "text": "Realization (dashed line, hollow triangle): EmailNotifier implements the Notifier interface.",
+      "nodes": ["email", "notifier"],
+      "edges": ["email>notifier"]
+    }
+  ]
+}

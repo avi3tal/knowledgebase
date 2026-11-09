@@ -118,7 +118,8 @@ def test_trace_step_limit() -> None:
     "view, fragment",
     [
         ([], "non-empty"),
-        ([{"type": "graph", "var": "g"}], "type must be"),
+        ([{"type": "trie", "var": "t"}], "type must be"),
+        ([{"type": "graph"}], "needs 'var'"),
         ([{"type": "array"}], "needs 'var'"),
         ([{"type": "vars", "vars": "x"}], "'vars' list"),
         ([{"type": "map", "var": "m"}, {"type": "map", "var": "m"}], "duplicate id"),

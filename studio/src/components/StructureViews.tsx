@@ -1,6 +1,8 @@
 import type {
   CallStackState,
   CallStackViewSpec,
+  GraphState,
+  GraphViewSpec,
   GridState,
   GridViewSpec,
   HeapViewSpec,
@@ -11,7 +13,8 @@ import type {
   TreeViewSpec,
   ArrayState,
 } from "../trace";
-import { heapAsTree, intervalBounds, layoutTree, packRows } from "../trace";
+import { useId } from "react";
+import { graphEdgeOn, heapAsTree, intervalBounds, layoutTree, packRows } from "../trace";
 
 const show = (v: Json | undefined): string =>
   v === undefined || v === null ? "·" : typeof v === "string" ? v : JSON.stringify(v);
@@ -249,6 +252,85 @@ export function IntervalsView({ spec, state }: { spec: IntervalsViewSpec; state:
           <span>{hi}</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** A general graph at authored positions: weights mid-edge, arrows when directed, labels below. */
+export function GraphView({ spec, state }: { spec: GraphViewSpec; state: GraphState }) {
+  const uid = useId().replace(/[^A-Za-z0-9_-]/g, "");
+  if (state.nodes.length === 0) return <span className="muted">empty</span>;
+  const pad = R + 26;
+  const minX = Math.min(...state.nodes.map((n) => n.x));
+  const minY = Math.min(...state.nodes.map((n) => n.y));
+  const pos = new Map(state.nodes.map((n) => [n.id, { x: n.x - minX + pad, y: n.y - minY + pad }]));
+  const width = Math.max(...[...pos.values()].map((p) => p.x)) + pad;
+  const height = Math.max(...[...pos.values()].map((p) => p.y)) + pad;
+  const litNodes = new Set(state.highlight.nodes);
+  return (
+    <div className="viz-block">
+      {spec.label && <div className="viz-label">{spec.label}</div>}
+      <svg className="tree graph" width={width} height={height}>
+        <defs>
+          <marker
+            id={`${uid}-arrow`}
+            viewBox="0 0 10 10"
+            refX="10"
+            refY="5"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto-start-reverse"
+          >
+            <path d="M0,0 L10,5 L0,10 z" className="graph-head" />
+          </marker>
+        </defs>
+        {state.edges.map((e, i) => {
+          const a = pos.get(e.from);
+          const b = pos.get(e.to);
+          if (!a || !b) return null;
+          const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+          const ux = (b.x - a.x) / len;
+          const uy = (b.y - a.y) / len;
+          const on = graphEdgeOn(state, e);
+          const mx = (a.x + b.x) / 2;
+          const my = (a.y + b.y) / 2;
+          return (
+            <g key={i} className={`graph-edge ${on ? "on" : ""}`}>
+              <line
+                className="edge"
+                x1={a.x + ux * R}
+                y1={a.y + uy * R}
+                x2={b.x - ux * (R + 2)}
+                y2={b.y - uy * (R + 2)}
+                markerEnd={e.directed ? `url(#${uid}-arrow)` : undefined}
+              />
+              {e.w !== null && e.w !== undefined && (
+                <text className="graph-w" x={mx - uy * 10} y={my + ux * 10 + 4} textAnchor="middle">
+                  {show(e.w)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        {state.nodes.map((n) => {
+          const p = pos.get(n.id);
+          if (!p) return null;
+          const label = state.labels[n.id];
+          return (
+            <g key={n.id} className="tree-node">
+              <circle cx={p.x} cy={p.y} r={R} className={litNodes.has(n.id) ? "pointed" : ""} />
+              <text x={p.x} y={p.y + 4} textAnchor="middle">
+                {n.id}
+              </text>
+              {label && (
+                <text x={p.x} y={p.y + R + 15} textAnchor="middle" className="node-pointer">
+                  {label}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }

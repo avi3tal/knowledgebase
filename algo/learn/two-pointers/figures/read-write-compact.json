@@ -1,0 +1,36 @@
+{
+  "kind": "structure",
+  "title": "read scans every element; write marks the end of what you keep",
+  "caption": "The example keeps only the non-negative readings of a sensor log, in place. The shaded window is the kept prefix nums[0 .. write-1].",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "label": "nums (keep readings ≥ 0)",
+      "pointers": { "write": "write", "read": "read" },
+      "window": ["zero", "last_kept"]
+    }
+  ],
+  "frames": [
+    {
+      "text": "read = 0: 4 ≥ 0, so it's kept. nums[0] = 4 and write moves to 1. The kept prefix is [4].",
+      "vars": { "nums": [4, -1, 7, -3, -2, 5], "read": 0, "write": 1, "zero": 0, "last_kept": 0 }
+    },
+    {
+      "text": "read = 1: −1 is negative, so it's skipped. write stays at 1, which is where the next kept value will go.",
+      "vars": { "read": 1 }
+    },
+    {
+      "text": "read = 2: 7 is kept. nums[1] = 7 and write = 2. read is never behind write, so you never overwrite a value you still have to read.",
+      "vars": { "nums": [4, 7, 7, -3, -2, 5], "read": 2, "write": 2, "last_kept": 1 }
+    },
+    {
+      "text": "read = 3 and 4 are skipped (−3, −2). read = 5: 5 is kept, so nums[2] = 5 and write = 3.",
+      "vars": { "nums": [4, 7, 5, -3, -2, 5], "read": 5, "write": 3, "last_kept": 2 }
+    },
+    {
+      "text": "read has run off the end. The answer is the prefix nums[0..2] = [4, 7, 5] with new length = write = 3. Whatever sits after write doesn't matter.",
+      "vars": { "read": null }
+    }
+  ]
+}
