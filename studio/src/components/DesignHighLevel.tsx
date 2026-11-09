@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { DesignCheck, Diagram } from "../api";
 import type { Highlight } from "../design";
 import { highlightFor, parseDiagramJson, smellsByNode } from "../design";
+import { CodeEditor } from "./CodeEditor";
 import { ConfirmBar } from "./ConfirmDialog";
 import type { CanvasHandle, Selection } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
@@ -245,12 +246,12 @@ export function JsonTab({ diagram, onApply }: { diagram: Diagram; onApply: (d: D
   };
   return (
     <div className="json-tab">
-      <textarea
-        className="code-area"
-        spellCheck={false}
+      <CodeEditor
+        label="Diagram JSON"
+        lang="json"
         value={text}
-        onChange={(e) => {
-          setText(e.target.value);
+        onChange={(v) => {
+          setText(v);
           setDirty(true);
         }}
       />

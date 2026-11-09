@@ -10,6 +10,7 @@ import "./learn-bench.css";
 import "./practice-bench.css";
 import "./reader.css";
 import "./figures.css";
+import "./codeblock.css";
 
 const el = document.getElementById("root");
 if (!el) throw new Error("missing #root");
