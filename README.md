@@ -147,3 +147,11 @@ migrated into the problem format; the owner's attempts (`*_legacy*`) then moved 
 workspace on 2026-11-07, when the repo became a clone-and-run platform. Older commits still hold
 them. Every problem keeps its statement, cases and learning material. See
 [algo/problems/INDEX.md](algo/problems/INDEX.md).
+
+## License
+[Apache License 2.0](LICENSE). Copyright 2017-2026 Avi Tal; see [NOTICE](NOTICE).
+
+Everything here — the tools, the studio and the learning content — is provided **"AS IS", without
+warranty or liability of any kind** (License sections 7 and 8). If you use, copy or redistribute
+it, you do so at your own risk and take full responsibility for that use. Third-party names are
+trademarks of their owners and are used for reference only; copyrighted books are never committed.
