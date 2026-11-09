@@ -11,6 +11,8 @@ import type {
   VarsState,
 } from "../trace";
 import { clampStep, viewId } from "../trace";
+import { useHighlighted } from "../highlight";
+import { Tokens } from "./CodeBlock";
 import { CallStackView, GridView, HeapView, IntervalsView, TreeView } from "./StructureViews";
 import { ArrayView, LinkedListView, MapView, VarsView } from "./TraceViews";
 
@@ -22,6 +24,7 @@ export function TracePlayer({ trace }: { trace: Trace }) {
   const [speed, setSpeed] = useState(1);
   const last = trace.steps.length - 1;
   const cur = trace.steps[step];
+  const tokens = useHighlighted(trace.code.join("\n"), "python");
   const prev = step > 0 ? trace.steps[step - 1] : undefined;
 
   useEffect(() => {
@@ -66,7 +69,7 @@ export function TracePlayer({ trace }: { trace: Trace }) {
           {trace.code.map((line, i) => (
             <div key={i} className={`code-line ${cur.line === i + 1 ? "active" : ""}`}>
               <span className="ln">{i + 1}</span>
-              {line || " "}
+              <Tokens line={tokens?.[i]} text={line} />
             </div>
           ))}
         </pre>

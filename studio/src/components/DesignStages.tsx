@@ -1,5 +1,6 @@
 import type { DesignDoc, EstimateResult, EstimateRow } from "../api";
 import { SCOPE_LISTS, addScopeItem, formatSI, nextItemId } from "../design";
+import { CodeEditor } from "./CodeEditor";
 
 /** Stage editors of the design console. Each is controlled: it gets a value and calls onChange. */
 
@@ -702,11 +703,11 @@ export function SignaturesEditor({
         ✍️ <b>Signatures only</b>: classes, interfaces and function signatures with types, no bodies
         (use <code>...</code>). Saved as <code>signatures.py</code> in the attempt.
       </p>
-      <textarea
-        className="code-area"
-        spellCheck={false}
+      <CodeEditor
+        label="signatures.py"
+        lang="python"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
         onKeyDown={(e) => {
           if (e.key !== "Tab") return;
           e.preventDefault();
