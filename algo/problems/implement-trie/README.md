@@ -9,7 +9,7 @@ Build a `Trie` class that stores lowercase words and supports:
 - `startsWith(prefix)`: return `true` if some stored word begins with `prefix`.
 
 ## Examples
-```
+```text
 Trie()
 insert("apple")
 search("apple")    → true

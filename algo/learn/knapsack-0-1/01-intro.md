@@ -60,19 +60,13 @@ Turn the recursion inside out. `dp[i][c]` = the best profit using **only the fir
 with capacity `c`. Row 0 (no items) and column 0 (no room) are all 0. Every other cell makes the
 same skip/take choice, reading **only the row above**:
 
-```
+```text
 dp[i][c] = max( dp[i-1][c],                          # skip item i
                 dp[i-1][c - w_i] + p_i )             # take it (only if w_i <= c)
 ```
 
-```
-weights = [1, 2, 3], profits = [6, 10, 12], capacity = 5
-
-                 c:   0    1    2    3    4    5
-  ∅ (no items)        0    0    0    0    0    0
-  w1 p6               0    6    6    6    6    6
-  w2 p10              0    6   10   16   16   16
-  w3 p12              0    6   10   16   18   22   ← dp[3][5] = max(16, dp[2][2] + 12) = 22
+```figure
+knapsack-table
 ```
 
 Reading "the row above" is what enforces **at most once**: when you take item `i`, the rest of

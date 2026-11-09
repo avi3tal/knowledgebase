@@ -13,12 +13,12 @@ different ways are there to climb `n` stairs?
 Look at the **last move**. To stand on stair `n` you arrived from `n−1`, `n−2` or `n−3`, and those
 are three disjoint groups of ways:
 
-```
+```text
 ways(n) = ways(n−1) + ways(n−2) + ways(n−3)        ways(0) = 1, ways(<0) = 0
+```
 
-n:      0   1   2   3   4   5    6    7
-ways:   1   1   2   4   7   13   24   44
-                └───┴───┴──→ 2 + 4 + 7 = 13
+```figure
+staircase-ways
 ```
 
 ## Step 1 — brute force: the recursion as written

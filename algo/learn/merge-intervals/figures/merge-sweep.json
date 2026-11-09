@@ -1,0 +1,111 @@
+{
+  "kind": "structure",
+  "title": "Sorted by start, each interval either extends the last merged one or starts a new one",
+  "caption": "Six intervals sorted by start. b overlaps the last merged interval a exactly when b.start <= a.end.",
+  "views": [
+    {
+      "type": "intervals",
+      "lanes": {
+        "sorted": "intervals",
+        "merged": "merged"
+      },
+      "pointers": {
+        "i": "i"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "Start with the first interval, [1, 4], as the open merged interval.",
+      "vars": {
+        "intervals": [
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            10,
+            13
+          ],
+          [
+            16,
+            18
+          ]
+        ],
+        "merged": [
+          [
+            1,
+            4
+          ]
+        ],
+        "i": 0
+      }
+    },
+    {
+      "text": "[3, 7]: 3 <= 4, overlap. Extend the end to max(4, 7) = 7.",
+      "vars": {
+        "merged": [
+          [
+            1,
+            7
+          ]
+        ],
+        "i": 1
+      }
+    },
+    {
+      "text": "[5, 6]: 5 <= 7, overlap, but it sits inside [1, 7]. max(7, 6) keeps the end at 7. Taking b.end instead would shrink it.",
+      "vars": {
+        "i": 2
+      }
+    },
+    {
+      "text": "[9, 11]: 9 > 7, disjoint. [1, 7] is finished; start a new merged interval.",
+      "vars": {
+        "merged": [
+          [
+            1,
+            7
+          ],
+          [
+            9,
+            11
+          ]
+        ],
+        "i": 3
+      }
+    },
+    {
+      "text": "[10, 13]: 10 <= 11, extend to 13. Then [16, 18]: 16 > 13, a new interval. Result: [1, 7], [9, 13], [16, 18].",
+      "vars": {
+        "merged": [
+          [
+            1,
+            7
+          ],
+          [
+            9,
+            13
+          ],
+          [
+            16,
+            18
+          ]
+        ],
+        "i": 5
+      }
+    }
+  ]
+}

@@ -7,7 +7,7 @@ Given an `rows x cols` binary matrix of `0`s and `1`s, return the **area** of th
 that contains only `1`s. (LeetCode passes characters `"0"`/`"1"`. Here the cells are ints.)
 
 ## Examples
-- ```
+- ```text
   1 0 1 0 0
   1 0 1 1 1
   1 1 1 1 1

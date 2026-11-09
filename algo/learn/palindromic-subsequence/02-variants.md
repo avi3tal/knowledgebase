@@ -17,7 +17,7 @@ cell stores and how the two ends combine.
 Everything you *keep* must form a palindromic subsequence. To delete as little as possible,
 keep as much as possible:
 
-```
+```text
 min deletions = n − LPS(s)
 ```
 

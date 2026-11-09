@@ -9,16 +9,9 @@ value. Every leaf is one. An empty tree has none.
 
 ## Examples
 - `[5,1,5,5,5,null,5]` → `4`: the three leaves `5`, plus the right child `5` with its leaf `5`.
-- ```
-      0
-     / \
-    1   0
-       / \
-      1   0
-     / \
-    1   1
-  ```
-  → `5`: the leaves `1`, `1`, `1` and `0`, and the subtree `1(1,1)`.
+- `[0,1,0,null,null,1,0,1,1]` → `5`: the root `0` has a leaf `1` on the left and a `0` on the
+  right; that `0` has children `1(1,1)` and a leaf `0`. Counted: the leaves `1`, `1`, `1` and
+  `0`, and the subtree `1(1,1)`.
 - `[]` → `0`.
 
 ## Constraints

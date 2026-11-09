@@ -1,0 +1,93 @@
+{
+  "kind": "structure",
+  "title": "Each value is the sum of the three just before it, so one left-to-right pass fills the line",
+  "caption": "ways(n) for the staircase with steps of 1, 2 or 3, for n = 0..7. ways(0) = 1, and n < 0 counts 0.",
+  "views": [
+    {
+      "type": "array",
+      "var": "ways",
+      "label": "ways[n]",
+      "pointers": {
+        "n": "n"
+      },
+      "window": [
+        "lo",
+        "hi"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Base cases: ways(0) = 1 (stand still), ways(1) = 1, ways(2) = 1 + 1 = 2.",
+      "vars": {
+        "ways": [
+          1,
+          1,
+          2,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "n": 2,
+        "lo": 0,
+        "hi": 1
+      }
+    },
+    {
+      "text": "ways(3) = ways(2) + ways(1) + ways(0) = 2 + 1 + 1 = 4.",
+      "vars": {
+        "ways": [
+          1,
+          1,
+          2,
+          4,
+          null,
+          null,
+          null,
+          null
+        ],
+        "n": 3,
+        "lo": 0,
+        "hi": 2
+      }
+    },
+    {
+      "text": "ways(5) = ways(4) + ways(3) + ways(2) = 7 + 4 + 2 = 13. The last move was 1, 2 or 3 stairs, and those three groups of ways don't overlap.",
+      "vars": {
+        "ways": [
+          1,
+          1,
+          2,
+          4,
+          7,
+          13,
+          null,
+          null
+        ],
+        "n": 5,
+        "lo": 2,
+        "hi": 4
+      }
+    },
+    {
+      "text": "ways(7) = 24 + 13 + 7 = 44. Only the three values in the window are ever read, which is why three variables are enough.",
+      "vars": {
+        "ways": [
+          1,
+          1,
+          2,
+          4,
+          7,
+          13,
+          24,
+          44
+        ],
+        "n": 7,
+        "lo": 4,
+        "hi": 6
+      }
+    }
+  ]
+}
