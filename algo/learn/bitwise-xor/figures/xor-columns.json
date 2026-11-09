@@ -1,0 +1,86 @@
+{
+  "kind": "structure",
+  "title": "XOR works column by column: 1 where the bits differ, 0 where they agree",
+  "caption": "5 ^ 3 = 6. Columns are bit positions 3..0. The marked cells are the columns where 5 and 3 differ.",
+  "views": [
+    {
+      "type": "grid",
+      "var": "bits",
+      "row_labels": "rows",
+      "col_labels": "cols",
+      "marked": "diff"
+    }
+  ],
+  "frames": [
+    {
+      "text": "5 = 0101 and 3 = 0011, lined up bit by bit.",
+      "vars": {
+        "bits": [
+          [
+            0,
+            1,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            1,
+            1
+          ]
+        ],
+        "rows": [
+          "5",
+          "3"
+        ],
+        "cols": [
+          "bit 3",
+          "bit 2",
+          "bit 1",
+          "bit 0"
+        ],
+        "diff": []
+      }
+    },
+    {
+      "text": "Bits 2 and 1 differ, so the result has 1s there. Bits 3 and 0 agree, so they are 0. The result is 0110 = 6.",
+      "vars": {
+        "bits": [
+          [
+            0,
+            1,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            1,
+            1
+          ],
+          [
+            0,
+            1,
+            1,
+            0
+          ]
+        ],
+        "rows": [
+          "5",
+          "3",
+          "5 ^ 3"
+        ],
+        "diff": [
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      }
+    }
+  ]
+}

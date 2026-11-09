@@ -12,12 +12,8 @@ work at this level:
   delete by key. The usual move is replacing an inner "search the rest of the array" loop (O(n²))
   with "have I already seen it?" (O(n)).
 
-```
-nums = [100, 4, 200, 1, 3, 2]
-
-seen = {100, 4, 200, 1, 3, 2}     ← build once: O(n)
-"is 5 in seen?"  → no, O(1)
-"is 3 in seen?"  → yes, O(1)      no scan of the array needed
+```figure
+seen-set-lookup
 ```
 
 ## Operations and their cost

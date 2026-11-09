@@ -1,0 +1,69 @@
+{
+  "kind": "structure",
+  "title": "Once the heap holds k items, its top is the k-th best so far",
+  "caption": "The 3 smallest of a stream, with a max-heap of size 3. The top is the largest value kept, so it's the first to go.",
+  "views": [
+    {
+      "type": "array",
+      "var": "stream",
+      "pointers": {
+        "i": "i"
+      }
+    },
+    {
+      "type": "heap",
+      "var": "heap",
+      "label": "heap (max-heap, size k = 3)"
+    }
+  ],
+  "frames": [
+    {
+      "text": "Fill the heap with the first k = 3 values: 7, 10 and 4. The top is 10.",
+      "vars": {
+        "stream": [
+          7,
+          10,
+          4,
+          3,
+          20,
+          15,
+          1
+        ],
+        "i": 2,
+        "heap": [
+          10,
+          7,
+          4
+        ]
+      }
+    },
+    {
+      "text": "3 < 10, so 3 belongs among the smallest. Evict the top (10) and push 3. The new top is 7.",
+      "vars": {
+        "i": 3,
+        "heap": [
+          7,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "text": "20 and 15 are both > 7, the top, so they can't be among the 3 smallest. Ignore them, with no heap work.",
+      "vars": {
+        "i": 5
+      }
+    },
+    {
+      "text": "1 < 7: evict 7 and push 1. The top, 4, is the 3rd smallest value seen.",
+      "vars": {
+        "i": 6,
+        "heap": [
+          4,
+          3,
+          1
+        ]
+      }
+    }
+  ]
+}

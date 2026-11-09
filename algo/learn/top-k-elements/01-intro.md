@@ -13,19 +13,13 @@ elements costs at most one O(log k) push or replace, so the scan is **O(n log k)
 
 The heap points the **opposite** way from the question:
 
-```
+```text
 want the k LARGEST   → keep a MIN-heap of size k (top = smallest kept = the first to go)
 want the k SMALLEST  → keep a MAX-heap of size k (top = largest kept  = the first to go)
 ```
 
-```
-k = 3, scanning 7 10 4 3 20 15 1, want the 3 smallest (max-heap)
-
-after 7 10 4 : heap {10, 7, 4}   top 10
-3            : 3 < 10 → evict 10 → {7, 4, 3}   top 7
-20           : 20 > 7 → ignore
-15           : 15 > 7 → ignore
-1            : 1 < 7  → evict 7  → {4, 3, 1}   top 4  ← the 3rd smallest
+```figure
+max-heap-k-smallest
 ```
 
 Once the heap is full, its top is the **k-th best so far**. That answers "k-th largest/smallest"

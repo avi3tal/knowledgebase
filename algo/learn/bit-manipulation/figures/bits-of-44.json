@@ -1,0 +1,84 @@
+{
+  "kind": "structure",
+  "title": "An integer is a row of bits: 44 = 0b101100 = 32 + 8 + 4",
+  "caption": "Columns are bit positions, with bit 0 (the 1s place) on the right. Bit k is worth 2^k.",
+  "views": [
+    {
+      "type": "grid",
+      "var": "bits",
+      "row_labels": "rows",
+      "col_labels": "cols",
+      "marked": "set"
+    }
+  ],
+  "frames": [
+    {
+      "text": "44 written in binary is 101100: six bits, numbered 5 down to 0 from left to right.",
+      "vars": {
+        "bits": [
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            0
+          ]
+        ],
+        "rows": [
+          "44"
+        ],
+        "cols": [
+          "bit 5",
+          "bit 4",
+          "bit 3",
+          "bit 2",
+          "bit 1",
+          "bit 0"
+        ],
+        "set": []
+      }
+    },
+    {
+      "text": "Bits 5, 3 and 2 are set. Their place values add up to the number: 32 + 8 + 4 = 44.",
+      "vars": {
+        "bits": [
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          [
+            32,
+            16,
+            8,
+            4,
+            2,
+            1
+          ]
+        ],
+        "rows": [
+          "44",
+          "2^k"
+        ],
+        "set": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      }
+    }
+  ]
+}

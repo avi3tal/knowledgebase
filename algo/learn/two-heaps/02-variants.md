@@ -19,7 +19,7 @@ entries can pile up below the tops. The alternative is a sorted container (balan
 The two heaps don't have to be the halves of one set. A common shape is **locked** versus
 **available** items:
 
-```
+```text
 locked    : min-heap by requirement  (capital needed, start time, …)
 available : max-heap by reward       (profit, priority, …)
 

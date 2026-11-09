@@ -1,0 +1,78 @@
+{
+  "kind": "structure",
+  "title": "Build the set once in O(n); every membership question is O(1)",
+  "caption": "One pass fills the hash set. After that, \"is x in it?\" never scans the array again.",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "pointers": {
+        "i": "i"
+      }
+    },
+    {
+      "type": "map",
+      "var": "seen",
+      "label": "seen (hash set)"
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "query",
+        "found"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Scan nums once and add each value to seen. After three values the set holds 100, 4 and 200.",
+      "vars": {
+        "nums": [
+          100,
+          4,
+          200,
+          1,
+          3,
+          2
+        ],
+        "i": 2,
+        "seen": [
+          100,
+          4,
+          200
+        ],
+        "query": null,
+        "found": null
+      }
+    },
+    {
+      "text": "The scan is over: all six values are in seen. Building it cost O(n) time and O(n) memory.",
+      "vars": {
+        "i": 5,
+        "seen": [
+          100,
+          4,
+          200,
+          1,
+          3,
+          2
+        ]
+      }
+    },
+    {
+      "text": "\"Is 5 in seen?\" One hash lookup says no. That's O(1) on average, with no scan of the array.",
+      "vars": {
+        "i": null,
+        "query": 5,
+        "found": false
+      }
+    },
+    {
+      "text": "\"Is 3 in seen?\" Yes, again in O(1). An inner \"search the rest\" loop (O(n²) overall) becomes one lookup per question.",
+      "vars": {
+        "query": 3,
+        "found": true
+      }
+    }
+  ]
+}

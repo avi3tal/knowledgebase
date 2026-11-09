@@ -10,11 +10,8 @@ O(1) space**, because it can make pairs **cancel out**.
 **XOR (`^`) compares bits column by column:** the result bit is 1 when the two input bits
 **differ**.
 
-```
-    5 = 0101
-  ^ 3 = 0011
-  ----------
-    6 = 0110     columns that differ → 1, columns that agree → 0
+```figure
+xor-columns
 ```
 
 **The four rules that make the pattern work:**
@@ -30,7 +27,7 @@ Put together: XOR a whole list, and **every value that appears an even number of
 vanishes**, wherever its copies sit. What's left is the XOR of the values that appear an odd
 number of times.
 
-```
+```text
 5 ^ 3 ^ 6 ^ 9 ^ 6 ^ 3 ^ 5
 = (5 ^ 5) ^ (3 ^ 3) ^ (6 ^ 6) ^ 9      reorder freely
 =    0    ^    0    ^    0    ^ 9  =  9

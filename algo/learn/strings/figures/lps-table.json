@@ -1,0 +1,121 @@
+{
+  "kind": "structure",
+  "title": "lps[i] is the longest border of s[0..i]; on a mismatch k falls back instead of restarting",
+  "caption": "The window marks the border: s[0 .. k−1] equals the k characters that end at i. k is the length matched so far.",
+  "views": [
+    {
+      "type": "array",
+      "var": "s",
+      "pointers": {
+        "i": "i",
+        "k": "k"
+      },
+      "window": [
+        "zero",
+        "k_end"
+      ]
+    },
+    {
+      "type": "array",
+      "var": "lps",
+      "pointers": {
+        "i": "i"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "i = 1: s[1] = b ≠ s[0] = a and k = 0, so lps[1] = 0. i = 2: s[2] = a = s[0], so k = 1 and lps[2] = 1. The border is \"a\".",
+      "vars": {
+        "s": [
+          "a",
+          "b",
+          "a",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "a",
+          "b"
+        ],
+        "lps": [
+          0,
+          0,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "i": 2,
+        "k": 1,
+        "zero": 0,
+        "k_end": 0
+      }
+    },
+    {
+      "text": "Matches keep growing k: at i = 5 the border is \"aba\" (s[0..2] = s[3..5]), so lps[5] = 3.",
+      "vars": {
+        "lps": [
+          0,
+          0,
+          1,
+          1,
+          2,
+          3,
+          null,
+          null,
+          null,
+          null
+        ],
+        "i": 5,
+        "k": 3,
+        "k_end": 2
+      }
+    },
+    {
+      "text": "i = 6: s[6] = b ≠ s[3] = a. Fall back k = lps[2] = 1, then s[6] = b = s[1], so k = 2 and lps[6] = 2. Nothing before i was re-read.",
+      "vars": {
+        "lps": [
+          0,
+          0,
+          1,
+          1,
+          2,
+          3,
+          2,
+          null,
+          null,
+          null
+        ],
+        "i": 6,
+        "k": 2,
+        "k_end": 1
+      }
+    },
+    {
+      "text": "The table is complete: lps = 0 0 1 1 2 3 2 3 4 5. The whole string ends in \"abaab\", which is also its prefix.",
+      "vars": {
+        "lps": [
+          0,
+          0,
+          1,
+          1,
+          2,
+          3,
+          2,
+          3,
+          4,
+          5
+        ],
+        "i": 9,
+        "k": 5,
+        "k_end": 4
+      }
+    }
+  ]
+}

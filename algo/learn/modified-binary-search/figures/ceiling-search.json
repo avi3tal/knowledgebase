@@ -1,0 +1,61 @@
+{
+  "kind": "structure",
+  "title": "When the loop ends without a match, lo is the ceiling and hi is the floor",
+  "caption": "Ceiling of key = 12 (the smallest value ≥ 12). The window is the range still in play, nums[lo .. hi].",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "label": "nums (key = 12)",
+      "pointers": {
+        "lo": "lo",
+        "mid": "mid",
+        "hi": "hi"
+      },
+      "window": [
+        "lo",
+        "hi"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "lo = 0, hi = 6, mid = 3: 10 < 12, so the ceiling is to the right. lo = mid + 1 = 4.",
+      "vars": {
+        "nums": [
+          1,
+          3,
+          8,
+          10,
+          15,
+          20,
+          25
+        ],
+        "lo": 0,
+        "mid": 3,
+        "hi": 6
+      }
+    },
+    {
+      "text": "lo = 4, hi = 6, mid = 5: 20 > 12. 20 could be the ceiling, but something smaller may be too, so hi = mid − 1 = 4.",
+      "vars": {
+        "lo": 4,
+        "mid": 5
+      }
+    },
+    {
+      "text": "lo = mid = hi = 4: 15 > 12, so hi = mid − 1 = 3.",
+      "vars": {
+        "mid": 4,
+        "hi": 4
+      }
+    },
+    {
+      "text": "lo > hi, so the range is empty. lo = 4 points at the ceiling, 15. hi = 3 points at the floor, 10.",
+      "vars": {
+        "mid": null,
+        "hi": 3
+      }
+    }
+  ]
+}

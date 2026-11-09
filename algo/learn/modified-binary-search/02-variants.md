@@ -9,12 +9,10 @@ is `last - first + 1`.
 
 ### Rotated sorted arrays
 
-`[4, 5, 6, 7, 0, 1, 2]` isn't sorted, but cut it at any `mid` and **one half is sorted**:
+`[6, 7, 9, 12, 1, 3, 5]` isn't sorted, but cut it at any `mid` and **one half is sorted**:
 
-```
-lo           mid           hi
- 4   5   6    7    0   1   2
- └ sorted: nums[lo] <= nums[mid] ┘
+```figure
+rotated-sorted-half
 ```
 
 - If `nums[lo] <= nums[mid]`, the left half is sorted. Otherwise the right half is.

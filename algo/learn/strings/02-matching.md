@@ -13,9 +13,8 @@ Find pattern `p` (length m) inside text `t` (length n).
 
 `lps[i]` = length of the longest proper prefix of `s[0..i]` that is also a suffix of it.
 
-```
-s:    a  b  a  a  b  a  b  a  a  b
-lps:  0  0  1  1  2  3  2  3  4  5
+```figure
+lps-table
 ```
 
 It is built in O(n) with two indices. `i` scans forward, and `k` is the length of the current

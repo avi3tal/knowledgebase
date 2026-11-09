@@ -13,14 +13,8 @@ something next to x: the first element **≥ key** (ceiling), the last element �
 satisfies a condition. They all use the same loop. What changes is **what you do when
 `nums[mid]` matches or almost matches**, and **what you return when the range is empty**.
 
-```
-key = 12
-index:   0   1   2   3   4   5   6
-nums:    1   3   8  10  15  20  25
-step 1:  lo         mid          hi     10 < 12 → lo = mid + 1 = 4
-step 2:                  lo mid  hi     20 > 12 → hi = mid - 1 = 4
-step 3:                 lo/mid/hi       15 > 12 → hi = mid - 1 = 3
-end:                 hi  lo             lo > hi: ceiling = nums[lo] = 15
+```figure
+ceiling-search
 ```
 
 ## The template: one loop, many endings

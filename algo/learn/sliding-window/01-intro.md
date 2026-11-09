@@ -11,12 +11,8 @@ O(n²).
 right adds one element on the right and removes one on the left. Keep a running summary of the
 window (a sum, counts in a hash map, a set) and **update it in O(1)** instead of recomputing it.
 
-```
-nums:   2  1  5  1  3  2        k = 3
-        [2  1  5]               sum = 8
-           [1  5  1]            sum = 8 - 2 + 1 = 7
-              [5  1  3]         sum = 7 - 1 + 3 = 9   ← best
-                 [1  3  2]      sum = 9 - 5 + 2 = 6
+```figure
+fixed-window-sum
 ```
 
 Each element enters the window once and leaves at most once, so the whole scan is **O(n)**.

@@ -1,0 +1,89 @@
+{
+  "kind": "structure",
+  "title": "P pays O(n) once; then sum(nums[l..r]) = P[r + 1] − P[l] for any range",
+  "caption": "P has n + 1 slots: P[i] = nums[0] + … + nums[i − 1], and P[0] = 0 is the empty sum.",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "pointers": {
+        "l": "l",
+        "r": "r"
+      },
+      "window": [
+        "l",
+        "r"
+      ]
+    },
+    {
+      "type": "array",
+      "var": "P",
+      "pointers": {
+        "i": "i",
+        "l": "pl",
+        "r+1": "pr"
+      }
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "sum"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Build P left to right: P[i] = P[i − 1] + nums[i − 1]. So far P[3] = P[2] + nums[2] = 2 + 4 = 6.",
+      "vars": {
+        "nums": [
+          3,
+          -1,
+          4,
+          2,
+          -5,
+          6
+        ],
+        "P": [
+          0,
+          3,
+          2,
+          6,
+          null,
+          null,
+          null
+        ],
+        "i": 3,
+        "l": null,
+        "r": null,
+        "pl": null,
+        "pr": null,
+        "sum": null
+      }
+    },
+    {
+      "text": "P is complete after one O(n) pass. P[6] = 9 is the total of the whole array.",
+      "vars": {
+        "P": [
+          0,
+          3,
+          2,
+          6,
+          8,
+          3,
+          9
+        ],
+        "i": null
+      }
+    },
+    {
+      "text": "sum(nums[1..3]) = P[4] − P[1] = 8 − 3 = 5, which matches −1 + 4 + 2. Any range is now two reads.",
+      "vars": {
+        "l": 1,
+        "r": 3,
+        "pl": 1,
+        "pr": 4,
+        "sum": 5
+      }
+    }
+  ]
+}

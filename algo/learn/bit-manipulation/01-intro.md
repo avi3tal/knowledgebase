@@ -6,9 +6,8 @@ An integer is a fixed row of bits, and the CPU can operate on all of them at onc
 some O(n) loops into O(1) expressions, and let one integer stand for a whole **set** of up to 64
 small items.
 
-```
- 44 = 0b101100        bit:  5 4 3 2 1 0
-                            1 0 1 1 0 0
+```figure
+bits-of-44
 ```
 
 ## The operators

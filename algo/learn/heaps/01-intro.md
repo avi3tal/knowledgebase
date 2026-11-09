@@ -8,16 +8,11 @@ enough order to know the top.
 
 ## The shape: a complete binary tree stored in an array
 
+```figure
+heap-array-tree
 ```
-index:   0   1   2   3   4   5
-heap:  [ 1,  3,  2,  7,  4,  5 ]
 
-              1            ← heap[0] is always the minimum
-            /   \
-           3     2
-          / \   /
-         7   4 5
-
+```text
 children of i:  2i + 1, 2i + 2        parent of i:  (i - 1) // 2
 ```
 

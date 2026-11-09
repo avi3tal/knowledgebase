@@ -1,0 +1,133 @@
+{
+  "kind": "structure",
+  "title": "The heap holds one head per list; pop the smallest and push its successor",
+  "caption": "Heap entries are value·list (1·B = the value 1 from list B). The heap never holds more than k = 3 entries, so each output costs O(log k).",
+  "views": [
+    {
+      "type": "array",
+      "var": "A",
+      "pointers": {
+        "head": "a"
+      }
+    },
+    {
+      "type": "array",
+      "var": "B",
+      "pointers": {
+        "head": "b"
+      }
+    },
+    {
+      "type": "array",
+      "var": "C",
+      "pointers": {
+        "head": "c"
+      }
+    },
+    {
+      "type": "heap",
+      "var": "heap",
+      "label": "heap of heads"
+    },
+    {
+      "type": "array",
+      "var": "out"
+    }
+  ],
+  "frames": [
+    {
+      "text": "Start: push the first element of each list. The heap's top, 1·B, is the smallest of all.",
+      "vars": {
+        "A": [
+          2,
+          5,
+          9
+        ],
+        "B": [
+          1,
+          6,
+          7
+        ],
+        "C": [
+          3,
+          4,
+          8
+        ],
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "heap": [
+          "1·B",
+          "2·A",
+          "3·C"
+        ],
+        "out": []
+      }
+    },
+    {
+      "text": "Pop 1·B and output 1. Push the next element of the same list, B[1] = 6.",
+      "vars": {
+        "b": 1,
+        "heap": [
+          "2·A",
+          "3·C",
+          "6·B"
+        ],
+        "out": [
+          1
+        ]
+      }
+    },
+    {
+      "text": "Pop 2·A and output 2. Push A[1] = 5.",
+      "vars": {
+        "a": 1,
+        "heap": [
+          "3·C",
+          "6·B",
+          "5·A"
+        ],
+        "out": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "text": "Pop 3·C and output 3. Push C[1] = 4. It rises to the top, because 4 is the next smallest.",
+      "vars": {
+        "c": 1,
+        "heap": [
+          "4·C",
+          "6·B",
+          "5·A"
+        ],
+        "out": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "text": "Repeat until every list is used up and the heap is empty. The output is fully sorted.",
+      "vars": {
+        "a": null,
+        "b": null,
+        "c": null,
+        "heap": [],
+        "out": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      }
+    }
+  ]
+}

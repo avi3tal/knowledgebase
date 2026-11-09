@@ -13,13 +13,8 @@ through it, and while the current value isn't at home, **swap it home**. Each sw
 least one value in its final place, so there are at most `n − 1` swaps in total. That's O(n)
 time with O(1) extra space.
 
-```
-index:     0  1  2  3  4
-start:    [3, 1, 5, 4, 2]
-i=0: 3 belongs at 2 → swap   [5, 1, 3, 4, 2]
-i=0: 5 belongs at 4 → swap   [2, 1, 3, 4, 5]
-i=0: 2 belongs at 1 → swap   [1, 2, 3, 4, 5]
-i=0: 1 is home → i=1, 2, 3, 4 are all home → done
+```figure
+swap-home
 ```
 
 `i` stays put while it swaps. Whatever lands at `i` is a new value that also needs its home.

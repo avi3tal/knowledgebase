@@ -6,10 +6,8 @@ A stack is **last in, first out** (LIFO). You only touch the top: push onto it, 
 at it. In Python a plain list is a perfect stack. `append` and `pop()` work at the right end in
 O(1).
 
-```
-push 5      push 1      push 2      pop → 2     pop → 1
-  [5]       [5,1]      [5,1,2]      [5,1]        [5]
-                           ↑ top
+```figure
+push-pop
 ```
 
 The reason a stack shows up so often: **the most recent unfinished thing is the first one you

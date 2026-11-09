@@ -11,15 +11,8 @@ tells you which of the two candidates can't be part of the answer. Put one point
 look at the pair, and **move the pointer whose element can't improve the answer**. Each step
 throws away a whole row of pairs, not just one.
 
-```
-index:     0    1    2    3    4
-nums:     -4   -1    0    3   10       compare |nums[L]| with |nums[R]|
-step 1:    L                   R       4 < 10  → result[4] = 100, R moves left
-step 2:    L              R            4 > 3   → result[3] = 16,  L moves right
-step 3:         L         R            1 < 3   → result[2] = 9,   R moves left
-step 4:         L    R                 1 > 0   → result[1] = 1,   L moves right
-step 5:             L=R                last one → result[0] = 0
-result:    0    1    9   16  100
+```figure
+squares-from-both-ends
 ```
 
 The pointers only ever move towards each other, and every step moves one of them, so the loop

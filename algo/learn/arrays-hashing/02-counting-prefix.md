@@ -22,9 +22,11 @@ for ch in s:
 
 `prefix[i]` = sum of the first `i` elements. Any subarray sum becomes one subtraction:
 
+```figure
+prefix-range-sum
 ```
-nums   =    3   4  -7   1   3
-prefix = 0  3   7   0   1   4
+
+```text
 sum(nums[l..r]) = prefix[r + 1] - prefix[l]          O(1) per query after O(n) setup
 ```
 

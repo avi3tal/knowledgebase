@@ -1,0 +1,148 @@
+{
+  "kind": "structure",
+  "title": "Each pop is an answer: the new element is the next greater element of everything it pops",
+  "caption": "The stack holds elements still waiting for an answer, decreasing from bottom to top (values shown; the code stores indices).",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "pointers": {
+        "i": "i"
+      }
+    },
+    {
+      "type": "array",
+      "var": "stack",
+      "label": "stack (waiting, bottom → top)"
+    },
+    {
+      "type": "array",
+      "var": "ans",
+      "label": "ans (next greater of nums[j])"
+    }
+  ],
+  "frames": [
+    {
+      "text": "i = 0 (2): the stack is empty, so push 2.",
+      "vars": {
+        "nums": [
+          2,
+          7,
+          3,
+          5,
+          4,
+          6,
+          8
+        ],
+        "i": 0,
+        "stack": [
+          2
+        ],
+        "ans": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "text": "i = 1 (7): 7 > 2, so pop 2. Its answer is 7. Then push 7.",
+      "vars": {
+        "i": 1,
+        "stack": [
+          7
+        ],
+        "ans": [
+          7,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "text": "i = 2 (3): 3 < 7 keeps the order, so push 3. Nothing is answered.",
+      "vars": {
+        "i": 2,
+        "stack": [
+          7,
+          3
+        ]
+      }
+    },
+    {
+      "text": "i = 3 (5): 5 > 3, so pop 3 with answer 5. 5 < 7 stops the popping. Push 5.",
+      "vars": {
+        "i": 3,
+        "stack": [
+          7,
+          5
+        ],
+        "ans": [
+          7,
+          null,
+          5,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "text": "i = 4 (4): 4 < 5, so push 4.",
+      "vars": {
+        "i": 4,
+        "stack": [
+          7,
+          5,
+          4
+        ]
+      }
+    },
+    {
+      "text": "i = 5 (6): pop 4 and then 5. Both answers are 6. 6 < 7 stops. Push 6.",
+      "vars": {
+        "i": 5,
+        "stack": [
+          7,
+          6
+        ],
+        "ans": [
+          7,
+          null,
+          5,
+          6,
+          6,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "text": "i = 6 (8): pop 6 and 7, both answered by 8. Push 8. The scan ends with 8 still waiting, so its answer is −1.",
+      "vars": {
+        "i": 6,
+        "stack": [
+          8
+        ],
+        "ans": [
+          7,
+          8,
+          5,
+          6,
+          6,
+          8,
+          -1
+        ]
+      }
+    }
+  ]
+}

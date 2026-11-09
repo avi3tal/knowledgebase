@@ -1,0 +1,65 @@
+{
+  "kind": "structure",
+  "title": "Last in, first out: push and pop both happen at the top",
+  "caption": "A Python list as a stack: append pushes at the right end and pop() removes from it, both O(1).",
+  "views": [
+    {
+      "type": "array",
+      "var": "stack",
+      "pointers": {
+        "top": "top"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "push 5: the stack was empty, so 5 is both the bottom and the top.",
+      "vars": {
+        "stack": [
+          5
+        ],
+        "top": 0
+      }
+    },
+    {
+      "text": "push 1: it goes on top of 5.",
+      "vars": {
+        "stack": [
+          5,
+          1
+        ],
+        "top": 1
+      }
+    },
+    {
+      "text": "push 2: the top is now 2, the most recent push.",
+      "vars": {
+        "stack": [
+          5,
+          1,
+          2
+        ],
+        "top": 2
+      }
+    },
+    {
+      "text": "pop returns 2, the last value pushed.",
+      "vars": {
+        "stack": [
+          5,
+          1
+        ],
+        "top": 1
+      }
+    },
+    {
+      "text": "pop returns 1. 5 went in first and will come out last.",
+      "vars": {
+        "stack": [
+          5
+        ],
+        "top": 0
+      }
+    }
+  ]
+}

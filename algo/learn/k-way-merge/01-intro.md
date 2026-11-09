@@ -12,15 +12,8 @@ element) of one of the lists. Keep the k heads in a **min-heap**. Pop the smalle
 and push the **next element from the same list**. The heap never holds more than k entries, so
 each of the N elements costs O(log k).
 
-```
-A: [2 5 9]      heap of heads (value, list, index)
-B: [1 6 7]
-C: [3 4 8]      start:  (1,B,0) (2,A,0) (3,C,0)
-
-pop (1,B,0) → out 1, push B[1]=6   heap: (2,A,0) (3,C,0) (6,B,1)
-pop (2,A,0) → out 2, push A[1]=5   heap: (3,C,0) (5,A,1) (6,B,1)
-pop (3,C,0) → out 3, push C[1]=4   heap: (4,C,1) (5,A,1) (6,B,1)
-…                                   output: 1 2 3 4 5 6 7 8 9
+```figure
+heap-of-heads
 ```
 
 It's the two-list merge from merge sort, generalised: instead of comparing two heads with `<`,

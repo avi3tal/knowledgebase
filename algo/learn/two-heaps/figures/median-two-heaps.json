@@ -1,0 +1,83 @@
+{
+  "kind": "structure",
+  "title": "The median sits on the boundary between the two halves, so it's always a top",
+  "caption": "Stream 5 15 1 3 8. lo is a max-heap of the small half and hi a min-heap of the large half. Every value in lo ≤ every value in hi, and len(lo) is len(hi) or len(hi) + 1.",
+  "views": [
+    {
+      "type": "heap",
+      "var": "lo",
+      "label": "lo (max-heap: small half)"
+    },
+    {
+      "type": "heap",
+      "var": "hi",
+      "label": "hi (min-heap: large half)"
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "median"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "5 arrives and goes into lo. The count is odd, so the median is lo's top: 5.",
+      "vars": {
+        "lo": [
+          5
+        ],
+        "hi": [],
+        "median": 5
+      }
+    },
+    {
+      "text": "15 > 5, so it goes into hi. The count is even, so the median is (top of lo + top of hi) / 2 = (5 + 15) / 2 = 10.",
+      "vars": {
+        "hi": [
+          15
+        ],
+        "median": 10
+      }
+    },
+    {
+      "text": "1 ≤ 5 goes into lo. lo is one bigger than hi, which is allowed. The median is lo's top: 5.",
+      "vars": {
+        "lo": [
+          5,
+          1
+        ],
+        "median": 5
+      }
+    },
+    {
+      "text": "3 ≤ 5 goes into lo, so lo is now two bigger than hi. Move lo's top (5) to hi. The median is (3 + 5) / 2 = 4.",
+      "vars": {
+        "lo": [
+          3,
+          1
+        ],
+        "hi": [
+          5,
+          15
+        ],
+        "median": 4
+      }
+    },
+    {
+      "text": "8 > 3 goes into hi, so hi is now bigger than lo. Move hi's top (5) back to lo. The small half is 1 3 5 and the large half is 8 15. The median is 5.",
+      "vars": {
+        "lo": [
+          5,
+          1,
+          3
+        ],
+        "hi": [
+          8,
+          15
+        ],
+        "median": 5
+      }
+    }
+  ]
+}

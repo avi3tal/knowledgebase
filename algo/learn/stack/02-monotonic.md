@@ -4,17 +4,8 @@ A **monotonic stack** keeps its contents sorted (always decreasing or always inc
 to top). Before pushing a new element you pop everything that would break the order, and **each
 pop is an answer**: the new element is the "next greater" (or smaller) element for the one popped.
 
-```
-nums:  2  7  3  5  4  6  8          stack: elements still waiting for an answer
-                                    (values shown here; the code stores their indices)
-
-i=0 (2):  push            stack: [2]
-i=1 (7):  7 > 2 → pop 2   ans[2]=7        stack: [7]
-i=2 (3):  push            stack: [7, 3]
-i=3 (5):  5 > 3 → pop 3   ans[3]=5        stack: [7, 5]
-i=4 (4):  push            stack: [7, 5, 4]
-i=5 (6):  pop 4, pop 5    ans=6, 6        stack: [7, 6]
-i=6 (8):  pop 6, pop 7    ans=8, 8        stack: [8]   ← 8 never gets an answer: -1
+```figure
+next-greater
 ```
 
 ```python

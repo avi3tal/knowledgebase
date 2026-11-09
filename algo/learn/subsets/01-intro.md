@@ -12,14 +12,8 @@ set**. If you already hold every subset of the first k numbers, the subsets of t
 are those old subsets **plus a copy of each one with the new number added**. Each number doubles
 the collection.
 
-```
-nums = [1, 5, 3]
-
-start          [ [] ]
-add 1          [ [] ,  [1] ]                                       clone 1 subset
-add 5          [ [] ,  [1],  [5],  [1,5] ]                         clone 2 subsets
-add 3          [ [] ,  [1],  [5],  [1,5],  [3], [1,3], [5,3], [1,5,3] ]   clone 4
-                 └────── old level ──────┘  └──── old level + 3 ────┘
+```figure
+bfs-doubling
 ```
 
 ## BFS subsets: the template

@@ -1,0 +1,57 @@
+{
+  "kind": "structure",
+  "title": "Cut a rotated sorted array at mid and one half is always sorted",
+  "caption": "The window is the sorted half. Compare nums[lo] with nums[mid] to tell which half it is.",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "pointers": {
+        "lo": "lo",
+        "mid": "mid",
+        "hi": "hi"
+      },
+      "window": [
+        "s_lo",
+        "s_hi"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "nums[lo] = 6 ≤ nums[mid] = 12, so the left half nums[lo .. mid] is sorted. The break (12 → 1) must be on the right.",
+      "vars": {
+        "nums": [
+          6,
+          7,
+          9,
+          12,
+          1,
+          3,
+          5
+        ],
+        "lo": 0,
+        "mid": 3,
+        "hi": 6,
+        "s_lo": 0,
+        "s_hi": 3
+      }
+    },
+    {
+      "text": "Rotated further: nums[lo] = 9 > nums[mid] = 3, so the break is on the left and the right half nums[mid .. hi] is sorted.",
+      "vars": {
+        "nums": [
+          9,
+          12,
+          1,
+          3,
+          5,
+          6,
+          7
+        ],
+        "s_lo": 3,
+        "s_hi": 6
+      }
+    }
+  ]
+}

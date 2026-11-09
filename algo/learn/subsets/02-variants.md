@@ -17,22 +17,18 @@ digit `3` offers `def`, so the level grows 1 → 3 → 9.
 
 ### Duplicates in the input
 
-`[1, 2, 2]` with the plain template produces `[2]` twice and `[1, 2]` twice. Two fixes:
+`[1, 3, 3]` with the plain template produces `[3]` twice and `[1, 3]` twice. Two fixes:
 
 1. **Sort** so equal values are neighbours.
 2. When `nums[i] == nums[i - 1]`, extend **only the subsets created in the previous step**, not
    the whole list. Remember where that step's new subsets started.
 
-```
-nums (sorted) = [1, 2, 2]
-add 1      [ [] , [1] ]
-add 2      [ [] , [1] , [2], [1,2] ]                      extend all 2
-add 2 dup  [ [] , [1] , [2], [1,2], [2,2], [1,2,2] ]       extend only [2], [1,2]
-                                     └ last step ┘
+```figure
+duplicates-last-step
 ```
 
-Extending `[]` or `[1]` again with the second `2` would rebuild `[2]` and `[1, 2]`. Only the
-subsets that already contain the first `2` can take the second one.
+Extending `[]` or `[1]` again with the second `3` would rebuild `[3]` and `[1, 3]`. Only the
+subsets that already contain the first `3` can take the second one.
 
 ### Partial results that carry state
 

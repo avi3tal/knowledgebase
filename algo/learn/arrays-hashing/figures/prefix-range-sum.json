@@ -1,0 +1,80 @@
+{
+  "kind": "structure",
+  "title": "prefix[i] is the sum of the first i elements, so any subarray sum is one subtraction",
+  "caption": "prefix has one more slot than nums. The leading 0 is the sum of nothing, so ranges that start at 0 need no special case.",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "pointers": {
+        "l": "l",
+        "r": "r"
+      },
+      "window": [
+        "l",
+        "r"
+      ]
+    },
+    {
+      "type": "array",
+      "var": "prefix",
+      "pointers": {
+        "l": "pl",
+        "r+1": "pr"
+      }
+    },
+    {
+      "type": "vars",
+      "vars": [
+        "sum"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "text": "Setup is one O(n) pass: prefix[0] = 0 and prefix[i + 1] = prefix[i] + nums[i].",
+      "vars": {
+        "nums": [
+          3,
+          4,
+          -7,
+          1,
+          3
+        ],
+        "prefix": [
+          0,
+          3,
+          7,
+          0,
+          1,
+          4
+        ],
+        "l": null,
+        "r": null,
+        "pl": null,
+        "pr": null,
+        "sum": null
+      }
+    },
+    {
+      "text": "sum(nums[1..3]) = prefix[4] − prefix[1] = 1 − 3 = −2, which matches 4 − 7 + 1. Two reads, O(1) per query.",
+      "vars": {
+        "l": 1,
+        "r": 3,
+        "pl": 1,
+        "pr": 4,
+        "sum": -2
+      }
+    },
+    {
+      "text": "A range that starts at 0 uses the leading 0: sum(nums[0..4]) = prefix[5] − prefix[0] = 4 − 0 = 4.",
+      "vars": {
+        "l": 0,
+        "r": 4,
+        "pl": 0,
+        "pr": 5,
+        "sum": 4
+      }
+    }
+  ]
+}

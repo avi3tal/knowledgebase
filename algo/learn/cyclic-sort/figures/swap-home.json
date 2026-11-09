@@ -1,0 +1,70 @@
+{
+  "kind": "structure",
+  "title": "Value v belongs at index v − 1: keep swapping nums[i] home until the right value sits at i",
+  "caption": "Values 1..n in an array of length n. i stays put while it swaps; each swap places at least one value for good.",
+  "views": [
+    {
+      "type": "array",
+      "var": "nums",
+      "pointers": {
+        "i": "i",
+        "home": "home"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "text": "i = 0: nums[0] = 3 belongs at index 2. Swap it home.",
+      "vars": {
+        "nums": [
+          3,
+          1,
+          5,
+          4,
+          2
+        ],
+        "i": 0,
+        "home": 2
+      }
+    },
+    {
+      "text": "3 is home now. The value that landed at i is 5, which belongs at index 4. i doesn't move: swap again.",
+      "vars": {
+        "nums": [
+          5,
+          1,
+          3,
+          4,
+          2
+        ],
+        "home": 4
+      }
+    },
+    {
+      "text": "5 is home. Now 2 is at i = 0, and it belongs at index 1. Swap.",
+      "vars": {
+        "nums": [
+          2,
+          1,
+          3,
+          4,
+          5
+        ],
+        "home": 1
+      }
+    },
+    {
+      "text": "1 is at index 0, so it's home and i moves on. 2, 3, 4 and 5 are already home: done after 3 swaps, O(n) time and O(1) space.",
+      "vars": {
+        "nums": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "home": 0
+      }
+    }
+  ]
+}

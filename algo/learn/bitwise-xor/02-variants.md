@@ -10,7 +10,7 @@ not either value, but it's not useless. Any **1 bit** in `a ^ b` is a column whe
    land in **different** groups, and each pair lands together in one group.
 4. Fold each group separately. Each group is now the single-number problem.
 
-```
+```text
 xor_all = 0110  →  lowest set bit = 0010
 group "bit set":   values with ?..1. → one of the singles + whole pairs
 group "bit clear": values with ?..0. → the other single + whole pairs

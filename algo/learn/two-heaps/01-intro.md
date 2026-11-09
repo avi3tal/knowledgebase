@@ -15,17 +15,8 @@ the elements into two heaps:
 The median sits on the boundary, so it's always one of the two tops (or their average). Each
 insert costs O(log n) and reading the median costs O(1).
 
-```
-stream so far: 5 15 1 3 8
-
-      lo (max-heap)            hi (min-heap)
-   small half: 1 3 5        large half: 8 15
-            top = 5  │  top = 8
-                     ▲
-          every value in lo ≤ every value in hi
-          len(lo) == len(hi) or len(lo) == len(hi) + 1
-          odd count  → median = top of lo = 5
-          even count → median = (top of lo + top of hi) / 2
+```figure
+median-two-heaps
 ```
 
 ## The two invariants
@@ -71,7 +62,7 @@ at points on a line. After each arrival, what is the minimum total distance for 
 meet at one point? The best meeting point is a **median** (moving the point towards the bigger
 side always shortens the total). Each heap also keeps its **sum**, so the cost is:
 
-```
+```text
 cost = (median·len(lo) − sum(lo))  +  (sum(hi) − median·len(hi))
         everyone below walks up        everyone above walks down
 ```
