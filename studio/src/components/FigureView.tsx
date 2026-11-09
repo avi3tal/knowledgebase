@@ -20,8 +20,10 @@ import {
   stepsOf,
 } from "../figures";
 import { kindStyle } from "../design";
+import { MutedP, Muted } from "../theme/primitives";
 import type { CanvasHandle } from "./DiagramCanvas";
 import { DiagramCanvas } from "./DiagramCanvas";
+import * as S from "./FigureView.style";
 import { StructureFigure } from "./StructureFigure";
 import { UmlFigure } from "./UmlFigure";
 
@@ -119,42 +121,45 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
   const tab = tabs[scenario];
 
   const view = (
-    <figure
+    <S.Fig
       ref={ref}
-      className={`fig fig-${shown.kind} ${step >= 0 ? "stepping" : ""} ${expanded ? "expanded" : ""}`}
+      data-kind={shown.kind}
+      data-expanded={expanded}
+      $stepping={step >= 0}
+      $expanded={expanded}
     >
-      <figcaption className="fig-head">
-        {number !== undefined && <span className="fig-num">Figure {number}</span>}
-        <span className="fig-title">{figure.title}</span>
-        <button
-          className="fig-expand"
+      <S.Head>
+        {number !== undefined && <S.Num>Figure {number}</S.Num>}
+        <S.Title>{figure.title}</S.Title>
+        <S.ExpandBtn
           onClick={() => setExpanded(!expanded)}
           title={expanded ? "Close (Esc)" : "Expand to full screen"}
         >
           {expanded ? "✕ close" : "⛶ expand"}
-        </button>
-      </figcaption>
+        </S.ExpandBtn>
+      </S.Head>
       {tabs.length > 1 && (
-        <div className="fig-tabs" role="tablist">
+        <S.Tabs role="tablist">
           {tabs.map((t, i) => (
-            <button
+            <S.Tab
               key={t.name}
               role="tab"
               aria-selected={i === scenario}
-              className={`fig-tab tone-${t.tone} ${i === scenario ? "on" : ""}`}
+              $tone={t.tone}
+              $on={i === scenario}
               onClick={() => pick(i)}
             >
               <span aria-hidden="true">{TONE_ICON[t.tone]}</span> {t.name}
-            </button>
+            </S.Tab>
           ))}
-        </div>
+        </S.Tabs>
       )}
-      {tab?.summary && <p className={`fig-summary tone-${tab.tone}`}>{tab.summary}</p>}
-      <div className="fig-body">{body}</div>
+      {tab?.summary && <S.Summary $tone={tab.tone}>{tab.summary}</S.Summary>}
+      <S.Body $expanded={expanded}>{body}</S.Body>
       {steps.length > 0 && (
-        <div className="fig-steps">
-          <div className="fig-controls">
-            <button
+        <S.Steps>
+          <S.Controls>
+            <S.Btn
               onClick={() => {
                 setPlaying(false);
                 setStep(Math.max(-1, step - 1));
@@ -163,9 +168,9 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
               aria-label="previous step"
             >
               ◀
-            </button>
-            <button
-              className="primary"
+            </S.Btn>
+            <S.Btn
+              $primary
               onClick={() => {
                 if (playing) return setPlaying(false);
                 if (step < 0 || step >= steps.length - 1) setStep(0);
@@ -173,8 +178,8 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
               }}
             >
               {playing ? "❚❚ pause" : step >= steps.length - 1 ? "↻ replay" : "▶ play"}
-            </button>
-            <button
+            </S.Btn>
+            <S.Btn
               onClick={() => {
                 setPlaying(false);
                 setStep(Math.min(steps.length - 1, step + 1));
@@ -183,12 +188,12 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
               aria-label="next step"
             >
               ▶
-            </button>
-            <span className="fig-dots">
+            </S.Btn>
+            <S.Dots>
               {steps.map((_, i) => (
-                <button
+                <S.Dot
                   key={i}
-                  className={`fig-dot ${i === step ? "on" : i < step ? "done" : ""}`}
+                  $state={i === step ? "on" : i < step ? "done" : undefined}
                   onClick={() => {
                     setPlaying(false);
                     setStep(i);
@@ -196,40 +201,34 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
                   aria-label={`step ${i + 1}`}
                 >
                   {i + 1}
-                </button>
+                </S.Dot>
               ))}
-            </span>
-            {playing && (
-              <span
-                className="fig-progress"
-                key={`${scenario}-${step}`}
-                style={{ ["--ms" as string]: `${STEP_MS}ms` }}
-              />
-            )}
-          </div>
-          <p className={`fig-narration ${current?.fail?.length ? "bad" : ""}`} aria-live="polite">
+            </S.Dots>
+            {playing && <S.Progress key={`${scenario}-${step}`} $ms={STEP_MS} />}
+          </S.Controls>
+          <S.Narration $bad={!!current?.fail?.length} aria-live="polite">
             {current ? (
               <>
                 <b>{circled(step + 1)}</b> {current.text}
               </>
             ) : (
-              <span className="muted">
+              <Muted>
                 {steps.length} steps — press <b>play</b> or click a number.
-              </span>
+              </Muted>
             )}
-          </p>
-        </div>
+          </S.Narration>
+        </S.Steps>
       )}
-      {shown.caption && <p className="fig-caption">{shown.caption}</p>}
-    </figure>
+      {shown.caption && <S.Caption>{shown.caption}</S.Caption>}
+    </S.Fig>
   );
   // expanded: render in a portal so no transformed ancestor traps `position: fixed`
   if (!expanded) return view;
   return (
     <>
-      <div className="fig fig-placeholder" style={{ minHeight: 120 }}>
-        <p className="muted small">Figure open in full screen — press Esc to close.</p>
-      </div>
+      <S.Placeholder>
+        <MutedP $small>Figure open in full screen — press Esc to close.</MutedP>
+      </S.Placeholder>
       {createPortal(view, document.body)}
     </>
   );
@@ -241,12 +240,7 @@ function SequenceSvg({ f, active }: { f: SequenceFigure; active: number }) {
   const top = SEQ.pad;
   const bottom = height - SEQ.pad;
   return (
-    <svg
-      className="fig-svg"
-      viewBox={`0 0 ${width} ${height}`}
-      style={{ maxWidth: width }}
-      role="img"
-    >
+    <S.Svg viewBox={`0 0 ${width} ${height}`} $maxWidth={width} role="img">
       <title>{f.title}</title>
       <defs>
         {(["call", "reply", "error"] as const).map((k) => (
@@ -261,7 +255,7 @@ function SequenceSvg({ f, active }: { f: SequenceFigure; active: number }) {
             markerHeight="10"
             orient="auto-start-reverse"
           >
-            <path d="M0,0 L10,5 L0,10 z" className={`seq-head ${k}`} />
+            <S.SeqHead d="M0,0 L10,5 L0,10 z" $tone={k} />
           </marker>
         ))}
       </defs>
@@ -270,19 +264,13 @@ function SequenceSvg({ f, active }: { f: SequenceFigure; active: number }) {
         const st = kindStyle(a.kind ?? "service");
         return (
           <g key={a.id}>
-            <line className="seq-life" x1={x} y1={top + SEQ.head} x2={x} y2={bottom} />
+            <S.SeqLife x1={x} y1={top + SEQ.head} x2={x} y2={bottom} />
             <g transform={`translate(${x - SEQ.boxW / 2} ${top})`}>
-              <rect
-                className="seq-actor"
-                width={SEQ.boxW}
-                height={SEQ.head - 8}
-                rx={10}
-                style={{ stroke: st.color }}
-              />
-              <text className="seq-actor-label" x={SEQ.boxW / 2} y={(SEQ.head - 8) / 2 + 5}>
+              <S.SeqActor $color={st.color} width={SEQ.boxW} height={SEQ.head - 8} rx={10} />
+              <S.SeqActorLabel x={SEQ.boxW / 2} y={(SEQ.head - 8) / 2 + 5}>
                 {a.kind ? `${st.icon} ` : ""}
                 {a.label}
-              </text>
+              </S.SeqActorLabel>
             </g>
           </g>
         );
@@ -291,8 +279,9 @@ function SequenceSvg({ f, active }: { f: SequenceFigure; active: number }) {
         const y = top + SEQ.head + (i + 1) * SEQ.rowH;
         const x1 = laneX(f, m.from);
         const x2 = laneX(f, m.to);
-        const style = m.style ?? "call";
-        const state = active < 0 ? "" : i === active ? "on" : i < active ? "done" : "later";
+        const style: S.SeqStyle = m.style ?? "call";
+        const state: S.SeqState =
+          active < 0 ? "" : i === active ? "on" : i < active ? "done" : "later";
         const self = style === "self" || m.from === m.to;
         const lost = style === "lost";
         const end = lost ? (x1 + x2) / 2 : x2 + (x2 > x1 ? -2 : 2);
@@ -300,30 +289,31 @@ function SequenceSvg({ f, active }: { f: SequenceFigure; active: number }) {
         const head = style === "error" || lost ? "error" : style === "reply" ? "reply" : "call";
         const d = self ? `M${x1},${y - 10} h36 v20 h-34` : `M${x1},${y} L${end},${y}`;
         return (
-          <g key={i} className={`seq-msg ${style} ${state}`}>
+          <S.SeqMsg key={i} $kind={style} $state={state}>
             <path d={d} markerEnd={lost ? undefined : `url(#${uid}-${head})`} />
             {lost && (
-              <text className="seq-lost" x={end} y={y + 5} textAnchor="middle">
+              <S.FailMark x={end} y={y + 5} textAnchor="middle">
                 ✕
-              </text>
+              </S.FailMark>
             )}
             {state === "on" && (
-              <circle className="seq-packet" r={6}>
+              <S.Packet r={6}>
                 <animateMotion dur="0.9s" repeatCount="indefinite" path={d} />
-              </circle>
+              </S.Packet>
             )}
-            <text
-              className="seq-label"
+            <S.SeqLabel
+              $kind={style}
+              $state={state}
               x={self ? x1 + 44 : lost ? (x1 + end) / 2 : mid}
               y={self ? y + 4 : y - 7}
               textAnchor={self ? "start" : "middle"}
             >
               {circled(i + 1)} {m.label}
-            </text>
-          </g>
+            </S.SeqLabel>
+          </S.SeqMsg>
         );
       })}
-    </svg>
+    </S.Svg>
   );
 }
 
@@ -337,15 +327,10 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
   const failed = new Set(step?.fail ?? []);
   const nums = edgeStepNumbers(f.steps);
   const dim = active >= 0;
-  const edgeClass = (key: string, label?: string) =>
-    `flow-edge ${failed.has(key) ? "failed" : litEdges.has(key) ? "on" : dim ? "dim" : ""} ${/^no\b/i.test(label ?? "") ? "no" : ""}`;
+  const edgeState = (key: string): S.FlowState =>
+    failed.has(key) ? "failed" : litEdges.has(key) ? "on" : dim ? "dim" : "";
   return (
-    <svg
-      className="fig-svg"
-      viewBox={`0 0 ${width} ${height}`}
-      style={{ maxWidth: width }}
-      role="img"
-    >
+    <S.Svg viewBox={`0 0 ${width} ${height}`} $maxWidth={width} role="img">
       <title>{f.title}</title>
       <defs>
         <marker
@@ -358,7 +343,7 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
           markerHeight="10"
           orient="auto-start-reverse"
         >
-          <path d="M0,0 L10,5 L0,10 z" className="flow-head" />
+          <S.FlowHead d="M0,0 L10,5 L0,10 z" />
         </marker>
       </defs>
       {f.edges.map((e) => {
@@ -368,23 +353,29 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
         const key = `${e.from}>${e.to}`;
         const d = flowEdgePath(a, b);
         return (
-          <g key={key} className={edgeClass(key, e.label)}>
+          <S.FlowEdge key={key} $state={edgeState(key)} $no={/^no\b/i.test(e.label ?? "")}>
             <path d={d} markerEnd={`url(#${uid}-a)`} />
             {litEdges.has(key) && !failed.has(key) && (
-              <circle className="flow-packet" r={5}>
+              <S.Packet r={5}>
                 <animateMotion dur="1s" repeatCount="indefinite" path={d} />
-              </circle>
+              </S.Packet>
             )}
-          </g>
+          </S.FlowEdge>
         );
       })}
       {f.nodes.map((n) => {
         const c = flowCenter(n);
-        const state = failed.has(n.id) ? "failed" : litNodes.has(n.id) ? "on" : dim ? "dim" : "";
+        const state: S.FlowState = failed.has(n.id)
+          ? "failed"
+          : litNodes.has(n.id)
+            ? "on"
+            : dim
+              ? "dim"
+              : "";
         const hw = FLOW.w / 2;
         const hh = FLOW.h / 2;
         return (
-          <g key={n.id} className={`flow-node ${n.type} ${n.tone ?? ""} ${state}`}>
+          <S.FlowNode key={n.id} $type={n.type} $tone={n.tone} $state={state}>
             {n.type === "decision" ? (
               <path
                 d={`M${c.x},${c.y - hh - 6} L${c.x + hw},${c.y} L${c.x},${c.y + hh + 6} L${c.x - hw},${c.y} Z`}
@@ -402,11 +393,11 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
               {n.label}
             </text>
             {state === "failed" && (
-              <text className="flow-fail" x={c.x + hw - 4} y={c.y - hh + 4} textAnchor="middle">
+              <S.FailMark x={c.x + hw - 4} y={c.y - hh + 4} textAnchor="middle">
                 ✕
-              </text>
+              </S.FailMark>
             )}
-          </g>
+          </S.FlowNode>
         );
       })}
       {f.edges.map((e) => {
@@ -422,18 +413,13 @@ function FlowchartSvg({ f, active }: { f: FlowchartFigure; active: number }) {
         const lx = a.col === b.col ? p.x + 10 : (p.x + q.x) / 2;
         const ly = a.col === b.col ? (p.y + q.y) / 2 + 4 : p.y - 8;
         return (
-          <g key={`l-${key}`} className={edgeClass(key)}>
-            <text
-              className="flow-edge-label"
-              x={lx}
-              y={ly}
-              textAnchor={a.col === b.col ? "start" : "middle"}
-            >
+          <S.FlowEdge key={`l-${key}`} $state={edgeState(key)}>
+            <S.FlowEdgeLabel x={lx} y={ly} textAnchor={a.col === b.col ? "start" : "middle"}>
               {label}
-            </text>
-          </g>
+            </S.FlowEdgeLabel>
+          </S.FlowEdge>
         );
       })}
-    </svg>
+    </S.Svg>
   );
 }

@@ -10,11 +10,13 @@ import type {
   VarsViewSpec,
 } from "../trace";
 import { changedKeys, changedVars, inWindow, linkKind } from "../trace";
+import { Muted } from "../theme/primitives";
+import * as S from "./TraceViews.style";
 
 const show = (v: Json | undefined): string =>
   v === undefined || v === null ? "—" : typeof v === "string" ? v : JSON.stringify(v);
 
-const CELL = 48; // px — keep in sync with .cell width + gap in styles.css
+const CELL = 48; // px — keep in sync with the Cell width (42) + the Cells gap (6)
 
 export function ArrayView({ spec, state }: { spec: ArrayViewSpec; state: ArrayState }) {
   const pointers = Object.entries(state.pointers).filter(
@@ -22,39 +24,27 @@ export function ArrayView({ spec, state }: { spec: ArrayViewSpec; state: ArraySt
   );
   const win = state.window;
   return (
-    <div className="viz-block">
-      <div className="viz-label">{spec.label ?? spec.var}</div>
-      <div
-        className="array"
-        style={{
-          width: Math.max(1, state.values.length) * CELL,
-          // room for every pointer row (labels stack 22px apart under the cells)
-          paddingBottom: Math.max(56, 12 + Object.keys(state.pointers).length * 22),
-        }}
+    <S.Block>
+      <S.Label>{spec.label ?? spec.var}</S.Label>
+      <S.Cells
+        $width={Math.max(1, state.values.length) * CELL}
+        // room for every pointer row (labels stack 22px apart under the cells)
+        $paddingBottom={Math.max(56, 12 + Object.keys(state.pointers).length * 22)}
       >
-        {win && (
-          <div
-            className="window-frame"
-            style={{ left: win[0] * CELL, width: (win[1] - win[0] + 1) * CELL - 6 }}
-          />
-        )}
+        {win && <S.WindowFrame $left={win[0] * CELL} $width={(win[1] - win[0] + 1) * CELL - 6} />}
         {state.values.map((v, i) => (
-          <div key={i} className={`cell ${inWindow(state, i) ? "in-window" : ""}`}>
-            <span className="cell-value">{show(v)}</span>
-            <span className="cell-index">{i}</span>
-          </div>
+          <S.Cell key={i} $on={inWindow(state, i)}>
+            <S.CellValue>{show(v)}</S.CellValue>
+            <S.CellIndex>{i}</S.CellIndex>
+          </S.Cell>
         ))}
         {pointers.map(([name, idx], k) => (
-          <div
-            key={name}
-            className={`pointer pointer-${k % 3}`}
-            style={{ transform: `translateX(${idx * CELL}px)`, top: 64 + k * 22 }}
-          >
+          <S.Pointer key={name} $k={k} $x={idx * CELL} $top={64 + k * 22}>
             ▲ {name}
-          </div>
+          </S.Pointer>
         ))}
-      </div>
-    </div>
+      </S.Cells>
+    </S.Block>
   );
 }
 
@@ -69,21 +59,18 @@ export function MapView({
 }) {
   const changed = changedKeys(prev, state);
   return (
-    <div className="viz-block">
-      <div className="viz-label">{spec.label ?? spec.var}</div>
-      <div className="map">
-        {state.entries.length === 0 && <span className="muted">empty</span>}
+    <S.Block>
+      <S.Label>{spec.label ?? spec.var}</S.Label>
+      <S.MapBox>
+        {state.entries.length === 0 && <Muted>empty</Muted>}
         {state.entries.map(([k, v]) => (
-          <div
-            key={JSON.stringify(k)}
-            className={`chip ${changed.has(JSON.stringify(k)) ? "changed" : ""}`}
-          >
+          <S.MapEntry key={JSON.stringify(k)} $changed={changed.has(JSON.stringify(k))}>
             <b>{show(k)}</b>
             {v !== null && <span> → {show(v)}</span>}
-          </div>
+          </S.MapEntry>
         ))}
-      </div>
-    </div>
+      </S.MapBox>
+    </S.Block>
   );
 }
 
@@ -98,17 +85,17 @@ export function VarsView({
 }) {
   const changed = changedVars(prev, state);
   return (
-    <div className="viz-block">
-      {spec.label && <div className="viz-label">{spec.label}</div>}
-      <div className="vars">
+    <S.Block>
+      {spec.label && <S.Label>{spec.label}</S.Label>}
+      <S.Vars>
         {Object.entries(state.values).map(([k, v]) => (
-          <div key={k} className={`var ${changed.has(k) ? "changed" : ""}`}>
-            <span className="var-name">{k}</span>
-            <span className="var-value">{show(v)}</span>
-          </div>
+          <S.Var key={k} $changed={changed.has(k)}>
+            <S.VarName>{k}</S.VarName>
+            <S.VarValue>{show(v)}</S.VarValue>
+          </S.Var>
         ))}
-      </div>
-    </div>
+      </S.Vars>
+    </S.Block>
   );
 }
 
@@ -128,11 +115,12 @@ export function LinkedListView({
   const x = (i: number) => i * NODE_STEP;
   const pointers = Object.entries(state.pointers);
   const width = Math.max(1, state.nodes.length) * NODE_STEP;
+  const height = NODE_TOP + NODE_H + 46;
   return (
-    <div className="viz-block">
-      <div className="viz-label">{spec.label ?? spec.var}</div>
-      <div className="linked-list" style={{ width, height: NODE_TOP + NODE_H + 46 }}>
-        <svg className="links" width={width} height={NODE_TOP + NODE_H + 46}>
+    <S.Block>
+      <S.Label>{spec.label ?? spec.var}</S.Label>
+      <S.LinkedList $width={width} $height={height}>
+        <S.Links width={width} height={height}>
           <defs>
             <marker
               id="arrow"
@@ -152,17 +140,17 @@ export function LinkedListView({
             const midY = NODE_TOP + NODE_H / 2;
             if (kind === "none") {
               return (
-                <text key={n.id} x={from + 6} y={midY + 4} className="null-link">
+                <S.NullLink key={n.id} x={from + 6} y={midY + 4}>
                   ∅
-                </text>
+                </S.NullLink>
               );
             }
             const target = n.next === null ? 0 : (pos.get(n.next) ?? 0);
             if (kind === "forward") {
               return (
-                <path
+                <S.Link
                   key={n.id}
-                  className="link"
+                  $kind="forward"
                   d={`M ${from} ${midY} L ${x(target) - 2} ${midY}`}
                   markerEnd="url(#arrow)"
                 />
@@ -175,39 +163,34 @@ export function LinkedListView({
             const y0 = back ? NODE_TOP + NODE_H : NODE_TOP;
             const bend = back ? NODE_TOP + NODE_H + 34 : NODE_TOP - 26;
             return (
-              <path
+              <S.Link
                 key={n.id}
-                className={`link ${back ? "back" : "skip"}`}
+                $kind={back ? "back" : "skip"}
                 d={`M ${startX} ${y0} C ${startX} ${bend}, ${endX} ${bend}, ${endX} ${y0 + (back ? 2 : -2)}`}
                 markerEnd="url(#arrow)"
               />
             );
           })}
-        </svg>
+        </S.Links>
         {state.nodes.map((n, i) => (
-          <div
-            key={n.id}
-            className="list-node"
-            style={{ left: x(i), top: NODE_TOP, width: NODE_W, height: NODE_H }}
-          >
+          <S.ListNode key={n.id} $left={x(i)} $top={NODE_TOP} $width={NODE_W} $height={NODE_H}>
             {show(n.val)}
-          </div>
+          </S.ListNode>
         ))}
         {pointers.map(([name, id], k) => (
-          <div
+          <S.Pointer
             key={name}
-            className={`pointer pointer-${k % 3} ${id === null ? "pointer-null" : ""}`}
-            style={{
-              transform: `translateX(${id === null ? -NODE_STEP * 0.6 : x(pos.get(id) ?? 0)}px)`,
-              top: k * 16,
-              width: NODE_W,
-            }}
+            $k={k}
+            $faded={id === null}
+            $x={id === null ? -NODE_STEP * 0.6 : x(pos.get(id) ?? 0)}
+            $top={k * 16}
+            $width={NODE_W}
           >
             {name}
             {id === null ? " = ∅" : " ▼"}
-          </div>
+          </S.Pointer>
         ))}
-      </div>
-    </div>
+      </S.LinkedList>
+    </S.Block>
   );
 }

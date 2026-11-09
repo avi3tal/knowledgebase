@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { isPlainLang, langLabel } from "../codeblock";
 import type { TokLine } from "../highlight";
 import { useHighlighted } from "../highlight";
+import * as S from "./CodeBlock.style";
 
 export interface CodeSpec {
   code: string;
@@ -19,9 +20,9 @@ export function Tokens({ line, text }: { line?: TokLine; text: string }) {
   return (
     <>
       {line.map((t, i) => (
-        <span key={i} className="tok" style={t.style}>
+        <S.Tok key={i} $vars={t.style}>
           {t.content}
-        </span>
+        </S.Tok>
       ))}
     </>
   );
@@ -47,35 +48,46 @@ export function CopyButton({ text }: { text: string }) {
     timer.current = window.setTimeout(() => setCopied(false), 1500);
   }, [text]);
   return (
-    <button
+    <S.CopyBtn
       type="button"
-      className={`cb-copy ${copied ? "done" : ""}`}
+      $done={copied}
       onClick={copy}
       aria-label={copied ? "Copied" : "Copy code"}
     >
       {copied ? "Copied ✓" : "Copy"}
-    </button>
+    </S.CopyBtn>
   );
 }
 
 /** Highlighted body: one block-level span per line, optional gutter and highlighted lines. */
-export function CodeBody({ code, lang, highlight = [], lineNumbers = false }: CodeSpec) {
+export function CodeBody({
+  code,
+  lang,
+  highlight = [],
+  lineNumbers = false,
+  plain = false,
+}: CodeSpec & { plain?: boolean }) {
   const tokens = useHighlighted(code, lang);
   const lines = code.split("\n");
   const hl = new Set(highlight);
   return (
-    <div className="cb-body">
-      <pre className={`cb-pre ${lineNumbers ? "numbered" : ""}`} tabIndex={0}>
-        <code className="cb-code">
+    <S.Body>
+      <S.Pre $plain={plain} tabIndex={0}>
+        <S.Code>
           {lines.map((text, i) => (
-            <span key={i} className={`cb-line ${hl.has(i + 1) ? "hl" : ""}`}>
-              {lineNumbers && <span className="cb-ln">{i + 1}</span>}
+            <S.Line
+              key={i}
+              $hl={hl.has(i + 1)}
+              data-line={i + 1}
+              data-highlighted={hl.has(i + 1) || undefined}
+            >
+              {lineNumbers && <S.LineNo data-line-number={i + 1}>{i + 1}</S.LineNo>}
               <Tokens line={tokens?.[i]} text={text} />
-            </span>
+            </S.Line>
           ))}
-        </code>
-      </pre>
-    </div>
+        </S.Code>
+      </S.Pre>
+    </S.Body>
   );
 }
 
@@ -83,24 +95,24 @@ export function CodeBlock({ code, lang, title, highlight, lineNumbers }: CodeSpe
   const plain = isPlainLang(lang);
   if (plain) {
     return (
-      <figure className="cb cb-plain">
-        {title && <figcaption className="cb-cap">{title}</figcaption>}
-        <CodeBody code={code} lang={lang} highlight={highlight} lineNumbers={lineNumbers} />
-        <div className="cb-float">
+      <S.Figure $plain>
+        {title && <S.Caption>{title}</S.Caption>}
+        <CodeBody code={code} lang={lang} highlight={highlight} lineNumbers={lineNumbers} plain />
+        <S.Float>
           <CopyButton text={code} />
-        </div>
-      </figure>
+        </S.Float>
+      </S.Figure>
     );
   }
   return (
-    <figure className="cb">
-      <div className="cb-head">
-        <span className="cb-title">{title ?? langLabel(lang)}</span>
-        {title && <span className="cb-lang">{langLabel(lang)}</span>}
+    <S.Figure>
+      <S.Head>
+        <S.Title>{title ?? langLabel(lang)}</S.Title>
+        {title && <S.Lang>{langLabel(lang)}</S.Lang>}
         <CopyButton text={code} />
-      </div>
+      </S.Head>
       <CodeBody code={code} lang={lang} highlight={highlight} lineNumbers={lineNumbers} />
-    </figure>
+    </S.Figure>
   );
 }
 
@@ -140,24 +152,24 @@ export function CodeTabs({ items }: { items: CodeSpec[] }): ReactNode {
     window.dispatchEvent(new Event(TAB_EVENT));
   };
   return (
-    <figure className="cb">
-      <div className="cb-head">
-        <div className="cb-tabs" role="tablist">
+    <S.Figure>
+      <S.Head>
+        <S.Tabs role="tablist">
           {items.map((s, i) => (
-            <button
+            <S.Tab
               key={i}
               type="button"
               role="tab"
               aria-selected={s === active}
-              className={`cb-tab ${s === active ? "on" : ""}`}
+              $on={s === active}
               onClick={() => pick(i)}
             >
               {s.title ?? langLabel(s.lang)}
-            </button>
+            </S.Tab>
           ))}
-        </div>
+        </S.Tabs>
         <CopyButton text={active.code} />
-      </div>
+      </S.Head>
       <CodeBody
         key={items.indexOf(active)}
         code={active.code}
@@ -165,6 +177,6 @@ export function CodeTabs({ items }: { items: CodeSpec[] }): ReactNode {
         highlight={active.highlight}
         lineNumbers={active.lineNumbers}
       />
-    </figure>
+    </S.Figure>
   );
 }

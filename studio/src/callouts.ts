@@ -8,8 +8,12 @@
  *   > **Candidate:** What scale?
  *   > **Interviewer:** 100M DAU.
  *
- * Output is raw HTML wrappers around markdown (blank lines keep the body parsed as markdown;
- * Markdown.tsx renders raw HTML via rehype-raw — lesson content is trusted, authored in the repo).
+ * Output is raw custom elements around markdown (blank lines keep the body parsed as markdown;
+ * Markdown.tsx renders raw HTML via rehype-raw — lesson content is trusted, authored in the repo —
+ * and maps them to <Callout> / <DialogueLine>):
+ *
+ *   <kb-callout kind="tip" heading="Tip"> … </kb-callout>
+ *   <kb-line speaker="candidate" who="Candidate"> … </kb-line>
  */
 
 export const CALLOUTS: Record<string, { icon: string; title: string }> = {
@@ -25,7 +29,8 @@ export const CALLOUTS: Record<string, { icon: string; title: string }> = {
 };
 
 const START = /^>\s*\[!([A-Z]+)\]\s*(.*)$/;
-const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const escape = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 function dialogue(lines: string[]): string[] {
   const out: string[] = [];
@@ -36,13 +41,13 @@ function dialogue(lines: string[]): string[] {
       continue;
     }
     const who = m[1] ?? "";
-    const role = who.toLowerCase().replace(/[^a-z]+/g, "-");
+    const speaker = who.toLowerCase().replace(/[^a-z]+/g, "-");
     out.push(
-      `<div class="dlg-line dlg-${role}"><span class="dlg-who">${escape(who)}</span>`,
+      `<kb-line speaker="${speaker}" who="${escape(who)}">`,
       "",
       m[2] ?? "",
       "",
-      "</div>",
+      "</kb-line>",
     );
   }
   return out;
@@ -70,11 +75,11 @@ export function expandCallouts(md: string): string {
     const title = (m[2] ?? "").trim() || c.title;
     out.push(
       "",
-      `<div class="callout callout-${kind.toLowerCase()}"><div class="callout-title"><span aria-hidden="true">${c.icon}</span> ${escape(title)}</div>`,
+      `<kb-callout kind="${kind.toLowerCase()}" heading="${escape(title)}">`,
       "",
       ...(kind === "DIALOGUE" ? dialogue(body) : body),
       "",
-      "</div>",
+      "</kb-callout>",
       "",
     );
   }

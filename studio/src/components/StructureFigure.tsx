@@ -14,6 +14,7 @@ import type {
   ViewState,
 } from "../trace";
 import { viewId } from "../trace";
+import * as S from "./StructureFigure.style";
 import {
   CallStackView,
   GraphView,
@@ -62,12 +63,12 @@ export function StructureFigure({ f, step }: { f: StructureSpec; step: number })
   const prev = step > 0 ? f.frames[step - 1] : undefined;
   if (!frame) return null;
   return (
-    <div className="viz fig-views">
+    <S.Views>
       {f.views.map((spec) => {
         const id = viewId(spec);
         const state = frame.state?.[id];
         return state ? <View key={id} spec={spec} state={state} prev={prev?.state?.[id]} /> : null;
       })}
-    </div>
+    </S.Views>
   );
 }

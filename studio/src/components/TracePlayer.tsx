@@ -12,8 +12,10 @@ import type {
 } from "../trace";
 import { clampStep, viewId } from "../trace";
 import { useHighlighted } from "../highlight";
+import { Muted } from "../theme/primitives";
 import { Tokens } from "./CodeBlock";
 import { CallStackView, GridView, HeapView, IntervalsView, TreeView } from "./StructureViews";
+import * as S from "./TracePlayer.style";
 import { ArrayView, LinkedListView, MapView, VarsView } from "./TraceViews";
 
 const SPEEDS = [1500, 900, 450];
@@ -44,8 +46,7 @@ export function TracePlayer({ trace }: { trace: Trace }) {
   };
 
   return (
-    <section
-      className="trace"
+    <S.Trace
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "ArrowRight") go(step + 1);
@@ -56,24 +57,24 @@ export function TracePlayer({ trace }: { trace: Trace }) {
         }
       }}
     >
-      <h3>▶ {trace.title}</h3>
-      <div className="trace-input">
+      <S.Title>▶ {trace.title}</S.Title>
+      <S.Input>
         input:{" "}
         {Object.entries(trace.input)
           .map(([k, v]) => `${k} = ${JSON.stringify(v)}`)
           .join(", ")}
         {"  ·  "}result: <b>{JSON.stringify(trace.result)}</b>
-      </div>
-      <div className="trace-body">
-        <pre className="code">
+      </S.Input>
+      <S.Body>
+        <S.Code>
           {trace.code.map((line, i) => (
-            <div key={i} className={`code-line ${cur.line === i + 1 ? "active" : ""}`}>
-              <span className="ln">{i + 1}</span>
+            <S.CodeLine key={i} $active={cur.line === i + 1}>
+              <S.LineNo>{i + 1}</S.LineNo>
               <Tokens line={tokens?.[i]} text={line} />
-            </div>
+            </S.CodeLine>
           ))}
-        </pre>
-        <div className="viz">
+        </S.Code>
+        <S.Viz>
           {trace.view.map((spec) => {
             const id = viewId(spec);
             const state = cur.state[id];
@@ -111,30 +112,26 @@ export function TracePlayer({ trace }: { trace: Trace }) {
               />
             );
           })}
-          <div className={`note ${cur.note ? "" : "muted"}`}>{cur.note ?? "…"}</div>
-        </div>
-      </div>
-      <div className="controls">
-        <button onClick={() => go(0)} title="first">
+          <S.Note $empty={!cur.note}>{cur.note ?? "…"}</S.Note>
+        </S.Viz>
+      </S.Body>
+      <S.Controls>
+        <S.Btn onClick={() => go(0)} title="first">
           ⏮
-        </button>
-        <button onClick={() => go(step - 1)} title="back (←)">
+        </S.Btn>
+        <S.Btn onClick={() => go(step - 1)} title="back (←)">
           ◀
-        </button>
-        <button
-          className="primary"
-          onClick={() => setPlaying((p) => !p)}
-          title="play / pause (space)"
-        >
+        </S.Btn>
+        <S.Btn $primary onClick={() => setPlaying((p) => !p)} title="play / pause (space)">
           {playing ? "❚❚ pause" : "▶ play"}
-        </button>
-        <button onClick={() => go(step + 1)} title="next (→)">
+        </S.Btn>
+        <S.Btn onClick={() => go(step + 1)} title="next (→)">
           ▶
-        </button>
-        <button onClick={() => go(last)} title="last">
+        </S.Btn>
+        <S.Btn onClick={() => go(last)} title="last">
           ⏭
-        </button>
-        <input
+        </S.Btn>
+        <S.Range
           type="range"
           min={0}
           max={last}
@@ -142,15 +139,15 @@ export function TracePlayer({ trace }: { trace: Trace }) {
           onChange={(e) => go(Number(e.target.value))}
           aria-label="step"
         />
-        <span className="muted">
+        <Muted>
           step {step + 1}/{last + 1}
-        </span>
+        </Muted>
         <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} aria-label="speed">
           <option value={0}>slow</option>
           <option value={1}>normal</option>
           <option value={2}>fast</option>
         </select>
-      </div>
-    </section>
+      </S.Controls>
+    </S.Trace>
   );
 }
