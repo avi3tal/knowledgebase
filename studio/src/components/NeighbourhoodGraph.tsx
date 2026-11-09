@@ -1,5 +1,7 @@
 import type { Graph } from "../api";
 import { VIEW, nodeHref, radialLayout } from "../graph";
+import { Muted } from "../theme/primitives";
+import * as S from "./NeighbourhoodGraph.style";
 
 const LEGEND = [
   ["prereq", "learn first"],
@@ -15,57 +17,49 @@ export function NeighbourhoodGraph({ graph, subject }: { graph: Graph; subject: 
   const pos = new Map(placed.map((p) => [p.id, p]));
   const cut = (s: string) => (s.length > 26 ? s.slice(0, 24) + "…" : s);
   return (
-    <section className="neighbourhood">
-      <svg
+    <S.Root>
+      <S.Svg
         width="100%"
         viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
         preserveAspectRatio="xMidYMid meet"
-        style={{ maxWidth: VIEW.width, height: "auto" }}
       >
         {placed
           .filter((p) => p.role !== "center")
           .map((p) => (
-            <line
-              key={`l-${p.id}`}
-              className={`g-edge ${p.role}`}
-              x1={VIEW.cx}
-              y1={VIEW.cy}
-              x2={p.x}
-              y2={p.y}
-            />
+            <S.Edge key={`l-${p.id}`} $role={p.role} x1={VIEW.cx} y1={VIEW.cy} x2={p.x} y2={p.y} />
           ))}
         {placed.map((p) => {
           const href = nodeHref(subject, p);
           const body = (
-            <g className={`g-node ${p.role} ${p.type}`}>
+            <S.Node $role={p.role} $type={p.type}>
               <circle cx={p.x} cy={p.y} r={p.role === "center" ? 12 : 7} />
               <text x={p.x} y={p.y + (p.y < VIEW.cy ? -12 : 19)} textAnchor="middle">
                 {cut(p.label)}
               </text>
-            </g>
+            </S.Node>
           );
           return href ? (
-            <a
+            <S.NodeLink
               key={p.id}
               href={href}
               target={p.type === "ref" ? "_blank" : undefined}
               rel="noreferrer"
             >
               {body}
-            </a>
+            </S.NodeLink>
           ) : (
             <g key={p.id}>{body}</g>
           );
         })}
-      </svg>
-      <div className="legend">
+      </S.Svg>
+      <S.Legend>
         {LEGEND.map(([role, label]) => (
-          <span key={role} className={`g-legend ${role}`}>
+          <S.LegendItem key={role} $role={role}>
             ● {label}
-          </span>
+          </S.LegendItem>
         ))}
-        <span className="muted">{pos.size - 1} neighbours</span>
-      </div>
-    </section>
+        <Muted>{pos.size - 1} neighbours</Muted>
+      </S.Legend>
+    </S.Root>
   );
 }

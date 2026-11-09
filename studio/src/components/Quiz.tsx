@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { QuizItem, QuizResult } from "../api";
 import { api } from "../api";
+import { Muted } from "../theme/primitives";
+import * as S from "./Quiz.style";
 
 export function Quiz(props: {
   subject: string;
@@ -25,58 +27,56 @@ export function Quiz(props: {
   };
 
   return (
-    <section className="quiz">
+    <S.Root>
       <h3>
-        🧠 Which pattern? <span className="muted">— recognise it before you code it</span>
+        🧠 Which pattern? <Muted>— recognise it before you code it</Muted>
       </h3>
       {items.map((item, i) => {
         const r = results[item.id];
         return (
-          <div key={item.id} className="quiz-item">
+          <S.Item key={item.id}>
             <p>
               <b>{i + 1}.</b> {item.prompt}
             </p>
-            <div className="options">
+            <S.Options>
               {item.options.map((opt) => {
-                const cls = !r
-                  ? ""
+                const state = !r
+                  ? undefined
                   : opt === r.answer
                     ? "right"
                     : opt === r.choice
                       ? "wrong"
                       : "dim";
                 return (
-                  <button
+                  <S.Option
                     key={opt}
-                    className={`option ${cls}`}
+                    $state={state}
                     disabled={!!r}
                     onClick={() => void choose(item, opt)}
                   >
                     {names[opt] ?? opt}
-                  </button>
+                  </S.Option>
                 );
               })}
-            </div>
+            </S.Options>
             {r && (
-              <p className={r.correct ? "why right" : "why wrong"}>
+              <S.Why $right={r.correct}>
                 {r.correct ? "✓ " : "✗ "}
                 {r.why}
-              </p>
+              </S.Why>
             )}
-          </div>
+          </S.Item>
         );
       })}
       {answered.length > 0 && (
-        <p className="score">
+        <S.Score>
           Score: {score}/{answered.length}
           {answered.length === items.length && (
-            <button className="link" onClick={() => setResults({})}>
-              retake
-            </button>
+            <S.Retake onClick={() => setResults({})}>retake</S.Retake>
           )}
-        </p>
+        </S.Score>
       )}
-      {error && <p className="why wrong">{error}</p>}
-    </section>
+      {error && <S.Why $right={false}>{error}</S.Why>}
+    </S.Root>
   );
 }

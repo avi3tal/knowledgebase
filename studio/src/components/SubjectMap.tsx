@@ -14,8 +14,12 @@ import {
   topicPageHref,
 } from "../learn-bench";
 import { TopicLinks } from "./LearnBenchParts";
-import { Workbench } from "./Workbench";
+import { Muted, MutedP } from "../theme/primitives";
+import { t as tokens } from "../theme/theme";
+import * as L from "./LearnBenchParts.style";
 import { PageHeader } from "./PageHeader";
+import * as S from "./SubjectMap.style";
+import { Workbench, WorkbenchTab } from "./Workbench";
 
 type View = "graph" | "grid";
 
@@ -66,118 +70,113 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
   );
 
   const tab = (v: View, icon: string, label: string, colour: string) => (
-    <button
-      className={`wb-tab ${view === v ? "on" : ""}`}
-      style={{ ["--tab-c" as string]: colour }}
-      onClick={() => setView(v)}
-      aria-pressed={view === v}
-    >
+    <WorkbenchTab on={view === v} color={colour} onClick={() => setView(v)}>
       {icon} {label}
-    </button>
+    </WorkbenchTab>
   );
 
   const left = (
-    <div className="lb-legend">
-      <section className="rd-card lb-card">
+    <S.Legend>
+      <L.LearnCard>
         <h4>Groups</h4>
-        <ul className="lb-filters">
+        <S.Filters>
           {groups.map((g) => (
             <li key={g.group}>
-              <label style={{ ["--c" as string]: g.color }}>
+              <S.FilterLabel $color={g.color}>
                 <input
                   type="checkbox"
                   checked={!hidden.has(g.group)}
                   onChange={() => toggle(g.group)}
                 />
-                <span className="lb-swatch" />
-                <span className="lb-filter-name">{groupLabel(g.group)}</span>
-                <span className="muted small">{g.topics.length}</span>
-              </label>
+                <L.Swatch $color={g.color} />
+                <S.FilterName>{groupLabel(g.group)}</S.FilterName>
+                <Muted $small>{g.topics.length}</Muted>
+              </S.FilterLabel>
             </li>
           ))}
-        </ul>
-        <div className="lb-filter-actions">
-          <button className="rd-btn ghost" onClick={() => setHidden(new Set())}>
+        </S.Filters>
+        <S.FilterActions>
+          <L.RdButton $variant="ghost" onClick={() => setHidden(new Set())}>
             All
-          </button>
-          <button
-            className="rd-btn ghost"
+          </L.RdButton>
+          <L.RdButton
+            $variant="ghost"
             onClick={() => setHidden(new Set(groups.map((g) => g.group)))}
           >
             None
-          </button>
-        </div>
-        <label className="lb-check">
+          </L.RdButton>
+        </S.FilterActions>
+        <S.Check>
           <input
             type="checkbox"
             checked={lessonsOnly}
             onChange={(e) => setLessonsOnly(e.target.checked)}
           />{" "}
           only topics with a lesson
-        </label>
-      </section>
-      <section className="rd-card lb-card">
+        </S.Check>
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>Legend</h4>
-        <ul className="lb-key">
+        <S.Key>
           <li>
             <svg width="34" height="10" aria-hidden>
-              <line className="lb-edge prereq" x1="2" y1="5" x2="32" y2="5" />
+              <S.KeyEdge x1="2" y1="5" x2="32" y2="5" />
             </svg>
             learn first → unlocks
           </li>
           <li>
             <svg width="34" height="10" aria-hidden>
-              <line className="lb-edge related" x1="2" y1="5" x2="32" y2="5" />
+              <S.KeyEdge $related x1="2" y1="5" x2="32" y2="5" />
             </svg>
             related
           </li>
           <li>
             <svg width="34" height="18" aria-hidden>
-              <circle cx="9" cy="9" r="5" className="lb-key-dot" />
-              <circle cx="25" cy="9" r="8" className="lb-key-dot" />
+              <S.KeyDot cx="9" cy="9" r="5" />
+              <S.KeyDot cx="25" cy="9" r="8" />
             </svg>
             size = practice problems
           </li>
           <li>
             <svg width="34" height="18" aria-hidden>
-              <circle cx="17" cy="9" r="6" className="lb-key-dot lesson" />
+              <S.KeyDot $lesson cx="17" cy="9" r="6" />
             </svg>
             ringed = has a lesson
           </li>
-        </ul>
-      </section>
-    </div>
+        </S.Key>
+      </L.LearnCard>
+    </S.Legend>
   );
 
   const details = sel ? (
-    <div className="lb-right lb-detail" key={sel.id}>
-      <div className="lb-detail-head" style={{ ["--c" as string]: pos.get(sel.id)?.color }}>
-        <span className="lb-detail-icon">{topicIcon(sel)}</span>
+    <S.Detail key={sel.id}>
+      <S.DetailHead>
+        <S.DetailIcon $color={pos.get(sel.id)?.color}>{topicIcon(sel)}</S.DetailIcon>
         <div>
-          <span className="lb-group-pill">{groupLabel(groupOf(sel))}</span>
+          <S.GroupPill $color={pos.get(sel.id)?.color}>{groupLabel(groupOf(sel))}</S.GroupPill>
           <h3>{sel.name}</h3>
         </div>
-      </div>
+      </S.DetailHead>
       <p>{sel.usage}</p>
-      <div className="rd-practice-stats">
+      <L.Stats>
         <span>
           <b>{counts.get(sel.id)?.problems ?? 0}</b> problems
         </span>
         <span>
           <b>{counts.get(sel.id)?.refs ?? 0}</b> resources
         </span>
-      </div>
-      <div className="lb-detail-actions">
+      </L.Stats>
+      <S.DetailActions>
         {sel.has_lesson && (
-          <a className="rd-btn primary" href={lessonHref(subject.id, sel.id)}>
+          <L.RdButton as="a" $variant="primary" href={lessonHref(subject.id, sel.id)}>
             ▶ Open the lesson
-          </a>
+          </L.RdButton>
         )}
-        <a className="rd-btn ghost" href={topicPageHref(subject.id, sel.id)}>
+        <L.RdButton as="a" $variant="ghost" href={topicPageHref(subject.id, sel.id)}>
           🧭 Topic page
-        </a>
-      </div>
-      <section className="rd-card lb-card">
+        </L.RdButton>
+      </S.DetailActions>
+      <L.LearnCard>
         <h4>Learn first</h4>
         <TopicLinks
           subject={subject.id}
@@ -185,8 +184,8 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
           topics={subject.topics}
           names={names}
         />
-      </section>
-      <section className="rd-card lb-card">
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>Unlocks</h4>
         <TopicLinks
           subject={subject.id}
@@ -194,8 +193,8 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
           topics={subject.topics}
           names={names}
         />
-      </section>
-      <section className="rd-card lb-card">
+      </L.LearnCard>
+      <L.LearnCard>
         <h4>Related</h4>
         <TopicLinks
           subject={subject.id}
@@ -205,36 +204,36 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
           topics={subject.topics}
           names={names}
         />
-      </section>
-      <button className="rd-btn ghost" onClick={() => setSelected(null)}>
+      </L.LearnCard>
+      <L.RdButton $variant="ghost" onClick={() => setSelected(null)}>
         ✕ Clear selection
-      </button>
-    </div>
+      </L.RdButton>
+    </S.Detail>
   ) : (
-    <div className="lb-right">
-      <section className="rd-card lb-card">
+    <L.Stack>
+      <L.LearnCard>
         <h4>Select a topic</h4>
-        <p className="muted small">
+        <MutedP $small>
           Click a node to see what it's for, what to learn first and what it unlocks. Hover to
           highlight its links.
-        </p>
-      </section>
+        </MutedP>
+      </L.LearnCard>
       {groups.map((g) => (
-        <section key={g.group} className="rd-card lb-card" style={{ ["--c" as string]: g.color }}>
+        <L.LearnCard key={g.group} $color={g.color}>
           <h4>
-            <span className="lb-swatch" /> {groupLabel(g.group)}
+            <L.Swatch $color={g.color} /> {groupLabel(g.group)}
           </h4>
-          <div className="rd-practice-stats">
+          <L.Stats>
             <span>
               <b>{g.topics.length}</b> topics
             </span>
             <span>
               <b>{g.topics.filter((t) => t.has_lesson).length}</b> lessons
             </span>
-          </div>
-        </section>
+          </L.Stats>
+        </L.LearnCard>
       ))}
-    </div>
+    </L.Stack>
   );
 
   const nodeEl = (n: MapNode) => {
@@ -243,10 +242,12 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
     const flip = Math.cos(n.angle) < 0;
     const dim = focus !== null && n.id !== focus && !near?.has(n.id);
     return (
-      <g
+      <S.Node
         key={n.id}
-        className={`lb-node ${n.topic.has_lesson ? "lesson" : ""} ${n.id === selected ? "selected" : ""} ${dim ? "dim" : ""}`}
-        style={{ ["--c" as string]: n.color }}
+        $color={n.color}
+        $lesson={!!n.topic.has_lesson}
+        $selected={n.id === selected}
+        $dim={dim}
         transform={`translate(${n.x.toFixed(1)},${n.y.toFixed(1)})`}
         onClick={() => setSelected(n.id === selected ? null : n.id)}
         onMouseEnter={() => setHover(n.id)}
@@ -262,8 +263,8 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
         }}
       >
         <title>{`${n.topic.name} — ${n.problems} problems · ${n.refs} resources`}</title>
-        <circle r={r + 6} className="lb-node-halo" />
-        <circle r={r} className="lb-node-dot" />
+        <S.Halo r={r + 6} $color={n.color} />
+        <S.Dot r={r} $color={n.color} $lesson={!!n.topic.has_lesson} />
         <text
           transform={`rotate(${flip ? deg + 180 : deg})`}
           x={flip ? -(r + 8) : r + 8}
@@ -272,7 +273,7 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
         >
           {mapLabel(n.topic.name)}
         </text>
-      </g>
+      </S.Node>
     );
   };
 
@@ -283,12 +284,11 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
   };
 
   const graphView = (
-    <div className="lb-map" onClick={(e) => e.target === e.currentTarget && setSelected(null)}>
+    <S.MapBox onClick={(e) => e.target === e.currentTarget && setSelected(null)}>
       {layout.nodes.length === 0 ? (
-        <p className="muted lb-map-empty">No topic matches the filters.</p>
+        <S.MapEmpty>No topic matches the filters.</S.MapEmpty>
       ) : (
-        <svg
-          className="lb-map-svg"
+        <S.MapSvg
           viewBox={`0 0 ${layout.size} ${layout.size}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
@@ -304,89 +304,80 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
               markerHeight="7"
               orient="auto-start-reverse"
             >
-              <path d="M0,0 L10,5 L0,10 z" className="lb-arrow" />
+              <S.Arrow d="M0,0 L10,5 L0,10 z" />
             </marker>
           </defs>
-          <circle
-            cx={c}
-            cy={c}
-            r={layout.radius}
-            className="lb-ring"
-            onClick={() => setSelected(null)}
-          />
+          <S.RingCircle cx={c} cy={c} r={layout.radius} onClick={() => setSelected(null)} />
           {layout.arcs.map((a) => (
-            <path
-              key={a.group}
-              d={arc(a.a0, a.a1, layout.radius - 22)}
-              className="lb-arc"
-              style={{ ["--c" as string]: a.color }}
-            />
+            <S.Arc key={a.group} d={arc(a.a0, a.a1, layout.radius - 22)} $color={a.color} />
           ))}
-          <g className="lb-edges">
+          <g>
             {edges.map((e) => {
               const a = pos.get(e.from)!;
               const b = pos.get(e.to)!;
               const on = focus !== null && (e.from === focus || e.to === focus);
               return (
-                <path
+                <S.Edge
                   key={`${e.type}:${e.from}:${e.to}`}
                   d={edgePath(a, b, c)}
-                  className={`lb-edge ${e.type} ${on ? "on" : ""} ${focus && !on ? "dim" : ""}`}
-                  style={{ ["--c" as string]: a.color }}
+                  $color={a.color}
+                  $related={e.type === "related"}
+                  $on={on}
+                  $dim={!!focus && !on}
                   markerEnd={e.type === "prereq" ? "url(#lb-arrow)" : undefined}
                 />
               );
             })}
           </g>
-          <g className="lb-nodes">{layout.nodes.map(nodeEl)}</g>
-        </svg>
+          <g>{layout.nodes.map(nodeEl)}</g>
+        </S.MapSvg>
       )}
-    </div>
+    </S.MapBox>
   );
 
   const gridView = (
-    <div className="lb-center">
+    <L.LbCenter>
       {groups
         .filter((g) => !hidden.has(g.group))
         .map((g) => {
           const ts = g.topics.filter((t) => !lessonsOnly || t.has_lesson);
           if (ts.length === 0) return null;
           return (
-            <section key={g.group} className="group" style={{ ["--c" as string]: g.color }}>
-              <h2 className="group-title">
-                <span className="swatch" /> {groupLabel(g.group)}
-                <span className="muted small"> {ts.length}</span>
-              </h2>
-              <div className="grid">
+            <section key={g.group}>
+              <L.GroupTitle>
+                <L.Dot $color={g.color} /> {groupLabel(g.group)}
+                <Muted $small> {ts.length}</Muted>
+              </L.GroupTitle>
+              <L.Grid>
                 {ts.map((t) => (
-                  <a
+                  <L.TopicTile
                     key={t.id}
-                    className={`tile topic-tile ${t.state === "planned" ? "planned" : ""}`}
+                    $planned={t.state === "planned"}
                     href={t.state === "planned" ? undefined : topicPageHref(subject.id, t.id)}
                     aria-disabled={t.state === "planned" || undefined}
                   >
                     <b>
                       {topicIcon(t)} {t.name}
                     </b>
-                    <span className="muted small">
+                    <Muted $small>
                       {t.has_lesson ? "● lesson · " : ""}
                       {counts.get(t.id)?.problems ?? 0} problems · {counts.get(t.id)?.refs ?? 0}{" "}
                       resources
-                    </span>
-                    <span className="small">{t.usage}</span>
-                  </a>
+                    </Muted>
+                    <L.Small>{t.usage}</L.Small>
+                  </L.TopicTile>
                 ))}
-              </div>
+              </L.Grid>
             </section>
           );
         })}
-    </div>
+    </L.LbCenter>
   );
 
   const nTopics = graph.nodes.filter((n) => n.type === "topic").length;
   const prereqs = allEdges.filter((e) => e.type === "prereq").length;
   const footer = (
-    <div className="lb-footer">
+    <L.Footer>
       <span>
         <b>{graph.nodes.length}</b> nodes ({nTopics} topics ·{" "}
         {graph.nodes.filter((n) => n.type === "problem").length} problems ·{" "}
@@ -396,11 +387,11 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
         <b>{graph.edges.length}</b> edges ({prereqs} prereq · {allEdges.length - prereqs} related)
       </span>
       {view === "graph" && (
-        <span className="muted">
+        <Muted>
           showing {layout.nodes.length} topics · {edges.length} links
-        </span>
+        </Muted>
       )}
-    </div>
+    </L.Footer>
   );
 
   return (
@@ -409,8 +400,8 @@ export function SubjectMap({ subject, graph }: { subject: Subject; graph: Graph 
       header={header}
       tabs={
         <>
-          {tab("graph", "🕸️", "Graph", "var(--rd-pattern)")}
-          {tab("grid", "▦", "Grid", "var(--accent)")}
+          {tab("graph", "🕸️", "Graph", tokens.pattern)}
+          {tab("grid", "▦", "Grid", tokens.accent)}
         </>
       }
       left={{ title: "Legend & filters", icon: "🎛️", content: left, width: 260 }}

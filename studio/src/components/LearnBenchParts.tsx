@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import type { Topic } from "../api";
 import { groupLabel, groupOf, groupTopics, topicIcon } from "../catalog";
 import { bestHref } from "../learn-bench";
-import { PageHeader } from "./PageHeader";
+import { Loader, MutedP } from "../theme/primitives";
+import { MetaGroup, PageHeader } from "./PageHeader";
+import * as S from "./LearnBenchParts.style";
 
-/** Building blocks shared by the Learn pages on the Workbench (styles in learn-bench.css). */
+/** Building blocks shared by the Learn pages on the Workbench (styles in LearnBenchParts.style.ts). */
 
 export { PrevNextFooter, usePrevNextKeys } from "./PageHeader";
 
@@ -29,7 +31,7 @@ export function TopicHeader({
       accent={color}
       icon={topic ? topicIcon(topic) : "📘"}
       title={topic?.name ?? fallbackTitle}
-      meta={[topic && <span className="ph-group">{groupLabel(groupOf(topic))}</span>, kicker]}
+      meta={[topic && <MetaGroup>{groupLabel(groupOf(topic))}</MetaGroup>, kicker]}
       sub={topic?.usage}
       actions={action}
     />
@@ -48,33 +50,32 @@ export function TopicLinks({
   topics: Topic[];
   names: Record<string, string>;
 }) {
-  if (ids.length === 0) return <p className="muted small">None.</p>;
+  if (ids.length === 0) return <MutedP $small>None.</MutedP>;
   const byId = new Map(topics.map((t) => [t.id, t]));
   const colour = new Map(
     groupTopics(topics).flatMap((g) => g.topics.map((t) => [t.id, g.color] as const)),
   );
   return (
-    <div className="chips lb-links">
+    <S.Links>
       {ids.map((id) => {
         const t = byId.get(id);
         return (
-          <a
+          <S.Link
             key={id}
-            className={`lb-link ${t?.has_lesson ? "lesson" : ""}`}
             href={t ? bestHref(subject, t) : `#/topic/${subject}/${id}`}
-            style={colour.has(id) ? { ["--c" as string]: colour.get(id) } : undefined}
+            $color={colour.get(id)}
             title={t?.has_lesson ? "Open the lesson" : "Open the topic page"}
           >
             {t ? topicIcon(t) : "•"} {t?.name ?? names[id] ?? id}
-            {t?.has_lesson && <span className="lb-link-tag">lesson</span>}
-          </a>
+            {t?.has_lesson && <S.LinkTag $color={colour.get(id)}>lesson</S.LinkTag>}
+          </S.Link>
         );
       })}
-    </div>
+    </S.Links>
   );
 }
 
 /** Placeholder for a left pane while the subject list is still loading. */
 export function PaneLoading() {
-  return <div className="loader small-loader" aria-label="loading" />;
+  return <Loader $small aria-label="loading" />;
 }
