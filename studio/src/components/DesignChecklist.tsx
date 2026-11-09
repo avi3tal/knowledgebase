@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import type { DesignCheck, DesignStage, TipLevel } from "../api";
 import { api } from "../api";
 import { STAGE_INFO, newlyPassed, nextTipLevel, stagesFirst, stageLabel } from "../design";
+import { Grow, Muted } from "../theme/primitives";
 import { ConfirmBar } from "./ConfirmDialog";
+import * as D from "./DesignShared.style";
+import * as S from "./DesignChecklist.style";
 import { Ring } from "./Ring";
 
 export interface TipState {
@@ -74,52 +77,53 @@ export function DesignChecklist({
   const pct = check.total ? Math.round((100 * check.passed) / check.total) : 0;
   const order = current ? stagesFirst(stages, current) : stages;
   return (
-    <div className="checklist">
-      <div className="cl-head">
-        <Ring solved={check.passed} total={check.total} size={64} />
-        <div className="grow">
+    <S.Root>
+      <S.Head>
+        <Ring solved={check.passed} total={check.total} size={64} labelSize={13} />
+        <Grow as="div">
           <b>Rubric</b>
-          <div className="muted small">
+          <Muted $small as="div">
             {check.passed}/{check.total} checks · {check.final_smells.length} final smell
             {check.final_smells.length === 1 ? "" : "s"}
-          </div>
-          <div className="cl-bar">
-            <span style={{ width: `${pct}%` }} />
-          </div>
-        </div>
-      </div>
-      {error && <div className="inline-error">⚠ {error}</div>}
+          </Muted>
+          <S.Bar>
+            <S.BarFill $pct={pct} />
+          </S.Bar>
+        </Grow>
+      </S.Head>
+      {error && <D.ErrorLine>⚠ {error}</D.ErrorLine>}
       {order.map((st) => {
         const items = check.checks.filter((c) => c.stage === st);
         if (items.length === 0) return null;
         const s = check.stages[st];
         return (
-          <section key={st} className={`cl-group ${st === current ? "current" : ""}`}>
-            <button className="cl-stage" onClick={() => onJump(st)}>
+          <S.Group key={st} $current={st === current}>
+            <S.Stage onClick={() => onJump(st)}>
               {STAGE_INFO[st].icon} {stageLabel(st, stages)}
-              <span className={`cl-count ${s && s.passed === s.total ? "ok" : ""}`}>
+              <S.Count $ok={Boolean(s && s.passed === s.total)}>
                 {s?.passed ?? 0}/{s?.total ?? items.length}
-              </span>
-            </button>
+              </S.Count>
+            </S.Stage>
             <ul>
               {items.map((c) => {
                 const tip = tips[c.id];
                 const next = nextTipLevel(tip?.level);
                 return (
-                  <li
-                    key={c.id}
-                    className={`cl-item ${c.passed ? "pass" : "fail"} ${flash.has(c.id) ? "just-passed" : ""}`}
-                  >
-                    <span className="cl-mark" aria-label={c.passed ? "passed" : "not yet"}>
+                  <S.Item key={c.id} $flash={flash.has(c.id)}>
+                    <S.Mark $pass={c.passed} aria-label={c.passed ? "passed" : "not yet"}>
                       {c.passed ? "✓" : "✗"}
-                    </span>
-                    <div className="grow">
+                    </S.Mark>
+                    <Grow as="div">
                       <div>{c.label}</div>
-                      {c.detail && <div className="muted small">{c.detail}</div>}
+                      {c.detail && (
+                        <Muted $small as="div">
+                          {c.detail}
+                        </Muted>
+                      )}
                       {tip && (
-                        <div className={`tip-text lvl-${tip.level}`}>
+                        <S.TipText $level={tip.level}>
                           <b>{LEVEL_LABEL[tip.level]}:</b> {tip.text}
-                        </div>
+                        </S.TipText>
                       )}
                       {!c.passed &&
                         next &&
@@ -134,52 +138,57 @@ export function DesignChecklist({
                             onNo={() => setConfirmShow(null)}
                           />
                         ) : (
-                          <button
-                            className="tip-btn"
+                          <S.TipButton
                             disabled={asking === c.id}
                             onClick={() =>
                               next === "show" ? setConfirmShow(c.id) : ask(c.id, next)
                             }
                           >
                             💡 {tip ? `stronger tip (${LEVEL_LABEL[next]})` : "tip"}
-                          </button>
+                          </S.TipButton>
                         ))}
-                    </div>
-                  </li>
+                    </Grow>
+                  </S.Item>
                 );
               })}
             </ul>
-          </section>
+          </S.Group>
         );
       })}
       {showFinalSmells && check.final_smells.length > 0 && (
-        <section className="cl-group">
-          <div className="cl-stage static">👃 Final-version smells</div>
+        <S.Group>
+          <S.Stage as="div" $static>
+            👃 Final-version smells
+          </S.Stage>
           <ul>
             {check.final_smells.map((s) => (
-              <li key={`${s.rule}:${s.nodes.join(",")}`} className="cl-item fail">
-                <span className="cl-mark">!</span>
-                <div className="grow">
+              <S.Item key={`${s.rule}:${s.nodes.join(",")}`}>
+                <S.Mark $pass={false}>!</S.Mark>
+                <Grow as="div">
                   <code>{s.rule}</code> {s.message}
-                  {s.nodes.length > 0 && <div className="muted small">at {s.nodes.join(", ")}</div>}
-                </div>
-              </li>
+                  {s.nodes.length > 0 && (
+                    <Muted $small as="div">
+                      at {s.nodes.join(", ")}
+                    </Muted>
+                  )}
+                </Grow>
+              </S.Item>
             ))}
           </ul>
-        </section>
+        </S.Group>
       )}
       {check.versions_missing_why.length > 0 && (
-        <div className="callout small">
+        <D.Callout $small>
           Versions without a “why”: {check.versions_missing_why.map((v) => `v${v}`).join(", ")}
-        </div>
+        </D.Callout>
       )}
       {check.errors.length > 0 && (
-        <div className="callout small">
+        <D.Callout $small>
           {check.errors.map((e) => (
             <div key={e}>⚠ {e}</div>
           ))}
-        </div>
+        </D.Callout>
       )}
-    </div>
+    </S.Root>
   );
 }

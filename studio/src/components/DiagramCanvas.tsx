@@ -32,6 +32,7 @@ import {
   withPositions,
   zoomAt,
 } from "../design";
+import * as S from "./DiagramCanvas.style";
 
 type View = { x: number; y: number; k: number };
 export type Selection = { type: "node" | "edge"; id: string } | null;
@@ -55,34 +56,34 @@ export interface CanvasHandle {
 const NONE: Highlight = { nodes: new Set(), edges: new Set() };
 
 /** The outline of a node: card, cylinder (stores), capsule (messaging) or pill (people). */
-function Outline({ kind, className }: { kind: string; className: string }) {
+function Outline({ kind, tint = false }: { kind: string; tint?: boolean }) {
   const shape = kindShape(kind);
+  const Shape = tint ? S.CardTint : S.Card;
   if (shape === "store") {
     const ry = 7;
     return (
-      <path
-        className={className}
+      <Shape
+        as="path"
         d={`M0,${ry} A${NODE_W / 2},${ry} 0 0 1 ${NODE_W},${ry} L${NODE_W},${NODE_H - ry} A${NODE_W / 2},${ry} 0 0 1 0,${NODE_H - ry} Z`}
       />
     );
   }
   const rx = shape === "pipe" ? NODE_H / 2 : shape === "person" ? 22 : 12;
-  return <rect className={className} width={NODE_W} height={NODE_H} rx={rx} />;
+  return <Shape width={NODE_W} height={NODE_H} rx={rx} />;
 }
 
 function Decor({ kind }: { kind: string }) {
   const shape = kindShape(kind);
-  if (shape === "store")
-    return <ellipse className="dg-rim" cx={NODE_W / 2} cy={7} rx={NODE_W / 2} ry={7} />;
+  if (shape === "store") return <S.Rim cx={NODE_W / 2} cy={7} rx={NODE_W / 2} ry={7} />;
   if (shape === "pipe")
     return (
-      <g className="dg-slots">
+      <S.Slots>
         {[30, 22, 14].map((dx) => (
           <line key={dx} x1={NODE_W - dx} x2={NODE_W - dx} y1={16} y2={NODE_H - 16} />
         ))}
-      </g>
+      </S.Slots>
     );
-  return <rect className="dg-stripe" x={0} y={10} width={4} height={NODE_H - 20} rx={2} />;
+  return <S.Stripe x={0} y={10} width={4} height={NODE_H - 20} rx={2} />;
 }
 
 /**
@@ -375,14 +376,20 @@ export function DiagramCanvas({
   const isShapeDrag = (e: React.DragEvent) => editable && e.dataTransfer.types.includes(SHAPE_MIME);
   const pending = connectMode ? connectFrom : null;
   const fill = height === "fill";
+  // Lesson figures dim everything but the step that is playing.
+  const stepping =
+    presentation &&
+    highlight.nodes.size + highlight.edges.size + failed.nodes.size + failed.edges.size > 0;
 
   return (
-    <div className={`dg ${editable ? "editable" : "readonly"} ${fill ? "fill" : ""}`}>
-      <div
+    <S.Root $fill={fill}>
+      <S.Stage
         ref={wrapRef}
-        className={`dg-stage ${gesture?.kind ?? ""} ${connectMode ? "connecting" : ""} ${dropping ? "dropping" : ""}`}
+        $fill={fill}
+        $height={fill ? 0 : height}
+        $pan={gesture?.kind === "pan"}
+        $dropping={dropping}
         tabIndex={0}
-        style={fill ? undefined : { height }}
         onKeyDown={onKey}
         aria-label="diagram canvas"
         onDragOver={(e) => {
@@ -402,9 +409,8 @@ export function DiagramCanvas({
           drop(kind, toWorld(e.clientX, e.clientY));
         }}
       >
-        <svg
+        <S.Svg
           ref={svgRef}
-          className="dg-svg"
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={() => setGesture(null)}
@@ -425,7 +431,7 @@ export function DiagramCanvas({
               patternUnits="userSpaceOnUse"
               patternTransform={`translate(${view.x} ${view.y}) scale(${view.k})`}
             >
-              <circle cx={1} cy={1} r={1} className="dg-grid-dot" />
+              <S.GridDot cx={1} cy={1} r={1} />
             </pattern>
             <pattern
               id={`grid-major-${uid}`}
@@ -434,7 +440,7 @@ export function DiagramCanvas({
               patternUnits="userSpaceOnUse"
               patternTransform={`translate(${view.x} ${view.y}) scale(${view.k})`}
             >
-              <path d="M100 0 L0 0 0 100" className="dg-grid-line" />
+              <S.GridLine d="M100 0 L0 0 0 100" />
             </pattern>
             {(["plain", "new", "sel"] as const).map((m) => (
               <marker
@@ -447,24 +453,17 @@ export function DiagramCanvas({
                 markerHeight={7}
                 orient="auto-start-reverse"
               >
-                <path d="M0,0 L10,5 L0,10 z" className={`dg-arrow ${m}`} />
+                <S.Arrow d="M0,0 L10,5 L0,10 z" $variant={m} />
               </marker>
             ))}
           </defs>
-          <rect
-            className="dg-bg"
+          <S.Bg
             width="100%"
             height="100%"
             fill={`url(#grid-${uid})`}
             onPointerDown={onBackgroundDown}
           />
-          <rect
-            className="dg-bg-major"
-            width="100%"
-            height="100%"
-            fill={`url(#grid-major-${uid})`}
-            pointerEvents="none"
-          />
+          <rect width="100%" height="100%" fill={`url(#grid-major-${uid})`} pointerEvents="none" />
           <g transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
             {diagram.edges.map((ed) => {
               const a = byId.get(ed.from);
@@ -479,47 +478,47 @@ export function DiagramCanvas({
               const marker = isSel ? "sel" : isNew ? "new" : "plain";
               const label = ed.label ? truncate(ed.label, 28) : "";
               return (
-                <g
+                <S.Edge
                   key={key}
-                  className={`dg-edge ${isNew ? "is-new" : ""} ${isFailed ? "is-failed" : ""} ${isSel ? "selected" : ""}`}
-                  style={{ ["--kc" as string]: kindStyle(a.kind).color }}
+                  $kc={kindStyle(a.kind).color}
+                  $new={isNew}
+                  $failed={isFailed}
+                  $selected={isSel}
+                  $dim={stepping && !isNew && !isFailed}
+                  $presentation={presentation}
                   onPointerDown={(e) => {
                     e.stopPropagation();
                     setSel({ type: "edge", id: key });
                     wrapRef.current?.focus({ preventScroll: true });
                   }}
                 >
-                  <path d={d} className="dg-edge-hit" />
-                  <path d={d} className="dg-edge-line" markerEnd={`url(#arrow-${marker}-${uid})`} />
-                  <path d={d} className="dg-edge-flow" />
+                  <S.EdgeHit d={d} />
+                  <S.EdgeLine d={d} markerEnd={`url(#arrow-${marker}-${uid})`} />
+                  <S.EdgeFlow d={d} />
                   {presentation && isNew && !isFailed && (
-                    <g className="dg-packets" aria-hidden="true">
+                    <S.Packets aria-hidden="true">
                       {[0, 0.55].map((begin) => (
-                        <circle key={begin} className="dg-packet" r={5}>
+                        <S.Packet key={begin} r={5}>
                           <animateMotion
                             dur="1.1s"
                             begin={`${begin}s`}
                             repeatCount="indefinite"
                             path={d}
                           />
-                        </circle>
+                        </S.Packet>
                       ))}
-                    </g>
+                    </S.Packets>
                   )}
                   {presentation && isFailed && (
-                    <g
-                      className="dg-fail-mark"
-                      transform={`translate(${mid.x} ${mid.y})`}
-                      aria-hidden="true"
-                    >
+                    <S.FailMark transform={`translate(${mid.x} ${mid.y})`} aria-hidden="true">
                       <circle r={11} />
                       <text textAnchor="middle" dominantBaseline="central">
                         ✕
                       </text>
-                    </g>
+                    </S.FailMark>
                   )}
                   {label && (
-                    <g className="dg-edge-label" transform={`translate(${mid.x} ${mid.y})`}>
+                    <S.EdgeLabel transform={`translate(${mid.x} ${mid.y})`}>
                       <rect
                         x={-(label.length * 3.4 + 8)}
                         y={-10}
@@ -530,10 +529,10 @@ export function DiagramCanvas({
                       <text textAnchor="middle" dominantBaseline="central">
                         {label}
                       </text>
-                    </g>
+                    </S.EdgeLabel>
                   )}
                   {ed.label && <title>{ed.label}</title>}
-                </g>
+                </S.Edge>
               );
             })}
             {gesture?.kind === "connect" &&
@@ -542,8 +541,7 @@ export function DiagramCanvas({
                 if (!a) return null;
                 const c = center(a);
                 return (
-                  <path
-                    className="dg-temp-edge"
+                  <S.TempEdge
                     d={`M${c.x},${c.y} L${gesture.p.x},${gesture.p.y}`}
                     markerEnd={`url(#arrow-sel-${uid})`}
                   />
@@ -552,103 +550,89 @@ export function DiagramCanvas({
             {shown.map((n, i) => {
               const s = kindStyle(n.kind);
               const isNew = highlight.nodes.has(n.id);
+              const isFailed = failed.nodes.has(n.id);
               const smell = smells?.get(n.id);
               const isSel = sel?.type === "node" && sel.id === n.id;
               return (
-                <g
+                <S.Node
                   key={n.id}
-                  className={[
-                    "dg-node",
-                    `shape-${kindShape(n.kind)}`,
-                    isSel ? "selected" : "",
-                    isNew ? "is-new" : "",
-                    failed.nodes.has(n.id) ? "is-failed" : "",
-                    smell ? "smelly" : "",
-                    pending === n.id ? "pending" : "",
-                    gesture?.kind === "drag" && gesture.id === n.id ? "dragging" : "",
-                  ].join(" ")}
+                  $kc={s.color}
+                  $editable={editable}
+                  $selected={isSel}
+                  $new={isNew}
+                  $failed={isFailed}
+                  $pending={pending === n.id}
+                  $dragging={gesture?.kind === "drag" && gesture.id === n.id}
+                  $dim={stepping && !isNew && !isFailed}
                   transform={`translate(${n.x} ${n.y})`}
-                  style={{ ["--kc" as string]: s.color, ["--i" as string]: i }}
                   onPointerDown={(e) => onNodeDown(e, n.id)}
                 >
-                  <g className="dg-node-body">
+                  <S.NodeBody $i={i}>
                     {smell && (
-                      <rect
-                        className="dg-smell-ring"
-                        x={-6}
-                        y={-6}
-                        width={NODE_W + 12}
-                        height={NODE_H + 12}
-                        rx={16}
-                      />
+                      <S.SmellRing x={-6} y={-6} width={NODE_W + 12} height={NODE_H + 12} rx={16} />
                     )}
-                    <Outline kind={n.kind} className="dg-card" />
-                    <Outline kind={n.kind} className="dg-card-tint" />
+                    <Outline kind={n.kind} />
+                    <Outline kind={n.kind} tint />
                     <Decor kind={n.kind} />
-                    <circle className="dg-icon-bg" cx={25} cy={NODE_H / 2 + 2} r={15} />
-                    <text className="dg-icon" x={25} y={NODE_H / 2 + 3}>
+                    <S.IconBg cx={25} cy={NODE_H / 2 + 2} r={15} />
+                    <S.Icon x={25} y={NODE_H / 2 + 3}>
                       {s.icon}
-                    </text>
-                    <text className="dg-label" x={46} y={26}>
+                    </S.Icon>
+                    <S.Label $presentation={presentation} x={46} y={26}>
                       {truncate(n.label || n.id, presentation ? 18 : 13)}
-                    </text>
-                    <text className="dg-kind" x={46} y={41}>
+                    </S.Label>
+                    <S.Kind x={46} y={41}>
                       {presentation
                         ? truncate(n.sub ?? s.label, 20)
                         : truncate(`${s.label} · ${n.id}`, 17)}
-                    </text>
-                    {presentation && failed.nodes.has(n.id) && (
-                      <g
-                        className="dg-fail-mark"
-                        transform={`translate(${NODE_W - 4} 4)`}
-                        aria-hidden="true"
-                      >
+                    </S.Kind>
+                    {presentation && isFailed && (
+                      <S.FailMark transform={`translate(${NODE_W - 4} 4)`} aria-hidden="true">
                         <circle r={11} />
                         <text textAnchor="middle" dominantBaseline="central">
                           ✕
                         </text>
-                      </g>
+                      </S.FailMark>
                     )}
                     {isNew && !presentation && (
-                      <g className="dg-new-badge" transform={`translate(${NODE_W - 30} -9)`}>
+                      <S.NewBadge transform={`translate(${NODE_W - 30} -9)`}>
                         <rect width={38} height={18} rx={9} />
                         <text x={19} y={9}>
                           NEW
                         </text>
-                      </g>
+                      </S.NewBadge>
                     )}
                     {smell && (
-                      <g className="dg-smell-badge" transform="translate(-10 -10)">
+                      <S.SmellBadge transform="translate(-10 -10)">
                         <circle cx={10} cy={10} r={10} />
                         <text x={10} y={10}>
                           !
                         </text>
-                      </g>
+                      </S.SmellBadge>
                     )}
                     {editable && (
-                      <circle
-                        className="dg-handle"
+                      <S.Handle
                         cx={NODE_W}
                         cy={NODE_H / 2}
                         r={7}
                         onPointerDown={(e) => onHandleDown(e, n.id)}
                       >
                         <title>Drag to another shape to connect</title>
-                      </circle>
+                      </S.Handle>
                     )}
-                  </g>
+                  </S.NodeBody>
                   <title>
                     {`${n.label || n.id} (${s.label}, id ${n.id})${smell ? `\n⚠ ${smell.join("\n⚠ ")}` : ""}`}
                   </title>
-                </g>
+                </S.Node>
               );
             })}
           </g>
-        </svg>
-        <div className="dg-tools">
+        </S.Svg>
+        <S.Tools>
           {editable && (
-            <button
-              className={connectMode ? "on" : ""}
+            <S.ToolButton
+              $on={connectMode}
               onClick={() => {
                 setConnectMode((m) => !m);
                 setConnectFrom(null);
@@ -656,48 +640,48 @@ export function DiagramCanvas({
               title="Connect mode: click a source, then a target"
             >
               🔗 Connect
-            </button>
+            </S.ToolButton>
           )}
           {editable && (
-            <button
+            <S.ToolButton
               onClick={deleteSelection}
               disabled={!sel}
               title="Delete the selection (Delete key)"
               aria-label="delete selection"
             >
               🗑
-            </button>
+            </S.ToolButton>
           )}
-          <button onClick={() => zoomBy(1 / 1.2)} title="Zoom out" aria-label="zoom out">
+          <S.ToolButton onClick={() => zoomBy(1 / 1.2)} title="Zoom out" aria-label="zoom out">
             −
-          </button>
-          <span className="dg-zoom">{Math.round(view.k * 100)}%</span>
-          <button onClick={() => zoomBy(1.2)} title="Zoom in" aria-label="zoom in">
+          </S.ToolButton>
+          <S.Zoom>{Math.round(view.k * 100)}%</S.Zoom>
+          <S.ToolButton onClick={() => zoomBy(1.2)} title="Zoom in" aria-label="zoom in">
             +
-          </button>
-          <button onClick={() => void fit()} title="Fit to screen" aria-label="fit">
+          </S.ToolButton>
+          <S.ToolButton onClick={() => void fit()} title="Fit to screen" aria-label="fit">
             ⤢
-          </button>
-        </div>
+          </S.ToolButton>
+        </S.Tools>
         {editable && diagram.nodes.length <= 1 && (
-          <div className="dg-empty-hint">
+          <S.EmptyHint>
             Drag shapes from the stencil on the left onto the grid (or click one), then drag from a
             shape’s ● handle to another shape to connect them.
-          </div>
+          </S.EmptyHint>
         )}
-        {dropping && <div className="dg-drop-hint">Drop to add</div>}
+        {dropping && <S.DropHint>Drop to add</S.DropHint>}
         {connectMode && (
-          <div className="dg-mode-hint">
+          <S.ModeHint>
             {connectFrom ? `From ${connectFrom}: now click the target` : "Click the source shape"}
-          </div>
+          </S.ModeHint>
         )}
         {editable && !connectMode && diagram.nodes.length > 1 && (
-          <div className="dg-help muted small">
+          <S.Help>
             drag background to pan · ⌘/Ctrl + wheel zooms · Delete removes · arrows nudge ·
             double-click renames
-          </div>
+          </S.Help>
         )}
-      </div>
-    </div>
+      </S.Stage>
+    </S.Root>
   );
 }

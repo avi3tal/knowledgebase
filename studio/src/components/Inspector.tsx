@@ -12,7 +12,10 @@ import {
   removeNode,
   reverseEdge,
 } from "../design";
+import { Grow, LinkButton, Muted } from "../theme/primitives";
 import type { Selection } from "./DiagramCanvas";
+import * as D from "./DesignShared.style";
+import * as S from "./Inspector.style";
 
 /**
  * Right-pane inspector for the canvas selection. A node: kind, id, label, connections, "link to an
@@ -54,20 +57,20 @@ export function Inspector({
     const conn = connections(diagram, node.id);
     const label = (id: string) => diagram.nodes.find((n) => n.id === id)?.label || id;
     return (
-      <section className="inspector" style={{ ["--kc" as string]: s.color }} key={node.id}>
-        <header className="insp-head">
-          <span className="insp-icon">{s.icon}</span>
-          <div className="grow">
+      <S.Root $color={s.color} key={node.id}>
+        <S.Head>
+          <S.Icon $color={s.color}>{s.icon}</S.Icon>
+          <Grow as="div">
             <b>{s.label}</b>
-            <div className="muted small">
+            <Muted $small as="div">
               id <code>{node.id}</code>
-            </div>
-          </div>
-          <button className="icon-x" onClick={() => onSelect(null)} aria-label="close inspector">
+            </Muted>
+          </Grow>
+          <D.RemoveX onClick={() => onSelect(null)} aria-label="close inspector">
             ×
-          </button>
-        </header>
-        <label className="insp-field">
+          </D.RemoveX>
+        </S.Head>
+        <S.Field>
           <span>label</span>
           <input
             ref={labelRef}
@@ -75,9 +78,9 @@ export function Inspector({
             placeholder={node.id}
             onChange={(e) => onChange(relabelNode(diagram, node.id, e.target.value))}
           />
-        </label>
+        </S.Field>
         {targets.length > 0 && (
-          <label className="insp-field">
+          <S.Field>
             <span>link to an existing component</span>
             <select
               value=""
@@ -97,53 +100,48 @@ export function Inspector({
                 </option>
               ))}
             </select>
-            <small className="muted">
+            <Muted as="small">
               Takes that component’s id, kind and label, so composing merges them into one box.
-            </small>
-          </label>
+            </Muted>
+          </S.Field>
         )}
-        <div className="insp-conn">
-          <span className="muted small">connections</span>
+        <S.Conn>
+          <Muted $small>connections</Muted>
           {conn.in.length + conn.out.length === 0 && (
-            <div className="muted small">none yet: drag from the ● handle to another shape</div>
+            <Muted $small as="div">
+              none yet: drag from the ● handle to another shape
+            </Muted>
           )}
           <ul>
             {conn.in.map((e) => (
               <li key={edgeKey(e)}>
-                <button
-                  className="link-btn"
-                  onClick={() => onSelect({ type: "edge", id: edgeKey(e) })}
-                >
+                <LinkButton onClick={() => onSelect({ type: "edge", id: edgeKey(e) })}>
                   ← {label(e.from)}
-                  {e.label ? <span className="muted"> · {e.label}</span> : null}
-                </button>
+                  {e.label ? <Muted> · {e.label}</Muted> : null}
+                </LinkButton>
               </li>
             ))}
             {conn.out.map((e) => (
               <li key={edgeKey(e)}>
-                <button
-                  className="link-btn"
-                  onClick={() => onSelect({ type: "edge", id: edgeKey(e) })}
-                >
+                <LinkButton onClick={() => onSelect({ type: "edge", id: edgeKey(e) })}>
                   → {label(e.to)}
-                  {e.label ? <span className="muted"> · {e.label}</span> : null}
-                </button>
+                  {e.label ? <Muted> · {e.label}</Muted> : null}
+                </LinkButton>
               </li>
             ))}
           </ul>
-        </div>
-        <div className="insp-actions">
-          <button
-            className="danger"
+        </S.Conn>
+        <S.Actions>
+          <D.DangerButton
             onClick={() => {
               onChange(removeNode(diagram, node.id));
               onSelect(null);
             }}
           >
             🗑 Delete shape
-          </button>
-        </div>
-      </section>
+          </D.DangerButton>
+        </S.Actions>
+      </S.Root>
     );
   }
 
@@ -153,26 +151,26 @@ export function Inspector({
   const to = diagram.nodes.find((n) => n.id === e.to);
   const canReverse = !diagram.edges.some((x) => x.from === e.to && x.to === e.from);
   return (
-    <section className="inspector" key={key}>
-      <header className="insp-head">
-        <span className="insp-icon">↗</span>
-        <div className="grow">
+    <S.Root key={key}>
+      <S.Head>
+        <S.Icon>↗</S.Icon>
+        <Grow as="div">
           <b>Connection</b>
-          <div className="muted small">
-            <button className="link-btn" onClick={() => onSelect({ type: "node", id: e.from })}>
+          <Muted $small as="div">
+            <LinkButton onClick={() => onSelect({ type: "node", id: e.from })}>
               {from?.label || e.from}
-            </button>{" "}
+            </LinkButton>{" "}
             →{" "}
-            <button className="link-btn" onClick={() => onSelect({ type: "node", id: e.to })}>
+            <LinkButton onClick={() => onSelect({ type: "node", id: e.to })}>
               {to?.label || e.to}
-            </button>
-          </div>
-        </div>
-        <button className="icon-x" onClick={() => onSelect(null)} aria-label="close inspector">
+            </LinkButton>
+          </Muted>
+        </Grow>
+        <D.RemoveX onClick={() => onSelect(null)} aria-label="close inspector">
           ×
-        </button>
-      </header>
-      <label className="insp-field">
+        </D.RemoveX>
+      </S.Head>
+      <S.Field>
         <span>label</span>
         <input
           ref={labelRef}
@@ -180,8 +178,8 @@ export function Inspector({
           placeholder="e.g. read-through, GET /{code}"
           onChange={(ev) => onChange(relabelEdge(diagram, key, ev.target.value))}
         />
-      </label>
-      <div className="insp-actions">
+      </S.Field>
+      <S.Actions>
         <button
           disabled={!canReverse}
           title={canReverse ? "Swap the direction" : "The reverse connection already exists"}
@@ -192,16 +190,15 @@ export function Inspector({
         >
           ⇄ Reverse
         </button>
-        <button
-          className="danger"
+        <D.DangerButton
           onClick={() => {
             onChange(removeEdge(diagram, key));
             onSelect(null);
           }}
         >
           🗑 Delete
-        </button>
-      </div>
-    </section>
+        </D.DangerButton>
+      </S.Actions>
+    </S.Root>
   );
 }
