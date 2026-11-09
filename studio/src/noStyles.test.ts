@@ -10,7 +10,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const STRICT = false;
+const STRICT = true;
 const SRC = dirname(fileURLToPath(import.meta.url));
 
 function walk(dir: string): string[] {
@@ -23,6 +23,8 @@ function walk(dir: string): string[] {
 const files = walk(SRC);
 const rel = (p: string) => relative(SRC, p);
 const tsx = files.filter((f) => f.endsWith(".tsx") && !f.endsWith(".test.tsx"));
+/** Files that render no markup of their own (the entry point only mounts <App />). */
+const NO_MARKUP = new Set(["main.tsx"]);
 const styleOf = (f: string) => f.replace(/\.tsx$/, ".style.ts");
 
 /** Style code found in a .tsx file. */
@@ -55,7 +57,8 @@ describe("style rules", () => {
   });
 
   it.runIf(STRICT)("every component has a .style.ts", () => {
-    expect(tsx.filter((f) => !existsSync(styleOf(f))).map(rel)).toEqual([]);
+    const missing = tsx.filter((f) => !NO_MARKUP.has(rel(f)) && !existsSync(styleOf(f)));
+    expect(missing.map(rel)).toEqual([]);
   });
 
   it.runIf(STRICT)("there are no CSS files or CSS imports", () => {

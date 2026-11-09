@@ -6,7 +6,7 @@ import * as S from "./PageHeader.style";
 import { Icon } from "./Icon";
 
 /**
- * The page chrome every Workbench page shares (styles in workbench.css):
+ * The page chrome every Workbench page shares (styles in PageHeader.style.ts):
  *
  *   [icon] Title                                  [actions]
  *          meta · meta · meta · tag tag +2
