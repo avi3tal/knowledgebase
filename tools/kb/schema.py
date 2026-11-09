@@ -164,7 +164,10 @@ def validate(problem: Problem) -> list[str]:
     elif "<!--" in readme.read_text():
         errors.append("README.md still has template <!-- ... --> placeholders (fill or delete them)")
     else:
+        from kb import mdlint
         from kb.scaffold import readme_header  # local import: scaffold imports schema
+
+        errors += mdlint.check(readme.read_text(), "README.md")
 
         header = next((ln for ln in readme.read_text().splitlines() if ln.startswith("> Difficulty:")), None)
         if header is not None and header != readme_header(m):

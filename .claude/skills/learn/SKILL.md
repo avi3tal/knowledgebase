@@ -37,7 +37,10 @@ structure and tone.
      seed. No `<!-- -->` placeholders.
    - **Figures, not ASCII art** (every subject; references: `system-design/learn/rate-limiting/`,
      `ood/learn/uml-basics/`, `algo/learn/two-pointers/`). ASCII diagrams in code fences are not
-     allowed: no box drawings, arrows, pointer rows or tables of cells. Embed a real diagram right after the paragraph that introduces it with a fence whose body is
+     allowed: no box drawings, arrows, pointer rows or tables of cells. **Every code fence names its
+     language** (```python, ```go, ```sql, ```text for formulas/output) — the studio highlights by
+     it; `tools/kb/mdlint.py` enforces both rules in `kb learn validate`, `kb validate`,
+     `kb sd validate`. Embed a real diagram right after the paragraph that introduces it with a fence whose body is
      the figure name, ```` ```figure\nplacement\n``` ````, and put the spec in
      `<topic>/figures/<name>.json` (format and checks: `tools/kb/figures.py`):
      - `architecture` — boxes and arrows with the design-console shapes (`kind` from the

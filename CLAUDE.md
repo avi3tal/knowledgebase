@@ -52,3 +52,8 @@
 
 ## Style
 - Python: type hints, ruff (format + lint; format on save in VS Code). Go: gofmt, wrap errors with `%w`, table-driven tests.
+- Studio UI (2026-11-09 facelift): one top bar (`TopBar`), every page = `Workbench` + `PageHeader` (title, one
+  meta line, one primary action, tabs on the header edge) + slim prev/next footer. No breadcrumbs, no emoji in
+  chrome (icons from `components/Icon.tsx`), tokens only from `styles.css :root`.
+- Content: every code fence names its language (Shiki highlighting); diagrams are figures (architecture,
+  sequence, flowchart, uml, structure), never ASCII art — `tools/kb/mdlint.py` enforces it.

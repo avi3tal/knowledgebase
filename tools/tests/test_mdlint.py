@@ -35,3 +35,16 @@ def test_check(md: str, expected: list[str]) -> None:
     assert len(errors) == len(expected)
     for err, word in zip(errors, expected, strict=True):
         assert word in err and err.startswith("f.md:1:")
+
+
+def test_repo_content_has_no_untagged_fences_or_ascii_art() -> None:
+    from kb.paths import ROOT
+
+    skip = {"node_modules", ".claude", "_workspace", "dist", "testdata"}
+    errors = [
+        e
+        for p in sorted(ROOT.glob("**/*.md"))
+        if not skip & set(p.relative_to(ROOT).parts)
+        for e in mdlint.check(p.read_text(), str(p.relative_to(ROOT)))
+    ]
+    assert errors == []

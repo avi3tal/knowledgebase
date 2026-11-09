@@ -1005,6 +1005,11 @@ def validate_problem(problem: DesignProblem) -> list[str]:
         e.append("README.md missing or still has <!-- --> placeholders")
     if not (problem.dir / "reference.md").exists():
         e.append("reference.md is missing")
+    from kb import mdlint
+
+    for name in ("README.md", "reference.md"):
+        if (problem.dir / name).exists():
+            e += mdlint.check((problem.dir / name).read_text(), name)
     r = problem.rubric
     if r.get("version") != VERSION:
         e.append(f"rubric.version must be {VERSION}")

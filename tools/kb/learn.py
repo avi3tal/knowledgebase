@@ -13,7 +13,7 @@ import random
 from pathlib import Path
 from typing import Any
 
-from kb import figures, scaffold
+from kb import figures, mdlint, scaffold
 from kb.convert import to_json, to_py
 from kb.naming import SLUG_RE
 from kb.paths import ROOT
@@ -300,6 +300,7 @@ def validate(subject: str, topic: str) -> list[str]:
                 errors.append(f"{where}: {b['src']} still has <!-- --> placeholders")
             if b["type"] == "markdown":
                 errors += figures.validate_markdown(ldir, src.read_text(), where, _figure_palette(subject))
+                errors += mdlint.check(src.read_text(), f"{where}: {b['src']}")
             if b["type"] == "quiz":
                 errors += _validate_quiz(json.loads(src.read_text()), ids, where)
         elif b["type"] == "trace":
