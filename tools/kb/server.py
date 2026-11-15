@@ -12,6 +12,8 @@ GET  /api/session/<id>                   one session (items, scores, attempt pat
 GET  /api/md/<kind>/<subject>/<slug>     a page as text/markdown for LLM agents (kb/pagemd.py;
                                          kind = lesson | problem | design | solution)
 POST /api/quiz  {subject, topic, item, choice}  -> graded, appended to progress/quiz.jsonl
+POST /api/predict  {subject, topic, trace, guesses: [[r, c]|null]}  -> graded by kb from the trace,
+                appended to progress/predict.jsonl
 POST /api/sessions  {subject, topics, difficulty, count, focus, goal, title, minutes}  -> new session
 POST /api/session/<id>/status   {status}           -> planned/active/done/abandoned
 POST /api/session/<id>/attempt  {item, lang}       -> new attempt linked to the item
@@ -203,6 +205,7 @@ class Handler(BaseHTTPRequestHandler):
         parts = [p for p in urlparse(self.path).path.split("/") if p]
         routes = {
             ("api", "quiz"): self._post_quiz,
+            ("api", "predict"): self._post_predict,
             ("api", "sessions"): self._post_session,
         }
         handler = routes.get(tuple(parts))  # type: ignore[call-overload]
@@ -293,6 +296,26 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(HTTPStatus.NOT_FOUND, str(e))
         history.record_quiz(
             {"subject": subject, "topic": topic, "item": item, "choice": choice, "correct": result["correct"]}
+        )
+        self._json(result)
+
+    def _post_predict(self, parts: list[str], body: dict[str, Any]) -> None:
+        subject, topic, trace_id = (str(body[k]) for k in ("subject", "topic", "trace"))
+        guesses = body["guesses"]
+        if not isinstance(guesses, list) or len(guesses) > 400:
+            raise ValueError("guesses must be a list")
+        try:
+            result = learn.grade_predictions(subject, topic, trace_id, guesses)
+        except ProblemError as e:
+            return self._error(HTTPStatus.NOT_FOUND, str(e))
+        history.record_predict(
+            {
+                "subject": subject,
+                "topic": topic,
+                "trace": trace_id,
+                "correct": result["correct"],
+                "total": result["total"],
+            }
         )
         self._json(result)
 

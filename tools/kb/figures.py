@@ -78,7 +78,7 @@ SCENARIO_FIELDS = {"name", "tone", "summary", "steps", "caption", *PICTURE_FIELD
 UML_STEREOTYPES = {"interface", "abstract", "enum"}
 UML_RELATIONS = {"inherits", "implements", "composition", "aggregation", "association", "dependency"}
 NODE_TYPES = {"tree": "TreeNode", "linkedlist": "ListNode"}
-STRUCTURE_VIEWS = trace.VIEW_TYPES - {"callstack"}
+STRUCTURE_VIEWS = trace.VIEW_TYPES - {"callstack", "maze", "roadmap"}  # scenes: traces only (for now)
 _BAD_SPEC = (ValueError, TypeError, KeyError, AttributeError)
 
 

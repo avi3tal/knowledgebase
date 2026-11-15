@@ -21,7 +21,7 @@ from kb.schema import ProblemError, is_type, load_problem
 from kb.trace import TraceError, capture, load_function, validate_view
 
 LESSON_VERSION = 1
-BLOCK_TYPES = {"markdown", "trace", "quiz", "problems"}
+BLOCK_TYPES = {"markdown", "trace", "quiz", "problems", "race"}
 
 
 def learn_root() -> Path:
@@ -313,7 +313,56 @@ def validate(subject: str, topic: str) -> list[str]:
             for slug in slugs:
                 if not (learn_root() / subject / "problems" / str(slug) / "meta.json").exists():
                     errors.append(f"{where}: unknown problem {slug!r}")
+    races = [(i, b) for i, b in enumerate(blocks) if isinstance(b, dict) and b.get("type") == "race"]
+    for i, b in races:
+        errors += _validate_race_block(blocks, b, f"blocks[{i}] (race)")
     return errors
+
+
+def _maze_view_of(block: dict[str, Any]) -> dict[str, Any] | None:
+    return next((v for v in block.get("view") or [] if isinstance(v, dict) and v.get("type") == "maze"), None)
+
+
+def _validate_race_block(blocks: list[Any], b: dict[str, Any], where: str) -> list[str]:
+    """A race runs traces of THIS lesson side by side: each needs a maze view, all the same input."""
+    if not SLUG_RE.match(str(b.get("id", ""))) or not b.get("title"):
+        return [f"{where}: needs a kebab-case 'id' and a 'title'"]
+    runners = b.get("runners")
+    if not isinstance(runners, list) or len(runners) < 2:
+        return [f"{where}: needs at least two 'runners' [{{label, trace}}]"]
+    traces = {t["id"]: t for t in blocks if isinstance(t, dict) and t.get("type") == "trace" and "id" in t}
+    errors, inputs = [], []
+    for r in runners:
+        block = traces.get(str(r.get("trace"))) if isinstance(r, dict) else None
+        if block is None or not r.get("label"):
+            errors.append(f"{where}: runner {r!r} needs a 'label' and a 'trace' id of this lesson")
+        elif _maze_view_of(block) is None:
+            errors.append(f"{where}: trace {r['trace']!r} has no maze view")
+        else:
+            inputs.append(block.get("input"))
+    if inputs and any(x != inputs[0] for x in inputs):
+        errors.append(f"{where}: every runner must use the same input (the same maze)")
+    return errors
+
+
+def race_stats(trace: dict[str, Any], view_id: str) -> dict[str, Any]:
+    """One runner's scoreboard: cells expanded (distinct `current` cells), the route it ends with
+    (moves = cells - 1, null if none) and the function's result."""
+    states = [s["state"].get(view_id) or {} for s in trace["steps"]]
+    expanded = {tuple(st["current"]) for st in states if st.get("current")}
+    route = next((st["path"] for st in reversed(states) if st.get("path")), None)
+    return {"expanded": len(expanded), "moves": len(route) - 1 if route else None, "result": trace["result"]}
+
+
+def _race(ldir: Path, blocks: list[dict[str, Any]], b: dict[str, Any]) -> dict[str, Any]:
+    traces = {t["id"]: t for t in blocks if t.get("type") == "trace"}
+    runners = []
+    for r in b["runners"]:
+        block = traces[r["trace"]]
+        view = _maze_view_of(block) or {}
+        trace = json.loads(_trace_path(ldir, block).read_text())
+        runners.append({**r, "stats": race_stats(trace, view.get("id") or view.get("var", ""))})
+    return {"type": "race", "id": b["id"], "title": b["title"], "runners": runners}
 
 
 def _figure_palette(subject: str) -> set[str]:
@@ -396,6 +445,8 @@ def resolve(subject: str, topic: str, history: list[dict[str, Any]] | None = Non
             quiz = json.loads((ldir / b["src"]).read_text())
             items = [{"id": q["id"], "prompt": q["prompt"], "options": _shuffled(q)} for q in quiz["items"]]
             out_blocks.append({"type": "quiz", "items": items})
+        elif b["type"] == "race":
+            out_blocks.append(_race(ldir, lesson["blocks"], b))
         elif b["type"] == "problems" and _is_design(subject):
             out_blocks.append({"type": "design-problems", "problems": [_design_card(subject, s) for s in b["slugs"]]})
         elif b["type"] == "problems":
@@ -561,6 +612,44 @@ def _shuffled(item: dict[str, Any]) -> list[str]:
     options = list(item["options"])
     random.Random(f"{item['id']}:{item['prompt']}").shuffle(options)
     return options
+
+
+def predict_points(trace: dict[str, Any], view_id: str) -> list[dict[str, Any]]:
+    """Moments to ask "which cell is expanded next?": every step where the maze view's `current`
+    moves to a new cell. `step` is the step that reveals it; the learner answers from the step before.
+    Forced moves (the frontier held a single cell) are skipped: there is nothing to choose.
+    Mirrored by studio/src/maze.ts `predictPoints` (both test against trace_maze_fixture.json)."""
+    points, last = [], None
+    steps = trace["steps"]
+    for i, step in enumerate(steps):
+        cell = (step["state"].get(view_id) or {}).get("current")
+        before = (steps[i - 1]["state"].get(view_id) or {}).get("frontier") or [] if i > 0 else []
+        if cell is not None and cell != last and len(before) >= 2:
+            points.append({"step": i, "cell": cell})
+        last = cell if cell is not None else last
+    return points
+
+
+def _trace_block(subject: str, topic: str, trace_id: str) -> dict[str, Any]:
+    lesson = load_lesson(subject, topic)
+    block = next((b for b in lesson["blocks"] if b["type"] == "trace" and b["id"] == trace_id), None)
+    if block is None:
+        raise ProblemError(f"unknown trace {trace_id!r}")
+    return block
+
+
+def grade_predictions(subject: str, topic: str, trace_id: str, guesses: list[Any]) -> dict[str, Any]:
+    """Grade one Predict round: `guesses[i]` is the cell clicked for point i (null = skipped)."""
+    block = _trace_block(subject, topic, trace_id)
+    view = next((v for v in block["view"] if v["type"] == "maze"), None)
+    if view is None:
+        raise ProblemError(f"trace {trace_id!r} has no maze view")
+    trace = json.loads(_trace_path(lesson_dir(subject, topic), block).read_text())
+    answers = [p["cell"] for p in predict_points(trace, view.get("id") or view["var"])]
+    if len(guesses) != len(answers):
+        raise ValueError(f"expected {len(answers)} guesses, got {len(guesses)}")
+    correct = sum(1 for g, a in zip(guesses, answers, strict=True) if g == a)
+    return {"correct": correct, "total": len(answers), "answers": answers}
 
 
 def grade_quiz(subject: str, topic: str, item_id: str, choice: str) -> dict[str, Any]:

@@ -13,6 +13,7 @@ import {
   topicPageHref,
 } from "../learn-bench";
 import { designHref, problemHref } from "../route";
+import type { Trace } from "../trace";
 import { isTrace } from "../trace";
 import { OnThisPage } from "./DesignReaderPanes";
 import {
@@ -28,6 +29,7 @@ import { Markdown } from "./Markdown";
 import { NavList, useCenterScroller } from "./panes";
 import { ProblemCard } from "./ProblemCard";
 import { Quiz } from "./Quiz";
+import { RacePlayer } from "./RacePlayer";
 import { ResourceList } from "./Resources";
 import { TracePlayer } from "./TracePlayer";
 import { Workbench, WorkbenchTab } from "./Workbench";
@@ -45,6 +47,13 @@ const TAB_COLOUR: Record<SectionKey, string> = {
   practice: t.ok,
   resources: t.tech,
 };
+
+/** The lesson's traces by id (a race block replays traces of its own lesson). */
+function tracesOf(lesson: Lesson): Record<string, Trace> {
+  return Object.fromEntries(
+    lesson.blocks.flatMap((b) => (b.type === "trace" && isTrace(b.trace) ? [[b.id, b.trace]] : [])),
+  );
+}
 
 function LessonBlock({
   b,
@@ -77,11 +86,20 @@ function LessonBlock({
           }}
         />
       );
+    case "race":
+      return (
+        <S.Block id={blockId(i)}>
+          <RacePlayer title={b.title} runners={b.runners} traces={tracesOf(lesson)} />
+        </S.Block>
+      );
     case "trace":
       return (
         <S.Block id={blockId(i)}>
           {isTrace(b.trace) ? (
-            <TracePlayer trace={b.trace} />
+            <TracePlayer
+              trace={b.trace}
+              source={{ subject: lesson.subject, topic: lesson.topic, id: b.id }}
+            />
           ) : (
             <S.ErrorText>
               Unsupported trace format — rebuild with <code>./kb learn build</code>.

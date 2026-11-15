@@ -112,6 +112,7 @@ export function sectionOf(b: Block): SectionKey {
   switch (b.type) {
     case "markdown":
     case "trace":
+    case "race":
       return "learn"; // traces stay next to the prose that explains them
     case "quiz":
       return "quiz";
@@ -128,6 +129,7 @@ function blockCount(b: Block): number {
     case "markdown":
       return 0;
     case "trace":
+    case "race":
       return 1;
     case "quiz":
       return b.items.length;

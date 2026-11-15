@@ -11,6 +11,8 @@ import type {
   IntervalsState,
   LinkedListState,
   MapState,
+  MazeState,
+  RoadMapState,
   TreeState,
   VarsState,
   ViewState,
@@ -26,9 +28,29 @@ import {
   TreeView,
 } from "./StructureViews";
 import { ArrayView, LinkedListView, MapView, VarsView } from "./TraceViews";
+import type { MazeExtras } from "./MazeView";
+import { MazeView } from "./MazeView";
+import type { RoadExtras } from "./RoadMapView";
+import { RoadMapView } from "./RoadMapView";
 
-/** One trace view for a figure frame (same renderers as the trace player, plus `graph`). */
-function View({ spec, state, prev }: { spec: FigureViewSpec; state: ViewState; prev?: ViewState }) {
+/**
+ * One view of a trace step or figure frame: the single dispatcher shared by the trace player and
+ * structure figures. `prev` (the previous step's state) lets map / vars views highlight changes;
+ * `maze` carries the maze scene's extras (heat, Predict mode); `road` the road map's (settled set).
+ */
+export function ViewFor({
+  spec,
+  state,
+  prev,
+  maze,
+  road,
+}: {
+  spec: FigureViewSpec;
+  state: ViewState;
+  prev?: ViewState;
+  maze?: MazeExtras;
+  road?: RoadExtras;
+}) {
   switch (spec.type) {
     case "array":
       return <ArrayView spec={spec} state={state as ArrayState} />;
@@ -48,6 +70,10 @@ function View({ spec, state, prev }: { spec: FigureViewSpec; state: ViewState; p
       return <GraphView spec={spec} state={state as GraphState} />;
     case "map":
       return <MapView spec={spec} state={state as MapState} prev={prev as MapState | undefined} />;
+    case "roadmap":
+      return <RoadMapView spec={spec} state={state as RoadMapState} {...road} />;
+    case "maze":
+      return <MazeView spec={spec} state={state as MazeState} {...maze} />;
     case "vars":
       return (
         <VarsView spec={spec} state={state as VarsState} prev={prev as VarsState | undefined} />
@@ -91,7 +117,7 @@ export function StructureFigure({
             const id = viewId(spec);
             const state = frame.state?.[id];
             return state ? (
-              <View key={id} spec={spec} state={state} prev={prev?.state?.[id]} />
+              <ViewFor key={id} spec={spec} state={state} prev={prev?.state?.[id]} />
             ) : null;
           })}
         </S.Views>

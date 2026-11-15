@@ -97,6 +97,9 @@ export const Controls = styled.div`
 `;
 
 export const Btn = styled.button<{ $primary?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   ${({ $primary }) =>
     $primary &&
     `
@@ -110,4 +113,49 @@ export const Btn = styled.button<{ $primary?: boolean }>`
 export const Range = styled.input`
   flex: 1;
   min-width: 120px;
+`;
+
+/** Predict mode: the question, the live score and the way out. */
+export const PredictBar = styled.div<{ $tone?: "ok" | "bad" }>`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid ${({ $tone }) => ($tone === "ok" ? t.ok : $tone === "bad" ? t.bad : t.accent)};
+  background: color-mix(
+    in srgb,
+    ${({ $tone }) => ($tone === "ok" ? t.ok : $tone === "bad" ? t.bad : t.accent)} 9%,
+    ${t.panel}
+  );
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+`;
+
+export const Question = styled.span`
+  flex: 1;
+  min-width: 200px;
+  font-weight: 600;
+`;
+
+export const Score = styled.span`
+  font-family: ${t.fontMono};
+  font-size: 13px;
+  color: ${t.muted};
+`;
+
+export const Hidden = styled.div`
+  padding: 8px 12px;
+  border: 1px dashed ${t.border};
+  border-radius: 6px;
+  font-size: 13px;
+  color: ${t.muted};
+`;
+
+/** Full-width scene (e.g. a town map) above the code and the side views. */
+export const Stage = styled.div`
+  margin-bottom: 14px;
 `;

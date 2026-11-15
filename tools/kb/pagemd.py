@@ -37,7 +37,7 @@ def build(kind: str, subject: str, slug: str) -> str:
 
 def lesson_md(subject: str, topic: str) -> str:
     ldir, lesson = learn.lesson_dir(subject, topic), learn.load_lesson(subject, topic)
-    parts = [_lesson_block(subject, ldir, b) for b in lesson["blocks"]]
+    parts = [_lesson_block(subject, ldir, b, lesson["blocks"]) for b in lesson["blocks"]]
     if not (parts and parts[0].lstrip().startswith("# ")):  # the first markdown file usually has the H1
         parts.insert(0, f"# {lesson['title']}")
     from kb import refs  # local import: refs imports learn
@@ -46,8 +46,10 @@ def lesson_md(subject: str, topic: str) -> str:
     return "\n\n".join(p for p in parts if p)
 
 
-def _lesson_block(subject: str, ldir: Path, block: dict[str, Any]) -> str:
+def _lesson_block(subject: str, ldir: Path, block: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
     kind = block["type"]
+    if kind == "race":
+        return _race(learn._race(ldir, blocks, block))  # noqa: SLF001 - same scoreboard as the studio
     if kind == "markdown":
         return _with_figures(ldir, (ldir / block["src"]).read_text())
     if kind == "trace":
@@ -85,6 +87,15 @@ def _trace(block: dict[str, Any], trace: dict[str, Any]) -> str:
     if notes:
         parts.append(f"Narrated steps ({len(trace.get('steps', []))} in total):\n\n" + "\n".join(notes))
     return "\n\n".join(parts)
+
+
+def _race(race: dict[str, Any]) -> str:
+    """A race as its scoreboard (the traces of each runner are already on the page)."""
+    rows = ["| runner | cells expanded | route found (moves) |", "|---|---|---|"]
+    for r in race["runners"]:
+        moves = r["stats"]["moves"]
+        rows.append(f"| {r['label']} | {r['stats']['expanded']} | {moves if moves is not None else 'none'} |")
+    return f"### {race['title']}\n\n" + "\n".join(rows)
 
 
 def _quiz(quiz: dict[str, Any]) -> str:

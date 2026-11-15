@@ -150,7 +150,16 @@ export type Block =
   | { type: "quiz"; items: QuizItem[] }
   | { type: "problems"; problems: ProblemCardData[] }
   | { type: "resources"; resources: Resource[] }
-  | { type: "design-problems"; problems: DesignProblemCard[] };
+  | { type: "design-problems"; problems: DesignProblemCard[] }
+  | { type: "race"; id: string; title: string; runners: RaceRunner[] };
+
+/** One lane of a race: a trace of the same lesson, with kb's scoreboard for it. */
+export interface RaceRunner {
+  label: string;
+  /** id of a trace block of the same lesson */
+  trace: string;
+  stats: { expanded: number; moves: number | null; result: Json };
+}
 
 export interface Lesson {
   subject: string;
@@ -160,6 +169,13 @@ export interface Lesson {
   prereqs?: string[];
   related?: string[];
   blocks: Block[];
+}
+
+/** kb's grade of one Predict round (answers = the cell expanded at each question). */
+export interface PredictResult {
+  correct: number;
+  total: number;
+  answers: [number, number][];
 }
 
 export interface QuizResult {
@@ -524,6 +540,8 @@ export const api = {
     post<Session>(`/api/session/${id}/status`, { status }),
   startAttempt: (id: string, item: string, lang: "python" | "go" | "design") =>
     post<Session>(`/api/session/${id}/attempt`, { item, lang }),
+  predict: (subject: string, topic: string, trace: string, guesses: ([number, number] | null)[]) =>
+    post<PredictResult>("/api/predict", { subject, topic, trace, guesses }),
   async answer(subject: string, topic: string, item: string, choice: string): Promise<QuizResult> {
     const res = await fetch("/api/quiz", {
       method: "POST",
