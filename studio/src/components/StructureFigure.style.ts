@@ -1,11 +1,34 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-/** The views of a data-structure still, stacked like in the trace player. */
-export const Views = styled.div`
+/** The figure's drawing area: as wide as the figure; scrolls if the still is wider. */
+export const Fit = styled.div<{ $expanded?: boolean }>`
+  display: flex;
+  justify-content: safe center;
+  overflow-x: auto;
+  ${({ $expanded }) =>
+    $expanded &&
+    css`
+      height: 100%;
+      align-items: safe center;
+      overflow: auto;
+    `}
+`;
+
+/** Reserves the scaled size in the layout (a transform alone doesn't). */
+export const Scaled = styled.div<{ $w: number; $h: number }>`
+  flex: none;
+  width: ${({ $w }) => ($w ? `${$w}px` : "auto")};
+  height: ${({ $h }) => ($h ? `${$h}px` : "auto")};
+`;
+
+/** The views of a data-structure still, stacked like in the trace player, at natural size. */
+export const Views = styled.div<{ $scale?: number }>`
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-width: 0;
+  width: max-content;
   padding: 4px 8px;
-  align-items: safe center;
+  align-items: center;
+  transform: scale(${({ $scale }) => $scale ?? 1});
+  transform-origin: top left;
 `;

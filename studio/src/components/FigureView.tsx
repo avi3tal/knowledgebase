@@ -114,7 +114,7 @@ export function FigureView({ figure, number }: { figure: Figure; number?: number
   } else if (shown.kind === "uml") {
     body = <UmlFigure f={shown} active={step} />;
   } else if (shown.kind === "structure") {
-    body = <StructureFigure f={shown} step={step} />;
+    body = <StructureFigure f={shown} step={step} expanded={expanded} />;
   } else {
     body = <FlowchartSvg f={shown} active={step} />;
   }

@@ -102,8 +102,9 @@ export const Prose = styled.div<{ $wide?: boolean }>`
     color: ${t.accent};
   }
 
-  /* comparison tables */
-  table {
+  /* comparison tables: only the markdown's own (direct children), never tables drawn inside an
+     embedded figure or trace (their grid views style themselves) */
+  > table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -114,47 +115,47 @@ export const Prose = styled.div<{ $wide?: boolean }>`
     overflow: hidden;
     background: ${t.panel};
     box-shadow: ${t.shadow};
-  }
-  th {
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 0.8em;
-    font-weight: 650;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: ${t.muted};
-    background: ${t.panel2};
-    border-bottom: 1px solid ${t.border};
-  }
-  td {
-    padding: 8px 12px;
-    vertical-align: top;
-    border-bottom: 1px solid ${t.border};
-  }
-  td:first-child {
-    font-weight: 600;
-  }
-  tr:last-child td {
-    border-bottom: 0;
-  }
-  tbody tr:nth-child(even) td {
-    background: color-mix(in srgb, ${t.panel2} 45%, transparent);
-  }
-  tbody tr:hover td {
-    background: ${t.accentSoft};
-  }
-  /* options tables: the chosen option is bold in the first column */
-  td:first-child:has(strong) {
-    box-shadow: inset 3px 0 0 ${t.ok};
-  }
-  tr:has(td:first-child strong) td {
-    background: color-mix(in srgb, ${t.ok} 9%, transparent);
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 0.8em;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: ${t.muted};
+      background: ${t.panel2};
+      border-bottom: 1px solid ${t.border};
+    }
+    td {
+      padding: 8px 12px;
+      vertical-align: top;
+      border-bottom: 1px solid ${t.border};
+    }
+    td:first-child {
+      font-weight: 600;
+    }
+    tr:last-child td {
+      border-bottom: 0;
+    }
+    tbody tr:nth-child(even) td {
+      background: color-mix(in srgb, ${t.panel2} 45%, transparent);
+    }
+    tbody tr:hover td {
+      background: ${t.accentSoft};
+    }
+    /* options tables: the chosen option is bold in the first column */
+    td:first-child:has(strong) {
+      box-shadow: inset 3px 0 0 ${t.ok};
+    }
+    tr:has(td:first-child strong) td {
+      background: color-mix(in srgb, ${t.ok} 9%, transparent);
+    }
   }
   ${({ $wide }) =>
     $wide &&
     css`
       /* articles: code and wide tables (4+ columns) use the room around the reading column */
-      ${CodeFigure}, table:has(th:nth-child(4)) {
+      ${CodeFigure}, > table:has(th:nth-child(4)) {
         width: ${BREAKOUT};
         max-width: none;
         margin-left: calc(50% - ${BREAKOUT} / 2);
