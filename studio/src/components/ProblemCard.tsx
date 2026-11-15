@@ -25,6 +25,7 @@ import { Badge, Center, CmdStack, PracticeStats } from "./PracticeBench.style";
 import { Markdown } from "./Markdown";
 import type { NavGroup } from "./panes";
 import { NavList, useCenterScroller } from "./panes";
+import { CopyPage } from "./CopyPage";
 import { Copy } from "./PracticeBench";
 import { ResourceList } from "./Resources";
 import { Workbench, WorkbenchTab } from "./Workbench";
@@ -233,24 +234,27 @@ function ProblemPage({ p }: { p: ProblemCardData }) {
         ),
       ]}
       actions={
-        latest ? (
-          <Button
-            as="a"
-            $variant="primary"
-            href={`vscode://file${latest.path}`}
-            title={latest.name}
-          >
-            <Icon name="code" size={15} /> Continue in VS Code
-          </Button>
-        ) : (
-          <Button
-            $variant="primary"
-            onClick={() => void navigator.clipboard.writeText(startCmd)}
-            title={`copies: ${startCmd}`}
-          >
-            <Icon name="play" size={13} /> Start an attempt
-          </Button>
-        )
+        <>
+          <CopyPage kind="problem" subject={subject} slug={p.slug} />
+          {latest ? (
+            <Button
+              as="a"
+              $variant="primary"
+              href={`vscode://file${latest.path}`}
+              title={latest.name}
+            >
+              <Icon name="code" size={15} /> Continue in VS Code
+            </Button>
+          ) : (
+            <Button
+              $variant="primary"
+              onClick={() => void navigator.clipboard.writeText(startCmd)}
+              title={`copies: ${startCmd}`}
+            >
+              <Icon name="play" size={13} /> Start an attempt
+            </Button>
+          )}
+        </>
       }
     />
   );

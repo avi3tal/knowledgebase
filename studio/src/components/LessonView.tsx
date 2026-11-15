@@ -31,6 +31,7 @@ import { Quiz } from "./Quiz";
 import { ResourceList } from "./Resources";
 import { TracePlayer } from "./TracePlayer";
 import { Workbench, WorkbenchTab } from "./Workbench";
+import { CopyPage } from "./CopyPage";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Icon } from "./Icon";
 import { Button, MutedP } from "../theme/primitives";
@@ -267,6 +268,7 @@ export function LessonView({ lesson }: { lesson: Lesson }) {
           fallbackTitle={lesson.title}
           topics={topics}
           kicker={<span>Lesson</span>}
+          action={<CopyPage kind="lesson" subject={lesson.subject} slug={lesson.topic} />}
         />
       }
       tabs={tabs}

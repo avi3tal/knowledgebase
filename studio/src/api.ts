@@ -466,7 +466,21 @@ async function get<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+/** Pages with a markdown twin (GET /api/md/<kind>/<subject>/<slug>, built by kb/pagemd.py). */
+export type PageKind = "lesson" | "problem" | "design" | "solution";
+
+export const markdownUrl = (kind: PageKind, subject: string, slug: string) =>
+  `/api/md/${kind}/${encodeURIComponent(subject)}/${encodeURIComponent(slug)}`;
+
+async function getText(path: string): Promise<string> {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
+  return res.text();
+}
+
 export const api = {
+  markdown: (kind: PageKind, subject: string, slug: string) =>
+    getText(markdownUrl(kind, subject, slug)),
   subjects: () => get<SubjectsResponse>("/api/subjects"),
   lesson: (subject: string, topic: string) => get<Lesson>(`/api/lesson/${subject}/${topic}`),
   problem: (subject: string, slug: string) =>

@@ -27,6 +27,7 @@ import { ActionButton, PracticeStats } from "./PracticeBench.style";
 import { Markdown } from "./Markdown";
 import { RevealGate, SolutionArticle, VERSIONS_ID } from "./SolutionArticle";
 import { CENTER_SELECTOR, Workbench, WorkbenchTab } from "./Workbench";
+import { CopyPage } from "./CopyPage";
 import { Icon } from "./Icon";
 import { MetaTags, PageHeader, PrevNextFooter, StatusLabel, usePrevNextKeys } from "./PageHeader";
 import { SimilarProblemsCard } from "./PracticeLinks";
@@ -191,9 +192,16 @@ export function DesignProblemPage({
         ),
       ]}
       actions={
-        <Button $variant="primary" onClick={practise} disabled={busy}>
-          <Icon name="play" size={13} /> {latest ? "Continue practising" : "Practise"}
-        </Button>
+        <>
+          <CopyPage
+            kind={view === "solution" && solution ? "solution" : "design"}
+            subject={p.subject}
+            slug={p.slug}
+          />
+          <Button $variant="primary" onClick={practise} disabled={busy}>
+            <Icon name="play" size={13} /> {latest ? "Continue practising" : "Practise"}
+          </Button>
+        </>
       }
     />
   );

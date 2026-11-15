@@ -306,6 +306,27 @@ def test_studio_api(studio: str, progress: Path) -> None:
     assert len(history.quiz_answers()) == 1
 
 
+@pytest.mark.parametrize(
+    ("path", "status", "start"),
+    [
+        ("lesson/algo/sliding-window", 200, "# Sliding Window"),
+        ("problem/algo/two-sum", 200, "# Two Sum"),
+        ("solution/system-design/ad-click-aggregator", 200, "# Solution:"),
+        ("lesson/algo/nope", 404, ""),
+        ("page/algo/two-sum", 404, ""),
+    ],
+)
+def test_studio_markdown(studio: str, path: str, status: int, start: str) -> None:
+    try:
+        with urllib.request.urlopen(f"{studio}/api/md/{path}") as r:
+            got, ctype, body = r.status, r.headers["Content-Type"], r.read().decode()
+    except urllib.error.HTTPError as e:
+        got, ctype, body = e.code, e.headers["Content-Type"], ""
+    assert got == status
+    if status == 200:
+        assert ctype == "text/markdown; charset=utf-8" and body.startswith(start)
+
+
 # ------------------------------------------------------------------ new views (tree/grid/heap/intervals/callstack)
 
 VIEWS_FIXTURE = TESTDATA / "trace_views_fixture.json"
