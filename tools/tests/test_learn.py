@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from kb import feedback, history, learn
 from kb.paths import ROOT, problems_dir
+from kb.schema import ProblemError
 from kb.trace import TraceError, capture, load_function, validate_view
 
 TESTDATA = Path(__file__).parent / "testdata"
@@ -88,6 +89,227 @@ def test_linked_list_trace_matches_shared_fixture() -> None:
         [None, 0, None],
         [None, 0, 1],
     ]
+
+
+MAZE_VIEW = [
+    {
+        "id": "maze",
+        "type": "maze",
+        "var": "grid",
+        "current": ["r", "c"],
+        "visited": "seen",
+        "frontier": "queue",
+        "start": [0, 0],
+        "goal": [-1, -1],
+    }
+]
+
+
+def maze_fixture_trace() -> dict:
+    fn = load_function(TESTDATA / "trace_maze_example.py", "bfs")
+    return capture(fn, {"grid": ["..#", "#..", "..."]}, MAZE_VIEW, title="maze fixture")
+
+
+def test_maze_trace_matches_shared_fixture() -> None:
+    """The same file is consumed by studio/src/trace.test.ts — regenerate both together."""
+    assert maze_fixture_trace() == json.loads((TESTDATA / "trace_maze_fixture.json").read_text())
+
+
+def test_maze_view_state() -> None:
+    t = maze_fixture_trace()
+    states = [s["state"]["maze"] for s in t["steps"]]
+    first, final = states[0], states[-1]
+    assert t["result"] == 4 and first["walls"] == ["..#", "#..", "..."]
+    assert first["start"] == [0, 0] and first["goal"] == [2, 2]  # [-1, -1] resolved
+    reached = next(i for i, s in enumerate(states) if s["current"] == [2, 2])
+    assert all(s["path"] is None for s in states[:reached])  # the route appears on reaching the goal
+    assert final["current"] == [2, 2] and final["path"] == [[0, 0], [0, 1], [1, 1], [2, 1], [2, 2]]
+    assert all(len(c) == 2 for s in states for c in s["frontier"])  # (r, c, d) queue items -> cells
+    assert any(s["visited"] == [[0, 0]] and s["frontier"] == [[0, 0]] for s in states)  # before the first pop
+
+
+@pytest.mark.parametrize(
+    ("walls", "start", "goal", "expected"),
+    [
+        (["..", ".."], [0, 0], [1, 1], [[0, 0], [1, 0], [1, 1]]),  # down first (MAZE_MOVES order)
+        ([".#", "#."], [0, 0], [1, 1], None),
+        (["."], [0, 0], [0, 0], [[0, 0]]),
+        (["...", "##.", "..."], [0, 0], [2, 0], [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0]]),
+        # rubble costs one removal: a 5-step detour beats breaking through
+        (["...", "oo.", "..."], [0, 0], [2, 0], [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0]]),
+        # ...but when the only way round is walled, break through the cheapest rubble
+        ([".o.", "#o#", "..."], [0, 0], [2, 0], [[0, 0], [0, 1], [1, 1], [2, 1], [2, 0]]),
+        (["..", "o#", ".#"], [0, 0], [2, 0], [[0, 0], [1, 0], [2, 0]]),
+    ],
+)
+def test_maze_path(walls: list[str], start: list[int], goal: list[int], expected: list | None) -> None:
+    from kb.trace import maze_path
+
+    assert maze_path(walls, start, goal) == expected
+
+
+@pytest.mark.parametrize(
+    ("item", "grid", "walls"),
+    [
+        ({"wall": "0"}, ["101", "011"], [".#.", "#.."]),  # islands: water is the wall
+        ({"wall": "#", "rubble": 1}, [[0, 1], [1, 0]], [".o", "o."]),  # 0-1 BFS: int grid, 1 = rubble
+    ],
+)
+def test_maze_cells_from_strings_and_ints(item: dict, grid: list, walls: list[str]) -> None:
+    from kb.trace import snapshot
+
+    state = snapshot([{"id": "m", "type": "maze", "var": "g", "group": "n", **item}], {"g": grid, "n": 2})
+    assert state["m"]["walls"] == walls and state["m"]["group"] == 2 and state["m"]["start"] is None
+
+
+@pytest.mark.parametrize(
+    ("item", "error"),
+    [
+        ({"wall": "##"}, "wall must be one character"),
+        ({"goal": [1]}, "goal must be [row, col]"),
+        ({"start": ["0", 0]}, "start must be [row, col]"),
+        ({"current": [0, 0]}, "current must be [row_var, col_var]"),
+        ({"frontier": 3}, "frontier must be a variable name"),
+        ({"theme": "space"}, "theme must be one of"),
+        ({"group": 1}, "group must be a variable name"),
+        ({"rubble": [1]}, "rubble must be one character or an int"),
+    ],
+)
+def test_maze_view_validation(item: dict, error: str) -> None:
+    from kb.trace import validate_view
+
+    errors = validate_view([{"type": "maze", "var": "grid", **item}])
+    assert any(error in e for e in errors), errors
+
+
+# Shared with studio/src/maze.test.ts: the same points from the same fixture.
+MAZE_FIXTURE_POINTS = [{"step": 14, "cell": [2, 1]}, {"step": 19, "cell": [1, 2]}, {"step": 20, "cell": [2, 2]}]
+
+
+def test_predict_points_on_shared_fixture() -> None:
+    assert learn.predict_points(maze_fixture_trace(), "maze") == MAZE_FIXTURE_POINTS
+
+
+def test_grade_predictions_on_the_bfs_lesson() -> None:
+    trace = json.loads((ROOT / "algo/learn/bfs/traces/shortest-path-grid.json").read_text())
+    answers = [p["cell"] for p in learn.predict_points(trace, "maze")]
+    assert len(answers) >= 10  # a real game, not two clicks
+    guesses: list = [*answers[:-1], None]  # all right but the last, skipped
+    result = learn.grade_predictions("algo", "bfs", "shortest-path-grid", guesses)
+    assert result == {"correct": len(answers) - 1, "total": len(answers), "answers": answers}
+    with pytest.raises(ValueError, match="expected"):
+        learn.grade_predictions("algo", "bfs", "shortest-path-grid", guesses[:-1])
+    with pytest.raises(ProblemError, match="no maze view"):
+        learn.grade_predictions("algo", "bfs", "level-averages", [])
+
+
+def test_studio_predict_endpoint(studio: str, progress: Path) -> None:
+    trace = json.loads((ROOT / "algo/learn/bfs/traces/shortest-path-grid.json").read_text())
+    total = len(learn.predict_points(trace, "maze"))
+    body = {"subject": "algo", "topic": "bfs", "trace": "shortest-path-grid", "guesses": [None] * total}
+    req = urllib.request.Request(
+        f"{studio}/api/predict", json.dumps(body).encode(), {"Content-Type": "application/json"}
+    )
+    with urllib.request.urlopen(req) as r:
+        result = json.loads(r.read())
+    assert result["correct"] == 0 and result["total"] == total
+    recorded = history.predictions()
+    assert len(recorded) == 1 and recorded[0]["trace"] == "shortest-path-grid" and recorded[0]["total"] == total
+    forged = urllib.request.Request(
+        f"{studio}/api/predict",
+        json.dumps(body).encode(),
+        {"Content-Type": "application/json", "Origin": "https://evil.example"},
+    )
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(forged)
+    assert e.value.code == 403 and len(history.predictions()) == 1
+
+
+def test_race_block_on_the_bfs_lesson() -> None:
+    lesson = learn.resolve("algo", "bfs")
+    race = next(b for b in lesson["blocks"] if b["type"] == "race")
+    stats = {r["label"]: r["stats"] for r in race["runners"]}
+    # BFS: the shortest route; DFS on the same maze: a longer one, after more expansions
+    assert stats["BFS"] == {"expanded": 20, "moves": 10, "result": 10}
+    assert stats["DFS"] == {"expanded": 23, "moves": 16, "result": 16}
+
+
+def test_dfs_route_is_its_own_not_the_cheapest() -> None:
+    trace = json.loads((ROOT / "algo/learn/bfs/traces/maze-dfs.json").read_text())
+    route = next(s["state"]["maze"]["path"] for s in reversed(trace["steps"]) if s["state"]["maze"]["path"])
+    assert len(route) - 1 == trace["result"] == 16  # walked back through `parent`, not kb's 10-move route
+    assert all(abs(a[0] - b[0]) + abs(a[1] - b[1]) == 1 for a, b in zip(route, route[1:], strict=False))
+
+
+@pytest.mark.parametrize(
+    ("race", "error"),
+    [
+        ({"id": "r", "title": "t", "runners": [{"label": "A", "trace": "a"}]}, "at least two"),
+        (
+            {"id": "r", "title": "t", "runners": [{"label": "A", "trace": "a"}, {"label": "B", "trace": "zz"}]},
+            "'trace' id of this lesson",
+        ),
+        (
+            {"id": "r", "title": "t", "runners": [{"label": "A", "trace": "a"}, {"label": "C", "trace": "c"}]},
+            "no maze view",
+        ),
+        (
+            {"id": "r", "title": "t", "runners": [{"label": "A", "trace": "a"}, {"label": "B", "trace": "b"}]},
+            "same input",
+        ),
+        ({"id": "R!", "title": "t", "runners": []}, "kebab-case"),
+    ],
+)
+def test_race_block_validation(race: dict, error: str) -> None:
+    maze = [{"id": "m", "type": "maze", "var": "grid"}]
+    blocks = [
+        {"type": "trace", "id": "a", "input": {"grid": ["."]}, "view": maze},
+        {"type": "trace", "id": "b", "input": {"grid": [".."]}, "view": maze},
+        {"type": "trace", "id": "c", "input": {"grid": ["."]}, "view": [{"type": "vars", "vars": []}]},
+    ]
+    errors = learn._validate_race_block(blocks, {"type": "race", **race}, "race")  # noqa: SLF001
+    assert any(error in e for e in errors), errors
+
+
+def test_roadmap_on_the_dijkstra_lesson() -> None:
+    trace = json.loads((ROOT / "algo/learn/shortest-paths/traces/dijkstra-route.json").read_text())
+    states = [s["state"]["map"] for s in trace["steps"]]
+    first, last = states[0], states[-1]
+    assert {n["name"] for n in first["nodes"]} >= {"Home", "Station"} and len(first["roads"]) == 12
+    assert last["route"] == ["0", "2", "3", "4", "6", "7"] and trace["result"] == [12, [0, 2, 3, 4, 6, 7]]
+    reached = next(i for i, st in enumerate(states) if st["current"] == "7")
+    assert all(st["route"] is None for st in states[:reached])  # the car leaves once the goal is final
+    assert any(st["relax"] == ["0", "2"] for st in states)  # relaxing Home -> School is shown
+    assert all(all(isinstance(n, str) for n in st["frontier"]) for st in states)  # heap entries -> node ids
+
+
+@pytest.mark.parametrize(
+    ("prev", "start", "goal", "route"),
+    [
+        ({1: 0, 2: 1}, "0", "2", ["0", "1", "2"]),
+        ({1: 0}, "0", "2", None),  # goal never reached
+        ({}, "0", "0", ["0"]),
+        ({1: 2, 2: 1}, "0", "2", None),  # a cycle never reaches the start
+    ],
+)
+def test_road_route(prev: dict, start: str, goal: str, route: list | None) -> None:
+    from kb.trace import _road_route
+
+    assert _road_route(prev, start, goal) == route
+
+
+@pytest.mark.parametrize(
+    ("item", "error"),
+    [
+        ({}, "layout must map"),
+        ({"layout": {"0": [0]}}, "layout values"),
+        ({"layout": {"0": [0, 0]}, "relax": ["a"]}, "relax must be"),
+        ({"layout": {"0": [0, 0]}, "dist": 3}, "dist must be a variable name"),
+    ],
+)
+def test_roadmap_validation(item: dict, error: str) -> None:
+    errors = validate_view([{"type": "roadmap", "var": "roads", **item}])
+    assert any(error in e for e in errors), errors
 
 
 def test_cycle_input_and_linked_list_view() -> None:
@@ -304,6 +526,27 @@ def test_studio_api(studio: str, progress: Path) -> None:
             urllib.request.urlopen(forged)
         assert e.value.code == 403
     assert len(history.quiz_answers()) == 1
+
+
+@pytest.mark.parametrize(
+    ("path", "status", "start"),
+    [
+        ("lesson/algo/sliding-window", 200, "# Sliding Window"),
+        ("problem/algo/two-sum", 200, "# Two Sum"),
+        ("solution/system-design/ad-click-aggregator", 200, "# Solution:"),
+        ("lesson/algo/nope", 404, ""),
+        ("page/algo/two-sum", 404, ""),
+    ],
+)
+def test_studio_markdown(studio: str, path: str, status: int, start: str) -> None:
+    try:
+        with urllib.request.urlopen(f"{studio}/api/md/{path}") as r:
+            got, ctype, body = r.status, r.headers["Content-Type"], r.read().decode()
+    except urllib.error.HTTPError as e:
+        got, ctype, body = e.code, e.headers["Content-Type"], ""
+    assert got == status
+    if status == 200:
+        assert ctype == "text/markdown; charset=utf-8" and body.startswith(start)
 
 
 # ------------------------------------------------------------------ new views (tree/grid/heap/intervals/callstack)

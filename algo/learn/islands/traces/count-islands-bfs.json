@@ -24,15 +24,18 @@
  "view": [
   {
    "id": "grid",
-   "type": "grid",
+   "type": "maze",
    "var": "grid",
-   "cells": {
-    "cell": [
-     "cr",
-     "cc"
-    ]
-   },
-   "marked": "seen"
+   "theme": "terrain",
+   "wall": "0",
+   "visited": "seen",
+   "group": "count",
+   "label": "map (1 = land)",
+   "current": [
+    "cr",
+    "cc"
+   ],
+   "frontier": "queue"
   },
   {
    "id": "queue",
@@ -60,35 +63,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "queue": {
      "values": [],
@@ -107,35 +93,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": 0
     },
     "queue": {
      "values": [],
@@ -154,35 +123,18 @@
    "note": "a new island: start a BFS from this cell",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [],
@@ -201,40 +153,23 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": null
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [
       [
        0,
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [],
@@ -253,40 +188,28 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": null
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [
       [
        0,
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       0
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -310,43 +233,26 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [],
@@ -365,36 +271,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -404,8 +292,9 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [],
@@ -424,36 +313,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -463,8 +334,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       1,
+       0
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -488,36 +365,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -531,8 +390,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       1,
+       0
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -556,36 +421,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -599,8 +446,18 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -628,36 +485,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       1,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -671,8 +510,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       1
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -696,36 +541,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       1,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -743,8 +570,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       1
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -768,36 +601,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       1,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -815,8 +630,18 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -844,36 +669,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -891,8 +698,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       2,
+       0
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -916,36 +729,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -967,8 +762,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       2,
+       0
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -992,36 +793,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1043,8 +826,18 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       2,
+       0
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -1072,36 +865,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -1123,8 +898,14 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       2
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -1148,36 +929,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -1203,8 +966,14 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       2
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -1228,36 +997,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -1283,8 +1034,18 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -1312,36 +1073,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       0,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -1367,8 +1110,14 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       2,
+       1
+      ]
+     ],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [
@@ -1392,36 +1141,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1447,8 +1178,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "queue": {
      "values": [],
@@ -1467,36 +1199,18 @@
    "note": "a new island: start a BFS from this cell",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1522,8 +1236,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -1542,36 +1257,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1601,8 +1298,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -1621,36 +1319,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1680,8 +1360,14 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       1,
+       4
+      ]
+     ],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [
@@ -1705,36 +1391,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       1,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -1764,8 +1432,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -1784,36 +1453,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       1,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -1847,8 +1498,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -1867,36 +1519,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       1,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -1930,8 +1564,14 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       2,
+       4
+      ]
+     ],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [
@@ -1955,36 +1595,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2018,8 +1640,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -2038,36 +1661,18 @@
    "note": "mark when ENQUEUING, so a cell can't be queued twice",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2105,8 +1710,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -2125,36 +1731,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2192,8 +1780,14 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [
+      [
+       2,
+       3
+      ]
+     ],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [
@@ -2217,36 +1811,18 @@
    "note": "take the oldest discovered cell: the flood spreads in rings",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -2284,8 +1860,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],
@@ -2304,36 +1881,18 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "0",
-       "0",
-       "0",
-       "1"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "...##",
+      ".###.",
+      "..#.."
      ],
-     "cells": {
-      "cell": [
-       2,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -2371,8 +1930,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "queue": {
      "values": [],

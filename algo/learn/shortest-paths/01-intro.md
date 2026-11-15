@@ -46,5 +46,9 @@ while heap:
 - You can **stop early** when the target is popped. Its distance is final.
 - `prev` (or `parent`) pointers rebuild the actual path: walk back from the target.
 
-In the animation, watch the heap always hand out the closest node, and see `dist[1]` improve
-from 4 to 3 when the route through node 2 is found. Node 1's old heap entry `(4, 1)` becomes stale.
+In the animation below you drive across a small town from Home to the Station. Settled
+intersections turn green (their time is final), the ones waiting in the heap pulse, and the road
+being relaxed glows. Watch the Park's time drop from 9 (the tempting direct road) to 5 through
+the School, and the Station's from 13 (via the Market) to 12 (via the Museum). Their old heap
+entries become stale: `(13, 7)` is still sitting in the heap at the end. When the Station is
+popped its time is final, the route is rebuilt from `prev`, and the car drives it.

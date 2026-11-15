@@ -243,3 +243,33 @@ export const toastIn = keyframes`
     transform: translateY(16px) scale(0.96);
   }
 `;
+
+/** Maze scene: the shortest route draws itself (use with pathLength="1" and stroke-dasharray 1). */
+export const drawRoute = keyframes`
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+`;
+
+/** Maze scene: a one-off flash on the cell a prediction named. */
+export const flashOut = keyframes`
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
+/** Maze scene: the runner travels the route (use with `offset-path`). */
+export const runAlong = keyframes`
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+`;

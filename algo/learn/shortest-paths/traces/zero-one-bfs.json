@@ -21,19 +21,23 @@
  "view": [
   {
    "id": "grid",
-   "type": "grid",
+   "type": "maze",
    "var": "grid",
-   "label": "grid (1 = obstacle)",
-   "cells": {
-    "cur": [
-     "r",
-     "c"
-    ],
-    "next": [
-     "nr",
-     "nc"
-    ]
-   }
+   "label": "grid (rocks = obstacles, 1 removal each)",
+   "rubble": 1,
+   "current": [
+    "r",
+    "c"
+   ],
+   "frontier": "queue",
+   "start": [
+    0,
+    0
+   ],
+   "goal": [
+    -1,
+    -1
+   ]
   },
   {
    "id": "dist",
@@ -79,30 +83,24 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": null,
-      "next": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [],
@@ -125,30 +123,24 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": null,
-      "next": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -187,30 +179,24 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": null,
-      "next": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -249,30 +235,29 @@
    "note": "a deque kept in distance order — front = cheapest",
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": null,
+     "visited": [],
+     "frontier": [
       [
        0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
        0
       ]
      ],
-     "cells": {
-      "cur": null,
-      "next": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -316,104 +301,27 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       "∞",
-       "∞"
-      ],
-      [
-       "∞",
-       "∞",
-       "∞"
-      ],
-      [
-       "∞",
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "goal": [
+      2,
+      2
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -455,36 +363,27 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -526,188 +425,32 @@
    "note": "obstacle (cost 1) — goes to the BACK",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       "∞",
-       "∞"
-      ],
-      [
-       1,
-       "∞",
-       "∞"
-      ],
-      [
-       "∞",
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        1,
        0
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       -1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       "∞",
-       "∞"
-      ],
-      [
-       1,
-       "∞",
-       "∞"
-      ],
-      [
-       "∞",
-       "∞",
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       1,
-       0
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -754,36 +497,32 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
        1,
        0
       ]
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -830,67 +569,25 @@
    "note": "obstacle (cost 1) — goes to the BACK",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       "∞",
-       "∞"
-      ],
-      [
-       "∞",
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        1,
        0
@@ -900,46 +597,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ],
-      "next": [
-       0,
-       -1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -990,112 +649,32 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       0,
-       -1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       "∞",
-       "∞"
-      ],
-      [
-       "∞",
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -1142,36 +721,32 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
-       1,
        1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
       ]
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -1218,67 +793,25 @@
    "note": "obstacle (cost 1) — goes to the BACK",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       "∞",
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
        1
@@ -1288,126 +821,8 @@
        0
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       "∞",
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       1
-      ],
-      [
-       2,
-       0
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -1458,36 +873,36 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
-       1,
        1
       ],
       [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
+       2,
        0
       ]
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -1538,67 +953,25 @@
    "note": "obstacle (cost 1) — goes to the BACK",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
        1
@@ -1612,46 +985,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ],
-      "next": [
-       1,
-       -1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -1706,67 +1041,25 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       1,
-       -1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      1
+     ],
+     "visited": [],
+     "frontier": [
       [
        2,
        0
@@ -1776,206 +1069,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       0
-      ],
-      [
-       1,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       -1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       "∞"
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       0
-      ],
-      [
-       1,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -2026,36 +1121,36 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      1
+     ],
+     "visited": [],
+     "frontier": [
       [
-       0,
+       2,
+       0
+      ],
+      [
        1,
        1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
       ]
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -2106,67 +1201,25 @@
    "note": "obstacle (cost 1) — goes to the BACK",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      1
+     ],
+     "visited": [],
+     "frontier": [
       [
        2,
        0
@@ -2180,46 +1233,8 @@
        2
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ],
-      "next": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -2274,67 +1289,25 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      2,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        1,
        1
@@ -2344,206 +1317,8 @@
        2
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       3,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       1,
-       1
-      ],
-      [
-       0,
-       2
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       "∞",
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       1,
-       1
-      ],
-      [
-       0,
-       2
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -2594,36 +1369,36 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      2,
+      0
+     ],
+     "visited": [],
+     "frontier": [
+      [
+       1,
+       1
+      ],
       [
        0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
+       2
       ]
      ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -2674,67 +1449,25 @@
    "note": "obstacle (cost 1) — goes to the BACK",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       3,
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      2,
+      0
+     ],
+     "visited": [],
+     "frontier": [
       [
        1,
        1
@@ -2748,46 +1481,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ],
-      "next": [
-       2,
-       -1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -2842,67 +1537,25 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       2,
-       -1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       3,
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      1
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
        2
@@ -2912,206 +1565,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       3,
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       "∞"
-      ],
-      [
-       2,
-       3,
-       "∞"
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -3162,36 +1617,36 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      1
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
-       1,
+       2
+      ],
+      [
+       2,
        1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
       ]
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -3242,67 +1697,25 @@
    "note": "free step (cost 0) — goes to the FRONT",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      1
+     ],
+     "visited": [],
+     "frontier": [
       [
        1,
        2
@@ -3316,46 +1729,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ],
-      "next": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -3410,67 +1785,25 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       1,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       "∞"
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      2
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
        2
@@ -3480,46 +1813,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -3570,36 +1865,36 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      2
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
-       1,
+       2
+      ],
+      [
+       2,
        1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
       ]
      ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -3650,67 +1945,25 @@
    "note": "free step (cost 0) — goes to the FRONT",
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      1,
+      2
+     ],
+     "visited": [],
+     "frontier": [
       [
        2,
        2
@@ -3724,214 +1977,8 @@
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       2
-      ],
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       1,
-       3
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       2
-      ],
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -3986,356 +2033,57 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
+     ],
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      2,
+      2
+     ],
+     "visited": [],
+     "frontier": [
       [
        0,
-       1,
-       1
+       2
       ],
       [
-       1,
+       2,
+       1
+      ]
+     ],
+     "path": [
+      [
+       0,
+       0
+      ],
+      [
        1,
        0
       ],
       [
        1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
        1
       ],
       [
        1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ],
-      "next": [
-       3,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
        2
       ],
       [
        2,
-       3,
        2
       ]
      ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ],
-      "next": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ],
-      "next": [
-       2,
-       3
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       0,
-       2
-      ],
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ],
-      "next": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "group": null
     },
     "dist": {
      "rows": [
@@ -4386,340 +2134,32 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ],
-      "next": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      0,
+      2
+     ],
+     "visited": [],
+     "frontier": [
       [
        2,
        1
       ]
      ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ],
-      "next": [
-       1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ],
-      "next": [
-       -1,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ],
-      "next": [
-       0,
-       3
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [
-      [
-       2,
-       1
-      ]
-     ],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ],
-      "next": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -4766,320 +2206,27 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ],
-      "next": [
-       0,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
+     "start": [
+      0,
+      0
      ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "goal": [
+      2,
+      2
      ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ],
-      "next": [
-       3,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
+     "current": [
+      2,
+      1
      ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ],
-      "next": [
-       1,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ],
-      "next": [
-       2,
-       2
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "dist": {
-     "rows": [
-      [
-       0,
-       1,
-       2
-      ],
-      [
-       1,
-       2,
-       2
-      ],
-      [
-       2,
-       3,
-       2
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
-    },
-    "queue": {
-     "values": [],
-     "pointers": {},
-     "window": null
-    }
-   }
-  },
-  {
-   "line": 8,
-   "note": null,
-   "state": {
-    "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
-     ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ],
-      "next": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [
@@ -5121,36 +2268,27 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       0,
-       1,
-       1
-      ],
-      [
-       1,
-       1,
-       0
-      ],
-      [
-       1,
-       1,
-       0
-      ]
+     "walls": [
+      ".oo",
+      "oo.",
+      "oo."
      ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ],
-      "next": [
-       2,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      2,
+      2
+     ],
+     "current": [
+      2,
+      1
+     ],
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "dist": {
      "rows": [

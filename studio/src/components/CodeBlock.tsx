@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { copyText } from "../clipboard";
 import { isPlainLang, langLabel } from "../codeblock";
 import type { TokLine } from "../highlight";
 import { useHighlighted } from "../highlight";
@@ -34,14 +35,9 @@ export function CopyButton({ text }: { text: string }) {
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const copy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyText(text);
     } catch {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
+      return;
     }
     setCopied(true);
     window.clearTimeout(timer.current);

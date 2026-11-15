@@ -43,8 +43,12 @@ return -1
 argument needs **every edge to cost the same**. With weights, use Dijkstra (a heap instead of a
 queue).
 
-The trace below finds the fewest moves through a small maze. The visited cells spread in rings
-from the top-left corner, and `dist` goes up by one per ring.
+The trace below finds the fewest moves through a maze. The visited cells spread in rings from the
+top-left corner (green first, then later rings), `dist` goes up by one per ring, and the dashed
+cells wait in the queue in the order shown. When the goal is popped, the shortest route is drawn.
+
+Then press **Predict** and play it: before each step, click the cell you think BFS expands next.
+The queue is hidden, so you have to reason it out: first in, first out.
 
 ## Variant 3: multi-source BFS
 

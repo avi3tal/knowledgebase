@@ -66,6 +66,46 @@ export interface CallStackViewSpec {
   type: "callstack";
   label?: string;
 }
+/**
+ * A grid search drawn as a place (walls, start, goal, the explorer, the frontier, the route).
+ * `start` / `goal` may be negative (counted from the end); kb resolves them in the state.
+ */
+export interface MazeViewSpec {
+  id?: string;
+  type: "maze";
+  var: string;
+  label?: string;
+  /** "terrain": walls are water and floor is land (islands); default "maze" */
+  theme?: "maze" | "terrain";
+  wall?: string | number;
+  /** a breakable obstacle (0-1 BFS): passable at a cost, drawn as rocks */
+  rubble?: string | number;
+  /** var numbering the current region (e.g. the island count) */
+  group?: string;
+  /** var mapping cell -> previous cell: the route drawn is the one the algorithm found */
+  parent?: string;
+  current?: [string, string];
+  visited?: string;
+  frontier?: string;
+  start?: [number, number];
+  goal?: [number, number];
+}
+/** A weighted graph drawn as a city map; `layout` places intersections, `places` names them. */
+export interface RoadMapViewSpec {
+  id?: string;
+  type: "roadmap";
+  var: string;
+  label?: string;
+  layout: Record<string, [number, number]>;
+  places?: Record<string, string>;
+  current?: string;
+  dist?: string;
+  frontier?: string;
+  prev?: string;
+  start?: string;
+  goal?: string;
+  relax?: [string, string];
+}
 export type ViewSpec =
   | ArrayViewSpec
   | MapViewSpec
@@ -75,7 +115,9 @@ export type ViewSpec =
   | HeapViewSpec
   | GridViewSpec
   | IntervalsViewSpec
-  | CallStackViewSpec;
+  | CallStackViewSpec
+  | MazeViewSpec
+  | RoadMapViewSpec;
 /**
  * A drawn graph (nodes at x/y, optional weights and arrows). Produced by kb/trace.py from a var
  * holding `{nodes, edges, highlight?, labels?}`; used by lesson `structure` figures. Kept out of
@@ -145,6 +187,36 @@ export interface GraphState {
   /** text under a node, e.g. "d=3" */
   labels: Record<string, string>;
 }
+export type Cell = [number, number];
+/**
+ * `walls` rows: "#" wall / water, "o" rubble (passable at a cost), "." floor / land. `path` is set
+ * once `current` reaches `goal`; `group` is the spec's group var (e.g. the island number).
+ */
+export interface MazeState {
+  walls: string[];
+  start: Cell | null;
+  goal: Cell | null;
+  current: Cell | null;
+  visited: Cell[];
+  /** queue / stack order: the next cell a BFS expands is frontier[0] */
+  frontier: Cell[];
+  path: Cell[] | null;
+  group: number | null;
+}
+/** Node ids are strings; `route` (start -> goal) is set once `current` is the goal. */
+export interface RoadMapState {
+  nodes: { id: string; name: string; x: number; y: number }[];
+  roads: { a: string; b: string; w: Json }[];
+  start: string | null;
+  goal: string | null;
+  current: string | null;
+  dist: Record<string, Json>;
+  /** heap / queue order */
+  frontier: string[];
+  /** the road being relaxed this step */
+  relax: [string, string] | null;
+  route: string[] | null;
+}
 export type ViewState =
   | ArrayState
   | MapState
@@ -154,7 +226,9 @@ export type ViewState =
   | GridState
   | IntervalsState
   | CallStackState
-  | GraphState;
+  | GraphState
+  | MazeState
+  | RoadMapState;
 
 export interface TraceStep {
   line: number;

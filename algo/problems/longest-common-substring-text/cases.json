@@ -1,0 +1,13 @@
+[
+  {"name": "Meta interview example", "args": {"s1": "facebook", "s2": "kfamlsajjbookjnwooaer"}, "expected": "book"},
+  {"name": "whole s2 occurs in s1", "args": {"s1": "xabcdefghijklmnopqrstuy", "s2": "abcdefghijklmnopqrstu"}, "expected": "abcdefghijklmnopqrstu"},
+  {"name": "only single letters shared", "args": {"s1": "abc", "s2": "cxbxaxcxbxaxcxbxaxcxb"}, "expected": ""},
+  {"name": "tie: earliest in s2 wins", "args": {"s1": "abxycd", "s2": "cdzzzzzzzzzzzzzzzzzab"}, "expected": "cd"},
+  {"name": "s1 shorter than 2", "args": {"s1": "a", "s2": "aaaaaaaaaaaaaaaaaaaaa"}, "expected": ""},
+  {"name": "empty s1", "args": {"s1": "", "s2": "abqqqqqqqqqqqqqqqqqqq"}, "expected": ""},
+  {"name": "all equal letters", "args": {"s1": "aaaa", "s2": "aaaaaaaaaaaaaaaaaaaaa"}, "expected": "aaaa"},
+  {"name": "match broken then restarted", "args": {"s1": "abcabd", "s2": "zabcabcabdzzzzzzzzzzz"}, "expected": "abcabd"},
+  {"name": "match at the very end of s2", "args": {"s1": "hello world", "s2": "qqqqqqqqqqqqqqqqworld"}, "expected": "world"},
+  {"name": "length-2 match only", "args": {"s1": "mn", "s2": "ppppppppppmnppppppppp"}, "expected": "mn"},
+  {"name": "longer s1, best spans s1 end", "args": {"s1": "zzzzzzzzzzthequickbrown", "s2": "jjquickbrownfoxjjjjjj"}, "expected": "quickbrown"}
+]

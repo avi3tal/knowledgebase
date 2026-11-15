@@ -42,6 +42,10 @@
   against `tools/tests/testdata/trace_fixture.json` — regenerate it when the format changes.
 - History lives in `_workspace/progress/*.jsonl` (private). Tests run against an empty `KB_WORKSPACE` and
   `KB_PROGRESS_DIR` (conftest does); fixture attempts live in `tools/tests/testdata/workspace/`.
+- Agent-ready pages: every learning page (lesson, algo problem, design description / solution) has a
+  markdown twin built by `tools/kb/pagemd.py` (figures and design diagrams as Mermaid via
+  `tools/kb/mermaid.py`, no quiz answers, no private workspace data): `GET /api/md/<kind>/<subject>/<slug>`,
+  `kb md <kind> <subject> <slug>`, and the studio's `CopyPage` button in the page header.
 - New problems / attempts: the `/new-problem` skill (`.claude/skills/new-problem/SKILL.md`).
 - Study sessions: `kb session new|list|show|start|done|abandon|attempt` (`tools/kb/sessions.py`,
   deterministic generator; scores derived from runs, never stored). Claude plans go through

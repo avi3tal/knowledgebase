@@ -25,11 +25,23 @@ Trace JSON (version 1) is the contract with the studio (studio/src/trace.ts):
   graph:        {nodes: [{id, x, y}], edges: [{from, to, w, directed}],
                  highlight: {nodes: [id], edges: ["from>to"]}, labels: {id: text}}
                  (the var holds that dict; used by lesson figures, rarely by traces)
+  maze:         {walls: ["#o.", ...], start: [r, c]|null, goal: [r, c]|null, current: [r, c]|null,
+                 visited: [[r, c], ...], frontier: [[r, c], ...] (queue/stack order),
+                 path: [[r, c], ...]|null, group: int|null}  (a grid search drawn as a place:
+                 "#" wall / water, "o" rubble (passable at a cost), "." floor / land; `path` is the
+                 cheapest route, computed by kb, once `current` reaches the goal; `group` is the
+                 spec's group var, e.g. the island number; with a `parent` var (cell -> previous
+                 cell) the route is the one the algorithm found, e.g. DFS's)
+  roadmap:      {nodes: [{id, name, x, y}], roads: [{a, b, w}], start, goal, current: id|null,
+                 dist: {id: d}, frontier: [id, ...] (heap order), relax: [from, to]|null,
+                 route: [id, ...]|null}  (a weighted graph drawn as a city map; ids are strings;
+                 the spec's `layout` {id: [x, y]} places intersections, `places` names them)
 Node ids (linkedlist, tree) are stable for the whole trace so the studio can animate in place.
 """
 
 from __future__ import annotations
 
+import heapq
 import inspect
 import json
 import math
@@ -44,8 +56,23 @@ TRACE_VERSION = 1
 MAX_STEPS = 400
 MAX_LIST_NODES = 64
 MAX_TREE_NODES = 63
-VIEW_TYPES = {"array", "map", "vars", "linkedlist", "tree", "heap", "grid", "intervals", "callstack", "graph"}
-_NEEDS_VAR = {"array", "map", "linkedlist", "tree", "heap", "grid", "graph"}
+VIEW_TYPES = {
+    "array",
+    "map",
+    "vars",
+    "linkedlist",
+    "tree",
+    "heap",
+    "grid",
+    "intervals",
+    "callstack",
+    "graph",
+    "maze",
+    "roadmap",
+}
+_NEEDS_VAR = {"array", "map", "linkedlist", "tree", "heap", "grid", "graph", "maze", "roadmap"}
+MAZE_MOVES = ((1, 0), (-1, 0), (0, 1), (0, -1))
+MAZE_THEMES = {"maze", "terrain"}
 _NOTE_RE = re.compile(r"\s*#\s*note:\s*(.+?)\s*$")
 
 
@@ -98,6 +125,10 @@ def validate_view(view: Any) -> list[str]:
         window = item.get("window")
         if window is not None and (not isinstance(window, list) or len(window) != 2):
             errors.append(f"view[{i}].window must be [lo_var, hi_var]")
+        if kind == "maze":
+            errors += [f"view[{i}] (maze): {e}" for e in _validate_maze(item)]
+        if kind == "roadmap":
+            errors += [f"view[{i}] (roadmap): {e}" for e in _validate_roadmap(item)]
         for label, pair in (item.get("cells") or {}).items():
             if not isinstance(pair, list) or len(pair) != 2:
                 errors.append(f"view[{i}].cells.{label} must be [row_var, col_var]")
@@ -106,6 +137,53 @@ def validate_view(view: Any) -> list[str]:
             errors.append(f"view[{i}]: duplicate id {vid!r}")
         ids.add(vid)
     return errors
+
+
+def _validate_maze(item: dict[str, Any]) -> list[str]:
+    errors = []
+    for key in ("wall", "rubble"):
+        v = item.get(key)
+        if v is not None and not (isinstance(v, int) or (isinstance(v, str) and len(v) == 1)):
+            errors.append(f"{key} must be one character or an int")
+    if item.get("theme", "maze") not in MAZE_THEMES:
+        errors.append(f"theme must be one of {sorted(MAZE_THEMES)}")
+    for key in ("start", "goal"):
+        pair = item.get(key)
+        if pair is not None and not (isinstance(pair, list) and len(pair) == 2 and all(type(v) is int for v in pair)):
+            errors.append(f"{key} must be [row, col] ints (negative counts from the end)")
+    current = item.get("current")
+    if current is not None and not (
+        isinstance(current, list) and len(current) == 2 and all(isinstance(v, str) for v in current)
+    ):
+        errors.append("current must be [row_var, col_var]")
+    for key in ("visited", "frontier", "group", "parent"):
+        if item.get(key) is not None and not isinstance(item[key], str):
+            errors.append(f"{key} must be a variable name")
+    return errors
+
+
+def _validate_roadmap(item: dict[str, Any]) -> list[str]:
+    errors = []
+    layout = item.get("layout")
+    if not isinstance(layout, dict) or not layout:
+        errors.append("layout must map every node id to [x, y]")
+    elif not all(isinstance(v, list) and len(v) == 2 and all(_numeric(x) for x in v) for v in layout.values()):
+        errors.append("layout values must be [x, y] numbers")
+    if item.get("places") is not None and not isinstance(item["places"], dict):
+        errors.append("places must map node id to a name")
+    for key in ("current", "dist", "frontier", "prev", "start", "goal"):
+        if item.get(key) is not None and not isinstance(item[key], str):
+            errors.append(f"{key} must be a variable name")
+    relax = item.get("relax")
+    if relax is not None and not (
+        isinstance(relax, list) and len(relax) == 2 and all(isinstance(v, str) for v in relax)
+    ):
+        errors.append("relax must be [from_var, to_var]")
+    return errors
+
+
+def _numeric(x: Any) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
 
 
 # ------------------------------------------------------------------ node helpers
@@ -264,6 +342,158 @@ def _grid_state(item: dict[str, Any], local_vars: dict[str, Any]) -> dict[str, A
     }
 
 
+def _cells(value: Any) -> list[list[int]]:
+    """Cells of a queue / stack / set / dict: items are (r, c) or start with r, c (e.g. (r, c, dist))."""
+    if value is None:
+        return []
+    items = sorted(value, key=repr) if isinstance(value, (set, frozenset, dict)) else list(value)
+    out = []
+    for item in items:
+        if isinstance(item, (list, tuple)) and len(item) >= 2:
+            cell = _cell(list(item[:2]))
+            if cell:
+                out.append(cell)
+    return out
+
+
+def _resolve(pair: list[int] | None, rows: int, cols: int) -> list[int] | None:
+    """[r, c] with negative indices counted from the end (goal [-1, -1] = bottom-right)."""
+    if pair is None or rows == 0 or cols == 0:
+        return None
+    r, c = pair[0] % rows if pair[0] < 0 else pair[0], pair[1] % cols if pair[1] < 0 else pair[1]
+    return [r, c] if 0 <= r < rows and 0 <= c < cols else None
+
+
+def maze_path(walls: list[str], start: list[int], goal: list[int]) -> list[list[int]] | None:
+    """The cheapest 4-way route from start to goal, or None: "#" is impassable, entering "o" (rubble)
+    costs one removal, "." is free. Fewest removals first, then fewest steps (a plain maze = the
+    shortest path). Ties break by MAZE_MOVES order, so the route is deterministic."""
+    rows, cols = len(walls), len(walls[0]) if walls else 0
+    first = (start[0], start[1])
+    best: dict[tuple[int, int], tuple[int, int]] = {first: (0, 0)}
+    parent: dict[tuple[int, int], tuple[int, int] | None] = {first: None}
+    heap = [(0, 0, 0, first)]
+    tick = 0
+    while heap:
+        cost, steps, _, cell = heapq.heappop(heap)
+        if [cell[0], cell[1]] == goal:
+            return _route(parent, cell)
+        if (cost, steps) > best[cell]:
+            continue
+        for dr, dc in MAZE_MOVES:
+            nxt = (cell[0] + dr, cell[1] + dc)
+            if not (0 <= nxt[0] < rows and 0 <= nxt[1] < cols) or walls[nxt[0]][nxt[1]] == "#":
+                continue
+            key = (cost + (walls[nxt[0]][nxt[1]] == "o"), steps + 1)
+            if nxt not in best or key < best[nxt]:
+                best[nxt], parent[nxt], tick = key, cell, tick + 1
+                heapq.heappush(heap, (*key, tick, nxt))
+    return None
+
+
+def _route(parent: dict[tuple[int, int], tuple[int, int] | None], end: tuple[int, int]) -> list[list[int]]:
+    route = [end]
+    while (prev := parent[route[-1]]) is not None:
+        route.append(prev)
+    return [list(cell) for cell in reversed(route)]
+
+
+def _maze_row(row: Any, wall: Any, rubble: Any) -> str:
+    """One grid row as "#" (wall), "o" (rubble: passable at a cost) and "." (floor)."""
+    return "".join("#" if _is(ch, wall) else "o" if _is(ch, rubble) else "." for ch in row)
+
+
+def _is(cell: Any, marker: Any) -> bool:
+    """A grid cell equals a spec marker, whether the grid holds "1" or 1."""
+    return marker is not None and (cell == marker or str(cell) == str(marker))
+
+
+def _found_path(
+    item: dict[str, Any], local_vars: dict[str, Any], walls: list[str], start: Any, goal: list[int]
+) -> list[list[int]] | None:
+    """The route to draw on reaching the goal: the algorithm's own (walking its `parent` var back
+    from the goal) when the spec names one, else kb's cheapest route."""
+    if not item.get("parent"):
+        return maze_path(walls, start, goal)
+    parent = local_vars.get(item["parent"])
+    if not isinstance(parent, dict):
+        return None
+    route, cell, guard = [], (goal[0], goal[1]), len(parent) + 1
+    while cell is not None and guard > 0:
+        route.append([cell[0], cell[1]])
+        cell, guard = parent.get(cell), guard - 1
+    return list(reversed(route)) if route[-1] == start else None
+
+
+def _maze_state(item: dict[str, Any], local_vars: dict[str, Any]) -> dict[str, Any]:
+    wall, rubble = item.get("wall", "#"), item.get("rubble")
+    walls = [_maze_row(row, wall, rubble) for row in local_vars.get(item["var"]) or []]
+    rows, cols = len(walls), len(walls[0]) if walls else 0
+    start = _resolve(item.get("start"), rows, cols)
+    goal = _resolve(item.get("goal"), rows, cols)
+    current = _cell([local_vars.get(v) for v in item["current"]]) if item.get("current") else None
+    reached = start is not None and goal is not None and current == goal
+    group = local_vars.get(item["group"]) if item.get("group") else None
+    return {
+        "walls": walls,
+        "start": start,
+        "goal": goal,
+        "current": current,
+        "visited": _cells(local_vars.get(item["visited"])) if item.get("visited") else [],
+        "frontier": _cells(local_vars.get(item["frontier"])) if item.get("frontier") else [],
+        "path": _found_path(item, local_vars, walls, start, goal) if reached else None,
+        "group": group if isinstance(group, int) and not isinstance(group, bool) else None,
+    }
+
+
+def _node(value: Any) -> str | None:
+    """A node id as the map's string key: ints / strs as-is, heap entries (dist, node) by their node."""
+    if isinstance(value, (list, tuple)) and value:
+        value = value[-1]
+    if value is None or isinstance(value, bool) or not isinstance(value, (int, str)):
+        return None
+    return str(value)
+
+
+def _road_route(prev: Any, start: str | None, goal: str | None) -> list[str] | None:
+    """Walk `prev` (node -> previous node) back from the goal to the start."""
+    if not isinstance(prev, dict) or start is None or goal is None:
+        return None
+    links = {str(k): _node(v) for k, v in prev.items()}
+    route, guard = [goal], len(links) + 1
+    while route[-1] != start and route[-1] in links and guard > 0:
+        route.append(links[route[-1]])  # type: ignore[arg-type]
+        guard -= 1
+    return list(reversed(route)) if route[-1] == start else None
+
+
+def _roadmap_state(item: dict[str, Any], local_vars: dict[str, Any]) -> dict[str, Any]:
+    """A weighted graph as a city map: `var` holds roads [[a, b, w], ...]; the spec's `layout` places
+    the intersections. `route` (start -> goal via `prev`) appears once `current` is the goal."""
+    get = lambda key: local_vars.get(item[key]) if item.get(key) else None  # noqa: E731
+    places = item.get("places") or {}
+    nodes = [{"id": str(k), "name": str(places.get(k, k)), "x": v[0], "y": v[1]} for k, v in item["layout"].items()]
+    roads = [
+        {"a": str(r[0]), "b": str(r[1]), "w": r[2] if len(r) > 2 else None}
+        for r in get("var") or []
+        if isinstance(r, (list, tuple)) and len(r) >= 2
+    ]
+    current, start, goal = _node(get("current")), _node(get("start")), _node(get("goal"))
+    dist = get("dist")
+    relax = [_node(local_vars.get(v)) for v in item["relax"]] if item.get("relax") else [None, None]
+    return {
+        "nodes": nodes,
+        "roads": roads,
+        "start": start,
+        "goal": goal,
+        "current": current,
+        "dist": {str(k): v for k, v in dist.items()} if isinstance(dist, dict) else {},
+        "frontier": [n for n in (_node(x) for x in get("frontier") or []) if n is not None],
+        "relax": relax if None not in relax else None,
+        "route": _road_route(get("prev"), start, goal) if current is not None and current == goal else None,
+    }
+
+
 def _intervals_state(item: dict[str, Any], local_vars: dict[str, Any]) -> dict[str, Any]:
     lanes = {}
     for label, var in item["lanes"].items():
@@ -345,6 +575,10 @@ def snapshot(
             state[vid] = _intervals_state(item, local_vars)
         elif kind == "graph":
             state[vid] = _graph_state(item, local_vars)
+        elif kind == "maze":
+            state[vid] = _maze_state(item, local_vars)
+        elif kind == "roadmap":
+            state[vid] = _roadmap_state(item, local_vars)
         elif kind == "callstack":
             out = []
             for f in frames or []:

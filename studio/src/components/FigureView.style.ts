@@ -3,7 +3,7 @@ import type { ScenarioTone } from "../figures";
 import { figMarch, figProgress } from "../theme/animations";
 import { t } from "../theme/theme";
 import { WIDE } from "./TracePlayer.style";
-import { Views } from "./StructureFigure.style";
+import { Fit } from "./StructureFigure.style";
 
 /* ---------------------------------------------------------------- figure frame */
 
@@ -52,7 +52,7 @@ export const Fig = styled.figure<{ $stepping?: boolean; $expanded?: boolean }>`
   ${({ $expanded }) =>
     $expanded &&
     css`
-      ${Views} {
+      ${Fit} {
         overflow: auto;
       }
     `}

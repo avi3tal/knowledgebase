@@ -2,6 +2,7 @@
 
 <workspace>/progress/runs.jsonl  one line per `kb run` of an attempt
 <workspace>/progress/quiz.jsonl  one line per answered quiz item
+<workspace>/progress/predict.jsonl  one line per finished Predict round of a lesson trace
 """
 
 from __future__ import annotations
@@ -46,6 +47,14 @@ def record_run(record: dict[str, Any]) -> None:
 
 def record_quiz(record: dict[str, Any]) -> None:
     _append("quiz.jsonl", {"ts": now(), **record})
+
+
+def record_predict(record: dict[str, Any]) -> None:
+    _append("predict.jsonl", {"ts": now(), **record})
+
+
+def predictions() -> list[dict[str, Any]]:
+    return _read("predict.jsonl")
 
 
 def runs() -> list[dict[str, Any]]:

@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from kb import debug, design, feedback, history, learn, runner, scaffold, server, sessions
+from kb import debug, design, feedback, history, learn, pagemd, runner, scaffold, server, sessions
 from kb.complexity import matches
 from kb.paths import ROOT, problems_dir, workspace_dir
 from kb.schema import DIFFICULTIES, LANGS, Problem, ProblemError, load_problem, validate
@@ -513,6 +513,11 @@ def cmd_sd(a: argparse.Namespace) -> int:
     raise ProblemError(f"unknown action {a.action}")
 
 
+def cmd_md(a: argparse.Namespace) -> int:
+    sys.stdout.write(pagemd.build(a.kind, a.subject, a.slug))
+    return 0
+
+
 def cmd_studio(a: argparse.Namespace) -> int:
     server.serve(a.port)
     return 0
@@ -592,6 +597,12 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("studio", help="serve the learning studio + API on 127.0.0.1")
     s.add_argument("--port", type=int, default=8765)
     s.set_defaults(fn=cmd_studio)
+
+    s = sub.add_parser("md", help="a studio page as markdown for LLM agents (figures as Mermaid)")
+    s.add_argument("kind", choices=sorted(pagemd.BUILDERS))
+    s.add_argument("subject")
+    s.add_argument("slug", help="topic id (lesson) or problem slug")
+    s.set_defaults(fn=cmd_md)
 
     s = sub.add_parser("validate", help="check meta.json / cases.json")
     s.add_argument("slugs", nargs="*")

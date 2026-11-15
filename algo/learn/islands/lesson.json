@@ -25,15 +25,17 @@
    "view": [
     {
      "id": "grid",
-     "type": "grid",
+     "type": "maze",
      "var": "grid",
-     "cells": {
-      "cur": [
-       "r",
-       "c"
-      ]
-     },
-     "marked": "seen"
+     "theme": "terrain",
+     "wall": "0",
+     "visited": "seen",
+     "group": "count",
+     "label": "map (1 = land)",
+     "current": [
+      "r",
+      "c"
+     ]
     },
     {
      "id": "stack",
@@ -109,15 +111,18 @@
    "view": [
     {
      "id": "grid",
-     "type": "grid",
+     "type": "maze",
      "var": "grid",
-     "cells": {
-      "cell": [
-       "cr",
-       "cc"
-      ]
-     },
-     "marked": "seen"
+     "theme": "terrain",
+     "wall": "0",
+     "visited": "seen",
+     "group": "count",
+     "label": "map (1 = land)",
+     "current": [
+      "cr",
+      "cc"
+     ],
+     "frontier": "queue"
     },
     {
      "id": "queue",

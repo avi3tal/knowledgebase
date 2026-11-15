@@ -24,15 +24,17 @@
  "view": [
   {
    "id": "grid",
-   "type": "grid",
+   "type": "maze",
    "var": "grid",
-   "cells": {
-    "cur": [
-     "r",
-     "c"
-    ]
-   },
-   "marked": "seen"
+   "theme": "terrain",
+   "wall": "0",
+   "visited": "seen",
+   "group": "count",
+   "label": "map (1 = land)",
+   "current": [
+    "r",
+    "c"
+   ]
   },
   {
    "id": "stack",
@@ -60,42 +62,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "stack": {
      "frames": [
@@ -119,42 +98,19 @@
    "note": "the visited set: every land cell we have already sunk",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": null
     },
     "stack": {
      "frames": [
@@ -178,42 +134,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": null
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": null,
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": 0
     },
     "stack": {
      "frames": [
@@ -237,45 +170,22 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": 0
     },
     "stack": {
      "frames": [
@@ -299,45 +209,22 @@
    "note": "unvisited land = the first cell of a NEW island",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [],
-     "row_labels": null,
-     "col_labels": null
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [],
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -361,50 +248,27 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -435,43 +299,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -481,8 +321,9 @@
        0
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -520,43 +361,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -570,8 +387,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -616,43 +434,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -670,8 +464,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -723,43 +518,19 @@
    "note": "dive into an unvisited land neighbour (up/down/left/right only)",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -777,8 +548,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -823,43 +595,19 @@
    "note": "dive into an unvisited land neighbour (up/down/left/right only)",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -877,8 +625,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -916,43 +665,19 @@
    "note": "dive into an unvisited land neighbour (up/down/left/right only)",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -970,8 +695,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1002,43 +728,19 @@
    "note": "flood the whole island so the scan never counts it again",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -1056,8 +758,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1081,43 +784,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1135,8 +814,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1160,43 +840,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -1214,8 +870,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1239,43 +896,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -1293,8 +926,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1318,43 +952,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       0,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      0,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -1372,8 +982,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1397,43 +1008,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -1451,8 +1038,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1476,43 +1064,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -1530,8 +1094,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1555,43 +1120,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -1609,8 +1150,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1634,43 +1176,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -1688,8 +1206,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1713,43 +1232,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -1767,8 +1262,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 1
     },
     "stack": {
      "frames": [
@@ -1792,43 +1288,19 @@
    "note": "unvisited land = the first cell of a NEW island",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -1846,8 +1318,9 @@
        1
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -1871,43 +1344,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -1929,8 +1378,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -1961,43 +1411,19 @@
    "note": "flood the whole island so the scan never counts it again",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -2019,8 +1445,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -2044,43 +1471,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       1,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      1,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2102,8 +1505,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -2127,43 +1531,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2185,8 +1565,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -2210,43 +1591,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -2268,8 +1625,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -2293,43 +1651,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -2351,8 +1685,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -2376,43 +1711,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -2434,8 +1745,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 2
     },
     "stack": {
      "frames": [
@@ -2459,43 +1771,19 @@
    "note": "unvisited land = the first cell of a NEW island",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -2517,8 +1805,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -2542,43 +1831,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -2604,8 +1869,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -2636,43 +1902,19 @@
    "note": "flood the whole island so the scan never counts it again",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -2698,8 +1940,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -2723,43 +1966,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -2785,8 +2004,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -2810,43 +2030,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       2,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      2,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2872,8 +2068,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -2897,43 +2094,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -2959,8 +2132,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -2984,43 +2158,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       0
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      0
+     ],
+     "visited": [
       [
        0,
        0
@@ -3046,8 +2196,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -3071,43 +2222,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       1
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      1
+     ],
+     "visited": [
       [
        0,
        0
@@ -3133,8 +2260,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -3158,43 +2286,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       2
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      2
+     ],
+     "visited": [
       [
        0,
        0
@@ -3220,8 +2324,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -3245,43 +2350,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -3307,8 +2388,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 3
     },
     "stack": {
      "frames": [
@@ -3332,43 +2414,19 @@
    "note": "unvisited land = the first cell of a NEW island",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -3394,8 +2452,9 @@
        2
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [
@@ -3419,43 +2478,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -3485,8 +2520,9 @@
        3
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [
@@ -3517,43 +2553,19 @@
    "note": "mark BEFORE exploring, so no neighbour can send us back here",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -3587,8 +2599,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [
@@ -3626,43 +2639,19 @@
    "note": "dive into an unvisited land neighbour (up/down/left/right only)",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -3696,8 +2685,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [
@@ -3728,43 +2718,19 @@
    "note": "flood the whole island so the scan never counts it again",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       3
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      3
+     ],
+     "visited": [
       [
        0,
        0
@@ -3798,8 +2764,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [
@@ -3823,43 +2790,19 @@
    "note": null,
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -3893,8 +2836,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [
@@ -3918,43 +2862,19 @@
    "note": "one flood per island; each cell is visited O(1) times → O(R·C)",
    "state": {
     "grid": {
-     "rows": [
-      [
-       "1",
-       "1",
-       "0",
-       "0",
-       "0"
-      ],
-      [
-       "1",
-       "1",
-       "0",
-       "1",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "1",
-       "0",
-       "0"
-      ],
-      [
-       "0",
-       "0",
-       "0",
-       "1",
-       "1"
-      ]
+     "walls": [
+      "..###",
+      "..#.#",
+      "##.##",
+      "###.."
      ],
-     "cells": {
-      "cur": [
-       3,
-       4
-      ]
-     },
-     "marked": [
+     "start": null,
+     "goal": null,
+     "current": [
+      3,
+      4
+     ],
+     "visited": [
       [
        0,
        0
@@ -3988,8 +2908,9 @@
        4
       ]
      ],
-     "row_labels": null,
-     "col_labels": null
+     "frontier": [],
+     "path": null,
+     "group": 4
     },
     "stack": {
      "frames": [

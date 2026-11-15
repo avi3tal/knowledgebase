@@ -9,7 +9,11 @@ GET  /api/graph/<subject>                full knowledge graph (nodes + edges)
 GET  /api/feedback/<subject>             deterministic progress feedback
 GET  /api/sessions                       study sessions with derived completion / scores
 GET  /api/session/<id>                   one session (items, scores, attempt paths, materials)
+GET  /api/md/<kind>/<subject>/<slug>     a page as text/markdown for LLM agents (kb/pagemd.py;
+                                         kind = lesson | problem | design | solution)
 POST /api/quiz  {subject, topic, item, choice}  -> graded, appended to progress/quiz.jsonl
+POST /api/predict  {subject, topic, trace, guesses: [[r, c]|null]}  -> graded by kb from the trace,
+                appended to progress/predict.jsonl
 POST /api/sessions  {subject, topics, difficulty, count, focus, goal, title, minutes}  -> new session
 POST /api/session/<id>/status   {status}           -> planned/active/done/abandoned
 POST /api/session/<id>/attempt  {item, lang}       -> new attempt linked to the item
@@ -38,7 +42,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from kb import design, feedback, history, learn, sessions
+from kb import design, feedback, history, learn, pagemd, sessions
 from kb.paths import ROOT, attempts_root, problems_dir
 from kb.schema import ProblemError
 
@@ -150,6 +154,14 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _text(self, text: str, content_type: str = "text/markdown; charset=utf-8") -> None:
+        body = text.encode()
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _error(self, status: int, msg: str) -> None:
         self._json({"error": msg}, status)
 
@@ -177,6 +189,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(feedback.compute(parts[2], problems_for(parts[2])))
             if parts[:2] == ["api", "design"] and len(parts) in (4, 5, 6):
                 return self._get_design(parts)
+            if parts[:2] == ["api", "md"] and len(parts) == 5:
+                return self._text(pagemd.build(parts[2], parts[3], parts[4]))
             if parts[:2] == ["api", "sessions"] and len(parts) == 2:
                 return self._json([session_payload(x) for x in sessions.all_sessions()])
             if parts[:2] == ["api", "session"] and len(parts) == 3:
@@ -191,6 +205,7 @@ class Handler(BaseHTTPRequestHandler):
         parts = [p for p in urlparse(self.path).path.split("/") if p]
         routes = {
             ("api", "quiz"): self._post_quiz,
+            ("api", "predict"): self._post_predict,
             ("api", "sessions"): self._post_session,
         }
         handler = routes.get(tuple(parts))  # type: ignore[call-overload]
@@ -281,6 +296,26 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(HTTPStatus.NOT_FOUND, str(e))
         history.record_quiz(
             {"subject": subject, "topic": topic, "item": item, "choice": choice, "correct": result["correct"]}
+        )
+        self._json(result)
+
+    def _post_predict(self, parts: list[str], body: dict[str, Any]) -> None:
+        subject, topic, trace_id = (str(body[k]) for k in ("subject", "topic", "trace"))
+        guesses = body["guesses"]
+        if not isinstance(guesses, list) or len(guesses) > 400:
+            raise ValueError("guesses must be a list")
+        try:
+            result = learn.grade_predictions(subject, topic, trace_id, guesses)
+        except ProblemError as e:
+            return self._error(HTTPStatus.NOT_FOUND, str(e))
+        history.record_predict(
+            {
+                "subject": subject,
+                "topic": topic,
+                "trace": trace_id,
+                "correct": result["correct"],
+                "total": result["total"],
+            }
         )
         self._json(result)
 
