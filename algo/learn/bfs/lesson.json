@@ -125,28 +125,39 @@
    "function": "shortest_path",
    "input": {
     "grid": [
-     ".#...",
-     ".#.#.",
-     "...#."
+     "..#....",
+     ".##.##.",
+     "....#..",
+     "##.##.#",
+     "......."
     ]
    },
    "view": [
     {
-     "id": "grid",
-     "type": "grid",
+     "id": "maze",
+     "type": "maze",
      "var": "grid",
-     "cells": {
-      "cur": [
-       "r",
-       "c"
-      ]
-     },
-     "marked": "seen"
+     "label": "maze",
+     "current": [
+      "r",
+      "c"
+     ],
+     "visited": "seen",
+     "frontier": "queue",
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      -1,
+      -1
+     ]
     },
     {
      "id": "queue",
      "type": "array",
-     "var": "queue"
+     "var": "queue",
+     "label": "queue (front on the left)"
     },
     {
      "id": "vars",
@@ -157,6 +168,30 @@
     }
    ],
    "checks": [
+    {
+     "input": {
+      "grid": [
+       "..#....",
+       ".##.##.",
+       "....#..",
+       "##.##.#",
+       "......."
+      ]
+     },
+     "expected": 10
+    },
+    {
+     "input": {
+      "grid": [
+       "..#....",
+       ".##.##.",
+       "...#...",
+       "#.##.#.",
+       "...#..."
+      ]
+     },
+     "expected": -1
+    },
     {
      "input": {
       "grid": [
@@ -200,6 +235,112 @@
   {
    "type": "markdown",
    "src": "03-recognise.md"
+  },
+  {
+   "type": "markdown",
+   "src": "04-race.md"
+  },
+  {
+   "type": "trace",
+   "id": "maze-dfs",
+   "title": "DFS on the same maze — a stack dives deep",
+   "source": "examples/maze_dfs.py",
+   "function": "maze_dfs",
+   "input": {
+    "grid": [
+     "..#....",
+     ".##.##.",
+     "....#..",
+     "##.##.#",
+     "......."
+    ]
+   },
+   "view": [
+    {
+     "id": "maze",
+     "type": "maze",
+     "var": "grid",
+     "label": "maze",
+     "current": [
+      "r",
+      "c"
+     ],
+     "visited": "parent",
+     "frontier": "stack",
+     "parent": "parent",
+     "start": [
+      0,
+      0
+     ],
+     "goal": [
+      -1,
+      -1
+     ]
+    },
+    {
+     "id": "stack",
+     "type": "array",
+     "var": "stack",
+     "label": "stack (top on the right)"
+    }
+   ],
+   "checks": [
+    {
+     "input": {
+      "grid": [
+       "..#....",
+       ".##.##.",
+       "....#..",
+       "##.##.#",
+       "......."
+      ]
+     },
+     "expected": 16
+    },
+    {
+     "input": {
+      "grid": [
+       "..",
+       ".."
+      ]
+     },
+     "expected": 2
+    },
+    {
+     "input": {
+      "grid": [
+       ".#",
+       "#."
+      ]
+     },
+     "expected": -1
+    },
+    {
+     "input": {
+      "grid": [
+       "...",
+       "##.",
+       "..."
+      ]
+     },
+     "expected": 4
+    }
+   ]
+  },
+  {
+   "type": "race",
+   "id": "bfs-vs-dfs",
+   "title": "Race: BFS vs DFS, one expansion per tick",
+   "runners": [
+    {
+     "label": "BFS",
+     "trace": "shortest-path-grid"
+    },
+    {
+     "label": "DFS",
+     "trace": "maze-dfs"
+    }
+   ]
   },
   {
    "type": "quiz",
